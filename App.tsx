@@ -12,6 +12,10 @@ import { ImprovementModule } from './components/ImprovementModule';
 import { IndicatorsModule } from './components/IndicatorsModule';
 import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
+import UsersList from './components/UsersList';
+import BaoCaoScykList from './components/BaoCaoScykList';
+import BienBanChuKyList from './components/BienBanChuKyList';
+import BienBanThanhVienList from './components/BienBanThanhVienList';
 
 // --- Sidebar Navigation Item ---
 const NavItem = ({ 
@@ -101,7 +105,23 @@ const App: React.FC = () => {
       case ModuleType.IMPROVEMENT: return <ImprovementModule />;
       case ModuleType.INDICATORS: return <IndicatorsModule />;
       case ModuleType.REPORTS: return <ReportsModule />;
-      case ModuleType.SETTINGS: return <SettingsModule />;
+      case ModuleType.SETTINGS: return (
+        <>
+          <SettingsModule />
+          <div style={{marginTop: 32}}>
+            <UsersList />
+            <div style={{marginTop: 32}}>
+              <BaoCaoScykList />
+            </div>
+            <div style={{marginTop: 32}}>
+              <BienBanChuKyList />
+            </div>
+            <div style={{marginTop: 32}}>
+              <BienBanThanhVienList />
+            </div>
+          </div>
+        </>
+      );
       default: return <Dashboard />;
     }
   };
