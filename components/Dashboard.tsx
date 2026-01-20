@@ -1,0 +1,162 @@
+import React from 'react';
+import { 
+  Users, 
+  FileText, 
+  AlertTriangle, 
+  TrendingUp, 
+  Activity, 
+  CheckCircle,
+  ClipboardList
+} from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  LineChart,
+  Line
+} from 'recharts';
+
+const dataIncidents = [
+  { name: 'T1', count: 12 },
+  { name: 'T2', count: 19 },
+  { name: 'T3', count: 15 },
+  { name: 'T4', count: 8 },
+  { name: 'T5', count: 22 },
+  { name: 'T6', count: 14 },
+];
+
+const dataCompliance = [
+  { name: 'Vệ sinh tay', score: 85 },
+  { name: 'Hồ sơ bệnh án', score: 92 },
+  { name: '5S', score: 78 },
+  { name: 'An toàn PT', score: 98 },
+];
+
+export const Dashboard: React.FC = () => {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          title="Nhân sự QLCL" 
+          value="45" 
+          subtext="Đã cấp chứng chỉ: 38" 
+          icon={<Users className="w-6 h-6 text-primary-600" />} 
+          trend="+2"
+        />
+        <StatCard 
+          title="Sự cố Y khoa (T6)" 
+          value="14" 
+          subtext="Đã xử lý: 10" 
+          icon={<AlertTriangle className="w-6 h-6 text-amber-600" />} 
+          trend="-8%"
+          trendDown
+        />
+        <StatCard 
+          title="Tỉ lệ hài lòng" 
+          value="94.5%" 
+          subtext="Nội trú & Ngoại trú" 
+          icon={<Activity className="w-6 h-6 text-green-600" />} 
+          trend="+1.2%"
+        />
+        <StatCard 
+          title="Văn bản mới" 
+          value="12" 
+          subtext="Trong tháng này" 
+          icon={<FileText className="w-6 h-6 text-purple-600" />} 
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2 text-slate-500" />
+            Xu hướng báo cáo sự cố (6 tháng)
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dataIncidents}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip />
+                <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+            <CheckCircle className="w-5 h-5 mr-2 text-slate-500" />
+            Tỉ lệ tuân thủ quy trình (Tháng 6)
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dataCompliance} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
+                <XAxis type="number" domain={[0, 100]} hide />
+                <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} />
+                <Tooltip />
+                <Bar dataKey="score" fill="#106627" radius={[0, 4, 4, 0]} barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+          <h3 className="font-semibold text-slate-800">Hoạt động gần đây</h3>
+          <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">Xem tất cả</button>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {[
+            { action: "Đã phê duyệt", subject: "Kế hoạch cải tiến Khoa Nội Tiêu hóa", time: "2 giờ trước", user: "TS. Nguyễn Văn A" },
+            { action: "Báo cáo mới", subject: "Sự cố nhầm lẫn thuốc (Mức nhẹ)", time: "4 giờ trước", user: "ĐD. Trần Thị B" },
+            { action: "Cập nhật", subject: "Chỉ số kiểm soát nhiễm khuẩn T6/2024", time: "1 ngày trước", user: "Ban QLCL" },
+          ].map((item, idx) => (
+            <div key={idx} className="p-4 flex items-start space-x-3 hover:bg-slate-50 transition-colors">
+              <div className="w-2 h-2 mt-2 rounded-full bg-primary-500"></div>
+              <div>
+                <p className="text-sm text-slate-800"><span className="font-medium">{item.user}</span> {item.action} <span className="font-medium text-slate-900">"{item.subject}"</span></p>
+                <p className="text-xs text-slate-500 mt-1">{item.time}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatCard: React.FC<{ 
+  title: string; 
+  value: string; 
+  subtext?: string; 
+  icon: React.ReactNode; 
+  trend?: string;
+  trendDown?: boolean;
+}> = ({ title, value, subtext, icon, trend, trendDown }) => (
+  <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-sm font-medium text-slate-500">{title}</p>
+        <h4 className="text-2xl font-bold text-slate-800 mt-1">{value}</h4>
+        {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
+      </div>
+      <div className="p-2 bg-slate-50 rounded-lg">
+        {icon}
+      </div>
+    </div>
+    {trend && (
+      <div className={`mt-4 text-xs font-medium flex items-center ${trendDown ? 'text-red-500' : 'text-green-500'}`}>
+        <span>{trend}</span>
+        <span className="text-slate-400 ml-1">so với tháng trước</span>
+      </div>
+    )}
+  </div>
+);
