@@ -16,6 +16,15 @@ import UsersList from './components/UsersList';
 import BaoCaoScykList from './components/BaoCaoScykList';
 import BienBanChuKyList from './components/BienBanChuKyList';
 import BienBanThanhVienList from './components/BienBanThanhVienList';
+import ChiaSeList from './components/ChiaSeList';
+import CoQuanBanHanhList from './components/CoQuanBanHanhList';
+import DmDonViList from './components/DmDonViList';
+import DmChucVuList from './components/DmChucVuList';
+import DmVaiTroQlclList from './components/DmVaiTroQlclList';
+import LichGiamSatList from './components/LichGiamSatList';
+import ThuVienVbList from './components/ThuVienVbList';
+import ThuVienVideoList from './components/ThuVienVideoList';
+import TimHieuPhanTichScykList from './components/TimHieuPhanTichScykList';
 
 // --- Sidebar Navigation Item ---
 const NavItem = ({ 
@@ -110,15 +119,18 @@ const App: React.FC = () => {
           <SettingsModule />
           <div style={{marginTop: 32}}>
             <UsersList />
-            <div style={{marginTop: 32}}>
-              <BaoCaoScykList />
-            </div>
-            <div style={{marginTop: 32}}>
-              <BienBanChuKyList />
-            </div>
-            <div style={{marginTop: 32}}>
-              <BienBanThanhVienList />
-            </div>
+            <div style={{marginTop: 32}}><BaoCaoScykList /></div>
+            <div style={{marginTop: 32}}><BienBanChuKyList /></div>
+            <div style={{marginTop: 32}}><BienBanThanhVienList /></div>
+            <div style={{marginTop: 32}}><ChiaSeList /></div>
+            <div style={{marginTop: 32}}><CoQuanBanHanhList /></div>
+            <div style={{marginTop: 32}}><DmDonViList /></div>
+            <div style={{marginTop: 32}}><DmChucVuList /></div>
+            <div style={{marginTop: 32}}><DmVaiTroQlclList /></div>
+            <div style={{marginTop: 32}}><LichGiamSatList /></div>
+            <div style={{marginTop: 32}}><ThuVienVbList /></div>
+            <div style={{marginTop: 32}}><ThuVienVideoList /></div>
+            <div style={{marginTop: 32}}><TimHieuPhanTichScykList /></div>
           </div>
         </>
       );
