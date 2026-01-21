@@ -1,12 +1,7 @@
 
-import React, { useState } from 'react';
-import { Target, CheckCircle2, Clock, ArrowUpRight, Plus, FileText, ArrowLeft, Save, Calendar, Users, BarChart3, Filter, Search, MoreHorizontal } from 'lucide-react';
-
-const IMPROVEMENTS = [
-  { id: 1, title: 'Cải tiến quy trình cấp phát thuốc nội trú', dept: 'Khoa Dược', status: 'In Progress', progress: 65, date: 'T6/2024' },
-  { id: 2, title: 'Giảm thời gian chờ tại Khoa Khám bệnh', dept: 'Khoa Khám bệnh', status: 'Completed', progress: 100, date: 'T4/2024' },
-  { id: 3, title: 'Chuẩn hóa phác đồ điều trị viêm phổi', dept: 'Khoa Hô hấp', status: 'Planning', progress: 15, date: 'T7/2024' },
-];
+import React, { useState, useEffect } from 'react';
+import { Target, CheckCircle2, Clock, ArrowUpRight, Plus, FileText, ArrowLeft, Save, Calendar, Users, BarChart3, Filter, Search, MoreHorizontal, Edit2, Trash2, Eye } from 'lucide-react';
+import { fetchKeHoachCaiTien, addKeHoachCaiTien, updateKeHoachCaiTien, deleteKeHoachCaiTien, KeHoachCaiTien } from '../readKeHoachCaiTien';
 
 type ViewState = 'LIST' | 'CREATE_PLAN' | 'CREATE_REPORT';
 
@@ -32,15 +27,15 @@ const ImprovementCard: React.FC<ImprovementCardProps> = ({ item, color }) => {
 
     return (
         <div className={`p-4 rounded-lg border ${colorClasses[color]} transition-shadow hover:shadow-md cursor-pointer`}>
-            <h4 className="font-semibold text-slate-800 text-sm mb-1 line-clamp-2">{item.title}</h4>
+            <h4 className="font-semibold text-slate-800 text-sm mb-1 line-clamp-2">{item.tieu_de || item.title}</h4>
             <div className="flex justify-between items-center text-xs text-slate-500 mb-3">
-                <span className="flex items-center gap-1"><FileText size={12} /> {item.dept}</span>
-                <span className="flex items-center gap-1"><Clock size={12} /> {item.date}</span>
+                <span className="flex items-center gap-1"><FileText size={12} /> {item.don_vi || item.dept}</span>
+                <span className="flex items-center gap-1"><Clock size={12} /> {item.ngay_ket_thuc || item.date || '-'}</span>
             </div>
             <div className="w-full bg-white rounded-full h-1.5 overflow-hidden">
                 <div 
                     className={`h-1.5 rounded-full ${progressColors[color]}`} 
-                    style={{ width: `${item.progress}%` }}
+                    style={{ width: `${item.tien_do || item.progress || 0}%` }}
                 ></div>
             </div>
         </div>
@@ -49,15 +44,35 @@ const ImprovementCard: React.FC<ImprovementCardProps> = ({ item, color }) => {
 
 export const ImprovementModule: React.FC = () => {
   const [view, setView] = useState<ViewState>('LIST');
+  const [plans, setPlans] = useState<KeHoachCaiTien[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchKeHoachCaiTien();
+      setPlans(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const renderContent = () => {
     switch (view) {
       case 'CREATE_PLAN':
-        return <PlanForm onCancel={() => setView('LIST')} />;
+        return <PlanForm onCancel={() => setView('LIST')} onSaved={() => { setView('LIST'); loadData(); }} />;
       case 'CREATE_REPORT':
         return <ReportForm onCancel={() => setView('LIST')} />;
       default:
-        return <ImprovementList onCreate={() => setView('CREATE_PLAN')} onReport={() => setView('CREATE_REPORT')} />;
+        return <ImprovementList plans={plans} loading={loading} error={error} onCreate={() => setView('CREATE_PLAN')} onReport={() => setView('CREATE_REPORT')} onRefresh={loadData} />;
     }
   };
 
@@ -69,14 +84,41 @@ export const ImprovementModule: React.FC = () => {
 };
 
 // --- Sub-component: Improvement List (Default View) ---
-const ImprovementList = ({ onCreate, onReport }: { onCreate: () => void, onReport: () => void }) => {
+interface ImprovementListProps {
+  plans: KeHoachCaiTien[];
+  loading: boolean;
+  error: string | null;
+  onCreate: () => void;
+  onReport: () => void;
+  onRefresh: () => void;
+}
+
+const ImprovementList: React.FC<ImprovementListProps> = ({ plans, loading, error, onCreate, onReport, onRefresh }) => {
   const getStatusBadge = (status: string) => {
     switch(status) {
+      case 'Đã hoàn thành': 
       case 'Completed': return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">Đã hoàn thành</span>;
+      case 'Đang thực hiện': 
       case 'In Progress': return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700 border border-primary-200">Đang thực hiện</span>;
       default: return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">Lập kế hoạch</span>;
     }
   };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Bạn có chắc muốn xóa kế hoạch này?')) {
+      try {
+        await deleteKeHoachCaiTien(id);
+        onRefresh();
+      } catch (err: any) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+  };
+
+  // Stats
+  const completedCount = plans.filter(p => p.trang_thai === 'Đã hoàn thành' || p.trang_thai === 'Completed').length;
+  const inProgressCount = plans.filter(p => p.trang_thai === 'Đang thực hiện' || p.trang_thai === 'In Progress').length;
+  const planningCount = plans.filter(p => p.trang_thai === 'Lập kế hoạch' || p.trang_thai === 'Planning').length;
 
   return (
     <>
@@ -106,37 +148,46 @@ const ImprovementList = ({ onCreate, onReport }: { onCreate: () => void, onRepor
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-slate-700">Đang thực hiện</h3>
-            <span className="bg-primary-100 text-primary-800 text-xs font-bold px-2 py-1 rounded-full">5</span>
+            <span className="bg-primary-100 text-primary-800 text-xs font-bold px-2 py-1 rounded-full">{inProgressCount}</span>
           </div>
+          {loading ? <div className="text-slate-400 text-sm">Đang tải...</div> : (
           <div className="space-y-4">
-            {IMPROVEMENTS.filter(i => i.status === 'In Progress').map(item => (
+            {plans.filter(i => i.trang_thai === 'Đang thực hiện' || i.trang_thai === 'In Progress').map(item => (
                 <ImprovementCard key={item.id} item={item} color="primary" />
             ))}
+            {inProgressCount === 0 && <div className="text-sm text-slate-400 italic">Chưa có kế hoạch nào</div>}
           </div>
+          )}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-slate-700">Đã hoàn thành</h3>
-            <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">12</span>
+            <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">{completedCount}</span>
           </div>
+          {loading ? <div className="text-slate-400 text-sm">Đang tải...</div> : (
           <div className="space-y-4">
-            {IMPROVEMENTS.filter(i => i.status === 'Completed').map(item => (
+            {plans.filter(i => i.trang_thai === 'Đã hoàn thành' || i.trang_thai === 'Completed').map(item => (
                 <ImprovementCard key={item.id} item={item} color="green" />
             ))}
+            {completedCount === 0 && <div className="text-sm text-slate-400 italic">Chưa có kế hoạch nào</div>}
           </div>
+          )}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-slate-700">Kế hoạch mới</h3>
-            <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-full">3</span>
+            <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-full">{planningCount}</span>
           </div>
+          {loading ? <div className="text-slate-400 text-sm">Đang tải...</div> : (
           <div className="space-y-4">
-            {IMPROVEMENTS.filter(i => i.status === 'Planning').map(item => (
+            {plans.filter(i => i.trang_thai === 'Lập kế hoạch' || i.trang_thai === 'Planning').map(item => (
                 <ImprovementCard key={item.id} item={item} color="amber" />
             ))}
+            {planningCount === 0 && <div className="text-sm text-slate-400 italic">Chưa có kế hoạch nào</div>}
           </div>
+          )}
       </div>
     </div>
     
@@ -172,36 +223,52 @@ const ImprovementList = ({ onCreate, onReport }: { onCreate: () => void, onRepor
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                    {IMPROVEMENTS.map((item) => (
+                    {error && (
+                      <tr><td colSpan={7} className="px-6 py-8 text-center text-red-600">{error}</td></tr>
+                    )}
+                    {loading && (
+                      <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
+                    )}
+                    {!loading && !error && plans.length === 0 && (
+                      <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-400 italic">Chưa có kế hoạch cải tiến nào</td></tr>
+                    )}
+                    {!loading && !error && plans.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-4 font-mono text-slate-500 text-xs">KH-24-{item.id.toString().padStart(3, '0')}</td>
+                            <td className="px-6 py-4 font-mono text-slate-500 text-xs">KH-24-{item.id?.toString().padStart(3, '0')}</td>
                             <td className="px-6 py-4">
-                                <span className="font-medium text-slate-800 block mb-1">{item.title}</span>
-                                <span className="text-xs text-slate-500">Phụ trách: TS. BS Nguyễn Văn A</span>
+                                <span className="font-medium text-slate-800 block mb-1">{item.tieu_de}</span>
+                                <span className="text-xs text-slate-500">Phụ trách: {item.nguoi_phu_trach || 'Chưa phân công'}</span>
                             </td>
-                            <td className="px-6 py-4 text-slate-600">{item.dept}</td>
+                            <td className="px-6 py-4 text-slate-600">{item.don_vi}</td>
                             <td className="px-6 py-4">
-                                {getStatusBadge(item.status)}
+                                {getStatusBadge(item.trang_thai || '')}
                             </td>
                             <td className="px-6 py-4 w-48">
                                 <div className="flex items-center gap-2">
                                     <div className="w-full bg-slate-100 rounded-full h-1.5">
                                         <div className={`h-1.5 rounded-full ${
-                                            item.progress === 100 ? 'bg-green-500' : 
-                                            item.status === 'Planning' ? 'bg-amber-500' : 'bg-primary-500'
-                                        }`} style={{ width: `${item.progress}%` }}></div>
+                                            item.tien_do === 100 ? 'bg-green-500' : 
+                                            item.trang_thai === 'Lập kế hoạch' || item.trang_thai === 'Planning' ? 'bg-amber-500' : 'bg-primary-500'
+                                        }`} style={{ width: `${item.tien_do || 0}%` }}></div>
                                     </div>
-                                    <span className="text-xs font-medium w-8 text-right">{item.progress}%</span>
+                                    <span className="text-xs font-medium w-8 text-right">{item.tien_do || 0}%</span>
                                 </div>
                             </td>
                             <td className="px-6 py-4 text-slate-500 text-xs flex items-center gap-1">
-                                <Clock size={12} /> {item.date}
+                                <Clock size={12} /> {item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : 'Chưa xác định'}
                             </td>
                             <td className="px-6 py-4 text-right">
                                 <div className="flex justify-end gap-2">
                                   <button className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Xem"><Eye size={16} /></button>
                                   <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit2 size={16} /></button>
-                                  <button className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 size={16} /></button>
+                                  <button 
+                                    onClick={async () => {
+                                      if (window.confirm('Bạn có chắc muốn xóa kế hoạch này?')) {
+                                        await deleteKeHoachCaiTien(item.id!);
+                                        onRefresh();
+                                      }
+                                    }}
+                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 size={16} /></button>
                                 </div>
                             </td>
                         </tr>
@@ -210,7 +277,7 @@ const ImprovementList = ({ onCreate, onReport }: { onCreate: () => void, onRepor
             </table>
         </div>
         <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-xs text-slate-500">
-            <span>Hiển thị 3/3 kế hoạch</span>
+            <span>Hiển thị {plans.length} kế hoạch</span>
             <div className="flex gap-1">
                 <button className="px-2 py-1 border border-slate-200 rounded bg-white disabled:opacity-50" disabled>Trước</button>
                 <button className="px-2 py-1 border border-slate-200 rounded bg-white disabled:opacity-50" disabled>Sau</button>

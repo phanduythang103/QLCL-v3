@@ -32,15 +32,16 @@ CREATE TABLE bao_cao_scyk (
   nb_nn text,                                -- Người bệnh/Người nhà (checkbox)
   chung_kien1 text,                          -- Chứng kiến 1
   chung_kien2 text,                          -- Chứng kiến 2
+  trang_thai text DEFAULT 'Mới' CHECK (trang_thai IN ('Mới', 'Đang phân tích', 'Đã kết luận')), -- Trạng thái xử lý
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Policy: Cho phép tất cả người dùng đọc, chỉ owner được sửa/xóa
+-- Policy: Cho phép tất cả thao tác CRUD
 CREATE POLICY "bao_cao_scyk: Select all" ON bao_cao_scyk
   FOR SELECT USING (true);
 CREATE POLICY "bao_cao_scyk: Insert" ON bao_cao_scyk
-  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+  FOR INSERT WITH CHECK (true);
 CREATE POLICY "bao_cao_scyk: Update" ON bao_cao_scyk
-  FOR UPDATE USING (auth.uid() IS NOT NULL);
+  FOR UPDATE USING (true);
 CREATE POLICY "bao_cao_scyk: Delete" ON bao_cao_scyk
-  FOR DELETE USING (auth.uid() IS NOT NULL);
+  FOR DELETE USING (true);

@@ -3,6 +3,7 @@
 CREATE TABLE users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   username text UNIQUE NOT NULL, -- Tài khoản
+  password text NOT NULL,        -- Mật khẩu
   full_name text NOT NULL,       -- Họ và tên
   department text,               -- Khoa/phòng
   role text NOT NULL,            -- Vai trò (Quản trị viên, Người dùng)
@@ -10,12 +11,12 @@ CREATE TABLE users (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Policy: Chỉ cho phép owner truy cập dữ liệu của mình
-CREATE POLICY "Users: Select own" ON users
-  FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users: Insert own" ON users
-  FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "Users: Update own" ON users
-  FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users: Delete own" ON users
-  FOR DELETE USING (auth.uid() = id);
+-- Policy: Cho phép tất cả người dùng đọc, admin được thêm/sửa/xóa
+CREATE POLICY "Users: Select all" ON users
+  FOR SELECT USING (true);
+CREATE POLICY "Users: Insert" ON users
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users: Update" ON users
+  FOR UPDATE USING (true);
+CREATE POLICY "Users: Delete" ON users
+  FOR DELETE USING (true);

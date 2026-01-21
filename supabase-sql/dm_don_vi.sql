@@ -7,12 +7,12 @@ CREATE TABLE dm_don_vi (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Policy: Cho phép tất cả người dùng đọc, chỉ owner được sửa/xóa
+-- Policy: Cho phép tất cả thao tác CRUD
 CREATE POLICY "dm_don_vi: Select all" ON dm_don_vi
   FOR SELECT USING (true);
 CREATE POLICY "dm_don_vi: Insert" ON dm_don_vi
-  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+  FOR INSERT WITH CHECK (true);
 CREATE POLICY "dm_don_vi: Update" ON dm_don_vi
-  FOR UPDATE USING (auth.uid() IS NOT NULL);
+  FOR UPDATE USING (true);
 CREATE POLICY "dm_don_vi: Delete" ON dm_don_vi
-  FOR DELETE USING (auth.uid() IS NOT NULL);
+  FOR DELETE USING (true);

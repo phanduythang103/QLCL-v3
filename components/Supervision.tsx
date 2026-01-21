@@ -1,19 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ClipboardCheck, CheckSquare, PlayCircle, FolderClock, 
   ShieldCheck, HandMetal, LayoutGrid, FileText, Pill, Users, ArrowLeft,
-  Calendar, LayoutList, Plus, AlertCircle, Syringe, Stethoscope
+  Calendar, LayoutList, Plus, AlertCircle, Syringe, Stethoscope, RefreshCw
 } from 'lucide-react';
-import { SupervisionChecklist, SupervisionCategory } from '../types';
-
-const CHECKLISTS: SupervisionChecklist[] = [
-  { id: 'CL-001', name: 'Bảng kiểm An toàn Phẫu thuật (WHO)', category: 'SURGERY', lastChecked: '2024-06-12', complianceRate: 100 },
-  { id: 'CL-002', name: 'Giám sát tuân thủ Vệ sinh tay', category: 'HAND_HYGIENE', lastChecked: '2024-06-12', complianceRate: 85 },
-  { id: 'CL-003', name: 'Bảng kiểm 5S tại khoa lâm sàng', category: '5S', lastChecked: '2024-06-10', complianceRate: 72 },
-  { id: 'CL-004', name: 'Giám sát Hồ sơ bệnh án nội trú', category: 'RECORDS', lastChecked: '2024-06-11', complianceRate: 94 },
-  { id: 'CL-005', name: 'Công khai thuốc cho người bệnh', category: 'DRUGS', lastChecked: '2024-06-09', complianceRate: 98 },
-  { id: 'CL-006', name: 'Kiểm tra 55 chế độ công tác', category: 'PROFESSIONAL', lastChecked: '2024-06-08', complianceRate: 90 },
-];
+import { SupervisionCategory } from '../types';
+import { fetchLichGiamSat, LichGiamSat } from '../readLichGiamSat';
+import { fetchPhieuGiamSat, PhieuGiamSat } from '../readPhieuGiamSat';
 
 interface Props {
   category: SupervisionCategory;
@@ -21,7 +14,30 @@ interface Props {
 }
 
 export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => {
+  const [schedules, setSchedules] = useState<LichGiamSat[]>([]);
+  const [checklists, setChecklists] = useState<PhieuGiamSat[]>([]);
+  const [loading, setLoading] = useState(true);
   const selectedCategory = category;
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [lichData, phieuData] = await Promise.all([
+        fetchLichGiamSat(),
+        fetchPhieuGiamSat()
+      ]);
+      setSchedules(lichData || []);
+      setChecklists(phieuData || []);
+    } catch (err) {
+      console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const supervisionTypes = [
     { 
@@ -288,31 +304,40 @@ export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => 
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
                 <ClipboardCheck size={20} className="text-primary-600" />
                 Hoạt động giám sát gần đây
+                <button onClick={loadData} className="ml-2 text-slate-400 hover:text-primary-600">
+                  <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                </button>
             </h3>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
-                    {CHECKLISTS.map((list) => (
+                    {loading && <div className="p-4 text-center text-slate-400">Đang tải...</div>}
+                    {!loading && checklists.length === 0 && (
+                      <div className="p-4 text-center text-slate-400 italic">Chưa có phiếu giám sát nào</div>
+                    )}
+                    {!loading && checklists.map((list) => (
                         <div key={list.id} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center group">
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-lg ${
-                                    list.complianceRate >= 90 ? 'bg-primary-50 text-primary-600' : 
-                                    list.complianceRate >= 75 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
+                                    (list.ty_le_tuan_thu || 0) >= 90 ? 'bg-primary-50 text-primary-600' : 
+                                    (list.ty_le_tuan_thu || 0) >= 75 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
                                 }`}>
                                     <CheckSquare size={18} />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-slate-800 text-sm">{list.name}</p>
+                                    <p className="font-medium text-slate-800 text-sm">{list.ten_phieu}</p>
                                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                                        <FolderClock size={12} /> {list.lastChecked}
+                                        <FolderClock size={12} /> 
+                                        {list.ngay_kiem_tra ? new Date(list.ngay_kiem_tra).toLocaleDateString('vi-VN') : 'Chưa xác định'}
+                                        {list.khoa_phong && <span> • {list.khoa_phong}</span>}
                                     </div>
                                 </div>
                             </div>
                             <div className="text-right">
                                 <span className={`font-bold text-sm ${
-                                    list.complianceRate >= 90 ? 'text-primary-600' : 
-                                    list.complianceRate >= 75 ? 'text-amber-600' : 'text-red-600'
+                                    (list.ty_le_tuan_thu || 0) >= 90 ? 'text-primary-600' : 
+                                    (list.ty_le_tuan_thu || 0) >= 75 ? 'text-amber-600' : 'text-red-600'
                                 }`}>
-                                    {list.complianceRate}%
+                                    {list.ty_le_tuan_thu || 0}%
                                 </span>
                                 <p className="text-[10px] text-slate-400">Tuân thủ</p>
                             </div>
@@ -332,25 +357,22 @@ export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => 
                 Lịch giám sát tuần này
             </h3>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-                <ol className="relative border-l border-slate-200 ml-2">                  
-                    <li className="mb-6 ml-4">
-                    <div className="absolute w-3 h-3 bg-primary-500 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                    <time className="mb-1 text-xs font-normal text-slate-400">Hôm nay, 14:00</time>
-                    <h3 className="text-sm font-semibold text-slate-900">Giám sát Hồ sơ bệnh án</h3>
-                    <p className="text-xs text-slate-500">Khoa Nội Tim mạch</p>
-                    </li>
-                    <li className="mb-6 ml-4">
-                    <div className="absolute w-3 h-3 bg-slate-200 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                    <time className="mb-1 text-xs font-normal text-slate-400">Ngày mai, 09:00</time>
-                    <h3 className="text-sm font-semibold text-slate-900">Kiểm tra 5S</h3>
-                    <p className="text-xs text-slate-500">Toàn viện (Khu nhà A)</p>
-                    </li>
-                    <li className="ml-4">
-                    <div className="absolute w-3 h-3 bg-slate-200 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                    <time className="mb-1 text-xs font-normal text-slate-400">Thứ Sáu, 08:30</time>
-                    <h3 className="text-sm font-semibold text-slate-900">Giám sát Vệ sinh tay</h3>
-                    <p className="text-xs text-slate-500">Khoa Hồi sức tích cực</p>
-                    </li>
+                <ol className="relative border-l border-slate-200 ml-2">
+                    {loading && <li className="ml-4 text-slate-400">Đang tải...</li>}
+                    {!loading && schedules.length === 0 && (
+                      <li className="ml-4 text-slate-400 italic">Chưa có lịch giám sát</li>
+                    )}
+                    {!loading && schedules.slice(0, 3).map((schedule, idx) => (
+                      <li key={schedule.id} className={`${idx < schedules.length - 1 ? 'mb-6' : ''} ml-4`}>
+                        <div className={`absolute w-3 h-3 ${idx === 0 ? 'bg-primary-500' : 'bg-slate-200'} rounded-full mt-1.5 -left-1.5 border border-white`}></div>
+                        <time className="mb-1 text-xs font-normal text-slate-400">
+                          {schedule.ngay_giam_sat ? new Date(schedule.ngay_giam_sat).toLocaleDateString('vi-VN') : 'Chưa xác định'}
+                          {schedule.gio_bat_dau && `, ${schedule.gio_bat_dau}`}
+                        </time>
+                        <h3 className="text-sm font-semibold text-slate-900">{schedule.noi_dung || 'Giám sát chung'}</h3>
+                        <p className="text-xs text-slate-500">{schedule.khoa_phong || schedule.don_vi || 'Chưa xác định'}</p>
+                      </li>
+                    ))}
                 </ol>
                 <button className="w-full mt-4 py-2 border border-primary-200 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors">
                     Xem toàn bộ lịch

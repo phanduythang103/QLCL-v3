@@ -13,12 +13,12 @@ CREATE TABLE bien_ban_xac_minh_su_co (
   updated_at timestamp with time zone DEFAULT now()        -- Thời gian cập nhật
 );
 
--- Policy: Cho phép tất cả người dùng đọc, chỉ owner được sửa/xóa
+-- Policy: Cho phép tất cả thao tác CRUD
 CREATE POLICY "bien_ban_xac_minh_su_co: Select all" ON bien_ban_xac_minh_su_co
   FOR SELECT USING (true);
 CREATE POLICY "bien_ban_xac_minh_su_co: Insert" ON bien_ban_xac_minh_su_co
-  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+  FOR INSERT WITH CHECK (true);
 CREATE POLICY "bien_ban_xac_minh_su_co: Update" ON bien_ban_xac_minh_su_co
-  FOR UPDATE USING (auth.uid() IS NOT NULL);
+  FOR UPDATE USING (true);
 CREATE POLICY "bien_ban_xac_minh_su_co: Delete" ON bien_ban_xac_minh_su_co
-  FOR DELETE USING (auth.uid() IS NOT NULL);
+  FOR DELETE USING (true);

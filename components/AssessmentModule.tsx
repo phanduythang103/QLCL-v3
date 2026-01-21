@@ -1,46 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ClipboardList, Award, ChevronRight, FileCheck, Star, 
   Upload, Plus, FileSpreadsheet, Search, Filter, Download,
   MoreHorizontal, CheckCircle2, AlertCircle, Paperclip,
-  UserPlus, FileText, Printer, Save
+  UserPlus, FileText, Printer, Save, Eye, Edit2, Trash2, RefreshCw
 } from 'lucide-react';
+import { 
+  fetchBo83TieuChi, Bo83TieuChi,
+  fetchBoTieuChuan, BoTieuChuan, deleteBoTieuChuan,
+  fetchKetQuaDanhGia, KetQuaDanhGia
+} from '../readDanhGiaChatLuong';
 
-// --- Types & Mock Data ---
+// --- Types ---
 
 type AssessmentTab = 'CRITERIA_83' | 'BASIC';
-
-// Mock Data for 83 Criteria Summary
-const CRITERIA_GROUPS = [
-  { id: 'A', name: 'Phần A: Hướng đến người bệnh', score: 4.5, total: 5, items: 19 },
-  { id: 'B', name: 'Phần B: Phát triển nguồn nhân lực', score: 3.8, total: 5, items: 14 },
-  { id: 'C', name: 'Phần C: Hoạt động chuyên môn', score: 4.0, total: 5, items: 35 },
-  { id: 'D', name: 'Phần D: Cải tiến chất lượng', score: 3.5, total: 5, items: 11 },
-  { id: 'E', name: 'Phần E: Đặc thù chuyên khoa', score: 4.2, total: 5, items: 4 },
-];
-
-// Mock Data for 83 Criteria Detailed Scoring
-const SCORES_83 = [
-  { code: 'A1.1', name: 'Người bệnh được chỉ dẫn rõ ràng, đón tiếp niềm nở', assignedDept: 'Phòng KHTH', selfScore: 4, officialScore: 4, evidenceCount: 3, status: 'DONE' },
-  { code: 'A1.2', name: 'Thủ tục khám bệnh, chữa bệnh cải tiến, đơn giản', assignedDept: 'Khoa Khám bệnh', selfScore: 3, officialScore: 3, evidenceCount: 1, status: 'DONE' },
-  { code: 'B2.1', name: 'Nhân viên y tế được đào tạo về kỹ năng giao tiếp', assignedDept: 'Phòng TCCB', selfScore: 5, officialScore: 4, evidenceCount: 5, status: 'REVIEW' },
-  { code: 'C3.1', name: 'Bảo đảm an toàn sinh học tại phòng xét nghiệm', assignedDept: 'Khoa Xét nghiệm', selfScore: 0, officialScore: 0, evidenceCount: 0, status: 'PENDING' },
-  { code: 'C4.2', name: 'Tuân thủ quy trình kiểm soát nhiễm khuẩn', assignedDept: 'Khoa KSNK', selfScore: 4, officialScore: 0, evidenceCount: 2, status: 'DRAFT' },
-];
-
-// Mock Data for Basic Standards (Bộ tiêu chuẩn cơ bản)
-const BASIC_STANDARDS = [
-  { id: 1, code: 'TC-VS', name: 'Tiêu chuẩn Vệ sinh bệnh viện (Xanh - Sạch - Đẹp)', inCharge: 'Phòng HCQT', frequency: 'Hàng tháng', status: 'ACTIVE' },
-  { id: 2, code: 'TC-ATNB', name: 'Tiêu chuẩn An toàn người bệnh cơ bản', inCharge: 'Phòng KHTH', frequency: 'Hàng quý', status: 'ACTIVE' },
-  { id: 3, code: 'TC-DD', name: 'Tiêu chuẩn Chăm sóc người bệnh toàn diện', inCharge: 'Phòng Điều dưỡng', frequency: 'Hàng tháng', status: 'ACTIVE' },
-  { id: 4, code: 'TC-GT', name: 'Tiêu chuẩn Giao tiếp ứng xử', inCharge: 'Phòng TCCB', frequency: 'Đột xuất', status: 'ACTIVE' },
-];
-
-const BASIC_EVALUATIONS = [
-    { id: 1, standard: 'Tiêu chuẩn Vệ sinh bệnh viện', unit: 'Khoa Nội Tiêu hóa', date: '15/06/2024', score: 95, result: 'Đạt' },
-    { id: 2, standard: 'Tiêu chuẩn Vệ sinh bệnh viện', unit: 'Khoa Ngoại Dã chiến', date: '15/06/2024', score: 88, result: 'Đạt' },
-    { id: 3, standard: 'Tiêu chuẩn An toàn người bệnh cơ bản', unit: 'Khoa Hồi sức tích cực', date: '12/06/2024', score: 92, result: 'Đạt' },
-];
 
 export const AssessmentModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AssessmentTab>('CRITERIA_83');
@@ -123,7 +96,40 @@ export const AssessmentModule: React.FC = () => {
 
 // --- View 1: Bộ 83 Tiêu chí ---
 const Criteria83View = () => {
-  const avgScore = (CRITERIA_GROUPS.reduce((acc, curr) => acc + curr.score, 0) / CRITERIA_GROUPS.length).toFixed(2);
+  const [criteria, setCriteria] = useState<Bo83TieuChi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchBo83TieuChi();
+      setCriteria(data);
+    } catch (err) {
+      setError('Không thể tải dữ liệu tiêu chí. Vui lòng thử lại.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Calculate group scores dynamically
+  const groupScores = ['A', 'B', 'C', 'D', 'E'].map(nhom => {
+    const groupItems = criteria.filter(c => c.nhom === nhom);
+    const avgScore = groupItems.length > 0 
+      ? groupItems.reduce((acc, c) => acc + (c.diem_tu_cham || 0), 0) / groupItems.length 
+      : 0;
+    return { id: nhom, score: Number(avgScore.toFixed(1)), items: groupItems.length };
+  });
+
+  const avgScore = groupScores.length > 0 
+    ? (groupScores.reduce((acc, g) => acc + g.score, 0) / groupScores.length).toFixed(2)
+    : '0.00';
   
   return (
     <div className="space-y-6">
@@ -138,7 +144,7 @@ const Criteria83View = () => {
                   <span className="text-2xl font-bold text-primary-600">{avgScore}/5.0</span>
               </div>
               <div className="grid grid-cols-5 gap-2">
-                {CRITERIA_GROUPS.map((group) => (
+                {groupScores.map((group) => (
                     <div key={group.id} className="text-center p-2 rounded-lg bg-slate-50 hover:bg-primary-50 transition-colors cursor-pointer border border-transparent hover:border-primary-100">
                         <div className="text-xs font-bold text-slate-500 mb-1">{group.id}</div>
                         <div className={`text-lg font-bold ${
@@ -202,46 +208,57 @@ const Criteria83View = () => {
                    </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                   {SCORES_83.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                         <td className="px-6 py-4 font-bold text-primary-700">{item.code}</td>
+                   {loading && (
+                      <tr><td colSpan={8} className="px-6 py-8 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
+                   )}
+                   {error && (
+                      <tr><td colSpan={8} className="px-6 py-8 text-center text-red-600">{error}</td></tr>
+                   )}
+                   {!loading && !error && criteria.length === 0 && (
+                      <tr><td colSpan={8} className="px-6 py-8 text-center text-slate-400 italic">Chưa có tiêu chí nào</td></tr>
+                   )}
+                   {!loading && !error && criteria.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors">
+                         <td className="px-6 py-4 font-bold text-primary-700">{item.ma_tieu_chi}</td>
                          <td className="px-6 py-4 text-slate-700 font-medium">
-                            {item.name}
-                            <div className="text-[10px] text-slate-400 font-normal mt-0.5">Cập nhật: 12/06/2024</div>
+                            {item.ten_tieu_chi}
+                            <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                              Cập nhật: {item.ngay_cap_nhat ? new Date(item.ngay_cap_nhat).toLocaleDateString('vi-VN') : 'Chưa xác định'}
+                            </div>
                          </td>
                          <td className="px-6 py-4">
                             <div className="flex items-center gap-1.5 text-xs bg-slate-100 px-2 py-1 rounded w-fit">
                                 <UserPlus size={12} className="text-slate-500" />
-                                <span className="text-slate-700 font-medium">{item.assignedDept}</span>
+                                <span className="text-slate-700 font-medium">{item.don_vi_phu_trach || 'Chưa phân công'}</span>
                             </div>
                          </td>
                          <td className="px-6 py-4 text-center">
-                            {item.status !== 'PENDING' ? (
-                                <span className="inline-block w-8 h-8 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold leading-8">{item.selfScore}</span>
+                            {item.trang_thai !== 'PENDING' && item.diem_tu_cham ? (
+                                <span className="inline-block w-8 h-8 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold leading-8">{item.diem_tu_cham}</span>
                             ) : <span className="text-slate-300">-</span>}
                          </td>
                          <td className="px-6 py-4 text-center">
-                            {item.officialScore > 0 ? (
+                            {item.diem_doan_cham && item.diem_doan_cham > 0 ? (
                                 <span className={`inline-block w-8 h-8 rounded-full font-bold leading-8 text-white ${
-                                    item.officialScore >= 4 ? 'bg-green-500' : item.officialScore >= 3 ? 'bg-amber-500' : 'bg-red-500'
+                                    item.diem_doan_cham >= 4 ? 'bg-green-500' : item.diem_doan_cham >= 3 ? 'bg-amber-500' : 'bg-red-500'
                                 }`}>
-                                    {item.officialScore}
+                                    {item.diem_doan_cham}
                                 </span>
                             ) : <span className="text-slate-300">-</span>}
                          </td>
                          <td className="px-6 py-4 text-center">
                             <button className={`flex items-center justify-center gap-1 mx-auto px-2 py-1 rounded text-xs transition-colors ${
-                                item.evidenceCount > 0 ? 'text-primary-600 bg-primary-50 hover:bg-primary-100' : 'text-slate-400 hover:bg-slate-100'
+                                (item.so_minh_chung || 0) > 0 ? 'text-primary-600 bg-primary-50 hover:bg-primary-100' : 'text-slate-400 hover:bg-slate-100'
                             }`}>
                                 <Paperclip size={14} />
-                                <span className="font-bold">{item.evidenceCount}</span>
+                                <span className="font-bold">{item.so_minh_chung || 0}</span>
                             </button>
                          </td>
                          <td className="px-6 py-4 text-center">
-                            {item.status === 'DONE' && <span className="text-[10px] font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full">Hoàn thành</span>}
-                            {item.status === 'REVIEW' && <span className="text-[10px] font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded-full">Đang rà soát</span>}
-                            {item.status === 'DRAFT' && <span className="text-[10px] font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Đang chấm</span>}
-                            {item.status === 'PENDING' && <span className="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-500 rounded-full">Chưa chấm</span>}
+                            {item.trang_thai === 'DONE' && <span className="text-[10px] font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full">Hoàn thành</span>}
+                            {item.trang_thai === 'REVIEW' && <span className="text-[10px] font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded-full">Đang rà soát</span>}
+                            {item.trang_thai === 'DRAFT' && <span className="text-[10px] font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Đang chấm</span>}
+                            {item.trang_thai === 'PENDING' && <span className="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-500 rounded-full">Chưa chấm</span>}
                          </td>
                          <td className="px-6 py-4 text-right">
                             <button className="flex items-center gap-1 ml-auto text-primary-600 hover:bg-primary-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border border-primary-200 hover:border-primary-300">
@@ -255,11 +272,10 @@ const Criteria83View = () => {
           </div>
           
           <div className="p-4 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex justify-between">
-             <span>Hiển thị 5/83 tiêu chí</span>
-             <div className="flex gap-2">
-                 <button disabled className="px-2 py-1 bg-white border border-slate-200 rounded opacity-50">Trước</button>
-                 <button className="px-2 py-1 bg-white border border-slate-200 rounded hover:bg-slate-100">Sau</button>
-             </div>
+             <span>Hiển thị {criteria.length}/83 tiêu chí</span>
+             <button onClick={loadData} className="flex items-center gap-1 text-primary-600 hover:underline">
+               <RefreshCw size={12} /> Làm mới
+             </button>
           </div>
        </div>
     </div>
@@ -268,6 +284,44 @@ const Criteria83View = () => {
 
 // --- View 2: Bộ Tiêu chuẩn Cơ bản ---
 const BasicStandardsView = () => {
+  const [standards, setStandards] = useState<BoTieuChuan[]>([]);
+  const [evaluations, setEvaluations] = useState<KetQuaDanhGia[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [stdData, evalData] = await Promise.all([
+        fetchBoTieuChuan(),
+        fetchKetQuaDanhGia()
+      ]);
+      setStandards(stdData);
+      setEvaluations(evalData);
+    } catch (err) {
+      setError('Không thể tải dữ liệu. Vui lòng thử lại.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Bạn có chắc muốn xóa bộ tiêu chuẩn này?')) {
+      try {
+        await deleteBoTieuChuan(id);
+        loadData();
+      } catch (err) {
+        console.error('Lỗi xóa:', err);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* List of Standards */}
@@ -294,31 +348,46 @@ const BasicStandardsView = () => {
                  </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
-                 {BASIC_STANDARDS.map(std => (
+                 {loading && (
+                   <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
+                 )}
+                 {error && (
+                   <tr><td colSpan={5} className="px-6 py-8 text-center text-red-600">{error}</td></tr>
+                 )}
+                 {!loading && !error && standards.length === 0 && (
+                   <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400 italic">Chưa có bộ tiêu chuẩn nào</td></tr>
+                 )}
+                 {!loading && !error && standards.map(std => (
                    <tr key={std.id} className="hover:bg-slate-50 transition-colors">
                      <td className="px-6 py-4">
-                       <div className="font-bold text-slate-800">{std.name}</div>
-                       <div className="text-xs text-slate-500 font-mono mt-1">{std.code}</div>
+                       <div className="font-bold text-slate-800">{std.ten_tieu_chuan}</div>
+                       <div className="text-xs text-slate-500 font-mono mt-1">{std.ma_tieu_chuan}</div>
                      </td>
                      <td className="px-6 py-4">
                         <span className="flex items-center gap-2 text-slate-700">
                            <UserPlus size={14} className="text-slate-400" />
-                           {std.inCharge}
+                           {std.don_vi_phu_trach || 'Chưa phân công'}
                         </span>
                      </td>
                      <td className="px-6 py-4 text-slate-600">
                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
-                         {std.frequency}
+                         {std.tan_suat || 'Chưa xác định'}
                        </span>
                      </td>
                      <td className="px-6 py-4 text-center">
-                        <span className="text-[10px] font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full">Đang áp dụng</span>
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+                          std.trang_thai === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          {std.trang_thai === 'ACTIVE' ? 'Đang áp dụng' : 'Ngừng áp dụng'}
+                        </span>
                      </td>
                      <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
                           <button className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Xem"><Eye size={16} /></button>
                           <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit2 size={16} /></button>
-                          <button className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 size={16} /></button>
+                          <button 
+                            onClick={() => handleDelete(std.id!)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 size={16} /></button>
                         </div>
                      </td>
                    </tr>
@@ -349,15 +418,25 @@ const BasicStandardsView = () => {
                  </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
-                 {BASIC_EVALUATIONS.map(evalItem => (
+                 {loading && (
+                   <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
+                 )}
+                 {!loading && evaluations.length === 0 && (
+                   <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400 italic">Chưa có kết quả đánh giá nào</td></tr>
+                 )}
+                 {!loading && evaluations.map(evalItem => (
                    <tr key={evalItem.id} className="hover:bg-slate-50">
-                     <td className="px-6 py-3 font-bold text-slate-800">{evalItem.unit}</td>
-                     <td className="px-6 py-3 text-slate-600">{evalItem.standard}</td>
-                     <td className="px-6 py-3 text-slate-500 text-xs">{evalItem.date}</td>
-                     <td className="px-6 py-3 text-center font-bold text-primary-600">{evalItem.score}/100</td>
+                     <td className="px-6 py-3 font-bold text-slate-800">{evalItem.don_vi_duoc_danh_gia}</td>
+                     <td className="px-6 py-3 text-slate-600">{evalItem.ten_tieu_chuan}</td>
+                     <td className="px-6 py-3 text-slate-500 text-xs">
+                       {evalItem.ngay_danh_gia ? new Date(evalItem.ngay_danh_gia).toLocaleDateString('vi-VN') : ''}
+                     </td>
+                     <td className="px-6 py-3 text-center font-bold text-primary-600">{evalItem.diem_so}/100</td>
                      <td className="px-6 py-3 text-right">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                             {evalItem.result}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
+                          evalItem.ket_qua === 'Đạt' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                             {evalItem.ket_qua}
                         </span>
                      </td>
                    </tr>
@@ -365,8 +444,11 @@ const BasicStandardsView = () => {
                </tbody>
             </table>
           </div>
-          <div className="p-4 bg-slate-50 text-center">
-             <button className="text-sm text-slate-500 hover:text-primary-600 font-medium">Xem toàn bộ lịch sử</button>
+          <div className="p-4 bg-slate-50 text-center flex justify-between items-center">
+             <span className="text-xs text-slate-500">{evaluations.length} kết quả đánh giá</span>
+             <button onClick={loadData} className="text-sm text-primary-600 hover:underline font-medium flex items-center gap-1">
+               <RefreshCw size={12} /> Làm mới
+             </button>
           </div>
         </div>
     </div>

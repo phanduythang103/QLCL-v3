@@ -5,6 +5,11 @@ import {
   ShieldCheck, Save, Check, Eye, Pencil, Trash
 } from 'lucide-react';
 import { ModuleType } from '../types';
+import UsersTable from './settings/UsersTable';
+import DeptTable from './settings/DeptTable';
+import PositionTable from './settings/PositionTable';
+import RoleTable from './settings/RoleTable';
+import ScheduleTable from './settings/ScheduleTable';
 
 type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE';
 
@@ -61,13 +66,9 @@ export const SettingsModule: React.FC = () => {
               </h2>
               <p className="text-sm text-slate-500">Thiết lập và quản lý dữ liệu danh mục hệ thống.</p>
             </div>
-            {activeTab === 'PERMISSIONS' ? (
+            {activeTab === 'PERMISSIONS' && (
               <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm">
                 <Save size={16} /> Lưu cấu hình
-              </button>
-            ) : activeTab !== 'THEME' && (
-              <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm">
-                <Plus size={16} /> Thêm mới
               </button>
             )}
          </div>
@@ -200,39 +201,15 @@ const renderContent = (tab: SettingTab) => {
     case 'PERMISSIONS':
       return <PermissionManager />;
     case 'USER':
-      return <GenericTable columns={['Tài khoản', 'Họ và tên', 'Khoa/Phòng', 'Vai trò', 'Trạng thái']} 
-        data={[
-          ['admin', 'Nguyễn Văn A', 'Ban QLCL', 'Quản trị viên', 'Hoạt động'],
-          ['user1', 'Trần Thị B', 'Khoa Nội', 'Người dùng', 'Hoạt động'],
-          ['user2', 'Lê Văn C', 'Khoa Ngoại', 'Người dùng', 'Khóa'],
-        ]} />;
+      return <UsersTable />;
     case 'DEPT':
-      return <GenericTable columns={['Mã ĐV', 'Tên đơn vị', 'Loại hình', 'Trưởng đơn vị', 'Ghi chú']} 
-        data={[
-          ['K01', 'Khoa Nội Tiêu hóa', 'Lâm sàng', 'TS. Lê Văn C', ''],
-          ['K02', 'Khoa Ngoại Dã chiến', 'Lâm sàng', 'ThS. Hoàng Văn E', ''],
-          ['P01', 'Phòng Kế hoạch tổng hợp', 'Chức năng', 'Đại tá Nguyễn Văn X', ''],
-        ]} />;
+      return <DeptTable />;
     case 'POSITION':
-       return <GenericTable columns={['Mã CV', 'Tên chức vụ', 'Mô tả', 'Thứ tự hiển thị']} 
-        data={[
-          ['GD', 'Giám đốc', 'Lãnh đạo cao nhất', '1'],
-          ['PGD', 'Phó Giám đốc', 'Ban Giám đốc', '2'],
-          ['TK', 'Chủ nhiệm khoa', 'Lãnh đạo khoa', '3'],
-        ]} />;
+      return <PositionTable />;
+    case 'ROLE':
+      return <RoleTable />;
     case 'SCHEDULE':
-       return (
-         <div className="space-y-4">
-           <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-blue-800 text-sm mb-4">
-             <p>Cấu hình lịch giám sát định kỳ cho các khoa phòng. Hệ thống sẽ tự động gửi thông báo nhắc nhở.</p>
-           </div>
-           <GenericTable columns={['Tên đợt giám sát', 'Tần suất', 'Đối tượng', 'Ngày bắt đầu', 'Trạng thái']} 
-             data={[
-               ['Giám sát Vệ sinh tay', 'Hàng tuần', 'Toàn viện', '01/01/2024', 'Đang chạy'],
-               ['Kiểm tra Hồ sơ bệnh án', 'Hàng tháng', 'Khối Nội', '15/06/2024', 'Sắp tới'],
-             ]} />
-         </div>
-       );
+      return <ScheduleTable />;
     default:
       return (
         <div className="flex flex-col items-center justify-center h-full text-slate-400">
@@ -244,36 +221,6 @@ const renderContent = (tab: SettingTab) => {
       );
   }
 };
-
-const GenericTable = ({ columns, data }: { columns: string[], data: string[][] }) => (
-  <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-    <table className="w-full text-sm text-left">
-      <thead className="bg-primary-600 text-white font-bold uppercase text-xs border-b border-primary-700">
-        <tr>
-          <th className="px-6 py-4 w-12 text-center">#</th>
-          {columns.map((col, idx) => <th key={idx} className="px-6 py-4">{col}</th>)}
-          <th className="px-6 py-4 text-right">Thao tác</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-slate-100">
-        {data.map((row, rIdx) => (
-          <tr key={rIdx} className="hover:bg-slate-50">
-            <td className="px-6 py-4 text-center text-slate-500">{rIdx + 1}</td>
-            {row.map((cell, cIdx) => (
-              <td key={cIdx} className="px-6 py-4 text-slate-700">{cell}</td>
-            ))}
-            <td className="px-6 py-4 text-right">
-              <div className="flex justify-end gap-2">
-                <button className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"><Edit2 size={16} /></button>
-                <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"><Trash2 size={16} /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
 
 const SettingsIcon = ({ tab }: { tab: SettingTab }) => {
    switch(tab) {

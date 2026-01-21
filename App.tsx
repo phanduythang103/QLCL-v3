@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X } from 'lucide-react';
-import { analyzeWithGemini } from './geminiClient';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';
 import { Incidents } from './components/Incidents';
@@ -12,19 +11,6 @@ import { ImprovementModule } from './components/ImprovementModule';
 import { IndicatorsModule } from './components/IndicatorsModule';
 import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
-import UsersList from './components/UsersList';
-import BaoCaoScykList from './components/BaoCaoScykList';
-import BienBanChuKyList from './components/BienBanChuKyList';
-import BienBanThanhVienList from './components/BienBanThanhVienList';
-import ChiaSeList from './components/ChiaSeList';
-import CoQuanBanHanhList from './components/CoQuanBanHanhList';
-import DmDonViList from './components/DmDonViList';
-import DmChucVuList from './components/DmChucVuList';
-import DmVaiTroQlclList from './components/DmVaiTroQlclList';
-import LichGiamSatList from './components/LichGiamSatList';
-import ThuVienVbList from './components/ThuVienVbList';
-import ThuVienVideoList from './components/ThuVienVideoList';
-import TimHieuPhanTichScykList from './components/TimHieuPhanTichScykList';
 
 // --- Sidebar Navigation Item ---
 const NavItem = ({ 
@@ -87,22 +73,6 @@ const App: React.FC = () => {
     setMobileSidebarOpen(false); // Close mobile sidebar on selection
   };
 
-  // --- Gemini AI State ---
-  const [aiInput, setAiInput] = useState('');
-  const [aiResult, setAiResult] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleGeminiAnalyze = async () => {
-    setLoading(true);
-    try {
-      const result = await analyzeWithGemini(aiInput);
-      setAiResult(result);
-    } catch (e) {
-      setAiResult('Lỗi: ' + (e as any).message);
-    }
-    setLoading(false);
-  };
-
   const renderContent = () => {
     switch (currentModule) {
       case ModuleType.DASHBOARD: return <Dashboard />;
@@ -114,26 +84,7 @@ const App: React.FC = () => {
       case ModuleType.IMPROVEMENT: return <ImprovementModule />;
       case ModuleType.INDICATORS: return <IndicatorsModule />;
       case ModuleType.REPORTS: return <ReportsModule />;
-      case ModuleType.SETTINGS: return (
-        <>
-          <SettingsModule />
-          <div style={{marginTop: 32}}>
-            <UsersList />
-            <div style={{marginTop: 32}}><BaoCaoScykList /></div>
-            <div style={{marginTop: 32}}><BienBanChuKyList /></div>
-            <div style={{marginTop: 32}}><BienBanThanhVienList /></div>
-            <div style={{marginTop: 32}}><ChiaSeList /></div>
-            <div style={{marginTop: 32}}><CoQuanBanHanhList /></div>
-            <div style={{marginTop: 32}}><DmDonViList /></div>
-            <div style={{marginTop: 32}}><DmChucVuList /></div>
-            <div style={{marginTop: 32}}><DmVaiTroQlclList /></div>
-            <div style={{marginTop: 32}}><LichGiamSatList /></div>
-            <div style={{marginTop: 32}}><ThuVienVbList /></div>
-            <div style={{marginTop: 32}}><ThuVienVideoList /></div>
-            <div style={{marginTop: 32}}><TimHieuPhanTichScykList /></div>
-          </div>
-        </>
-      );
+      case ModuleType.SETTINGS: return <SettingsModule />;
       default: return <Dashboard />;
     }
   };
@@ -439,15 +390,6 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
           <div className="max-w-7xl mx-auto pb-10">
             {renderContent()}
-            {/* Gemini AI Phân tích */}
-            <div style={{padding:16, background:'#f8fafc', borderRadius:8, margin:'16px 0'}}>
-              <h2 style={{fontWeight:600, fontSize:18, marginBottom:8}}>Phân tích AI với Gemini</h2>
-              <input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Nhập nội dung cần phân tích..." style={{width:'60%',padding:8}} />
-              <button onClick={handleGeminiAnalyze} disabled={loading} style={{marginLeft:8,padding:'8px 16px'}}>
-                {loading ? 'Đang phân tích...' : 'Phân tích'}
-              </button>
-              <div style={{marginTop:12,whiteSpace:'pre-line',color:'#334155'}}>{aiResult}</div>
-            </div>
           </div>
           <div className="text-center text-xs text-slate-400 pb-4">
             <p>© 2024 Bệnh viện Quân y 103. Hệ thống Hỗ trợ Quản lý Chất lượng.</p>

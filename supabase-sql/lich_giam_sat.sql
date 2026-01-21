@@ -10,12 +10,12 @@ CREATE TABLE lich_giam_sat (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Policy: Cho phép tất cả người dùng đọc, chỉ owner được sửa/xóa
+-- Policy: Cho phép tất cả thao tác CRUD
 CREATE POLICY "lich_giam_sat: Select all" ON lich_giam_sat
   FOR SELECT USING (true);
 CREATE POLICY "lich_giam_sat: Insert" ON lich_giam_sat
-  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+  FOR INSERT WITH CHECK (true);
 CREATE POLICY "lich_giam_sat: Update" ON lich_giam_sat
-  FOR UPDATE USING (auth.uid() IS NOT NULL);
+  FOR UPDATE USING (true);
 CREATE POLICY "lich_giam_sat: Delete" ON lich_giam_sat
-  FOR DELETE USING (auth.uid() IS NOT NULL);
+  FOR DELETE USING (true);

@@ -25,12 +25,12 @@ CREATE TABLE tim_hieu_phan_tich_scyk (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Policy: Cho phép tất cả người dùng đọc, chỉ owner được sửa/xóa
+-- Policy: Cho phép tất cả thao tác CRUD
 CREATE POLICY "tim_hieu_phan_tich_scyk: Select all" ON tim_hieu_phan_tich_scyk
   FOR SELECT USING (true);
 CREATE POLICY "tim_hieu_phan_tich_scyk: Insert" ON tim_hieu_phan_tich_scyk
-  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+  FOR INSERT WITH CHECK (true);
 CREATE POLICY "tim_hieu_phan_tich_scyk: Update" ON tim_hieu_phan_tich_scyk
-  FOR UPDATE USING (auth.uid() IS NOT NULL);
+  FOR UPDATE USING (true);
 CREATE POLICY "tim_hieu_phan_tich_scyk: Delete" ON tim_hieu_phan_tich_scyk
-  FOR DELETE USING (auth.uid() IS NOT NULL);
+  FOR DELETE USING (true);
