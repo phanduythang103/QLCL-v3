@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  Users, Building, Briefcase, Award, FileBadge, 
+import {
+  Users, Building, Briefcase, Award, FileBadge,
   Layout, Bell, CalendarClock, ChevronRight, Plus, Edit2, Trash2,
   ShieldCheck, Save, Check, Eye, Pencil, Trash
 } from 'lucide-react';
@@ -10,6 +10,7 @@ import DeptTable from './settings/DeptTable';
 import PositionTable from './settings/PositionTable';
 import RoleTable from './settings/RoleTable';
 import ScheduleTable from './settings/ScheduleTable';
+import AuthorityTable from './settings/AuthorityTable';
 
 type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE';
 
@@ -40,11 +41,10 @@ export const SettingsModule: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as SettingTab)}
-              className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-all mb-1 ${
-                activeTab === item.id 
-                  ? 'bg-primary-50 text-primary-700 shadow-sm' 
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+              className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-all mb-1 ${activeTab === item.id
+                ? 'bg-primary-50 text-primary-700 shadow-sm'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
             >
               <div className="flex items-center gap-3">
                 {item.icon}
@@ -58,30 +58,29 @@ export const SettingsModule: React.FC = () => {
 
       {/* Content Area */}
       <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-         {/* Header of Content */}
-         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">
-                {menuItems.find(i => i.id === activeTab)?.label}
-              </h2>
-              <p className="text-sm text-slate-500">Thiết lập và quản lý dữ liệu danh mục hệ thống.</p>
-            </div>
-            {activeTab === 'PERMISSIONS' && (
-              <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm">
-                <Save size={16} /> Lưu cấu hình
-              </button>
-            )}
-         </div>
+        {/* Header of Content */}
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">
+              {menuItems.find(i => i.id === activeTab)?.label}
+            </h2>
+            <p className="text-sm text-slate-500">Thiết lập và quản lý dữ liệu danh mục hệ thống.</p>
+          </div>
+          {activeTab === 'PERMISSIONS' && (
+            <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm">
+              <Save size={16} /> Lưu cấu hình
+            </button>
+          )}
+        </div>
 
-         {/* Body of Content */}
-         <div className="flex-1 p-6 overflow-y-auto bg-slate-50/30">
-            {renderContent(activeTab)}
-         </div>
+        {/* Body of Content */}
+        <div className="flex-1 p-6 overflow-y-auto bg-slate-50/30">
+          {renderContent(activeTab)}
+        </div>
       </div>
     </div>
   );
 };
-
 const PermissionManager = () => {
   const roles = [
     { id: 'admin', name: 'Quản trị hệ thống' },
@@ -114,11 +113,10 @@ const PermissionManager = () => {
           <button
             key={role.id}
             onClick={() => setSelectedRole(role.id)}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-              selectedRole === role.id
-                ? 'bg-primary-600 text-white border-primary-600 shadow-md'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-primary-300'
-            }`}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${selectedRole === role.id
+              ? 'bg-primary-600 text-white border-primary-600 shadow-md'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-primary-300'
+              }`}
           >
             {role.name}
           </button>
@@ -172,7 +170,7 @@ const PermissionManager = () => {
       <div className="p-4 bg-primary-50 border border-primary-100 rounded-lg flex gap-3 items-start">
         <ShieldCheck className="text-primary-600 shrink-0" size={20} />
         <p className="text-xs text-primary-700 leading-relaxed">
-          <strong>Lưu ý:</strong> Quyền <strong>Xóa</strong> là quyền nhạy cảm, chỉ nên cấp cho các tài khoản có trách nhiệm cao. 
+          <strong>Lưu ý:</strong> Quyền <strong>Xóa</strong> là quyền nhạy cảm, chỉ nên cấp cho các tài khoản có trách nhiệm cao.
           Các thay đổi về phân quyền sẽ có hiệu lực ngay sau khi người dùng tải lại trang.
         </p>
       </div>
@@ -185,11 +183,10 @@ const PermissionCheckbox = ({ defaultChecked }: { defaultChecked: boolean }) => 
   return (
     <button
       onClick={() => setChecked(!checked)}
-      className={`w-6 h-6 rounded flex items-center justify-center transition-all border-2 ${
-        checked 
-          ? 'bg-primary-600 border-primary-600 text-white' 
-          : 'bg-white border-slate-200 text-transparent hover:border-primary-300'
-      }`}
+      className={`w-6 h-6 rounded flex items-center justify-center transition-all border-2 ${checked
+        ? 'bg-primary-600 border-primary-600 text-white'
+        : 'bg-white border-slate-200 text-transparent hover:border-primary-300'
+        }`}
     >
       <Check size={14} strokeWidth={3} />
     </button>
@@ -208,26 +205,28 @@ const renderContent = (tab: SettingTab) => {
       return <PositionTable />;
     case 'ROLE':
       return <RoleTable />;
+    case 'AUTHORITY':
+      return <AuthorityTable />;
     case 'SCHEDULE':
       return <ScheduleTable />;
     default:
       return (
         <div className="flex flex-col items-center justify-center h-full text-slate-400">
-           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-             <SettingsIcon tab={tab} />
-           </div>
-           <p>Tính năng đang được cập nhật cho mục này.</p>
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+            <SettingsIcon tab={tab} />
+          </div>
+          <p>Tính năng đang được cập nhật cho mục này.</p>
         </div>
       );
   }
 };
 
 const SettingsIcon = ({ tab }: { tab: SettingTab }) => {
-   switch(tab) {
-     case 'USER': return <Users size={32} />;
-     case 'DEPT': return <Building size={32} />;
-     case 'SCHEDULE': return <CalendarClock size={32} />;
-     case 'PERMISSIONS': return <ShieldCheck size={32} />;
-     default: return <Layout size={32} />;
-   }
+  switch (tab) {
+    case 'USER': return <Users size={32} />;
+    case 'DEPT': return <Building size={32} />;
+    case 'SCHEDULE': return <CalendarClock size={32} />;
+    case 'PERMISSIONS': return <ShieldCheck size={32} />;
+    default: return <Layout size={32} />;
+  }
 }

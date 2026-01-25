@@ -10,7 +10,10 @@ export async function addCoQuanBanHanh(record) {
     .from('co_quan_ban_hanh')
     .insert([record])
     .select();
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase Error (addCoQuanBanHanh):', error);
+    throw error;
+  }
   return data?.[0];
 }
 

@@ -7,17 +7,13 @@ import {
 import { SupervisionCategory } from '../types';
 import { fetchLichGiamSat, LichGiamSat } from '../readLichGiamSat';
 import { fetchPhieuGiamSat, PhieuGiamSat } from '../readPhieuGiamSat';
+import { useSupervision } from './SupervisionContext';
 
-interface Props {
-  category: SupervisionCategory;
-  onCategoryChange: (category: SupervisionCategory) => void;
-}
-
-export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => {
+export const Supervision: React.FC = () => {
+  const { category, setCategory } = useSupervision();
   const [schedules, setSchedules] = useState<LichGiamSat[]>([]);
   const [checklists, setChecklists] = useState<PhieuGiamSat[]>([]);
   const [loading, setLoading] = useState(true);
-  const selectedCategory = category;
 
   const loadData = async () => {
     setLoading(true);
@@ -247,9 +243,9 @@ export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
              <h2 className="text-xl font-bold text-slate-800">Kiểm tra & Giám sát tuân thủ</h2>
-             {selectedCategory && (
+             {category && (
                <button 
-                onClick={() => onCategoryChange(null)}
+                onClick={() => setCategory(null)}
                 className="flex items-center text-sm text-slate-500 hover:text-primary-600 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm transition-colors"
                >
                  <ArrowLeft size={16} className="mr-1" /> Quay lại danh sách
@@ -257,20 +253,20 @@ export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => 
              )}
         </div>
 
-        {selectedCategory ? (
+        {category ? (
             // Detail View when a card is selected
             <div className="bg-white rounded-xl border border-primary-200 p-6 shadow-sm animate-in fade-in zoom-in duration-300">
                <div className="flex items-center gap-4 mb-6 border-b border-slate-100 pb-4">
-                  <div className={`p-3 rounded-xl ${supervisionTypes.find(t => t.id === selectedCategory)?.bgIcon}`}>
-                     {supervisionTypes.find(t => t.id === selectedCategory)?.icon}
+                  <div className={`p-3 rounded-xl ${supervisionTypes.find(t => t.id === category)?.bgIcon}`}>
+                     {supervisionTypes.find(t => t.id === category)?.icon}
                   </div>
                   <div>
-                     <h3 className="text-xl font-bold text-slate-800">{supervisionTypes.find(t => t.id === selectedCategory)?.title}</h3>
-                     <p className="text-slate-500">{supervisionTypes.find(t => t.id === selectedCategory)?.desc}</p>
+                     <h3 className="text-xl font-bold text-slate-800">{supervisionTypes.find(t => t.id === category)?.title}</h3>
+                     <p className="text-slate-500">{supervisionTypes.find(t => t.id === category)?.desc}</p>
                   </div>
                </div>
                
-               {renderDetailContent(selectedCategory)}
+               {renderDetailContent(category)}
             </div>
         ) : (
             // Grid View
@@ -278,7 +274,7 @@ export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => 
             {supervisionTypes.map((item) => (
                 <div 
                 key={item.id}
-                onClick={() => onCategoryChange(item.id)}
+                onClick={() => setCategory(item.id)}
                 className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-300 cursor-pointer transition-all group h-full flex flex-col"
                 >
                 <div className="flex items-start gap-4 mb-3">
@@ -297,7 +293,7 @@ export const Supervision: React.FC<Props> = ({ category, onCategoryChange }) => 
       </div>
 
       {/* Bottom Section: Activities & Schedule (Only show in Overview) */}
-      {!selectedCategory && (
+      {!category && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-slate-200 animate-in slide-in-from-bottom-4 fade-in duration-500">
             {/* Left: Recent Activities List */}
             <div className="lg:col-span-2 space-y-4">

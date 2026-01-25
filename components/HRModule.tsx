@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
+import {
   Plus, User, Search, Filter, Phone, Award, Mail, MapPin,
-  FileSpreadsheet, Download, Upload, MoreHorizontal, Edit2, Trash2, X, Save, Eye 
+  FileSpreadsheet, Download, Upload, MoreHorizontal, Edit2, Trash2, X, Save, Eye
 } from 'lucide-react';
 import { fetchNhanSuQlcl, addNhanSuQlcl, updateNhanSuQlcl, deleteNhanSuQlcl, NhanSuQlcl } from '../readNhanSuQlcl';
 import * as XLSX from 'xlsx';
@@ -32,6 +32,8 @@ export const HRModule: React.FC = () => {
     don_vi: '',
     trang_thai: '',
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -65,6 +67,29 @@ export const HRModule: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeTab, filterOnlyWithCert, advancedFilters]);
+
+  const filteredStaff = staff.filter(s => {
+    const matchesTab = activeTab === 'ALL' || (s.vai_tro_qlcl && s.vai_tro_qlcl.includes(activeTab));
+    const matchesSearch = s.ho_ten.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (s.don_vi && s.don_vi.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCert = !filterOnlyWithCert || s.co_chung_chi === true;
+    const matchesCapBac = !advancedFilters.cap_bac || s.cap_bac === advancedFilters.cap_bac;
+    const matchesDonVi = !advancedFilters.don_vi || (s.don_vi && s.don_vi.includes(advancedFilters.don_vi));
+    const matchesTrangThai = !advancedFilters.trang_thai || s.trang_thai === advancedFilters.trang_thai;
+
+    return matchesTab && matchesSearch && matchesCert && matchesCapBac && matchesDonVi && matchesTrangThai;
+  });
+
+  const totalPages = Math.ceil(filteredStaff.length / rowsPerPage);
+  const paginatedStaff = filteredStaff.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
   const resetForm = () => {
     setFormData({
@@ -146,7 +171,7 @@ export const HRModule: React.FC = () => {
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -191,17 +216,6 @@ export const HRModule: React.FC = () => {
     }));
   };
 
-  const filteredStaff = staff.filter(s => {
-    const matchesTab = activeTab === 'ALL' || (s.vai_tro_qlcl && s.vai_tro_qlcl.includes(activeTab));
-    const matchesSearch = s.ho_ten.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (s.don_vi && s.don_vi.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCert = !filterOnlyWithCert || s.co_chung_chi === true;
-    const matchesCapBac = !advancedFilters.cap_bac || s.cap_bac === advancedFilters.cap_bac;
-    const matchesDonVi = !advancedFilters.don_vi || (s.don_vi && s.don_vi.includes(advancedFilters.don_vi));
-    const matchesTrangThai = !advancedFilters.trang_thai || s.trang_thai === advancedFilters.trang_thai;
-    
-    return matchesTab && matchesSearch && matchesCert && matchesCapBac && matchesDonVi && matchesTrangThai;
-  });
 
   const handleImportClick = () => {
     setShowImportModal(true);
@@ -221,11 +235,11 @@ export const HRModule: React.FC = () => {
       { ho_ten: 'Trần Thị B', cap_bac: 'Thượng tá', chuc_vu: 'Trưởng khoa', don_vi: 'Khoa Nội', so_dien_thoai: '0912.345.679', email: 'tranthib@example.com', co_chung_chi: 'TRUE', vai_tro_qlcl: 'BOARD', ghi_chu: '', trang_thai: 'Hoạt động' },
       { ho_ten: 'Lê Văn C', cap_bac: 'Thiếu tá', chuc_vu: 'Phó Trưởng khoa', don_vi: 'Khoa Ngoại', so_dien_thoai: '0912.345.680', email: 'levanc@example.com', co_chung_chi: 'FALSE', vai_tro_qlcl: 'NETWORK', ghi_chu: '', trang_thai: 'Hoạt động' },
     ];
-    
+
     // Tạo worksheet với headers tiếng Việt
     const wsData = [headers, ...sampleData.map(row => dataKeys.map(key => (row as any)[key]))];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-    
+
     // Điều chỉnh độ rộng cột
     ws['!cols'] = [
       { wch: 20 }, // Họ và tên
@@ -239,40 +253,40 @@ export const HRModule: React.FC = () => {
       { wch: 20 }, // Ghi chú
       { wch: 12 }, // Trạng thái
     ];
-    
+
     // Tạo workbook và xuất file
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Nhân sự QLCL');
     XLSX.writeFile(wb, 'mau_nhan_su_qlcl.xlsx');
-    
+
     setShowImportModal(false);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Đọc file Excel
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-      
+
       if (jsonData.length < 2) {
         alert('File không có dữ liệu hoặc sai định dạng!');
         return;
       }
-      
+
       // Bỏ qua dòng header, lấy dữ liệu từ dòng 2
       const records = jsonData.slice(1).filter(row => row[0]); // Chỉ lấy dòng có họ tên
-      
+
       let successCount = 0;
       let errorCount = 0;
-      
+
       for (const row of records) {
         try {
           // Map cột theo thứ tự: ho_ten, cap_bac, chuc_vu, don_vi, so_dien_thoai, email, co_chung_chi, vai_tro_qlcl, ghi_chu, trang_thai
@@ -288,7 +302,7 @@ export const HRModule: React.FC = () => {
             ghi_chu: String(row[8] || '').trim(),
             trang_thai: String(row[9] || 'Hoạt động').trim(),
           };
-          
+
           if (record.ho_ten) {
             await addNhanSuQlcl(record);
             successCount++;
@@ -298,10 +312,10 @@ export const HRModule: React.FC = () => {
           console.error('Lỗi thêm bản ghi:', err);
         }
       }
-      
+
       alert(`Hoàn thành!\n✅ Thêm thành công: ${successCount} nhân sự\n❌ Lỗi: ${errorCount} bản ghi`);
       loadData(); // Tải lại dữ liệu
-      
+
     } catch (err: any) {
       alert('Lỗi đọc file Excel: ' + err.message);
       console.error(err);
@@ -329,23 +343,23 @@ export const HRModule: React.FC = () => {
       item.ghi_chu || '',
       item.trang_thai || '',
     ]);
-    
+
     const wsData = [headers, ...dataRows];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-    
+
     // Điều chỉnh độ rộng cột
     ws['!cols'] = [
       { wch: 20 }, { wch: 12 }, { wch: 18 }, { wch: 20 }, { wch: 15 },
       { wch: 25 }, { wch: 12 }, { wch: 25 }, { wch: 20 }, { wch: 12 },
     ];
-    
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Nhân sự QLCL');
-    XLSX.writeFile(wb, `nhan_su_qlcl_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `nhan_su_qlcl_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const getRoleBadge = (role: string) => {
-    switch(role) {
+    switch (role) {
       case 'COUNCIL': return <span key="council" className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">Hội đồng</span>;
       case 'BOARD': return <span key="board" className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary-100 text-primary-800 border border-primary-200">Ban QLCL</span>;
       case 'NETWORK': return <span key="network" className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Mạng lưới</span>;
@@ -356,12 +370,12 @@ export const HRModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Hidden File Input for Excel Import */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        accept=".xlsx, .xls" 
-        className="hidden" 
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".xlsx, .xls"
+        className="hidden"
       />
 
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -370,19 +384,19 @@ export const HRModule: React.FC = () => {
           <p className="text-sm text-slate-500">Cập nhật thông tin Hội đồng, Ban chuyên trách và Mạng lưới viên.</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-          <button 
+          <button
             onClick={handleExportExcel}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
           >
             <Download size={16} /> Xuất Excel
           </button>
-          <button 
+          <button
             onClick={handleImportClick}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
           >
             <Upload size={16} /> Nhập Excel
           </button>
-          <button 
+          <button
             onClick={openAddForm}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm"
           >
@@ -393,61 +407,58 @@ export const HRModule: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2">
-         {[
-           { id: 'ALL', label: 'Tất cả nhân sự' },
-           { id: 'COUNCIL', label: 'Hội đồng QLCLBV' },
-           { id: 'BOARD', label: 'Ban QLCLBV (Chuyên trách)' },
-           { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
-         ].map(tab => (
-           <button
-             key={tab.id}
-             onClick={() => setActiveTab(tab.id as any)}
-             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-               activeTab === tab.id 
-                 ? 'bg-primary-900 text-white shadow-sm' 
-                 : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-             }`}
-           >
-             {tab.label}
-           </button>
-         ))}
+        {[
+          { id: 'ALL', label: 'Tất cả nhân sự' },
+          { id: 'COUNCIL', label: 'Hội đồng QLCLBV' },
+          { id: 'BOARD', label: 'Ban QLCLBV (Chuyên trách)' },
+          { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
+              ? 'bg-primary-900 text-white shadow-sm'
+              : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Search & Filter Bar */}
         <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 justify-between bg-slate-50/50">
-           <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Tìm kiếm theo tên, khoa phòng..." 
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white"
-              />
-           </div>
-           <div className="flex gap-2">
-             <button 
-               onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-               className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
-                 showAdvancedFilter || advancedFilters.cap_bac || advancedFilters.don_vi || advancedFilters.trang_thai
-                   ? 'bg-primary-100 border-primary-500 text-primary-700' 
-                   : 'border-slate-200 text-slate-600 hover:bg-white bg-white'
-               }`}
-             >
-               <Filter size={16} /> Lọc nâng cao
-             </button>
-             <button 
-               onClick={() => setFilterOnlyWithCert(!filterOnlyWithCert)}
-               className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
-                 filterOnlyWithCert 
-                   ? 'bg-green-100 border-green-500 text-green-700' 
-                   : 'border-slate-200 text-slate-600 hover:bg-white bg-white'
-               }`}
-             >
-               <Award size={16} /> Chỉ hiện có chứng chỉ
-             </button>
-           </div>
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm kiếm theo tên, khoa phòng..."
+              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+              className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${showAdvancedFilter || advancedFilters.cap_bac || advancedFilters.don_vi || advancedFilters.trang_thai
+                ? 'bg-primary-100 border-primary-500 text-primary-700'
+                : 'border-slate-200 text-slate-600 hover:bg-white bg-white'
+                }`}
+            >
+              <Filter size={16} /> Lọc nâng cao
+            </button>
+            <button
+              onClick={() => setFilterOnlyWithCert(!filterOnlyWithCert)}
+              className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${filterOnlyWithCert
+                ? 'bg-green-100 border-green-500 text-green-700'
+                : 'border-slate-200 text-slate-600 hover:bg-white bg-white'
+                }`}
+            >
+              <Award size={16} /> Chỉ hiện có chứng chỉ
+            </button>
+          </div>
         </div>
 
         {/* Advanced Filter Panel */}
@@ -456,7 +467,7 @@ export const HRModule: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Cấp bậc</label>
-                <select 
+                <select
                   value={advancedFilters.cap_bac}
                   onChange={(e) => setAdvancedFilters({ ...advancedFilters, cap_bac: e.target.value })}
                   className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
@@ -474,7 +485,7 @@ export const HRModule: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Đơn vị</label>
-                <input 
+                <input
                   type="text"
                   value={advancedFilters.don_vi}
                   onChange={(e) => setAdvancedFilters({ ...advancedFilters, don_vi: e.target.value })}
@@ -484,7 +495,7 @@ export const HRModule: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Trạng thái</label>
-                <select 
+                <select
                   value={advancedFilters.trang_thai}
                   onChange={(e) => setAdvancedFilters({ ...advancedFilters, trang_thai: e.target.value })}
                   className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
@@ -511,7 +522,7 @@ export const HRModule: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         {/* Loading/Error states */}
         {loading && (
           <div className="p-12 text-center text-slate-500">Đang tải dữ liệu...</div>
@@ -519,7 +530,7 @@ export const HRModule: React.FC = () => {
         {error && (
           <div className="p-12 text-center text-red-500">Lỗi: {error}</div>
         )}
-        
+
         {/* Mobile Cards View */}
         {!loading && !error && (
           <div className="block lg:hidden">
@@ -544,7 +555,7 @@ export const HRModule: React.FC = () => {
                 </div>
               </div>
             )}
-            {filteredStaff.map((item) => (
+            {paginatedStaff.map((item) => (
               <div key={item.id} className="p-4 border-b border-slate-100 last:border-b-0">
                 <div className="flex items-start gap-3">
                   <input
@@ -593,19 +604,19 @@ export const HRModule: React.FC = () => {
                 </div>
                 {/* Mobile Action Buttons */}
                 <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
-                  <button 
+                  <button
                     onClick={() => setViewingItem(item)}
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
                   >
                     <Eye size={14} /> Xem
                   </button>
-                  <button 
+                  <button
                     onClick={() => openEditForm(item)}
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg text-xs font-medium transition-colors"
                   >
                     <Edit2 size={14} /> Sửa
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(item.id)}
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition-colors"
                   >
@@ -624,160 +635,195 @@ export const HRModule: React.FC = () => {
 
         {/* Desktop Table View */}
         {!loading && !error && (
-        <div className="hidden lg:block">
-          {selectedIds.length > 0 && (
-            <div className="p-3 bg-primary-50 border-b border-primary-200 flex items-center justify-between">
-              <span className="text-sm font-medium text-primary-800">
-                Đã chọn {selectedIds.length} nhân sự
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowBulkEditModal(true)}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
-                >
-                  <Edit2 size={14} /> Sửa hàng loạt
-                </button>
-                <button
-                  onClick={() => setSelectedIds([])}
-                  className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium"
-                >
-                  Bỏ chọn
-                </button>
+          <div className="hidden lg:block">
+            {selectedIds.length > 0 && (
+              <div className="p-3 bg-primary-50 border-b border-primary-200 flex items-center justify-between">
+                <span className="text-sm font-medium text-primary-800">
+                  Đã chọn {selectedIds.length} nhân sự
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowBulkEditModal(true)}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+                  >
+                    <Edit2 size={14} /> Sửa hàng loạt
+                  </button>
+                  <button
+                    onClick={() => setSelectedIds([])}
+                    className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium"
+                  >
+                    Bỏ chọn
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-slate-600">
-              <thead className="bg-primary-600 text-white font-bold border-b border-primary-700 uppercase text-xs">
-                <tr>
-                  <th className="px-4 py-3 w-12">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.length === filteredStaff.length && filteredStaff.length > 0}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded"
-                    />
-                  </th>
-                  <th className="px-4 py-3">Họ và tên / Cấp bậc</th>
-                  <th className="px-4 py-3">Chức vụ / Đơn vị</th>
-                  <th className="px-4 py-3">Vai trò QLCL</th>
-                  <th className="px-4 py-3">Liên hệ</th>
-                  <th className="px-4 py-3 text-center">Chứng chỉ</th>
-                  <th className="px-4 py-3 text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredStaff.map((item) => (
-                  <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
-                    <td className="px-4 py-3">
+            )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-slate-600">
+                <thead className="bg-primary-600 text-white font-bold border-b border-primary-700 uppercase text-xs">
+                  <tr>
+                    <th className="px-4 py-3 w-12">
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => toggleSelect(item.id)}
-                        className="w-4 h-4 text-primary-600 rounded"
+                        checked={selectedIds.length === filteredStaff.length && filteredStaff.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded"
                       />
-                    </td>
-                    <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                        {item.ho_ten.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800">{item.ho_ten}</p>
-                        {item.cap_bac && (
-                          <p className="text-xs font-medium text-primary-600 bg-primary-50 inline-block px-1.5 rounded mt-0.5">{item.cap_bac}</p>
+                    </th>
+                    <th className="px-4 py-3">Họ và tên / Cấp bậc</th>
+                    <th className="px-4 py-3">Chức vụ / Đơn vị</th>
+                    <th className="px-4 py-3">Vai trò QLCL</th>
+                    <th className="px-4 py-3">Liên hệ</th>
+                    <th className="px-4 py-3 text-center">Chứng chỉ</th>
+                    <th className="px-4 py-3 text-center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedStaff.map((item) => (
+                    <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                          className="w-4 h-4 text-primary-600 rounded"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                            {item.ho_ten.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800">{item.ho_ten}</p>
+                            {item.cap_bac && (
+                              <p className="text-xs font-medium text-primary-600 bg-primary-50 inline-block px-1.5 rounded mt-0.5">{item.cap_bac}</p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-slate-700">{item.chuc_vu || '-'}</p>
+                        <p className="text-xs text-slate-500">{item.don_vi || '-'}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {item.vai_tro_qlcl?.map(role => getRoleBadge(role))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          {item.so_dien_thoai && (
+                            <div className="flex items-center gap-1.5 text-slate-600 text-xs">
+                              <Phone size={12} className="text-slate-400" />
+                              <span className="font-mono">{item.so_dien_thoai}</span>
+                            </div>
+                          )}
+                          {item.email && (
+                            <div className="flex items-center gap-1.5 text-slate-600 text-xs">
+                              <Mail size={12} className="text-slate-400" />
+                              <span className="truncate max-w-[150px]">{item.email}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {item.co_chung_chi ? (
+                          <div className="flex flex-col items-center">
+                            <CheckIcon />
+                            <span className="text-[10px] text-green-600 font-medium mt-0.5">Đã có</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center">
+                            <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
+                              <span className="block w-2 h-2 rounded-full bg-slate-300"></span>
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-medium mt-0.5">Chưa có</span>
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-semibold text-slate-700">{item.chuc_vu || '-'}</p>
-                    <p className="text-xs text-slate-500">{item.don_vi || '-'}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {item.vai_tro_qlcl?.map(role => getRoleBadge(role))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="space-y-1">
-                      {item.so_dien_thoai && (
-                        <div className="flex items-center gap-1.5 text-slate-600 text-xs">
-                          <Phone size={12} className="text-slate-400" />
-                          <span className="font-mono">{item.so_dien_thoai}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => setViewingItem(item)}
+                            className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                            title="Xem chi tiết"
+                          >
+                            <Eye size={14} /> <span className="hidden xl:inline">Xem</span>
+                          </button>
+                          <button
+                            onClick={() => openEditForm(item)}
+                            className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-100 rounded transition-colors"
+                            title="Chỉnh sửa"
+                          >
+                            <Edit2 size={14} /> <span className="hidden xl:inline">Sửa</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Xóa"
+                          >
+                            <Trash2 size={14} /> <span className="hidden xl:inline">Xóa</span>
+                          </button>
                         </div>
-                      )}
-                      {item.email && (
-                        <div className="flex items-center gap-1.5 text-slate-600 text-xs">
-                          <Mail size={12} className="text-slate-400" />
-                          <span className="truncate max-w-[150px]">{item.email}</span>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {item.co_chung_chi ? (
-                      <div className="flex flex-col items-center">
-                        <CheckIcon />
-                        <span className="text-[10px] text-green-600 font-medium mt-0.5">Đã có</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                          <span className="block w-2 h-2 rounded-full bg-slate-300"></span>
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium mt-0.5">Chưa có</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <button 
-                        onClick={() => setViewingItem(item)}
-                        className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors" 
-                        title="Xem chi tiết"
-                      >
-                        <Eye size={14} /> <span className="hidden xl:inline">Xem</span>
-                      </button>
-                      <button 
-                        onClick={() => openEditForm(item)}
-                        className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-100 rounded transition-colors" 
-                        title="Chỉnh sửa"
-                      >
-                        <Edit2 size={14} /> <span className="hidden xl:inline">Sửa</span>
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(item.id)}
-                        className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors" 
-                        title="Xóa"
-                      >
-                        <Trash2 size={14} /> <span className="hidden xl:inline">Xóa</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredStaff.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500 italic">
-                    Không tìm thấy nhân sự nào phù hợp với bộ lọc.
-                  </td>
-                </tr>
-              )}
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredStaff.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-slate-500 italic">
+                        Không tìm thấy nhân sự nào phù hợp với bộ lọc.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        <div className="p-4 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <span>
+              Hiển thị {filteredStaff.length > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0} - {Math.min(currentPage * rowsPerPage, filteredStaff.length)} trong tổng số {filteredStaff.length} nhân sự
+            </span>
+            <div className="flex items-center gap-2">
+              <label className="whitespace-nowrap font-medium text-slate-500">Số dòng:</label>
+              <select
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 border border-slate-300 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              >
+                {[10, 15, 20, 30, 50, 100].map(val => (
+                  <option key={val} value={val}>{val}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="px-2">Trang {currentPage} / {totalPages || 1}</span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Trước
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Sau
+              </button>
+            </div>
           </div>
         </div>
-        )}
-        <div className="p-4 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
-           <span>Hiển thị {filteredStaff.length} nhân sự</span>
-           <div className="flex gap-1">
-              <button className="px-3 py-1 border rounded bg-white hover:bg-slate-100 disabled:opacity-50" disabled>Trước</button>
-              <button className="px-3 py-1 border rounded bg-white hover:bg-slate-100">Sau</button>
-           </div>
-        </div>
       </div>
-      
+
       {/* Import Excel Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -831,7 +877,7 @@ export const HRModule: React.FC = () => {
 
       {/* Form Modal */}
       {showForm && (
-        <FormModal 
+        <FormModal
           editingItem={editingItem}
           formData={formData}
           setFormData={setFormData}
@@ -928,11 +974,10 @@ export const HRModule: React.FC = () => {
                   <div>
                     <label className="text-xs text-slate-500 uppercase font-medium">Trạng thái</label>
                     <p className="mt-1.5">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        viewingItem.trang_thai === 'Hoạt động' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-slate-100 text-slate-500'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${viewingItem.trang_thai === 'Hoạt động'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-slate-100 text-slate-500'
+                        }`}>
                         {viewingItem.trang_thai || 'Hoạt động'}
                       </span>
                     </p>
@@ -987,15 +1032,14 @@ export const HRModule: React.FC = () => {
                     { id: 'BOARD', label: 'Ban QLCL (Chuyên trách)' },
                     { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
                   ].map(role => (
-                    <label 
+                    <label
                       key={role.id}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${
-                        bulkEditData.vai_tro_qlcl.includes(role.id) 
-                          ? 'bg-primary-100 border-primary-500 text-primary-800' 
-                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                      }`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${bulkEditData.vai_tro_qlcl.includes(role.id)
+                        ? 'bg-primary-100 border-primary-500 text-primary-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                        }`}
                     >
-                      <input 
+                      <input
                         type="checkbox"
                         checked={bulkEditData.vai_tro_qlcl.includes(role.id)}
                         onChange={() => toggleBulkRole(role.id)}
@@ -1009,11 +1053,11 @@ export const HRModule: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Chứng chỉ QLCL</label>
-                <select 
+                <select
                   value={bulkEditData.co_chung_chi === undefined ? '' : bulkEditData.co_chung_chi.toString()}
-                  onChange={(e) => setBulkEditData({ 
-                    ...bulkEditData, 
-                    co_chung_chi: e.target.value === '' ? undefined : e.target.value === 'true' 
+                  onChange={(e) => setBulkEditData({
+                    ...bulkEditData,
+                    co_chung_chi: e.target.value === '' ? undefined : e.target.value === 'true'
                   })}
                   className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
                 >
@@ -1025,7 +1069,7 @@ export const HRModule: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Trạng thái</label>
-                <select 
+                <select
                   value={bulkEditData.trang_thai || ''}
                   onChange={(e) => setBulkEditData({ ...bulkEditData, trang_thai: e.target.value || undefined })}
                   className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
@@ -1085,14 +1129,14 @@ interface FormModalProps {
   onClose: () => void;
 }
 
-const FormModal: React.FC<FormModalProps> = ({ 
-  editingItem, 
-  formData, 
-  setFormData, 
-  toggleRole, 
-  handleSave, 
-  saving, 
-  onClose 
+const FormModal: React.FC<FormModalProps> = ({
+  editingItem,
+  formData,
+  setFormData,
+  toggleRole,
+  handleSave,
+  saving,
+  onClose
 }) => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -1108,7 +1152,7 @@ const FormModal: React.FC<FormModalProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Họ và tên *</label>
-            <input 
+            <input
               type="text"
               value={formData.ho_ten}
               onChange={(e) => setFormData({ ...formData, ho_ten: e.target.value })}
@@ -1118,7 +1162,7 @@ const FormModal: React.FC<FormModalProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Cấp bậc</label>
-            <select 
+            <select
               value={formData.cap_bac}
               onChange={(e) => setFormData({ ...formData, cap_bac: e.target.value })}
               className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
@@ -1136,7 +1180,7 @@ const FormModal: React.FC<FormModalProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Chức vụ</label>
-            <input 
+            <input
               type="text"
               value={formData.chuc_vu}
               onChange={(e) => setFormData({ ...formData, chuc_vu: e.target.value })}
@@ -1146,7 +1190,7 @@ const FormModal: React.FC<FormModalProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Đơn vị / Khoa phòng</label>
-            <input 
+            <input
               type="text"
               value={formData.don_vi}
               onChange={(e) => setFormData({ ...formData, don_vi: e.target.value })}
@@ -1156,7 +1200,7 @@ const FormModal: React.FC<FormModalProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
-            <input 
+            <input
               type="text"
               value={formData.so_dien_thoai}
               onChange={(e) => setFormData({ ...formData, so_dien_thoai: e.target.value })}
@@ -1166,7 +1210,7 @@ const FormModal: React.FC<FormModalProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-            <input 
+            <input
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -1175,7 +1219,7 @@ const FormModal: React.FC<FormModalProps> = ({
             />
           </div>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Vai trò QLCL</label>
           <div className="flex gap-2 flex-wrap">
@@ -1184,15 +1228,14 @@ const FormModal: React.FC<FormModalProps> = ({
               { id: 'BOARD', label: 'Ban QLCL (Chuyên trách)' },
               { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
             ].map(role => (
-              <label 
+              <label
                 key={role.id}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${
-                  formData.vai_tro_qlcl.includes(role.id) 
-                    ? 'bg-primary-100 border-primary-500 text-primary-800' 
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${formData.vai_tro_qlcl.includes(role.id)
+                  ? 'bg-primary-100 border-primary-500 text-primary-800'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
               >
-                <input 
+                <input
                   type="checkbox"
                   checked={formData.vai_tro_qlcl.includes(role.id)}
                   onChange={() => toggleRole(role.id)}
@@ -1206,7 +1249,7 @@ const FormModal: React.FC<FormModalProps> = ({
 
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input 
+            <input
               type="checkbox"
               checked={formData.co_chung_chi}
               onChange={(e) => setFormData({ ...formData, co_chung_chi: e.target.checked })}
@@ -1218,7 +1261,7 @@ const FormModal: React.FC<FormModalProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
-          <textarea 
+          <textarea
             value={formData.ghi_chu}
             onChange={(e) => setFormData({ ...formData, ghi_chu: e.target.value })}
             className="w-full p-2 border border-slate-300 rounded-lg text-sm"
@@ -1227,13 +1270,13 @@ const FormModal: React.FC<FormModalProps> = ({
         </div>
       </div>
       <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
-        <button 
+        <button
           onClick={onClose}
           className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
         >
           Hủy
         </button>
-        <button 
+        <button
           onClick={handleSave}
           disabled={saving}
           className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"

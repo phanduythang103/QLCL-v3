@@ -1,15 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, FileText, Download, Filter, Bookmark, Globe, Building, 
-  Landmark, ShieldCheck, Eye, Link, PlayCircle, GraduationCap, 
-  HelpCircle, CheckSquare, Youtube, Lightbulb, MessageCircle, 
+import {
+  Search, FileText, Download, Filter, Bookmark, Globe, Building,
+  Landmark, ShieldCheck, Eye, Link, PlayCircle, GraduationCap,
+  HelpCircle, CheckSquare, Youtube, Lightbulb, MessageCircle,
   BookOpen, Video, Plus, Edit2, Trash2, Heart, X, Save
 } from 'lucide-react';
 import { fetchThuVienVb, addThuVienVb, updateThuVienVb, deleteThuVienVb } from '../readThuVienVb';
+import { supabase } from '../supabaseClient';
 import { fetchThuVienVideo, addThuVienVideo, deleteThuVienVideo } from '../readThuVienVideo';
 import { fetchChiaSe, addChiaSe, deleteChiaSe } from '../readChiaSe';
 
+import { fetchCoQuanBanHanh, addCoQuanBanHanh } from '../readCoQuanBanHanh';
+
 type MainTab = 'LIBRARY' | 'TRAINING' | 'SHARING';
+
+interface FormModalProps {
+  formData: any;
+  setFormData: (data: any) => void;
+  onClose: () => void;
+  onSave: () => void;
+  saving: boolean;
+  fileUpload: File | null;
+  setFileUpload: (file: File | null) => void;
+  coQuanList: any[];
+  loaiVbList: string[];
+  onAddCoQuan: (name: string) => Promise<void>;
+}
 
 export const DocsModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MainTab>('LIBRARY');
@@ -19,40 +35,37 @@ export const DocsModule: React.FC = () => {
       {/* Module Navigation */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-           <h2 className="text-xl font-bold text-slate-800">Văn bản - Đào tạo - Thư viện</h2>
-           <p className="text-sm text-slate-500">Hệ thống tri thức Quản lý chất lượng Bệnh viện 103.</p>
+          <h2 className="text-xl font-bold text-slate-800">Văn bản - Đào tạo - Thư viện</h2>
+          <p className="text-sm text-slate-500">Hệ thống tri thức Quản lý chất lượng Bệnh viện 103.</p>
         </div>
         <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1">
-           <button 
-             onClick={() => setActiveTab('LIBRARY')}
-             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                activeTab === 'LIBRARY' 
-                ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600' 
-                : 'text-primary-600 hover:bg-white hover:shadow-sm'
-             }`}
-           >
-             <FileText size={18} /> Thư viện Văn bản
-           </button>
-           <button 
-             onClick={() => setActiveTab('TRAINING')}
-             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                activeTab === 'TRAINING' 
-                ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600' 
-                : 'text-primary-600 hover:bg-white hover:shadow-sm'
-             }`}
-           >
-             <GraduationCap size={18} /> Đào tạo & E-Learning
-           </button>
-           <button 
-             onClick={() => setActiveTab('SHARING')}
-             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                activeTab === 'SHARING' 
-                ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600' 
-                : 'text-primary-600 hover:bg-white hover:shadow-sm'
-             }`}
-           >
-             <Lightbulb size={18} /> Góc Chia sẻ
-           </button>
+          <button
+            onClick={() => setActiveTab('LIBRARY')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'LIBRARY'
+              ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600'
+              : 'text-primary-600 hover:bg-white hover:shadow-sm'
+              }`}
+          >
+            <FileText size={18} /> Thư viện Văn bản
+          </button>
+          <button
+            onClick={() => setActiveTab('TRAINING')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'TRAINING'
+              ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600'
+              : 'text-primary-600 hover:bg-white hover:shadow-sm'
+              }`}
+          >
+            <GraduationCap size={18} /> Đào tạo & E-Learning
+          </button>
+          <button
+            onClick={() => setActiveTab('SHARING')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'SHARING'
+              ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600'
+              : 'text-primary-600 hover:bg-white hover:shadow-sm'
+              }`}
+          >
+            <Lightbulb size={18} /> Góc Chia sẻ
+          </button>
         </div>
       </div>
 
@@ -74,25 +87,35 @@ const DocumentLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [docCategory, setDocCategory] = useState('ALL');
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(1);
+  const initialFormData = {
     so_hieu_vb: '',
     ten_vb: '',
     loai_vb: '',
-    linh_vuc: '',
-    phan_loai: 'MOH',
     co_quan_ban_hanh: '',
-    ngay_hieu_luc: '',
-    tieu_chi_lien_quan: '',
+    hieu_luc: '',
     trang_thai: 'Còn hiệu lực',
-    ghi_chu: ''
-  });
+    file_dinh_kem: '',
+    file_van_ban: ''
+  };
+  const [formData, setFormData] = useState(initialFormData);
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
+
+  const [coQuanList, setCoQuanList] = useState<any[]>([]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const data = await fetchThuVienVb();
-      setDocs(data || []);
+      const [docsData, coQuanData] = await Promise.all([
+        fetchThuVienVb(),
+        fetchCoQuanBanHanh()
+      ]);
+      setDocs(docsData || []);
+      setCoQuanList(coQuanData || []);
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -100,6 +123,22 @@ const DocumentLibrary = () => {
       setLoading(false);
     }
   };
+
+  const handleAddCoQuan = async (name: string) => {
+    try {
+      const newItem = await addCoQuanBanHanh({ ten_co_quan: name });
+      if (newItem) {
+        setCoQuanList([...coQuanList, newItem]);
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Lỗi thêm cơ quan ban hành");
+    }
+  }
+
+  // Derive unique document types
+  const loaiVbList = Array.from(new Set(docs.map(d => d.loai_vb).filter(Boolean))) as string[];
 
   useEffect(() => {
     loadData();
@@ -112,17 +151,69 @@ const DocumentLibrary = () => {
     }
     setSaving(true);
     try {
-      await addThuVienVb(formData);
+      let filePath = formData.file_van_ban; // Keep existing path by default
+      if (fileUpload) {
+        // Tạo tên file duy nhất
+        const ext = fileUpload.name.split('.').pop();
+        const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const { data, error } = await supabase.storage.from('vanban').upload(uniqueName, fileUpload);
+        if (error) throw error;
+        filePath = uniqueName;
+      }
+
+      const saveData = { ...formData, file_van_ban: filePath };
+
+      if (editingId) {
+        await updateThuVienVb(editingId, saveData);
+      } else {
+        await addThuVienVb(saveData);
+      }
+
       setShowForm(false);
-      setFormData({
-        so_hieu_vb: '', ten_vb: '', loai_vb: '', linh_vuc: '', phan_loai: 'MOH',
-        co_quan_ban_hanh: '', ngay_hieu_luc: '', tieu_chi_lien_quan: '', trang_thai: 'Còn hiệu lực', ghi_chu: ''
-      });
+      setFormData(initialFormData);
+      setEditingId(null);
+      setFileUpload(null);
       loadData();
     } catch (err: any) {
       alert('Lỗi: ' + err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEdit = (doc: any) => {
+    setFormData({
+      so_hieu_vb: doc.so_hieu_vb || '',
+      ten_vb: doc.ten_vb || '',
+      loai_vb: doc.loai_vb || '',
+      co_quan_ban_hanh: doc.co_quan_ban_hanh || '',
+      hieu_luc: doc.hieu_luc ? doc.hieu_luc.split('T')[0] : '',
+      trang_thai: doc.trang_thai || 'Còn hiệu lực',
+      file_dinh_kem: doc.file_dinh_kem || '',
+      file_van_ban: doc.file_van_ban || ''
+    });
+    // Store ID for update logic if needed, currently addThuVienVb handles insert. 
+    // We might need to update addThuVienVb to handle upsert or add updateThuVienVb support properly.
+    // For now, assuming basic edit populates form. Ideally we need an editingId state.
+    setEditingId(doc.id);
+    setShowForm(true);
+  };
+
+  const handleView = async (doc: any) => {
+    if (doc.file_van_ban) {
+      // Get signed URL from Supabase
+      try {
+        const { data, error } = await supabase.storage.from('vanban').createSignedUrl(doc.file_van_ban, 3600);
+        if (error) throw error;
+        if (data?.signedUrl) {
+          window.open(data.signedUrl, '_blank');
+        }
+      } catch (err) {
+        console.error('Error getting file URL:', err);
+        alert('Không thể mở file văn bản. Vui lòng thử lại.');
+      }
+    } else {
+      alert('Văn bản này không có file đính kèm.');
     }
   };
 
@@ -146,172 +237,175 @@ const DocumentLibrary = () => {
     { id: 'INTL', label: 'Quốc tế', icon: <Globe size={14} /> },
   ];
 
-  const filteredDocs = docs.filter(doc => 
+  const filteredDocs = docs.filter(doc =>
     (docCategory === 'ALL' || doc.phan_loai === docCategory) &&
     ((doc.ten_vb || '').toLowerCase().includes(searchTerm.toLowerCase()) || (doc.so_hieu_vb || '').toLowerCase().includes(searchTerm.toLowerCase()))
   );
+  // Pagination
+  const totalRows = filteredDocs.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const pagedDocs = filteredDocs.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-  // Form Modal
-  const FormModal = () => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-          <h3 className="text-lg font-bold text-slate-800">Thêm văn bản mới</h3>
-          <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Số hiệu VB *</label>
-              <input type="text" value={formData.so_hieu_vb} onChange={(e) => setFormData({ ...formData, so_hieu_vb: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="15/2023/QH15" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Phân loại</label>
-              <select value={formData.phan_loai} onChange={(e) => setFormData({ ...formData, phan_loai: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">
-                <option value="LEGAL">Pháp lý</option>
-                <option value="MOH">Bộ Y tế</option>
-                <option value="HOSPITAL">Nội bộ BV</option>
-                <option value="SOP">Quy trình SOP</option>
-                <option value="INTL">Quốc tế</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tên văn bản *</label>
-              <input type="text" value={formData.ten_vb} onChange={(e) => setFormData({ ...formData, ten_vb: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Thông tư hướng dẫn..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Loại văn bản</label>
-              <input type="text" value={formData.loai_vb} onChange={(e) => setFormData({ ...formData, loai_vb: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Thông tư, Nghị định..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Lĩnh vực</label>
-              <input type="text" value={formData.linh_vuc} onChange={(e) => setFormData({ ...formData, linh_vuc: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="QLCL, ATNB, KSNK..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Cơ quan ban hành</label>
-              <input type="text" value={formData.co_quan_ban_hanh} onChange={(e) => setFormData({ ...formData, co_quan_ban_hanh: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Bộ Y tế, Quốc hội..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Ngày hiệu lực</label>
-              <input type="date" value={formData.ngay_hieu_luc} onChange={(e) => setFormData({ ...formData, ngay_hieu_luc: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tiêu chí liên quan</label>
-              <input type="text" value={formData.tieu_chi_lien_quan} onChange={(e) => setFormData({ ...formData, tieu_chi_lien_quan: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="A1.1, D2.1..." />
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
-          <button onClick={() => setShowForm(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Hủy</button>
-          <button onClick={handleSave} disabled={saving}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
-            {saving ? <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span> : <Save size={16} />}
-            {saving ? 'Đang lưu...' : 'Lưu'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  // FormModal moved outside
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
       <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between bg-slate-50/50">
-         <div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setDocCategory(cat.id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-                  docCategory === cat.id 
-                    ? 'bg-primary-600 text-white border-primary-600' 
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+        <div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setDocCategory(cat.id)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${docCategory === cat.id
+                ? 'bg-primary-600 text-white border-primary-600'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
                 }`}
-              >
-                {cat.icon} {cat.label}
-              </button>
-            ))}
-         </div>
-         <div className="flex gap-2">
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
-              <Plus size={16} /> Thêm VB
+            >
+              {cat.icon} {cat.label}
             </button>
-            <div className="relative w-full lg:w-64">
-               <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-               <input 
-                 type="text" 
-                 value={searchTerm}
-                 onChange={(e) => setSearchTerm(e.target.value)}
-                 placeholder="Tìm số hiệu, trích yếu..." 
-                 className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-               />
+          ))}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+          <div className="flex gap-2">
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
+              <Plus size={16} /> <span>Thêm VB</span>
+            </button>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Tìm số hiệu, trích yếu..."
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+              />
             </div>
-         </div>
+          </div>
+          <div className="flex gap-2 items-center mt-2 sm:mt-0">
+            <label htmlFor="rowsPerPage" className="text-xs text-slate-600">Hiển thị</label>
+            <select id="rowsPerPage" value={rowsPerPage} onChange={e => { setRowsPerPage(Number(e.target.value)); setPage(1); }} className="border border-slate-300 rounded px-2 py-1 text-xs">
+              {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n} dòng</option>)}
+            </select>
+          </div>
+        </div>
       </div>
-      
+
       {loading && <div className="p-8 text-center text-slate-500">Đang tải...</div>}
       {error && <div className="p-8 text-center text-red-500">Lỗi: {error}</div>}
-      
+
       {!loading && !error && (
-      <div className="overflow-x-auto">
-         <table className="w-full text-sm text-left">
-           <thead className="bg-primary-600 text-white font-bold uppercase text-xs border-b border-primary-700">
-             <tr>
-               <th className="px-6 py-4">Số hiệu & Tên văn bản</th>
-               <th className="px-6 py-4">Loại / Lĩnh vực</th>
-               <th className="px-6 py-4">Nơi ban hành</th>
-               <th className="px-6 py-4">Hiệu lực</th>
-               <th className="px-6 py-4 text-right">Thao tác</th>
-             </tr>
-           </thead>
-           <tbody className="divide-y divide-slate-100">
-             {filteredDocs.map((doc) => (
-               <tr key={doc.id} className="hover:bg-slate-50 transition-colors group">
-                 <td className="px-6 py-4">
-                   <div className="font-semibold text-slate-800 text-sm line-clamp-2" title={doc.ten_vb}>{doc.ten_vb}</div>
-                   <div className="flex items-center gap-2 mt-1">
-                      <span className="font-mono text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{doc.so_hieu_vb}</span>
-                      {doc.tieu_chi_lien_quan && <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">Tiêu chí {doc.tieu_chi_lien_quan}</span>}
-                   </div>
-                 </td>
-                 <td className="px-6 py-4">
-                   <div className="text-slate-800">{doc.loai_vb || '-'}</div>
-                   <div className="text-xs text-slate-500">{doc.linh_vuc || '-'}</div>
-                 </td>
-                 <td className="px-6 py-4 text-slate-600">{doc.co_quan_ban_hanh || '-'}</td>
-                 <td className="px-6 py-4 text-slate-600">{doc.ngay_hieu_luc || '-'}</td>
-                         <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <button className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Xem"><Eye size={16} /></button>
-                                 <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit2 size={16} /></button>
-                                 <button onClick={() => handleDelete(doc.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 size={16} /></button>
-                            </div>
-                         </td>
-               </tr>
-             ))}
-             {filteredDocs.length === 0 && (
-               <tr>
-                 <td colSpan={5} className="py-12 text-center text-slate-500 italic">Chưa có văn bản nào trong thư viện.</td>
-               </tr>
-             )}
-           </tbody>
-         </table>
-      </div>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm text-left min-w-[600px]">
+              <thead className="bg-primary-600 text-white font-bold uppercase text-xs border-b border-primary-700">
+                <tr>
+                  <th className="px-3 py-2 w-1/4">Số hiệu</th>
+                  <th className="px-3 py-2 w-1/2">Tên văn bản</th>
+                  <th className="px-3 py-2 w-1/4 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagedDocs.map((doc) => (
+                  <tr key={doc.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-3 py-2 font-mono text-xs text-slate-700 whitespace-nowrap">{doc.so_hieu_vb}</td>
+                    <td className="px-3 py-2 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
+                      <div className="font-semibold text-slate-800 text-sm line-clamp-2 hover:text-primary-600 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleView(doc)} className="flex items-center gap-1 px-2 py-1 text-primary-600 hover:bg-primary-50 rounded text-xs font-medium border border-primary-100" title="Xem"><Eye size={14} /> <span>Xem</span></button>
+                        <button onClick={() => handleEdit(doc)} className="flex items-center gap-1 px-2 py-1 text-blue-600 hover:bg-blue-50 rounded text-xs font-medium border border-blue-100" title="Sửa"><Edit2 size={14} /> <span>Sửa</span></button>
+                        <button onClick={() => handleDelete(doc.id)} className="flex items-center gap-1 px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs font-medium border border-red-100" title="Xóa"><Trash2 size={14} /> <span>Xóa</span></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {pagedDocs.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="py-12 text-center text-slate-500 italic">Chưa có văn bản nào trong thư viện.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3 p-2">
+            {pagedDocs.map((doc) => (
+              <div key={doc.id} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="bg-slate-100 text-slate-600 font-mono text-xs px-2 py-1 rounded w-fit shrink-0">{doc.so_hieu_vb}</div>
+                  <div className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${doc.trang_thai === 'Còn hiệu lực' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{doc.trang_thai || 'N/A'}</div>
+                </div>
+                <div onClick={() => setSelectedDoc(doc)} className="cursor-pointer">
+                  <h4 className="font-bold text-slate-800 text-sm leading-snug line-clamp-3 hover:text-primary-600">{doc.ten_vb}</h4>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                    <span className="truncate max-w-[150px]">{doc.co_quan_ban_hanh || 'N/A'}</span>
+                    <span>•</span>
+                    <span>{doc.ngay_ban_hanh || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons Row */}
+                <div className="grid grid-cols-3 gap-2 border-t border-slate-100 pt-2 mt-1">
+                  <button onClick={() => handleView(doc)} className="flex items-center justify-center gap-1 px-3 py-2 text-primary-700 bg-primary-50 hover:bg-primary-100 rounded text-xs font-semibold" title="Xem">
+                    <Eye size={16} /> Xem
+                  </button>
+                  <button onClick={() => handleEdit(doc)} className="flex items-center justify-center gap-1 px-3 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-xs font-semibold" title="Sửa">
+                    <Edit2 size={16} /> Sửa
+                  </button>
+                  <button onClick={() => handleDelete(doc.id)} className="flex items-center justify-center gap-1 px-3 py-2 text-red-700 bg-red-50 hover:bg-red-100 rounded text-xs font-semibold" title="Xóa">
+                    <Trash2 size={16} /> Xóa
+                  </button>
+                </div>
+              </div>
+            ))}
+            {pagedDocs.length === 0 && (
+              <div className="py-12 text-center text-slate-500 italic">Chưa có văn bản nào.</div>
+            )}
+          </div>
+          {/* Pagination controls */}
+          {totalRows > 0 && (
+            <div className="flex flex-wrap justify-between items-center gap-2 p-2 text-xs">
+              <span>Trang {page}/{totalPages || 1}</span>
+              <div className="flex gap-1">
+                <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-2 py-1 rounded border text-slate-600 disabled:opacity-50">Trước</button>
+                <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="px-2 py-1 rounded border text-slate-600 disabled:opacity-50">Sau</button>
+              </div>
+              <span>Hiển thị {pagedDocs.length} / {totalRows} văn bản</span>
+            </div>
+          )}
+          <div className="p-4 border-t border-slate-200 bg-slate-50 text-center text-xs text-slate-500">
+            Hiển thị {filteredDocs.length} văn bản
+          </div>
+        </>
       )}
-      <div className="p-4 border-t border-slate-200 bg-slate-50 text-center text-xs text-slate-500">
-         Hiển thị {filteredDocs.length} văn bản
-      </div>
-      
-      {showForm && <FormModal />}
+
+      {showForm && (
+        <FormModal
+          formData={formData}
+          setFormData={setFormData}
+          onClose={() => setShowForm(false)}
+          onSave={handleSave}
+          saving={saving}
+          fileUpload={fileUpload}
+          setFileUpload={setFileUpload}
+          coQuanList={coQuanList}
+          loaiVbList={loaiVbList}
+          onAddCoQuan={handleAddCoQuan}
+        />
+      )}
+
+      {selectedDoc && (
+        <DetailModal
+          doc={selectedDoc}
+          onClose={() => setSelectedDoc(null)}
+          onEdit={handleEdit}
+          onView={handleView}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };
@@ -351,109 +445,109 @@ const TrainingCenter = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-       {/* Left Column: Video Library & Quizzes */}
-       <div className="lg:col-span-2 space-y-6">
-          {/* Section: Video Library */}
-          <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                   <Youtube className="text-red-600" size={20} /> 
-                   Video Đào tạo & Quy trình mẫu
-                </h3>
-                <button className="text-sm text-primary-600 hover:underline">Xem tất cả</button>
-             </div>
-             {loading ? (
-               <div className="text-center py-8 text-slate-500">Đang tải...</div>
-             ) : videos.length === 0 ? (
-               <div className="text-center py-8 text-slate-400 italic">Chưa có video đào tạo nào.</div>
-             ) : (
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {videos.slice(0, 4).map((video, idx) => (
-                    <div key={video.id} className="group cursor-pointer">
-                       <div className={`aspect-video rounded-lg ${video.thumbnail || thumbnailColors[idx % thumbnailColors.length]} relative flex items-center justify-center mb-2 overflow-hidden`}>
-                          <PlayCircle className="w-12 h-12 text-slate-900/50 group-hover:text-red-600 transition-colors z-10" />
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
-                          <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">{video.thoi_luong || '--:--'}</span>
-                       </div>
-                       <h4 className="font-bold text-slate-800 text-sm leading-tight group-hover:text-primary-700">{video.tieu_de}</h4>
-                       <p className="text-xs text-slate-500 mt-1">{video.tac_gia || 'N/A'} • {video.luot_xem || 0} lượt xem</p>
+      {/* Left Column: Video Library & Quizzes */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Section: Video Library */}
+        <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <Youtube className="text-red-600" size={20} />
+              Video Đào tạo & Quy trình mẫu
+            </h3>
+            <button className="text-sm text-primary-600 hover:underline">Xem tất cả</button>
+          </div>
+          {loading ? (
+            <div className="text-center py-8 text-slate-500">Đang tải...</div>
+          ) : videos.length === 0 ? (
+            <div className="text-center py-8 text-slate-400 italic">Chưa có video đào tạo nào.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {videos.slice(0, 4).map((video, idx) => (
+                <div key={video.id} className="group cursor-pointer">
+                  <div className={`aspect-video rounded-lg ${video.thumbnail || thumbnailColors[idx % thumbnailColors.length]} relative flex items-center justify-center mb-2 overflow-hidden`}>
+                    <PlayCircle className="w-12 h-12 text-slate-900/50 group-hover:text-red-600 transition-colors z-10" />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+                    <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">{video.thoi_luong || '--:--'}</span>
+                  </div>
+                  <h4 className="font-bold text-slate-800 text-sm leading-tight group-hover:text-primary-700">{video.tieu_de}</h4>
+                  <p className="text-xs text-slate-500 mt-1">{video.tac_gia || 'N/A'} • {video.luot_xem || 0} lượt xem</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Section: Self-Study Quizzes */}
+        <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <CheckSquare className="text-green-600" size={20} />
+              Ôn tập & Kiểm tra kiến thức
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {QUIZZES.map(quiz => (
+              <div key={quiz.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary-200 hover:bg-slate-50 transition-colors">
+                <div className="mb-2 sm:mb-0">
+                  <h4 className="font-bold text-slate-800 text-sm">{quiz.title}</h4>
+                  <div className="flex gap-3 text-xs text-slate-500 mt-1">
+                    <span className="flex items-center gap-1"><HelpCircle size={12} /> {quiz.questions} câu hỏi</span>
+                    <span className="flex items-center gap-1"><BookOpen size={12} /> {quiz.time}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {quiz.bestScore > 0 ? (
+                    <div className="text-right">
+                      <span className="block text-xs text-slate-400">Kết quả tốt nhất</span>
+                      <span className={`font-bold ${quiz.bestScore >= 80 ? 'text-green-600' : 'text-amber-600'}`}>{quiz.bestScore}/100</span>
                     </div>
-                  ))}
-               </div>
-             )}
-          </section>
+                  ) : (
+                    <span className="text-xs text-slate-400 italic">Chưa làm</span>
+                  )}
+                  <button className="px-4 py-2 bg-white border border-primary-200 text-primary-700 text-sm font-bold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
+                    {quiz.attempts > 0 ? 'Làm lại' : 'Bắt đầu'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
 
-          {/* Section: Self-Study Quizzes */}
-          <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                   <CheckSquare className="text-green-600" size={20} /> 
-                   Ôn tập & Kiểm tra kiến thức
-                </h3>
-             </div>
-             <div className="space-y-3">
-                {QUIZZES.map(quiz => (
-                   <div key={quiz.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary-200 hover:bg-slate-50 transition-colors">
-                      <div className="mb-2 sm:mb-0">
-                         <h4 className="font-bold text-slate-800 text-sm">{quiz.title}</h4>
-                         <div className="flex gap-3 text-xs text-slate-500 mt-1">
-                            <span className="flex items-center gap-1"><HelpCircle size={12} /> {quiz.questions} câu hỏi</span>
-                            <span className="flex items-center gap-1"><BookOpen size={12} /> {quiz.time}</span>
-                         </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                         {quiz.bestScore > 0 ? (
-                            <div className="text-right">
-                               <span className="block text-xs text-slate-400">Kết quả tốt nhất</span>
-                               <span className={`font-bold ${quiz.bestScore >= 80 ? 'text-green-600' : 'text-amber-600'}`}>{quiz.bestScore}/100</span>
-                            </div>
-                         ) : (
-                            <span className="text-xs text-slate-400 italic">Chưa làm</span>
-                         )}
-                         <button className="px-4 py-2 bg-white border border-primary-200 text-primary-700 text-sm font-bold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
-                            {quiz.attempts > 0 ? 'Làm lại' : 'Bắt đầu'}
-                         </button>
-                      </div>
-                   </div>
-                ))}
-             </div>
-          </section>
-       </div>
+      {/* Right Column: Unit Training Logs */}
+      <div className="space-y-6">
+        <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-slate-800 text-sm uppercase flex items-center gap-2">
+              <Building size={18} className="text-indigo-600" />
+              Hồ sơ đào tạo tại đơn vị
+            </h3>
+          </div>
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-xs text-blue-800 mb-4">
+            <p>Các khoa/phòng cập nhật hoạt động tự đào tạo (bình bệnh án, sinh hoạt chuyên môn, tập huấn tại chỗ...) tại đây.</p>
+          </div>
 
-       {/* Right Column: Unit Training Logs */}
-       <div className="space-y-6">
-          <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 text-sm uppercase flex items-center gap-2">
-                   <Building size={18} className="text-indigo-600" />
-                   Hồ sơ đào tạo tại đơn vị
-                </h3>
-             </div>
-             <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-xs text-blue-800 mb-4">
-                <p>Các khoa/phòng cập nhật hoạt động tự đào tạo (bình bệnh án, sinh hoạt chuyên môn, tập huấn tại chỗ...) tại đây.</p>
-             </div>
-             
-             <button className="w-full py-2 mb-4 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
-                <Plus size={16} /> Đăng ký buổi đào tạo
-             </button>
+          <button className="w-full py-2 mb-4 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+            <Plus size={16} /> Đăng ký buổi đào tạo
+          </button>
 
-             <div className="space-y-4">
-                {UNIT_TRAINING.map(item => (
-                   <div key={item.id} className="relative pl-4 border-l-2 border-slate-200 pb-2">
-                      <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border border-white"></div>
-                      <p className="text-xs text-slate-400 font-mono mb-0.5">{item.date}</p>
-                      <h4 className="text-sm font-bold text-slate-800">{item.unit}</h4>
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">{item.content}</p>
-                      <div className="flex justify-between items-center mt-2">
-                         <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{item.attendees} người tham gia</span>
-                         <span className="text-[10px] text-green-600 font-bold">{item.status}</span>
-                      </div>
-                   </div>
-                ))}
-             </div>
-             <button className="w-full mt-4 text-xs text-slate-500 hover:text-primary-600 text-center block">Xem lịch sử toàn viện</button>
-          </section>
-       </div>
+          <div className="space-y-4">
+            {UNIT_TRAINING.map(item => (
+              <div key={item.id} className="relative pl-4 border-l-2 border-slate-200 pb-2">
+                <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border border-white"></div>
+                <p className="text-xs text-slate-400 font-mono mb-0.5">{item.date}</p>
+                <h4 className="text-sm font-bold text-slate-800">{item.unit}</h4>
+                <p className="text-xs text-slate-600 mt-1 line-clamp-2">{item.content}</p>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{item.attendees} người tham gia</span>
+                  <span className="text-[10px] text-green-600 font-bold">{item.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-4 text-xs text-slate-500 hover:text-primary-600 text-center block">Xem lịch sử toàn viện</button>
+        </section>
+      </div>
     </div>
   );
 };
@@ -487,60 +581,271 @@ const KnowledgeSharing = () => {
 
   return (
     <div className="space-y-6">
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Loading State */}
-          {loading && (
-            <div className="col-span-full text-center py-8 text-slate-500">Đang tải...</div>
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Loading State */}
+        {loading && (
+          <div className="col-span-full text-center py-8 text-slate-500">Đang tải...</div>
+        )}
 
-          {/* Featured Articles from Supabase */}
-          {!loading && articles.map(article => (
-             <div key={article.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div className="flex items-start justify-between mb-3">
-                   <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${getCategoryStyle(article.phan_loai || 'Khác')}`}>
-                      {article.phan_loai || 'Bài viết'}
-                   </span>
-                   <Bookmark className="text-slate-300 hover:text-primary-600 cursor-pointer" size={18} />
-                </div>
-                <h3 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 hover:text-primary-700 cursor-pointer">{article.tieu_de}</h3>
-                <div className="mt-auto pt-4 flex items-center justify-between text-xs text-slate-500">
-                   <span>{article.ngay_dang || '-'}</span>
-                   <span className="flex items-center gap-1"><Heart size={14} /> {article.luot_thich || 0} quan tâm</span>
-                </div>
-             </div>
-          ))}
-          
-          {/* Add New Contribution Card */}
-          <div className="bg-slate-50 p-5 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors cursor-pointer group">
-             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
-                <Plus size={24} className="text-primary-600" />
-             </div>
-             <h3 className="font-bold text-slate-700">Đóng góp bài viết</h3>
-             <p className="text-xs text-slate-500 mt-1 max-w-[200px]">Chia sẻ kinh nghiệm, mô hình hay của khoa phòng bạn</p>
+        {/* Featured Articles from Supabase */}
+        {!loading && articles.map(article => (
+          <div key={article.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <div className="flex items-start justify-between mb-3">
+              <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${getCategoryStyle(article.phan_loai || 'Khác')}`}>
+                {article.phan_loai || 'Bài viết'}
+              </span>
+              <Bookmark className="text-slate-300 hover:text-primary-600 cursor-pointer" size={18} />
+            </div>
+            <h3 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 hover:text-primary-700 cursor-pointer">{article.tieu_de}</h3>
+            <div className="mt-auto pt-4 flex items-center justify-between text-xs text-slate-500">
+              <span>{article.ngay_dang || '-'}</span>
+              <span className="flex items-center gap-1"><Heart size={14} /> {article.luot_thich || 0} quan tâm</span>
+            </div>
           </div>
-       </div>
+        ))}
 
-       {/* FAQ Section */}
-       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-             <HelpCircle className="text-purple-600" /> Câu hỏi thường gặp (Q&A)
-          </h3>
-          <div className="divide-y divide-slate-100">
-             <div className="py-3">
-                <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Làm thế nào để đăng ký đề án cải tiến chất lượng mới?</h4>
-                <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Các khoa phòng truy cập module "Cải tiến chất lượng", chọn "Lập kế hoạch mới" và điền theo mẫu PDCA. Sau khi lưu, Ban QLCL sẽ nhận được thông báo để duyệt.</p>
-             </div>
-             <div className="py-3">
-                <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Thời gian báo cáo chỉ số chất lượng hàng tháng là khi nào?</h4>
-                <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Hệ thống mở cổng nhập liệu từ ngày 25 đến ngày 30 hàng tháng. Sau thời gian này, dữ liệu sẽ bị khóa để tổng hợp báo cáo.</p>
-             </div>
-             <div className="py-3">
-                <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Quên mật khẩu đăng nhập hệ thống thì liên hệ ai?</h4>
-                <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Vui lòng liên hệ Ban Quản lý chất lượng (SĐT: 1234) hoặc Tổ Công nghệ thông tin để được cấp lại mật khẩu.</p>
-             </div>
+        {/* Add New Contribution Card */}
+        <div className="bg-slate-50 p-5 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors cursor-pointer group">
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
+            <Plus size={24} className="text-primary-600" />
           </div>
-          <button className="mt-4 text-sm text-primary-600 font-medium hover:underline">Xem thêm câu hỏi...</button>
-       </div>
+          <h3 className="font-bold text-slate-700">Đóng góp bài viết</h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-[200px]">Chia sẻ kinh nghiệm, mô hình hay của khoa phòng bạn</p>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+          <HelpCircle className="text-purple-600" /> Câu hỏi thường gặp (Q&A)
+        </h3>
+        <div className="divide-y divide-slate-100">
+          <div className="py-3">
+            <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Làm thế nào để đăng ký đề án cải tiến chất lượng mới?</h4>
+            <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Các khoa phòng truy cập module "Cải tiến chất lượng", chọn "Lập kế hoạch mới" và điền theo mẫu PDCA. Sau khi lưu, Ban QLCL sẽ nhận được thông báo để duyệt.</p>
+          </div>
+          <div className="py-3">
+            <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Thời gian báo cáo chỉ số chất lượng hàng tháng là khi nào?</h4>
+            <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Hệ thống mở cổng nhập liệu từ ngày 25 đến ngày 30 hàng tháng. Sau thời gian này, dữ liệu sẽ bị khóa để tổng hợp báo cáo.</p>
+          </div>
+          <div className="py-3">
+            <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Quên mật khẩu đăng nhập hệ thống thì liên hệ ai?</h4>
+            <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Vui lòng liên hệ Ban Quản lý chất lượng (SĐT: 1234) hoặc Tổ Công nghệ thông tin để được cấp lại mật khẩu.</p>
+          </div>
+        </div>
+        <button className="mt-4 text-sm text-primary-600 font-medium hover:underline">Xem thêm câu hỏi...</button>
+      </div>
+    </div>
+  );
+};
+
+const FormModal: React.FC<FormModalProps> = ({
+  formData, setFormData, onClose, onSave, saving, fileUpload, setFileUpload, coQuanList, loaiVbList, onAddCoQuan
+}) => {
+  const [isAddingLoai, setIsAddingLoai] = useState(false);
+  const [newLoai, setNewLoai] = useState('');
+  const [isAddingCoQuan, setIsAddingCoQuan] = useState(false);
+  const [newCoQuan, setNewCoQuan] = useState('');
+
+  const handleAddNewLoai = () => {
+    if (newLoai.trim()) {
+      setFormData({ ...formData, loai_vb: newLoai.trim() });
+      setIsAddingLoai(false);
+      setNewLoai('');
+    }
+  }
+
+  const handleAddNewCoQuan = async () => {
+    if (newCoQuan.trim()) {
+      await onAddCoQuan(newCoQuan.trim());
+      setFormData({ ...formData, co_quan_ban_hanh: newCoQuan.trim() });
+      setIsAddingCoQuan(false);
+      setNewCoQuan('');
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white z-10">
+          <h3 className="text-lg font-bold text-slate-800">Thêm văn bản mới</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">File văn bản (PDF, DOC...)</label>
+              <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.zip,.rar,.jpg,.png" onChange={e => setFileUpload(e.target.files?.[0] || null)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
+              {fileUpload && <div className="text-xs text-slate-600 mt-1">Đã chọn: {fileUpload.name}</div>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Số hiệu VB *</label>
+              <input type="text" value={formData.so_hieu_vb} onChange={e => setFormData({ ...formData, so_hieu_vb: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="15/2023/QH15" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Tên văn bản *</label>
+              <input type="text" value={formData.ten_vb} onChange={e => setFormData({ ...formData, ten_vb: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Thông tư hướng dẫn..." />
+            </div>
+
+            {/* Loại Văn Bản */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-slate-700">Loại văn bản *</label>
+                {!isAddingLoai && <button onClick={() => setIsAddingLoai(true)} className="text-xs text-primary-600 hover:text-primary-700 font-medium">+ Thêm mới</button>}
+              </div>
+              {isAddingLoai ? (
+                <div className="flex gap-2">
+                  <input type="text" value={newLoai} onChange={e => setNewLoai(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nhập loại mới..." autoFocus />
+                  <button onClick={handleAddNewLoai} className="px-3 bg-primary-600 text-white rounded-lg text-xs">OK</button>
+                  <button onClick={() => setIsAddingLoai(false)} className="px-3 bg-slate-200 text-slate-600 rounded-lg text-xs">Hủy</button>
+                </div>
+              ) : (
+                <select value={formData.loai_vb} onChange={e => setFormData({ ...formData, loai_vb: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                  <option value="">-- Chọn loại văn bản --</option>
+                  {loaiVbList.map((t, idx) => <option key={idx} value={t}>{t}</option>)}
+                </select>
+              )}
+            </div>
+
+            {/* Cơ Quan Ban Hành */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-slate-700">Cơ quan ban hành *</label>
+                {!isAddingCoQuan && <button onClick={() => setIsAddingCoQuan(true)} className="text-xs text-primary-600 hover:text-primary-700 font-medium">+ Thêm mới</button>}
+              </div>
+              {isAddingCoQuan ? (
+                <div className="flex gap-2">
+                  <input type="text" value={newCoQuan} onChange={e => setNewCoQuan(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nhập cơ quan mới..." autoFocus />
+                  <button onClick={handleAddNewCoQuan} className="px-3 bg-primary-600 text-white rounded-lg text-xs">OK</button>
+                  <button onClick={() => setIsAddingCoQuan(false)} className="px-3 bg-slate-200 text-slate-600 rounded-lg text-xs">Hủy</button>
+                </div>
+              ) : (
+                <select value={formData.co_quan_ban_hanh} onChange={e => setFormData({ ...formData, co_quan_ban_hanh: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                  <option value="">-- Chọn cơ quan --</option>
+                  {coQuanList.map((cq: any) => <option key={cq.id} value={cq.ten_co_quan}>{cq.ten_co_quan}</option>)}
+                </select>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Ngày có hiệu lực *</label>
+              <input type="date" value={formData.hieu_luc} onChange={e => setFormData({ ...formData, hieu_luc: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Trạng thái *</label>
+              <select value={formData.trang_thai} onChange={e => setFormData({ ...formData, trang_thai: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                <option value="Còn hiệu lực">Còn hiệu lực</option>
+                <option value="Hết hiệu lực">Hết hiệu lực</option>
+                <option value="Dự thảo">Dự thảo</option>
+                <option value="Hủy bỏ">Hủy bỏ</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
+          <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Hủy</button>
+          <button onClick={onSave} disabled={saving}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+            {saving ? <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span> : <Save size={16} />}
+            {saving ? 'Đang lưu...' : 'Lưu'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onClose: () => void, onEdit: (d: any) => void, onView: (d: any) => void, onDelete: (id: string) => void }) => {
+  if (!doc) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
+          <div>
+            <h3 className="font-bold text-slate-800 text-lg">Chi tiết văn bản</h3>
+            <p className="text-xs text-slate-500 font-mono mt-1">{doc.so_hieu_vb}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên văn bản</label>
+            <p className="text-slate-800 font-medium text-sm leading-relaxed">{doc.ten_vb}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Loại văn bản</label>
+              <div className="flex items-center gap-2">
+                <FileText size={16} className="text-primary-500" />
+                <span className="text-sm text-slate-700">{doc.loai_vb || '---'}</span>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Trạng thái</label>
+              <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border ${doc.trang_thai === 'Còn hiệu lực' ? 'bg-green-50 text-green-700 border-green-200' :
+                  doc.trang_thai === 'Hết hiệu lực' ? 'bg-red-50 text-red-700 border-red-200' :
+                    'bg-slate-100 text-slate-600 border-slate-200'
+                }`}>
+                {doc.trang_thai}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Cơ quan ban hành</label>
+              <div className="flex items-center gap-2">
+                <Building size={16} className="text-slate-400" />
+                <span className="text-sm text-slate-700">{doc.co_quan_ban_hanh || '---'}</span>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Ngày hiệu lực</label>
+              <span className="text-sm text-slate-700">{doc.hieu_luc ? new Date(doc.hieu_luc).toLocaleDateString('vi-VN') : '---'}</span>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">File đính kèm</label>
+            {doc.file_van_ban ? (
+              <div className="flex items-center gap-2 p-3 bg-primary-50 border border-primary-100 rounded-lg group hover:border-primary-300 transition-colors cursor-pointer" onClick={() => onView(doc)}>
+                <div className="bg-white p-2 rounded border border-primary-100">
+                  <Download size={20} className="text-primary-600" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm font-medium text-primary-700 truncate">{doc.file_van_ban.split('/').pop()}</p>
+                  <p className="text-xs text-primary-500">Nhấn để xem hoặc tải về</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 italic">Không có file đính kèm.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+          <button onClick={() => { onEdit(doc); onClose(); }} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Edit2 size={16} /> Sửa văn bản
+          </button>
+          <button onClick={() => { if (window.confirm('Xóa?')) { onDelete(doc.id); onClose(); } }} className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors">
+            <Trash2 size={16} /> Xóa
+          </button>
+          <button onClick={() => onView(doc)} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Eye size={16} /> Xem nội dung
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
