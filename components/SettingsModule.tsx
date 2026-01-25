@@ -13,11 +13,12 @@ import ScheduleTable from './settings/ScheduleTable';
 import AuthorityTable from './settings/AuthorityTable';
 import ThemeSettings from './settings/ThemeSettings';
 import NotificationTable from './settings/NotificationTable';
+import { useNavigation } from '../contexts/NavigationContext';
 
 type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE';
 
 export const SettingsModule: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<SettingTab>('USER');
+  const { activeSettingsTab: activeTab, setSettingsTab: setActiveTab } = useNavigation();
 
   const menuItems = [
     { id: 'USER', label: 'Người dùng', icon: <Users size={18} /> },
@@ -79,8 +80,8 @@ export const SettingsModule: React.FC = () => {
               key={item.id}
               onClick={() => setActiveTab(item.id as SettingTab)}
               className={`flex-shrink-0 lg:w-full flex items-center lg:justify-between px-4 py-3 lg:p-3 rounded-xl text-xs lg:text-sm font-bold transition-all mr-2 lg:mr-0 lg:mb-1 border-2 ${activeTab === item.id
-                  ? 'bg-primary-600 text-white border-primary-600 shadow-lg shadow-primary-900/20'
-                  : 'text-slate-500 bg-white border-transparent hover:bg-slate-50 hover:text-slate-800'
+                ? 'bg-primary-600 text-white border-primary-600 shadow-lg shadow-primary-900/20'
+                : 'text-slate-500 bg-white border-transparent hover:bg-slate-50 hover:text-slate-800'
                 }`}
             >
               <div className="flex items-center gap-3">

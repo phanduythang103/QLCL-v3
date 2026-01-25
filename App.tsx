@@ -14,6 +14,7 @@ import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
 import { HeaderUserMenu } from './components/HeaderUserMenu';
+import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 
 // --- Reusable Nav Item ---
 const NavItem = ({ icon, label, active, onClick, collapsed }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; collapsed: boolean; }) => (
@@ -113,13 +114,13 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
 );
 
 const AppContent: React.FC = () => {
-  const [currentModule, setCurrentModule] = useState<ModuleType>(ModuleType.DASHBOARD);
+  const { currentModule, navigateToModule } = useNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { user } = useAuth();
 
   const handleModuleChange = (module: ModuleType) => {
-    setCurrentModule(module);
+    navigateToModule(module);
     setMobileSidebarOpen(false);
   };
 
@@ -202,9 +203,11 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <SupervisionProvider>
-    <AppContent />
-  </SupervisionProvider>
+  <NavigationProvider>
+    <SupervisionProvider>
+      <AppContent />
+    </SupervisionProvider>
+  </NavigationProvider>
 );
 
 export default App;
