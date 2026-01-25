@@ -37,17 +37,75 @@ const dataCompliance = [
 ];
 
 import { NotificationDashboard } from './NotificationDashboard';
+import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
+import { fetchThuVienVb } from '../readThuVienVb';
+import { supabase } from '../supabaseClient';
 
 export const Dashboard: React.FC = () => {
+  const [stats, setStats] = React.useState({
+    nhanSu: { total: 0, certified: 0 },
+    vanBan: { total: 0, monthly: 0 },
+    loading: true
+  });
+
+  React.useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [nhanSuData, vanBanData] = await Promise.all([
+          fetchNhanSuQlcl(),
+          fetchThuVienVb()
+        ]);
+
+        // Calculate personnel stats
+        const nsTotal = nhanSuData.length;
+        const nsCertified = nhanSuData.filter(i => i.co_chung_chi).length;
+
+        // Calculate document stats
+        const vbTotal = vanBanData?.length || 0;
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const vbMonthly = (vanBanData as any[])?.filter(i => {
+          const createdAt = new Date(i.created_at || i.ngay_ban_hanh || '');
+          return createdAt >= firstDayOfMonth;
+        }).length || 0;
+
+        setStats({
+          nhanSu: { total: nsTotal, certified: nsCertified },
+          vanBan: { total: vbTotal, monthly: vbMonthly },
+          loading: false
+        });
+      } catch (err) {
+        console.error("Error loading dashboard stats:", err);
+        setStats(s => ({ ...s, loading: false }));
+      }
+    };
+
+    loadStats();
+
+    // Setup Realtime subscriptions
+    const nsChannel = supabase.channel('ns_stats_changes')
+      .on('postgres_changes', { event: '*', table: 'nhan_su_qlcl', schema: 'public' }, loadStats)
+      .subscribe();
+
+    const vbChannel = supabase.channel('vb_stats_changes')
+      .on('postgres_changes', { event: '*', table: 'thu_vien_vb', schema: 'public' }, loadStats)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(nsChannel);
+      supabase.removeChannel(vbChannel);
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Nhân sự QLCL"
-          value="45"
-          subtext="Đã cấp chứng chỉ: 38"
+          value={stats.loading ? "..." : stats.nhanSu.total.toString()}
+          subtext={`Đã cấp chứng chỉ: ${stats.nhanSu.certified}`}
           icon={<Users className="w-6 h-6 text-primary-600" />}
-          trend="+2"
+          trend={stats.nhanSu.total > 0 ? `+${stats.nhanSu.total}` : undefined}
         />
         <StatCard
           title="Sự cố Y khoa (T6)"
@@ -65,9 +123,9 @@ export const Dashboard: React.FC = () => {
           trend="+1.2%"
         />
         <StatCard
-          title="Văn bản mới"
-          value="12"
-          subtext="Trong tháng này"
+          title="Văn bản & Tài liệu"
+          value={stats.loading ? "..." : stats.vanBan.total.toString()}
+          subtext={`Mới trong tháng: ${stats.vanBan.monthly}`}
           icon={<FileText className="w-6 h-6 text-purple-600" />}
         />
       </div>
