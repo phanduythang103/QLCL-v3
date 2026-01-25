@@ -14,6 +14,7 @@ interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    changePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     loading: boolean;
 }
@@ -66,13 +67,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const changePassword = async (newPassword: string) => {
+        if (!user) return { success: false, error: 'Chưa đăng nhập' };
+
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update({ password: newPassword })
+                .eq('id', user.id);
+
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error('Change password error:', err);
+            return { success: false, error: 'Không thể đổi mật khẩu' };
+        }
+    };
+
     const logout = () => {
         setUser(null);
         clearStoredUser();
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, changePassword, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -13,6 +13,7 @@ import { IndicatorsModule } from './components/IndicatorsModule';
 import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
+import { HeaderUserMenu } from './components/HeaderUserMenu';
 
 // --- Reusable Nav Item ---
 const NavItem = ({ icon, label, active, onClick, collapsed }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; collapsed: boolean; }) => (
@@ -74,9 +75,8 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
   );
 };
 
-
 // --- Main Sidebar Component ---
-const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, mobileSidebarOpen, setMobileOpen, logout }: { currentModule: ModuleType; handleModuleChange: (module: ModuleType) => void; collapsed: boolean; setCollapsed: (collapsed: boolean) => void; mobileSidebarOpen: boolean; setMobileOpen: (open: boolean) => void; logout: () => void; }) => (
+const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, mobileSidebarOpen, setMobileOpen }: { currentModule: ModuleType; handleModuleChange: (module: ModuleType) => void; collapsed: boolean; setCollapsed: (collapsed: boolean) => void; mobileSidebarOpen: boolean; setMobileOpen: (open: boolean) => void; }) => (
   <aside className={`fixed md:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-900 shadow-xl transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
     <div className="h-20 flex items-center justify-center px-4 border-b border-primary-800/50 bg-primary-900 relative">
       {collapsed ? <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md" /> : (
@@ -104,20 +104,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         <NavItem icon={<Settings size={20} />} label="Cấu hình hệ thống" active={currentModule === ModuleType.SETTINGS} onClick={() => handleModuleChange(ModuleType.SETTINGS)} collapsed={collapsed} />
       </div>
     </div>
-    <div className="p-4 border-t border-primary-800/50 bg-primary-900 space-y-2">
-      <button
-        onClick={() => {
-          if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-            logout();
-            window.location.href = '/login';
-          }
-        }}
-        className="w-full flex items-center justify-center px-4 py-2 rounded-lg text-red-300 hover:bg-red-900/30 hover:text-white transition-colors mb-2"
-        title={collapsed ? 'Đăng xuất' : ''}
-      >
-        <LogOut size={20} />
-        {!collapsed && <span className="ml-3 font-medium text-sm">Đăng xuất</span>}
-      </button>
+    <div className="p-4 border-t border-primary-800/50 bg-primary-900">
       <button onClick={() => setCollapsed(!collapsed)} className="hidden md:flex w-full items-center justify-center p-2 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors">
         <Menu size={20} />
       </button>
@@ -129,7 +116,7 @@ const AppContent: React.FC = () => {
   const [currentModule, setCurrentModule] = useState<ModuleType>(ModuleType.DASHBOARD);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const handleModuleChange = (module: ModuleType) => {
     setCurrentModule(module);
@@ -179,7 +166,6 @@ const AppContent: React.FC = () => {
         setCollapsed={setSidebarCollapsed}
         mobileSidebarOpen={mobileSidebarOpen}
         setMobileOpen={setMobileSidebarOpen}
-        logout={logout}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 w-full">
@@ -198,20 +184,9 @@ const AppContent: React.FC = () => {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
             </button>
             <div className="h-8 w-px bg-slate-200 mx-1 md:mx-2"></div>
-            <div className="flex items-center gap-2 md:gap-3 cursor-pointer p-1 rounded-lg hover:bg-slate-50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200 text-xs shadow-sm flex-shrink-0">
-                {user?.full_name?.substring(0, 2).toUpperCase() || 'US'}
-              </div>
-              <div className="hidden md:block text-left">
-                {user ? (
-                  <>
-                    <p className="text-sm font-semibold text-slate-700">{user.full_name}</p>
-                    <p className="text-xs text-slate-500">{user.role === 'Admin' ? 'Ban QLCL' : user.department || 'Nhân viên'}</p>
-                  </>
-                ) : <p className="text-sm font-semibold text-slate-700">Guest</p>}
-              </div>
-              <ChevronDown size={16} className="text-slate-400 hidden md:block" />
-            </div>
+
+            {/* New Integrated User Menu */}
+            <HeaderUserMenu />
           </div>
         </header>
 
