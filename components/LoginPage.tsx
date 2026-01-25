@@ -96,25 +96,17 @@ export function LoginPage() {
             <div className="w-full lg:w-1/4 flex items-center justify-center p-8 bg-white">
                 <div className="w-full max-w-md">
                     {/* Logo and Title */}
-                    <div className="mb-8">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center">
-                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 className="text-sm font-semibold text-gray-600">HOSPITAL</h1>
-                                <p className="text-xs text-gray-500">Chất Lượng H Care</p>
-                            </div>
+                    <div className="mb-10">
+                        <div className="flex flex-col items-center mb-8">
+                            <img
+                                src="https://i.postimg.cc/YSf7nw74/logo_103_min.png"
+                                alt="Logo 103"
+                                className="w-24 h-24 object-contain drop-shadow-md mb-4"
+                            />
+                            <h2 className="text-xl font-bold text-gray-900 text-center uppercase tracking-tight leading-tight">
+                                HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG
+                            </h2>
                         </div>
-
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                            {uiSettings?.tieu_de_chinh || 'Quản lý Chất lượng Bệnh viện'}
-                        </h2>
-                        <p className="text-gray-600">
-                            {uiSettings?.tieu_de_phu || 'Đăng nhập'}
-                        </p>
                     </div>
 
                     {/* Login Form */}
@@ -171,12 +163,6 @@ export function LoginPage() {
                         >
                             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                         </button>
-
-                        <div className="text-center">
-                            <a href="#" className="text-sm text-primary-600 hover:text-primary-700">
-                                Quên mật khẩu?
-                            </a>
-                        </div>
                     </form>
 
 
@@ -184,25 +170,27 @@ export function LoginPage() {
             </div>
 
             {/* Right Column - Background Image (3/4) */}
-            <div className="hidden lg:block lg:w-3/4 relative">
+            <div className="hidden lg:block lg:w-3/4 relative bg-gray-900">
                 {backgroundUrl ? (
                     <>
                         <img
                             src={backgroundUrl}
                             alt="Hospital"
-                            className="absolute inset-0 w-full h-full object-cover"
+                            className="absolute inset-0 w-full h-full object-contain"
                         />
                         {/* Overlay gradient for better text visibility */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
 
                         {/* Titles at bottom left */}
-                        <div className="absolute bottom-8 left-8 text-white z-10">
-                            <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
-                                {uiSettings?.tieu_de_chinh || 'Quản lý Chất lượng Bệnh viện'}
+                        <div className="absolute bottom-10 left-10 text-white z-10">
+                            <h1 className="text-4xl font-bold mb-2 drop-shadow-lg uppercase tracking-wider">
+                                {uiSettings?.tieu_de_chinh || 'HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG'}
                             </h1>
-                            <p className="text-xl drop-shadow-lg">
-                                {uiSettings?.tieu_de_phu || 'Đăng nhập'}
-                            </p>
+                            {uiSettings?.tieu_de_phu && uiSettings?.tieu_de_phu !== 'Test' && (
+                                <p className="text-xl drop-shadow-md opacity-90">
+                                    {uiSettings.tieu_de_phu}
+                                </p>
+                            )}
                         </div>
                     </>
                 ) : (
