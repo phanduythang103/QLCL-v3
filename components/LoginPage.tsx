@@ -170,16 +170,23 @@ export function LoginPage() {
             </div>
 
             {/* Right Column - Background Image (3/4) */}
-            <div className="hidden lg:block lg:w-3/4 relative bg-gray-900">
+            <div className="hidden lg:block lg:w-3/4 relative overflow-hidden bg-gray-950">
                 {backgroundUrl ? (
                     <>
+                        {/* Blurred background layer to automatically fill colors */}
+                        <div
+                            className="absolute inset-0 w-full h-full bg-cover bg-center scale-110 blur-3xl opacity-60"
+                            style={{ backgroundImage: `url(${backgroundUrl})` }}
+                        ></div>
+
+                        {/* Sharp centered image */}
                         <img
                             src={backgroundUrl}
                             alt="Hospital"
-                            className="absolute inset-0 w-full h-full object-contain"
+                            className="absolute inset-0 w-full h-full object-contain z-0"
                         />
                         {/* Overlay gradient for better text visibility */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
 
                         {/* Titles at bottom left */}
                         <div className="absolute bottom-10 left-10 text-white z-10">
