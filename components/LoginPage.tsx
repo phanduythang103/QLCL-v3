@@ -9,6 +9,8 @@ interface UISettings {
     anh: string;
     tieu_de_chinh: string;
     tieu_de_phu: string;
+    co_chu_chinh: number;
+    co_chu_phu: number;
 }
 
 export function LoginPage() {
@@ -185,16 +187,22 @@ export function LoginPage() {
                             alt="Hospital"
                             className="absolute inset-0 w-full h-full object-contain z-0"
                         />
-                        {/* Overlay gradient for better text visibility */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
+                        {/* Overlay gradient for better text visibility - deeper and darker for higher text */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10"></div>
 
-                        {/* Titles at bottom left */}
-                        <div className="absolute bottom-10 left-10 text-white z-10">
-                            <h1 className="text-4xl font-bold mb-2 drop-shadow-lg uppercase tracking-wider">
+                        {/* Titles at bottom left (roughly bottom 1/4 area) */}
+                        <div className="absolute bottom-[15%] left-10 text-white z-10 max-w-[80%] transition-all duration-500">
+                            <h1
+                                className="font-bold mb-4 drop-shadow-2xl uppercase tracking-wider leading-tight"
+                                style={{ fontSize: `${uiSettings?.co_chu_chinh || 48}px` }}
+                            >
                                 {uiSettings?.tieu_de_chinh || 'HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG'}
                             </h1>
                             {uiSettings?.tieu_de_phu && uiSettings?.tieu_de_phu !== 'Test' && (
-                                <p className="text-xl drop-shadow-md opacity-90">
+                                <p
+                                    className="drop-shadow-xl opacity-95 font-medium italic"
+                                    style={{ fontSize: `${uiSettings?.co_chu_phu || 24}px` }}
+                                >
                                     {uiSettings.tieu_de_phu}
                                 </p>
                             )}
@@ -203,10 +211,16 @@ export function LoginPage() {
                 ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-end p-8">
                         <div className="text-white">
-                            <h1 className="text-4xl font-bold mb-2">
+                            <h1
+                                className="font-bold mb-2"
+                                style={{ fontSize: `${uiSettings?.co_chu_chinh || 48}px` }}
+                            >
                                 {uiSettings?.tieu_de_chinh || 'Chào mừng đến với'}
                             </h1>
-                            <p className="text-xl">
+                            <p
+                                className="text-xl"
+                                style={{ fontSize: `${uiSettings?.co_chu_phu || 24}px` }}
+                            >
                                 {uiSettings?.tieu_de_phu || 'Hệ thống Quản lý Chất lượng'}
                             </p>
                         </div>

@@ -7,6 +7,8 @@ interface UISettings {
     anh: string;
     tieu_de_chinh: string;
     tieu_de_phu: string;
+    co_chu_chinh: number;
+    co_chu_phu: number;
 }
 
 export default function ThemeSettings() {
@@ -20,6 +22,8 @@ export default function ThemeSettings() {
     // Form state
     const [tieuDeChinh, setTieuDeChinh] = useState('');
     const [tieuDePhu, setTieuDePhu] = useState('');
+    const [coChuChinh, setCoChuChinh] = useState(48);
+    const [coChuPhu, setCoChuPhu] = useState(24);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     // Fetch current settings
@@ -40,6 +44,8 @@ export default function ThemeSettings() {
                 setSettings(data);
                 setTieuDeChinh(data.tieu_de_chinh);
                 setTieuDePhu(data.tieu_de_phu || '');
+                setCoChuChinh(data.co_chu_chinh || 48);
+                setCoChuPhu(data.co_chu_phu || 24);
 
                 // Get image URL
                 if (data.anh) {
@@ -89,11 +95,6 @@ export default function ThemeSettings() {
             const fileName = `login-bg-${Date.now()}.${fileExt}`;
             const filePath = fileName;
 
-            // Delete old image if exists
-            if (settings?.anh) {
-                await supabase.storage.from('avatar').remove([settings.anh]);
-            }
-
             // Upload new image
             const { error: uploadError } = await supabase.storage
                 .from('avatar')
@@ -106,10 +107,15 @@ export default function ThemeSettings() {
                 throw uploadError;
             }
 
+            // Delete old image if exists AND upload was successful
+            if (settings?.anh) {
+                await supabase.storage.from('avatar').remove([settings.anh]);
+            }
+
             return filePath;
         } catch (err) {
             console.error('Error uploading image:', err);
-            showMessage('error', 'Không thể upload ảnh');
+            showMessage('error', 'Không thể upload ảnh: ' + (err as any).message);
             return null;
         } finally {
             setUploading(false);
@@ -117,45 +123,55 @@ export default function ThemeSettings() {
     };
 
     const handleSave = async () => {
+        if (!tieuDeChinh.trim()) {
+            showMessage('error', 'Vui lòng nhập tiêu đề chính');
+            return;
+        }
+
         try {
             setSaving(true);
 
             // Upload image first if selected
             const imagePath = await uploadImage();
+
+            // If we have a file selected but failed to get an imagePath, don't proceed to update DB
             if (selectedFile && !imagePath) {
-                return; // Upload failed
+                return;
             }
 
             const updateData = {
-                tieu_de_chinh: tieuDeChinh,
-                tieu_de_phu: tieuDePhu,
+                tieu_de_chinh: tieuDeChinh.trim(),
+                tieu_de_phu: tieuDePhu.trim(),
+                co_chu_chinh: coChuChinh,
+                co_chu_phu: coChuPhu,
                 anh: imagePath || settings?.anh || '',
                 updated_at: new Date().toISOString(),
             };
 
+            let saveError;
             if (settings?.id) {
                 // Update existing
                 const { error } = await supabase
                     .from('cai_dat_giao_dien')
                     .update(updateData)
                     .eq('id', settings.id);
-
-                if (error) throw error;
+                saveError = error;
             } else {
                 // Insert new
                 const { error } = await supabase
                     .from('cai_dat_giao_dien')
                     .insert([updateData]);
-
-                if (error) throw error;
+                saveError = error;
             }
+
+            if (saveError) throw saveError;
 
             showMessage('success', 'Lưu cài đặt thành công!');
             setSelectedFile(null);
             await fetchSettings();
         } catch (err) {
             console.error('Error saving settings:', err);
-            showMessage('error', 'Không thể lưu cài đặt');
+            showMessage('error', 'Không thể lưu cài đặt: ' + (err as any).message);
         } finally {
             setSaving(false);
         }
@@ -221,6 +237,38 @@ export default function ThemeSettings() {
                                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                                     placeholder="VD: Đăng nhập"
                                 />
+                            </div>
+
+                            {/* Cỡ chữ */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Cỡ chữ chính ({coChuChinh}px)
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="24"
+                                        max="120"
+                                        step="2"
+                                        value={coChuChinh}
+                                        onChange={(e) => setCoChuChinh(parseInt(e.target.value))}
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Cỡ chữ phụ ({coChuPhu}px)
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="12"
+                                        max="60"
+                                        step="1"
+                                        value={coChuPhu}
+                                        onChange={(e) => setCoChuPhu(parseInt(e.target.value))}
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                                    />
+                                </div>
                             </div>
 
                             {/* Upload ảnh */}
@@ -290,10 +338,16 @@ export default function ThemeSettings() {
                                 />
                             </div>
                             <div className="bg-slate-50 p-4 rounded-lg">
-                                <p className="text-sm font-semibold text-slate-700 mb-1">
+                                <p
+                                    className="font-semibold text-slate-700 mb-1 leading-tight break-words"
+                                    style={{ fontSize: `${coChuChinh * 0.4}px` }} // Scale down for preview
+                                >
                                     {tieuDeChinh || 'Tiêu đề chính'}
                                 </p>
-                                <p className="text-xs text-slate-500">
+                                <p
+                                    className="text-slate-500 break-words"
+                                    style={{ fontSize: `${coChuPhu * 0.6}px` }} // Scale down for preview
+                                >
                                     {tieuDePhu || 'Tiêu đề phụ'}
                                 </p>
                             </div>

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS cai_dat_giao_dien (
   anh text NOT NULL,                    -- Đường dẫn ảnh trong storage bucket 'avatar'
   tieu_de_chinh text NOT NULL,          -- Tiêu đề chính (VD: "Quản lý Chất lượng Bệnh viện")
   tieu_de_phu text,                     -- Tiêu đề phụ (VD: "Đăng nhập")
+  co_chu_chinh integer DEFAULT 32,      -- Cỡ chữ tiêu đề chính (px)
+  co_chu_phu integer DEFAULT 24,        -- Cỡ chữ tiêu đề phụ (px)
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now()
 );

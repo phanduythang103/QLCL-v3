@@ -76,7 +76,7 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
 
 
 // --- Main Sidebar Component ---
-const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, mobileSidebarOpen, setMobileOpen }: { currentModule: ModuleType; handleModuleChange: (module: ModuleType) => void; collapsed: boolean; setCollapsed: (collapsed: boolean) => void; mobileSidebarOpen: boolean; setMobileOpen: (open: boolean) => void; }) => (
+const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, mobileSidebarOpen, setMobileOpen, logout }: { currentModule: ModuleType; handleModuleChange: (module: ModuleType) => void; collapsed: boolean; setCollapsed: (collapsed: boolean) => void; mobileSidebarOpen: boolean; setMobileOpen: (open: boolean) => void; logout: () => void; }) => (
   <aside className={`fixed md:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-900 shadow-xl transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
     <div className="h-20 flex items-center justify-center px-4 border-b border-primary-800/50 bg-primary-900 relative">
       {collapsed ? <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md" /> : (
@@ -108,8 +108,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
       <button
         onClick={() => {
           if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-            localStorage.removeItem('user');
-            localStorage.removeItem('isAuthenticated');
+            logout();
             window.location.href = '/login';
           }
         }}
@@ -130,7 +129,7 @@ const AppContent: React.FC = () => {
   const [currentModule, setCurrentModule] = useState<ModuleType>(ModuleType.DASHBOARD);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const { user, logout } = useAuth();
 
   const handleModuleChange = (module: ModuleType) => {
     setCurrentModule(module);
@@ -173,7 +172,15 @@ const AppContent: React.FC = () => {
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans relative">
       {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
-      <Sidebar currentModule={currentModule} handleModuleChange={handleModuleChange} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} mobileSidebarOpen={mobileSidebarOpen} setMobileOpen={setMobileSidebarOpen} />
+      <Sidebar
+        currentModule={currentModule}
+        handleModuleChange={handleModuleChange}
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+        mobileSidebarOpen={mobileSidebarOpen}
+        setMobileOpen={setMobileSidebarOpen}
+        logout={logout}
+      />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 w-full">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shadow-sm z-10 flex-shrink-0">
@@ -192,12 +199,14 @@ const AppContent: React.FC = () => {
             </button>
             <div className="h-8 w-px bg-slate-200 mx-1 md:mx-2"></div>
             <div className="flex items-center gap-2 md:gap-3 cursor-pointer p-1 rounded-lg hover:bg-slate-50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200 text-xs shadow-sm flex-shrink-0">AD</div>
+              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200 text-xs shadow-sm flex-shrink-0">
+                {user?.full_name?.substring(0, 2).toUpperCase() || 'US'}
+              </div>
               <div className="hidden md:block text-left">
-                {userRole ? (
+                {user ? (
                   <>
-                    <p className="text-sm font-semibold text-slate-700">{userRole === UserRole.ADMIN ? 'Admin User' : 'Staff User'}</p>
-                    <p className="text-xs text-slate-500">{userRole === UserRole.ADMIN ? 'Ban QLCL' : 'Nhân viên'}</p>
+                    <p className="text-sm font-semibold text-slate-700">{user.full_name}</p>
+                    <p className="text-xs text-slate-500">{user.role === 'Admin' ? 'Ban QLCL' : user.department || 'Nhân viên'}</p>
                   </>
                 ) : <p className="text-sm font-semibold text-slate-700">Guest</p>}
               </div>
