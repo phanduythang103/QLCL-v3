@@ -14,6 +14,7 @@ import {
 } from '../readDanhGiaChatLuong';
 import { fetchData83, addData83Bulk, updateData83, deleteData83, Data83 } from '../readData83';
 import { fetchDonVi, saveKqDanhGia83Bulk, uploadEvidenceImage, KqDanhGia83, DonVi } from '../readKqDanhGia83';
+import { useAuth } from '../contexts/AuthContext';
 
 // --- Helper Functions ---
 
@@ -379,7 +380,6 @@ const Criteria83Data83View = () => {
                 <th className="px-4 py-4">Mã TM</th>
                 <th className="px-4 py-4 min-w-[300px]">Nội dung tiểu mục</th>
                 <th className="px-4 py-4 text-center">Nhóm</th>
-                <th className="px-4 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -426,19 +426,6 @@ const Criteria83Data83View = () => {
                   {/* Nhóm & Thao tác */}
                   <td className="px-4 py-2 md:py-4 text-left md:text-center align-top font-bold text-slate-500 md:text-slate-600 text-[10px] md:text-xs order-7">
                     <span className="md:hidden text-slate-400 font-normal mr-2">Nhóm:</span>{item.nhom}
-                  </td>
-                  <td className="px-4 py-2 md:py-4 text-right align-top order-8">
-                    <div className="flex justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                      <button className="text-primary-600 hover:bg-primary-50 p-1.5 md:p-1 rounded-lg transition-colors border border-primary-100 shadow-sm md:shadow-none bg-white md:bg-transparent">
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => item.id && handleDeleteItem(item.id)}
-                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 md:p-1 rounded-lg transition-colors border border-slate-100 md:border-0 bg-white md:bg-transparent"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -639,10 +626,11 @@ const QualityAssessmentView = () => {
   const [units, setUnits] = useState<DonVi[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
 
   // Assessment Form Header
   const [ngayDanhGia, setNgayDanhGia] = useState(new Date().toISOString().split('T')[0]);
-  const [nguoiDanhGia, setNguoiDanhGia] = useState("");
+  const [nguoiDanhGia, setNguoiDanhGia] = useState(user?.full_name || "");
   const [donViDuocDanhGia, setDonViDuocDanhGia] = useState("");
 
   // Filters
