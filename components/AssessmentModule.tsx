@@ -549,11 +549,18 @@ const BasicStandardsView = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <button className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Xem"><Eye size={16} /></button>
-                      <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit2 size={16} /></button>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-all" title="Xem">
+                        <Eye size={16} /> <span className="text-xs font-bold">Xem</span>
+                      </button>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Sửa">
+                        <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
+                      </button>
                       <button
                         onClick={() => handleDelete(std.id!)}
-                        className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 size={16} /></button>
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Xóa"
+                      >
+                        <Trash2 size={16} /> <span className="text-xs font-bold">Xóa</span>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -632,6 +639,8 @@ const QualityAssessmentView = () => {
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
   const [editingPhieuId, setEditingPhieuId] = useState<string | null>(null);
+  const [viewingPhieuId, setViewingPhieuId] = useState<string | null>(null);
+  const [viewingData, setViewingData] = useState<KqDanhGia83[]>([]);
 
   // Assessment Form Header
   const [ngayDanhGia, setNgayDanhGia] = useState(new Date().toISOString().split('T')[0]);
@@ -898,6 +907,20 @@ const QualityAssessmentView = () => {
     }
   };
 
+  const handleViewSheet = async (sheet: AssessmentSheet) => {
+    setLoading(true);
+    try {
+      const data = await fetchKqByPhieuId(sheet.phieu_id);
+      setViewingData(data);
+      setViewingPhieuId(sheet.phieu_id);
+    } catch (err) {
+      console.error(err);
+      alert("Không thể tải chi tiết phiếu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteSheet = async (phieuId: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa toàn bộ phiếu đánh giá này không?")) {
       try {
@@ -947,6 +970,7 @@ const QualityAssessmentView = () => {
                 don_vi_duoc_danh_gia: donViDuocDanhGia,
                 phan: item.phan,
                 chuong: item.chuong,
+                tieu_chi: item.tieu_chi, // Ensure tieu_chi is saved
                 ma_tieu_muc: item.ma_tieu_muc!,
                 tieu_muc: item.tieu_muc,
                 nhom: item.nhom,
@@ -996,7 +1020,7 @@ const QualityAssessmentView = () => {
             onClick={handleAddNew}
             className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl hover:bg-primary-700 font-bold transition-all shadow-lg active:scale-95"
           >
-            <Plus size={20} /> Tạo phiếu mới
+            <Plus size={20} /> <span>Tạo phiếu mới</span>
           </button>
         </div>
 
@@ -1036,8 +1060,14 @@ const QualityAssessmentView = () => {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center gap-1">
-                          <span className="text-xs font-black text-primary-700">{Math.round((sheet.passed_criteria / sheet.total_criteria) * 100)}%</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase">({sheet.passed_criteria}/{sheet.total_criteria} đạt)</span>
+                          <span className="text-sm font-black text-primary-700">Mức TB: {sheet.score}</span>
+                          <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden border border-slate-200">
+                            <div
+                              className="bg-primary-500 h-full transition-all duration-500"
+                              style={{ width: `${(sheet.score / 5) * 100}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase">({sheet.passed_criteria}/{sheet.total_criteria} đạt TM)</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -1045,12 +1075,15 @@ const QualityAssessmentView = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEditSheet(sheet)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all" title="Xem/Sửa">
-                            <Edit2 size={18} />
+                          <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-all border border-transparent hover:border-primary-100" title="Xem chi tiết">
+                            <Eye size={16} /> <span className="text-xs font-bold">Xem</span>
+                          </button>
+                          <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-100" title="Sửa phiếu">
+                            <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
                           </button>
                           {canEdit && (
-                            <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Xóa">
-                              <Trash2 size={18} />
+                            <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-100" title="Xóa phiếu">
+                              <Trash2 size={16} /> <span className="text-xs font-bold">Xóa</span>
                             </button>
                           )}
                         </div>
@@ -1079,19 +1112,22 @@ const QualityAssessmentView = () => {
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Người đánh giá: {sheet.nguoi_danh_gia}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-black text-primary-700">{Math.round((sheet.passed_criteria / sheet.total_criteria) * 100)}%</p>
-                    <p className="text-[9px] text-slate-400 font-bold">Tỉ lệ đạt</p>
+                    <p className="text-sm font-black text-primary-700">Mức TB: {sheet.score}</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase">({sheet.passed_criteria}/{sheet.total_criteria} TM)</p>
                   </div>
                 </div>
                 <div className="flex justify-between items-center bg-slate-50 p-2 rounded-xl">
                   <span className="text-[10px] font-bold text-slate-500 uppercase">Nhóm {sheet.nhom}</span>
-                  <div className="flex gap-1">
-                    <button onClick={() => handleEditSheet(sheet)} className="p-2 bg-white text-primary-600 border border-slate-100 rounded-lg shadow-sm">
-                      <Edit2 size={16} />
+                  <div className="flex gap-2">
+                    <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-primary-600 border border-slate-200 rounded-lg shadow-sm">
+                      <Eye size={14} /> <span className="text-[10px] font-bold">Xem</span>
+                    </button>
+                    <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-blue-600 border border-slate-200 rounded-lg shadow-sm">
+                      <Edit2 size={14} /> <span className="text-[10px] font-bold">Sửa</span>
                     </button>
                     {canEdit && (
-                      <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="p-2 bg-white text-red-500 border border-slate-100 rounded-lg shadow-sm">
-                        <Trash2 size={16} />
+                      <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-red-500 border border-slate-200 rounded-lg shadow-sm">
+                        <Trash2 size={14} /> <span className="text-[10px] font-bold">Xóa</span>
                       </button>
                     )}
                   </div>
@@ -1100,6 +1136,16 @@ const QualityAssessmentView = () => {
             );
           })}
         </div>
+
+        {/* Modal Xem chi tiết (trong LIST mode) */}
+        {viewingPhieuId && (
+          <ViewSheetDetailModal
+            phieuId={viewingPhieuId}
+            data={viewingData}
+            onClose={() => setViewingPhieuId(null)}
+            sheetInfo={sheetList.find(s => s.phieu_id === viewingPhieuId)}
+          />
+        )}
       </div>
     );
   }
@@ -1108,7 +1154,7 @@ const QualityAssessmentView = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <button onClick={() => setViewMode('LIST')} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-2 px-3 hover:bg-slate-100 rounded-lg">
-          <XCircle size={18} /> Quay lại danh sách
+          <XCircle size={18} /> <span>Quay lại danh sách</span>
         </button>
         <div className="h-4 w-px bg-slate-200"></div>
         <p className="text-sm font-bold text-slate-800">
@@ -1454,8 +1500,303 @@ const QualityAssessmentView = () => {
               }`}
           >
             {saving ? <RefreshCw className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-            Hoàn tất & Lưu phiếu đánh giá
+            <span>Hoàn tất & Lưu phiếu đánh giá</span>
           </button>
+        </div>
+      </div>
+
+      {/* Modal Xem chi tiết (trong FORM mode) */}
+      {viewingPhieuId && (
+        <ViewSheetDetailModal
+          phieuId={viewingPhieuId}
+          data={viewingData}
+          onClose={() => setViewingPhieuId(null)}
+          sheetInfo={sheetList.find(s => s.phieu_id === viewingPhieuId)}
+        />
+      )}
+    </div>
+  );
+};
+
+// --- Component Modal Xem Chi Tiết ---
+const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
+  phieuId: string,
+  data: KqDanhGia83[],
+  onClose: () => void,
+  sheetInfo?: AssessmentSheet
+}) => {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (key: string) => {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const hierarchyData = useMemo(() => {
+    const hierarchy: any = {};
+    data.forEach(item => {
+      const p = item.phan || "Khác";
+      const c = item.chuong || "Khác";
+      const tc = item.tieu_chi || item.ma_tieu_muc?.split('-')[0] || "Khác";
+
+      if (!hierarchy[p]) hierarchy[p] = { chapters: {}, score: 0 };
+      if (!hierarchy[p].chapters[c]) hierarchy[p].chapters[c] = { criteria: {}, score: 0 };
+      if (!hierarchy[p].chapters[c].criteria[tc]) hierarchy[p].chapters[c].criteria[tc] = [];
+
+      hierarchy[p].chapters[c].criteria[tc].push(item);
+    });
+
+    // Sort and calculate scores
+    Object.keys(hierarchy).forEach(pName => {
+      let phanSum = 0;
+      let phanCount = 0;
+      Object.keys(hierarchy[pName].chapters).forEach(cName => {
+        let chuongSum = 0;
+        let chuongCount = 0;
+        Object.keys(hierarchy[pName].chapters[cName].criteria).forEach(tcName => {
+          const items = hierarchy[pName].chapters[cName].criteria[tcName];
+          // Ensure natural sorting by ma_tieu_muc
+          items.sort((a: any, b: any) => (a.ma_tieu_muc || "").localeCompare(b.ma_tieu_muc || "", undefined, { numeric: true }));
+
+          const critScoreStr = items[0]?.dat_muc || "0";
+          const critScore = parseFloat(critScoreStr.replace(/[^\d.]/g, '')) || 0;
+          chuongSum += critScore;
+          chuongCount++;
+        });
+        const chuongAvg = chuongCount > 0 ? chuongSum / chuongCount : 0;
+        hierarchy[pName].chapters[cName].score = Math.round(chuongAvg * 100) / 100;
+        phanSum += hierarchy[pName].chapters[cName].score;
+        phanCount++;
+      });
+      const phanAvg = phanCount > 0 ? phanSum / phanCount : 0;
+      hierarchy[pName].score = Math.round(phanAvg * 100) / 100;
+    });
+
+    return hierarchy;
+  }, [data]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 font-sans">
+        {/* Modal Header */}
+        <div className="px-6 py-4 bg-primary-600 text-white flex justify-between items-center shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Eye size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg leading-tight">Chi tiết Phiếu đánh giá</h3>
+              <p className="text-xs text-white/80 font-medium">Mã phiếu: {phieuId}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1">
+            <XCircle size={24} /> <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">Đóng</span>
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50">
+          {/* Summary Info */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ngày đánh giá</p>
+              <div className="flex items-center gap-2 text-slate-800 font-bold">
+                <FileText size={16} className="text-primary-500" />
+                {sheetInfo ? new Date(sheetInfo.ngay_danh_gia).toLocaleDateString('vi-VN') : '---'}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Người đánh giá</p>
+              <div className="flex items-center gap-2 text-slate-800 font-bold">
+                <UserPlus size={16} className="text-blue-500" />
+                {sheetInfo?.nguoi_danh_gia || '---'}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1 md:col-span-2">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đơn vị được đánh giá</p>
+              <div className="flex items-center gap-2 text-slate-800 font-bold">
+                <LayoutGrid size={16} className="text-orange-500" />
+                {sheetInfo?.don_vi_duoc_danh_gia || '---'}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <span className="text-sm font-bold text-slate-700 flex items-center gap-2 uppercase tracking-wide">
+                <Star size={18} className="text-amber-500" /> <span>Kết quả chấm điểm chi tiết</span>
+              </span>
+              {sheetInfo && (
+                <div className="flex items-center gap-4 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest">Mức TB</span>
+                    <span className="text-lg font-black text-primary-800 leading-tight">{sheetInfo.score}</span>
+                  </div>
+                  <div className="w-px h-8 bg-primary-200"></div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Tỉ lệ đạt</span>
+                    <span className="text-sm font-black text-green-700 leading-tight">{sheetInfo.passed_criteria}/{sheetInfo.total_criteria} TM</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="divide-y divide-slate-100 p-2">
+              {Object.keys(hierarchyData).length === 0 ? (
+                <div className="p-10 text-center text-slate-400 italic">Không có dữ liệu đánh giá chi tiết.</div>
+              ) : Object.keys(hierarchyData).sort().map(phanName => {
+                const phan = hierarchyData[phanName];
+                return (
+                  <div key={phanName} className="p-1">
+                    <button
+                      onClick={() => toggleSection(phanName)}
+                      className={`w-full flex items-center justify-between text-left p-4 rounded-xl transition-all ${expandedSections[phanName] ? 'bg-primary-50 border border-primary-100 shadow-sm' : 'hover:bg-slate-50'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-black text-primary-700 uppercase tracking-wider">{phanName}</span>
+                        <span className="px-2 py-0.5 bg-primary-100 text-primary-800 rounded-md text-[10px] font-black border border-primary-200">
+                          Đạt mức: {phan.score}
+                        </span>
+                      </div>
+                      {expandedSections[phanName] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </button>
+
+                    {expandedSections[phanName] && (
+                      <div className="pl-6 mt-3 mb-3 space-y-4 border-l-2 border-primary-100 ml-4 py-2">
+                        {Object.keys(phan.chapters).sort().map(chuongName => {
+                          const chuong = phan.chapters[chuongName];
+                          return (
+                            <div key={chuongName} className="border border-slate-100 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+                              <button
+                                onClick={() => toggleSection(chuongName)}
+                                className={`w-full flex items-center justify-between text-left px-5 py-3 hover:bg-slate-50 transition-colors ${expandedSections[chuongName] ? 'bg-slate-50/80 border-b border-slate-100' : ''}`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xs font-bold text-slate-600 leading-relaxed">{chuongName}</span>
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[9px] font-black border border-slate-200">
+                                    Đạt mức: {chuong.score}
+                                  </span>
+                                </div>
+                                {expandedSections[chuongName] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              </button>
+
+                              {expandedSections[chuongName] && (
+                                <div className="divide-y divide-slate-50">
+                                  {Object.keys(chuong.criteria).sort().map(tcName => {
+                                    const items = chuong.criteria[tcName];
+                                    const level = items[0]?.dat_muc || "---";
+
+                                    return (
+                                      <div key={tcName} className="p-5 space-y-4">
+                                        <div className="flex justify-between items-start gap-4">
+                                          <h4 className="text-xs font-black text-slate-800 flex-1 leading-relaxed">
+                                            <span className="text-primary-600 mr-2 font-mono">#{tcName.split(':')[0]}</span>
+                                            {tcName.split(':').slice(1).join(':')}
+                                          </h4>
+                                          <div className="flex flex-col items-end gap-1">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Kết quả</span>
+                                            <span className="px-3 py-1 rounded-full text-[10px] font-black bg-green-100 text-green-700 border border-green-200 whitespace-nowrap shadow-sm">
+                                              Đạt: {level}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <div className="space-y-4 pl-4 border-l-2 border-slate-100 ml-1">
+                                          {(() => {
+                                            let stopShowing = false;
+                                            return items.map((item: KqDanhGia83) => {
+                                              if (stopShowing) return null;
+
+                                              // Render the item
+                                              const element = (
+                                                <div key={item.id} className="space-y-2 group">
+                                                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                                    <div className="flex items-start gap-2.5 flex-1">
+                                                      {item.dat ? (
+                                                        <div className="p-1 bg-green-100 rounded-full mt-0.5"><CheckCircle2 size={12} className="text-green-600" /></div>
+                                                      ) : item.khong_dat ? (
+                                                        <div className="p-1 bg-red-100 rounded-full mt-0.5"><XCircle size={12} className="text-red-600" /></div>
+                                                      ) : (
+                                                        <div className="p-1 bg-slate-100 rounded-full mt-0.5"><AlertCircle size={12} className="text-slate-400" /></div>
+                                                      )}
+                                                      <span className="text-xs text-slate-600 font-medium leading-relaxed">{item.tieu_muc}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-mono font-black text-slate-300 group-hover:text-slate-500 transition-colors uppercase">{item.ma_tieu_muc}</span>
+                                                  </div>
+
+                                                  {/* Evidence & Note */}
+                                                  {(item.ghi_chu || (item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0)) && (
+                                                    <div className="ml-8 p-3 bg-slate-50/80 rounded-xl border border-dashed border-slate-200 space-y-3">
+                                                      {item.ghi_chu && (
+                                                        <div className="flex items-start gap-2">
+                                                          <div className="p-1 bg-white rounded-lg shadow-sm border border-slate-100 mt-0.5"><FileText size={10} className="text-slate-400" /></div>
+                                                          <p className="text-[11px] text-slate-500 italic font-medium">Ghi chú: {item.ghi_chu}</p>
+                                                        </div>
+                                                      )}
+                                                      {item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2 pt-1 border-t border-slate-100/50 mt-1">
+                                                          {item.hinh_anh_minh_chung.map((img, i) => (
+                                                            <a key={i} href={img} target="_blank" rel="noreferrer" className="relative group w-14 h-14 rounded-lg bg-white p-1 border border-slate-200 overflow-hidden hover:border-primary-400 transition-all shadow-sm">
+                                                              <img src={img} alt="Evidence" className="w-full h-full object-cover rounded shadow-inner" />
+                                                              <div className="absolute inset-0 bg-primary-600/0 group-hover:bg-primary-600/10 flex items-center justify-center transition-all">
+                                                                <Eye size={12} className="text-white opacity-0 group-hover:opacity-100" />
+                                                              </div>
+                                                            </a>
+                                                          ))}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+
+                                              // IF this item is "Khong Dat", the NEXT items in this criterion should be hidden.
+                                              if (item.khong_dat) {
+                                                stopShowing = true;
+                                              }
+
+                                              return element;
+                                            });
+                                          })()}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-between items-center z-10">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 font-bold transition-all active:scale-95"
+          >
+            <XCircle size={18} /> <span>Đóng cửa sổ</span>
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary-50 text-primary-700 rounded-xl hover:bg-primary-100 font-bold transition-all border border-primary-200 shadow-sm active:scale-95"
+            >
+              <Printer size={18} /> <span>In báo cáo (PDF)</span>
+            </button>
+            <button
+              onClick={() => alert("Chức năng đang được cập nhật...")}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-bold transition-all shadow-md active:scale-95"
+            >
+              <Download size={18} /> <span>Xuất Excel (.xlsx)</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
