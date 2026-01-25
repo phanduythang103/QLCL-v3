@@ -28,7 +28,7 @@ VALUES ('cv_file', 'cv_file', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Policy cho bucket cv_file
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'cv_file');
-CREATE POLICY "Authenticated Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'cv_file');
-CREATE POLICY "Authenticated Update" ON storage.objects FOR UPDATE USING (bucket_id = 'cv_file');
-CREATE POLICY "Authenticated Delete" ON storage.objects FOR DELETE USING (bucket_id = 'cv_file');
+CREATE POLICY "Public Access CV File" ON storage.objects FOR SELECT USING (bucket_id = 'cv_file');
+CREATE POLICY "Authenticated Insert CV File" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'cv_file');
+CREATE POLICY "Authenticated Update CV File" ON storage.objects FOR UPDATE USING (bucket_id = 'cv_file');
+CREATE POLICY "Authenticated Delete CV File" ON storage.objects FOR DELETE USING (bucket_id = 'cv_file');
