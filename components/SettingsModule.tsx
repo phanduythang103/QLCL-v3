@@ -11,6 +11,7 @@ import PositionTable from './settings/PositionTable';
 import RoleTable from './settings/RoleTable';
 import ScheduleTable from './settings/ScheduleTable';
 import AuthorityTable from './settings/AuthorityTable';
+import ThemeSettings from './settings/ThemeSettings';
 
 type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE';
 
@@ -209,6 +210,8 @@ const renderContent = (tab: SettingTab) => {
       return <AuthorityTable />;
     case 'SCHEDULE':
       return <ScheduleTable />;
+    case 'THEME':
+      return <ThemeSettings />;
     default:
       return (
         <div className="flex flex-col items-center justify-center h-full text-slate-400">
