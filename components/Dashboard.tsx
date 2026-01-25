@@ -1,20 +1,20 @@
 import React from 'react';
-import { 
-  Users, 
-  FileText, 
-  AlertTriangle, 
-  TrendingUp, 
-  Activity, 
+import {
+  Users,
+  FileText,
+  AlertTriangle,
+  TrendingUp,
+  Activity,
   CheckCircle,
   ClipboardList
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line
@@ -36,75 +36,85 @@ const dataCompliance = [
   { name: 'An toàn PT', score: 98 },
 ];
 
+import { NotificationDashboard } from './NotificationDashboard';
+
 export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Nhân sự QLCL" 
-          value="45" 
-          subtext="Đã cấp chứng chỉ: 38" 
-          icon={<Users className="w-6 h-6 text-primary-600" />} 
+        <StatCard
+          title="Nhân sự QLCL"
+          value="45"
+          subtext="Đã cấp chứng chỉ: 38"
+          icon={<Users className="w-6 h-6 text-primary-600" />}
           trend="+2"
         />
-        <StatCard 
-          title="Sự cố Y khoa (T6)" 
-          value="14" 
-          subtext="Đã xử lý: 10" 
-          icon={<AlertTriangle className="w-6 h-6 text-amber-600" />} 
+        <StatCard
+          title="Sự cố Y khoa (T6)"
+          value="14"
+          subtext="Đã xử lý: 10"
+          icon={<AlertTriangle className="w-6 h-6 text-amber-600" />}
           trend="-8%"
           trendDown
         />
-        <StatCard 
-          title="Tỉ lệ hài lòng" 
-          value="94.5%" 
-          subtext="Nội trú & Ngoại trú" 
-          icon={<Activity className="w-6 h-6 text-green-600" />} 
+        <StatCard
+          title="Tỉ lệ hài lòng"
+          value="94.5%"
+          subtext="Nội trú & Ngoại trú"
+          icon={<Activity className="w-6 h-6 text-green-600" />}
           trend="+1.2%"
         />
-        <StatCard 
-          title="Văn bản mới" 
-          value="12" 
-          subtext="Trong tháng này" 
-          icon={<FileText className="w-6 h-6 text-purple-600" />} 
+        <StatCard
+          title="Văn bản mới"
+          value="12"
+          subtext="Trong tháng này"
+          icon={<FileText className="w-6 h-6 text-purple-600" />}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2 text-slate-500" />
-            Xu hướng báo cáo sự cố (6 tháng)
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dataIncidents}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Charts - 2/3 width on large screens */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2 text-primary-500" />
+              Xu hướng báo cáo sự cố (6 tháng)
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dataIncidents}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+              <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+              Tỉ lệ tuân thủ quy trình (Tháng 6)
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dataCompliance} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
+                  <XAxis type="number" domain={[0, 100]} hide />
+                  <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} />
+                  <Tooltip />
+                  <Bar dataKey="score" fill="#106627" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-            <CheckCircle className="w-5 h-5 mr-2 text-slate-500" />
-            Tỉ lệ tuân thủ quy trình (Tháng 6)
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dataCompliance} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
-                <XAxis type="number" domain={[0, 100]} hide />
-                <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Bar dataKey="score" fill="#106627" radius={[0, 4, 4, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        {/* Notifications - 1/3 width on large screens */}
+        <div className="lg:col-span-1">
+          <NotificationDashboard />
         </div>
       </div>
 
@@ -133,11 +143,11 @@ export const Dashboard: React.FC = () => {
   );
 };
 
-const StatCard: React.FC<{ 
-  title: string; 
-  value: string; 
-  subtext?: string; 
-  icon: React.ReactNode; 
+const StatCard: React.FC<{
+  title: string;
+  value: string;
+  subtext?: string;
+  icon: React.ReactNode;
   trend?: string;
   trendDown?: boolean;
 }> = ({ title, value, subtext, icon, trend, trendDown }) => (

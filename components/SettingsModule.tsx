@@ -12,6 +12,7 @@ import RoleTable from './settings/RoleTable';
 import ScheduleTable from './settings/ScheduleTable';
 import AuthorityTable from './settings/AuthorityTable';
 import ThemeSettings from './settings/ThemeSettings';
+import NotificationTable from './settings/NotificationTable';
 
 type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE';
 
@@ -19,69 +20,112 @@ export const SettingsModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingTab>('USER');
 
   const menuItems = [
-    { id: 'USER', label: 'Quản lý người dùng', icon: <Users size={18} /> },
-    { id: 'PERMISSIONS', label: 'Phân quyền Module', icon: <ShieldCheck size={18} /> },
-    { id: 'DEPT', label: 'Danh mục Đơn vị', icon: <Building size={18} /> },
-    { id: 'POSITION', label: 'Danh mục Chức vụ', icon: <Briefcase size={18} /> },
-    { id: 'ROLE', label: 'Danh mục Vai trò QLCL', icon: <Award size={18} /> },
-    { id: 'AUTHORITY', label: 'Cơ quan ban hành', icon: <FileBadge size={18} /> },
-    { id: 'THEME', label: 'Cài đặt giao diện', icon: <Layout size={18} /> },
-    { id: 'NOTI', label: 'Quản lý thông báo', icon: <Bell size={18} /> },
-    { id: 'SCHEDULE', label: 'Quản lý lịch giám sát', icon: <CalendarClock size={18} /> },
+    { id: 'USER', label: 'Người dùng', icon: <Users size={18} /> },
+    { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} /> },
+    { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} /> },
+    { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} /> },
+    { id: 'POSITION', label: 'Chức vụ', icon: <Briefcase size={18} /> },
+    { id: 'ROLE', label: 'Vai trò QLCL', icon: <Award size={18} /> },
+    { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} /> },
+    { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} /> },
+    { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} /> },
   ];
 
+  const renderContent = (tab: SettingTab) => {
+    switch (tab) {
+      case 'PERMISSIONS':
+        return <PermissionManager />;
+      case 'USER':
+        return <UsersTable />;
+      case 'NOTI':
+        return <NotificationTable />;
+      case 'DEPT':
+        return <DeptTable />;
+      case 'POSITION':
+        return <PositionTable />;
+      case 'ROLE':
+        return <RoleTable />;
+      case 'AUTHORITY':
+        return <AuthorityTable />;
+      case 'SCHEDULE':
+        return <ScheduleTable />;
+      case 'THEME':
+        return <ThemeSettings />;
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-slate-400 py-12">
+            <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-4 transition-transform hover:scale-110 duration-300">
+              <SettingsIcon tab={tab} />
+            </div>
+            <p className="font-bold text-slate-300 uppercase tracking-widest text-xs">Sắp ra mắt</p>
+            <p className="text-sm mt-1">Tính năng đang được cập nhật cho mục này.</p>
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="flex flex-col md:flex-row gap-6 h-[calc(100vh-140px)]">
-      {/* Settings Sidebar */}
-      <div className="w-full md:w-64 bg-white rounded-xl border border-slate-200 shadow-sm flex-shrink-0 overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-100 bg-slate-50">
+    <div className="flex flex-col lg:flex-row gap-6 lg:h-[calc(100vh-140px)]">
+      {/* Mobile: Horizontal Menu | Desktop: Vertical Sidebar */}
+      <div className="w-full lg:w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 overflow-hidden flex flex-col">
+        <div className="hidden lg:block p-4 border-b border-slate-100 bg-slate-50">
           <h3 className="font-bold text-slate-800">Danh mục cấu hình</h3>
         </div>
-        <div className="flex-1 overflow-y-auto p-2">
+
+        {/* Horizontal scroll on mobile, vertical on desktop */}
+        <div className="flex lg:flex-col overflow-x-auto lg:overflow-y-auto p-2 scrollbar-none">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as SettingTab)}
-              className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-all mb-1 ${activeTab === item.id
-                ? 'bg-primary-50 text-primary-700 shadow-sm'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              className={`flex-shrink-0 lg:w-full flex items-center lg:justify-between px-4 py-3 lg:p-3 rounded-xl text-xs lg:text-sm font-bold transition-all mr-2 lg:mr-0 lg:mb-1 border-2 ${activeTab === item.id
+                  ? 'bg-primary-600 text-white border-primary-600 shadow-lg shadow-primary-900/20'
+                  : 'text-slate-500 bg-white border-transparent hover:bg-slate-50 hover:text-slate-800'
                 }`}
             >
               <div className="flex items-center gap-3">
-                {item.icon}
-                <span>{item.label}</span>
+                <span className={`${activeTab === item.id ? 'text-white' : 'text-slate-400'}`}>
+                  {item.icon}
+                </span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </div>
-              {activeTab === item.id && <ChevronRight size={16} />}
+              <div className="hidden lg:block">
+                {activeTab === item.id && <ChevronRight size={16} />}
+              </div>
             </button>
           ))}
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[500px]">
         {/* Header of Content */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+        <div className="p-4 lg:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
           <div>
-            <h2 className="text-lg font-bold text-slate-800">
+            <h2 className="text-lg lg:text-xl font-bold text-slate-800 flex items-center gap-2">
+              <span className="lg:hidden p-2 bg-primary-50 text-primary-600 rounded-lg">
+                {menuItems.find(i => i.id === activeTab)?.icon}
+              </span>
               {menuItems.find(i => i.id === activeTab)?.label}
             </h2>
-            <p className="text-sm text-slate-500">Thiết lập và quản lý dữ liệu danh mục hệ thống.</p>
+            <p className="text-xs lg:text-sm text-slate-400 font-medium">Cấu hình chi tiết cho phần quản lý {menuItems.find(i => i.id === activeTab)?.label.toLowerCase()}.</p>
           </div>
           {activeTab === 'PERMISSIONS' && (
-            <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm">
-              <Save size={16} /> Lưu cấu hình
+            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-xl hover:bg-primary-700 text-sm font-bold transition-all shadow-lg shadow-primary-900/20">
+              <Save size={18} /> Lưu cấu hình
             </button>
           )}
         </div>
 
         {/* Body of Content */}
-        <div className="flex-1 p-6 overflow-y-auto bg-slate-50/30">
+        <div className="flex-1 p-4 lg:p-6 overflow-y-auto bg-slate-50/30 custom-scrollbar">
           {renderContent(activeTab)}
         </div>
       </div>
     </div>
   );
 };
+
 const PermissionManager = () => {
   const roles = [
     { id: 'admin', name: 'Quản trị hệ thống' },
@@ -92,7 +136,6 @@ const PermissionManager = () => {
 
   const [selectedRole, setSelectedRole] = useState('network');
 
-  // Map ModuleType to Readable Name
   const moduleLabels: Record<ModuleType, string> = {
     [ModuleType.DASHBOARD]: 'Trang chủ / Tổng quan',
     [ModuleType.HR]: 'Quản lý Nhân sự',
@@ -108,7 +151,6 @@ const PermissionManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Role Selector */}
       <div className="flex flex-wrap gap-2 mb-4">
         {roles.map((role) => (
           <button
@@ -124,7 +166,7 @@ const PermissionManager = () => {
         ))}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
             <tr>
@@ -194,42 +236,13 @@ const PermissionCheckbox = ({ defaultChecked }: { defaultChecked: boolean }) => 
   );
 };
 
-const renderContent = (tab: SettingTab) => {
-  switch (tab) {
-    case 'PERMISSIONS':
-      return <PermissionManager />;
-    case 'USER':
-      return <UsersTable />;
-    case 'DEPT':
-      return <DeptTable />;
-    case 'POSITION':
-      return <PositionTable />;
-    case 'ROLE':
-      return <RoleTable />;
-    case 'AUTHORITY':
-      return <AuthorityTable />;
-    case 'SCHEDULE':
-      return <ScheduleTable />;
-    case 'THEME':
-      return <ThemeSettings />;
-    default:
-      return (
-        <div className="flex flex-col items-center justify-center h-full text-slate-400">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-            <SettingsIcon tab={tab} />
-          </div>
-          <p>Tính năng đang được cập nhật cho mục này.</p>
-        </div>
-      );
-  }
-};
-
 const SettingsIcon = ({ tab }: { tab: SettingTab }) => {
   switch (tab) {
     case 'USER': return <Users size={32} />;
     case 'DEPT': return <Building size={32} />;
     case 'SCHEDULE': return <CalendarClock size={32} />;
     case 'PERMISSIONS': return <ShieldCheck size={32} />;
+    case 'NOTI': return <Bell size={32} />;
     default: return <Layout size={32} />;
   }
 }
