@@ -92,8 +92,8 @@ export function LoginPage() {
 
     return (
         <div className="min-h-screen flex">
-            {/* Left Column - Login Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+            {/* Left Column - Login Form (1/4) */}
+            <div className="w-full lg:w-1/4 flex items-center justify-center p-8 bg-white">
                 <div className="w-full max-w-md">
                     {/* Logo and Title */}
                     <div className="mb-8">
@@ -179,26 +179,41 @@ export function LoginPage() {
                         </div>
                     </form>
 
-                    {/* Footer */}
-                    <div className="mt-8 text-center text-sm text-gray-500">
-                        <p>1/4</p>
-                    </div>
+
                 </div>
             </div>
 
-            {/* Right Column - Background Image */}
-            <div className="hidden lg:block lg:w-1/2 relative">
+            {/* Right Column - Background Image (3/4) */}
+            <div className="hidden lg:block lg:w-3/4 relative">
                 {backgroundUrl ? (
-                    <img
-                        src={backgroundUrl}
-                        alt="Hospital"
-                        className="absolute inset-0 w-full h-full object-cover"
-                    />
+                    <>
+                        <img
+                            src={backgroundUrl}
+                            alt="Hospital"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        {/* Overlay gradient for better text visibility */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+
+                        {/* Titles at bottom left */}
+                        <div className="absolute bottom-8 left-8 text-white z-10">
+                            <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
+                                {uiSettings?.tieu_de_chinh || 'Quản lý Chất lượng Bệnh viện'}
+                            </h1>
+                            <p className="text-xl drop-shadow-lg">
+                                {uiSettings?.tieu_de_phu || 'Đăng nhập'}
+                            </p>
+                        </div>
+                    </>
                 ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                        <div className="text-white text-center p-8">
-                            <h3 className="text-3xl font-bold mb-4">Chào mừng đến với</h3>
-                            <p className="text-xl">Hệ thống Quản lý Chất lượng</p>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-end p-8">
+                        <div className="text-white">
+                            <h1 className="text-4xl font-bold mb-2">
+                                {uiSettings?.tieu_de_chinh || 'Chào mừng đến với'}
+                            </h1>
+                            <p className="text-xl">
+                                {uiSettings?.tieu_de_phu || 'Hệ thống Quản lý Chất lượng'}
+                            </p>
                         </div>
                     </div>
                 )}
