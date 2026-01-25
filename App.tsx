@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut } from 'lucide-react';
+import { useAuth } from './contexts/AuthContext';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';
 import { Incidents } from './components/Incidents';
@@ -103,8 +104,22 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         <NavItem icon={<Settings size={20} />} label="Cấu hình hệ thống" active={currentModule === ModuleType.SETTINGS} onClick={() => handleModuleChange(ModuleType.SETTINGS)} collapsed={collapsed} />
       </div>
     </div>
-    <div className="hidden md:block p-4 border-t border-primary-800/50 bg-primary-900">
-      <button onClick={() => setCollapsed(!collapsed)} className="w-full flex items-center justify-center p-2 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors">
+    <div className="p-4 border-t border-primary-800/50 bg-primary-900 space-y-2">
+      <button
+        onClick={() => {
+          if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            window.location.href = '/login';
+          }
+        }}
+        className="w-full flex items-center justify-center px-4 py-2 rounded-lg text-red-300 hover:bg-red-900/30 hover:text-white transition-colors mb-2"
+        title={collapsed ? 'Đăng xuất' : ''}
+      >
+        <LogOut size={20} />
+        {!collapsed && <span className="ml-3 font-medium text-sm">Đăng xuất</span>}
+      </button>
+      <button onClick={() => setCollapsed(!collapsed)} className="hidden md:flex w-full items-center justify-center p-2 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors">
         <Menu size={20} />
       </button>
     </div>
