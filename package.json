@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:cloudflare": "node build-cloudflare.js",
     "preview": "vite preview"
   },
   "dependencies": {
