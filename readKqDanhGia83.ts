@@ -2,6 +2,8 @@ import { supabase } from './supabaseClient';
 
 export interface KqDanhGia83 {
     id?: string;
+    phieu_id?: string; // Nhóm các tiêu chí vào cùng 1 phiếu
+    nguoi_tao_id?: string; // ID người tạo từ users
     ngay_danh_gia: string;
     nguoi_danh_gia: string;
     don_vi_duoc_danh_gia: string;
@@ -25,6 +27,67 @@ export interface KqDanhGia83 {
 
     created_at?: string;
     updated_at?: string;
+}
+
+export interface AssessmentSheet {
+    phieu_id: string;
+    ngay_danh_gia: string;
+    nguoi_danh_gia: string;
+    nguoi_tao_id: string;
+    don_vi_duoc_danh_gia: string;
+    nhom?: string;
+    total_criteria: number;
+    passed_criteria: number;
+    created_at: string;
+}
+
+export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
+    // Vì ta gom nhóm dữ liệu thô, nêntruy vấn unique phieu_id cùng metadata
+    const { data: rawData, error } = await supabase
+        .from('kq_danh_gia_83tc')
+        .select('phieu_id, ngay_danh_gia, nguoi_danh_gia, nguoi_tao_id, don_vi_duoc_danh_gia, nhom, dat, created_at');
+
+    if (error) throw error;
+
+    const sheetsMap: Record<string, AssessmentSheet> = {};
+
+    rawData?.forEach((row: any) => {
+        if (!row.phieu_id) return;
+        if (!sheetsMap[row.phieu_id]) {
+            sheetsMap[row.phieu_id] = {
+                phieu_id: row.phieu_id,
+                ngay_danh_gia: row.ngay_danh_gia,
+                nguoi_danh_gia: row.nguoi_danh_gia,
+                nguoi_tao_id: row.nguoi_tao_id,
+                don_vi_duoc_danh_gia: row.don_vi_duoc_danh_gia,
+                nhom: row.nhom,
+                total_criteria: 0,
+                passed_criteria: 0,
+                created_at: row.created_at
+            };
+        }
+        sheetsMap[row.phieu_id].total_criteria += 1;
+        if (row.dat) sheetsMap[row.phieu_id].passed_criteria += 1;
+    });
+
+    return Object.values(sheetsMap).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+export async function fetchKqByPhieuId(phieuId: string): Promise<KqDanhGia83[]> {
+    const { data, error } = await supabase
+        .from('kq_danh_gia_83tc')
+        .select('*')
+        .eq('phieu_id', phieuId);
+    if (error) throw error;
+    return data || [];
+}
+
+export async function deletePhieuDanhGia(phieuId: string): Promise<void> {
+    const { error } = await supabase
+        .from('kq_danh_gia_83tc')
+        .delete()
+        .eq('phieu_id', phieuId);
+    if (error) throw error;
 }
 
 export interface DonVi {

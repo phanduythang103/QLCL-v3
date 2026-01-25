@@ -13,7 +13,7 @@ import {
   fetchKetQuaDanhGia, KetQuaDanhGia
 } from '../readDanhGiaChatLuong';
 import { fetchData83, addData83Bulk, updateData83, deleteData83, Data83 } from '../readData83';
-import { fetchDonVi, saveKqDanhGia83Bulk, uploadEvidenceImage, KqDanhGia83, DonVi } from '../readKqDanhGia83';
+import { fetchDonVi, saveKqDanhGia83Bulk, uploadEvidenceImage, KqDanhGia83, DonVi, fetchAssessmentSheets, fetchKqByPhieuId, deletePhieuDanhGia, AssessmentSheet } from '../readKqDanhGia83';
 import { useAuth } from '../contexts/AuthContext';
 
 // --- Helper Functions ---
@@ -628,6 +628,11 @@ const QualityAssessmentView = () => {
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
 
+  // Mode: LIST or FORM
+  const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
+  const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
+  const [editingPhieuId, setEditingPhieuId] = useState<string | null>(null);
+
   // Assessment Form Header
   const [ngayDanhGia, setNgayDanhGia] = useState(new Date().toISOString().split('T')[0]);
   const [nguoiDanhGia, setNguoiDanhGia] = useState(user?.full_name || "");
@@ -654,6 +659,15 @@ const QualityAssessmentView = () => {
     hinh_anh_minh_chung: string[]
   }>>({});
 
+  const loadSheetList = async () => {
+    try {
+      const sheets = await fetchAssessmentSheets();
+      setSheetList(sheets);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
@@ -661,6 +675,7 @@ const QualityAssessmentView = () => {
         const [data83, du] = await Promise.all([fetchData83(), fetchDonVi()]);
         setCriteriaList(data83);
         setUnits(du);
+        await loadSheetList();
       } catch (err) {
         console.error(err);
       } finally {
@@ -852,6 +867,58 @@ const QualityAssessmentView = () => {
     return true;
   };
 
+  const handleEditSheet = async (sheet: AssessmentSheet) => {
+    setLoading(true);
+    try {
+      const results = await fetchKqByPhieuId(sheet.phieu_id);
+      // Map results back to the form state
+      const initialResults: any = {};
+      results.forEach(r => {
+        initialResults[r.ma_tieu_muc] = {
+          dat: r.dat,
+          khong_dat: r.khong_dat,
+          khong_danh_gia: r.khong_danh_gia,
+          dat_muc: r.dat_muc,
+          ghi_chu: r.ghi_chu || "",
+          hinh_anh_minh_chung: r.hinh_anh_minh_chung || []
+        };
+      });
+      setResults(initialResults);
+      setEditingPhieuId(sheet.phieu_id);
+      setNgayDanhGia(sheet.ngay_danh_gia);
+      setNguoiDanhGia(sheet.nguoi_danh_gia);
+      setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
+      setFilterNhom(sheet.nhom || "");
+      setViewMode('FORM');
+    } catch (err) {
+      console.error(err);
+      alert("Không thể tải thông tin phiếu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSheet = async (phieuId: string) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa toàn bộ phiếu đánh giá này không?")) {
+      try {
+        await deletePhieuDanhGia(phieuId);
+        await loadSheetList();
+        alert("Đã xóa thành công.");
+      } catch (err) {
+        alert("Lỗi khi xóa phiếu.");
+      }
+    }
+  };
+
+  const handleAddNew = () => {
+    setEditingPhieuId(null);
+    setResults({});
+    setDonViDuocDanhGia("");
+    setNguoiDanhGia(user?.full_name || "");
+    setFilterNhom("");
+    setViewMode('FORM');
+  };
+
   const handleSaveAssessment = async () => {
     if (!nguoiDanhGia || !donViDuocDanhGia) {
       alert("Vui lòng nhập đầy đủ thông tin: Người đánh giá và Đơn vị được đánh giá.");
@@ -861,6 +928,7 @@ const QualityAssessmentView = () => {
     setSaving(true);
     try {
       const allPayload: KqDanhGia83[] = [];
+      const phieuId = editingPhieuId || crypto.randomUUID();
 
       // Iterate through the grouped data structure to gather payload
       Object.keys(groupedData).forEach(p => {
@@ -870,8 +938,10 @@ const QualityAssessmentView = () => {
             const autoLevel = calculateLevel(items);
 
             items.forEach((item: Data83) => {
-              const res = results[item.ma_tieu_muc!] || { dat: false, khong_dat: false, khong_danh_gia: false, dat_muc: "", ghi_chu: "" };
+              const res = results[item.ma_tieu_muc!] || { dat: false, khong_dat: false, khong_danh_gia: false, dat_muc: "", ghi_chu: "", hinh_anh_minh_chung: [] };
               allPayload.push({
+                phieu_id: phieuId,
+                nguoi_tao_id: user?.id,
                 ngay_danh_gia: ngayDanhGia,
                 nguoi_danh_gia: nguoiDanhGia,
                 don_vi_duoc_danh_gia: donViDuocDanhGia,
@@ -884,7 +954,8 @@ const QualityAssessmentView = () => {
                 khong_dat: res.khong_dat,
                 khong_danh_gia: res.khong_danh_gia,
                 dat_muc: autoLevel, // Save calculated level
-                ghi_chu: res.ghi_chu
+                ghi_chu: res.ghi_chu,
+                hinh_anh_minh_chung: res.hinh_anh_minh_chung
               });
             });
           });
@@ -897,8 +968,15 @@ const QualityAssessmentView = () => {
         return;
       }
 
+      // Nếu đang sửa, ta xóa cũ đi trước khi thêm mới (với cùng batchId)
+      if (editingPhieuId) {
+        await deletePhieuDanhGia(editingPhieuId);
+      }
+
       await saveKqDanhGia83Bulk(allPayload);
       alert("Đã lưu kết quả đánh giá thành công!");
+      await loadSheetList();
+      setViewMode('LIST');
     } catch (err) {
       alert("Lỗi khi lưu kết quả đánh giá.");
     } finally {
@@ -906,8 +984,138 @@ const QualityAssessmentView = () => {
     }
   };
 
+  if (viewMode === 'LIST') {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h3 className="text-lg font-bold text-slate-800">Danh sách Phiếu đánh giá 83 tiêu chí</h3>
+            <p className="text-sm text-slate-500">Quản lý các đợt đánh giá đã thực hiện.</p>
+          </div>
+          <button
+            onClick={handleAddNew}
+            className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl hover:bg-primary-700 font-bold transition-all shadow-lg active:scale-95"
+          >
+            <Plus size={20} /> Tạo phiếu mới
+          </button>
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+              <tr>
+                <th className="px-6 py-4">Ngày đánh giá</th>
+                <th className="px-6 py-4">Đơn vị</th>
+                <th className="px-6 py-4 text-center">Tiến độ</th>
+                <th className="px-6 py-4 text-center">Người đánh giá</th>
+                <th className="px-6 py-4 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {sheetList.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center text-slate-400 italic">Chưa có phiếu đánh giá nào.</td>
+                </tr>
+              ) : (
+                sheetList.map((sheet) => {
+                  const isAdmin = user?.role === 'Quản trị viên';
+                  const isOwner = user?.id === sheet.nguoi_tao_id || user?.full_name === sheet.nguoi_danh_gia;
+                  const canEdit = isAdmin || isOwner;
+
+                  return (
+                    <tr key={sheet.phieu_id} className="hover:bg-primary-50/30 transition-colors group">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="font-bold text-slate-700">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-800">{sheet.don_vi_duoc_danh_gia}</span>
+                          <span className="text-[10px] text-primary-600 font-bold uppercase">Nhóm: {sheet.nhom}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs font-black text-primary-700">{Math.round((sheet.passed_criteria / sheet.total_criteria) * 100)}%</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase">({sheet.passed_criteria}/{sheet.total_criteria} đạt)</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-xs font-bold text-slate-600">{sheet.nguoi_danh_gia}</span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleEditSheet(sheet)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all" title="Xem/Sửa">
+                            <Edit2 size={18} />
+                          </button>
+                          {canEdit && (
+                            <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Xóa">
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-4">
+          {sheetList.map((sheet) => {
+            const isAdmin = user?.role === 'Quản trị viên';
+            const isOwner = user?.id === sheet.nguoi_tao_id || user?.full_name === sheet.nguoi_danh_gia;
+            const canEdit = isAdmin || isOwner;
+
+            return (
+              <div key={sheet.phieu_id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-4">
+                <div className="flex justify-between items-start border-b border-slate-50 pb-3">
+                  <div>
+                    <p className="text-xs font-black text-primary-600 uppercase tracking-widest">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</p>
+                    <p className="text-base font-black text-slate-800">{sheet.don_vi_duoc_danh_gia}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">Người đánh giá: {sheet.nguoi_danh_gia}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-black text-primary-700">{Math.round((sheet.passed_criteria / sheet.total_criteria) * 100)}%</p>
+                    <p className="text-[9px] text-slate-400 font-bold">Tỉ lệ đạt</p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center bg-slate-50 p-2 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Nhóm {sheet.nhom}</span>
+                  <div className="flex gap-1">
+                    <button onClick={() => handleEditSheet(sheet)} className="p-2 bg-white text-primary-600 border border-slate-100 rounded-lg shadow-sm">
+                      <Edit2 size={16} />
+                    </button>
+                    {canEdit && (
+                      <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="p-2 bg-white text-red-500 border border-slate-100 rounded-lg shadow-sm">
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <button onClick={() => setViewMode('LIST')} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-2 px-3 hover:bg-slate-100 rounded-lg">
+          <XCircle size={18} /> Quay lại danh sách
+        </button>
+        <div className="h-4 w-px bg-slate-200"></div>
+        <p className="text-sm font-bold text-slate-800">
+          {editingPhieuId ? 'Sửa phiếu đánh giá' : 'Tạo phiếu đánh giá mới'}
+        </p>
+      </div>
+
       {/* Assessment Info Card */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
