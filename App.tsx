@@ -83,9 +83,9 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
       {collapsed ? <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md" /> : (
         <div className="flex items-center gap-3 w-full justify-center">
           <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
-          <div className="flex flex-col overflow-hidden">
-            <h1 className="text-white font-bold text-sm uppercase leading-snug whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
-            <span className="text-primary-200 text-[10px] font-bold uppercase tracking-normal leading-tight whitespace-nowrap truncate">HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG</span>
+          <div className="flex flex-col overflow-hidden py-1">
+            <h1 className="text-white font-bold text-sm uppercase leading-relaxed whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
+            <span className="text-primary-200 text-[10px] font-bold uppercase tracking-normal leading-normal whitespace-nowrap truncate">HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG</span>
           </div>
         </div>
       )}
