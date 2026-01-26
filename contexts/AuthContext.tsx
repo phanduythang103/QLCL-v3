@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { data, error } = await supabase
                 .from('users')
                 .select('*')
-                .eq('username', username)
+                .ilike('username', username)
                 .eq('password', password)
                 .eq('status', 'Hoạt động')
                 .single();

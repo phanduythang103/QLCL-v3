@@ -27,6 +27,7 @@ CREATE TABLE bao_cao_scyk (
   ho_ten_nguoi_bc text,                      -- Họ tên người báo cáo
   sdt text,                                  -- Số điện thoại
   email text,                                -- Email
+  vaitro_nguoi_bc text,                      -- Vai trò người báo cáo (mới bổ sung)
   dieu_duong text,                           -- Điều dưỡng
   bac_sy text,                               -- Bác sỹ
   nb_nn text,                                -- Người bệnh/Người nhà (checkbox)

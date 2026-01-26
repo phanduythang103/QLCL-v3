@@ -47,13 +47,13 @@ export default function UsersTable() {
     try {
       if (editingId) {
         // Nếu không nhập mật khẩu mới, bỏ qua trường password khi update
-        const updateData = form.password 
-          ? form 
-          : { username: form.username, full_name: form.full_name, department: form.department, role: form.role, status: form.status };
+        const updateData = form.password
+          ? { ...form, username: form.username.toLowerCase() }
+          : { username: form.username.toLowerCase(), full_name: form.full_name, department: form.department, role: form.role, status: form.status };
         await updateUser(editingId, updateData);
         setMessage('Cập nhật thành công!');
       } else {
-        await addUser(form);
+        await addUser({ ...form, username: form.username.toLowerCase() });
         setMessage('Thêm mới thành công!');
       }
       resetForm();
@@ -113,7 +113,7 @@ export default function UsersTable() {
               required
               placeholder="Tài khoản *"
               value={form.username}
-              onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, username: e.target.value.toLowerCase() }))}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
             />
             <input
@@ -204,16 +204,14 @@ export default function UsersTable() {
                   <td className="px-4 py-3 text-slate-700">{user.full_name}</td>
                   <td className="px-4 py-3 text-slate-600">{user.department || '-'}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      user.role === 'Quản trị viên' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                    }`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${user.role === 'Quản trị viên' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                      }`}>
                       {user.role}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      user.status === 'Hoạt động' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${user.status === 'Hoạt động' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
                       {user.status}
                     </span>
                   </td>

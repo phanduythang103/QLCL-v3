@@ -10,7 +10,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { fetchBaoCaoScyk, addBaoCaoScyk, updateBaoCaoScyk, deleteBaoCaoScyk } from '../readBaoCaoScyk';
+import { fetchBaoCaoScyk, addBaoCaoScyk, updateBaoCaoScyk, deleteBaoCaoScyk, fetchLatestBaoCaoScykByYear } from '../readBaoCaoScyk';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchDmDonVi } from '../readDmDonVi';
+import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
 
 type ViewMode = 'LIST' | 'STATS' | 'FORM';
 
@@ -418,7 +421,9 @@ interface IncidentFormProps {
 
 const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingItem }) => {
   // Form states
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [dmDonVi, setDmDonVi] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     hinh_thuc_bao_cao: editingItem?.hinh_thuc_bao_cao || 'Tự nguyện',
     so_bc_ma_scyk: editingItem?.so_bc_ma_scyk || '',
@@ -436,24 +441,74 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
     thoi_gian: editingItem?.thoi_gian || '',
     mo_ta_su_co: editingItem?.mo_ta_su_co || '',
     de_xuat_giai_phap_ban_dau: editingItem?.de_xuat_giai_phap_ban_dau || '',
-    phan_loai_ban_dau: editingItem?.phan_loai_ban_dau || 'Nhóm A',
-    ho_ten_nguoi_bc: editingItem?.ho_ten_nguoi_bc || '',
+    dieu_tri_xy_ly_ban_dau_da_thuc_hien: editingItem?.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '',
+    thong_bao_bs_npt: editingItem?.thong_bao_bs_npt || 'Không ghi nhận',
+    ghi_nhan_vao_hsba: editingItem?.ghi_nhan_vao_hsba || 'Không ghi nhận',
+    thong_bao_nn: editingItem?.thong_bao_nn || 'Không ghi nhận',
+    thong_bao_nb: editingItem?.thong_bao_nb || 'Không ghi nhận',
+    phan_loai_sc: editingItem?.phan_loai_sc || 'Đã xảy ra',
+    phan_loai_ban_dau: editingItem?.phan_loai_ban_dau || 'Nhẹ',
+    ho_ten_nguoi_bc: editingItem?.ho_ten_nguoi_bc || user?.full_name || '',
     sdt: editingItem?.sdt || '',
     email: editingItem?.email || '',
+    vaitro_nguoi_bc: editingItem?.vaitro_nguoi_bc || 'Nhân viên y tế',
+    chung_kien1: editingItem?.chung_kien1 || '',
+    chung_kien2: editingItem?.chung_kien2 || '',
     trang_thai: editingItem?.trang_thai || 'Mới'
   });
 
-  const [aiAnalyzing, setAiAnalyzing] = useState(false);
-  const [aiResult, setAiResult] = useState<string | null>(null);
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const units = await fetchDmDonVi();
+        setDmDonVi(units || []);
 
-  const handleChange = (field: string, value: string) => {
+        if (!editingItem && user) {
+          // Lấy thông tin SĐT và Email từ bảng nhân sự dựa trên tên user
+          const nhanSu = await fetchNhanSuQlcl();
+          const currentUserInfo = nhanSu.find(ns => ns.ho_ten === user.full_name);
+          if (currentUserInfo) {
+            setFormData(prev => ({
+              ...prev,
+              sdt: currentUserInfo.so_dien_thoai || '',
+              email: currentUserInfo.email || ''
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Lỗi khi tải dữ liệu phụ:', err);
+      }
+    };
+    initData();
+  }, [user, editingItem]);
+
+  const generateNextCode = async (unitCode: string) => {
+    if (!unitCode || editingItem) return;
+    const currentYear = new Date().getFullYear().toString();
+    try {
+      const latest = await fetchLatestBaoCaoScykByYear(currentYear);
+      let nextSeq = 1;
+      if (latest && latest.so_bc_ma_scyk) {
+        const parts = latest.so_bc_ma_scyk.split('-');
+        if (parts.length >= 4) {
+          const lastSeq = parseInt(parts[3]);
+          if (!isNaN(lastSeq)) nextSeq = lastSeq + 1;
+        }
+      }
+      const newCode = `SCYK-${currentYear}-${unitCode}-${nextSeq.toString().padStart(3, '0')}`;
+      setFormData(prev => ({ ...prev, so_bc_ma_scyk: newCode }));
+    } catch (err) {
+      console.error('Lỗi khi tạo mã SCYK:', err);
+    }
+  };
+
+  const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    // Validate required fields
     if (!formData.so_bc_ma_scyk || !formData.don_vi_bao_cao || !formData.ho_ten_nb) {
-      alert('Vui lòng điền đầy đủ các trường bắt buộc: Số BC/Mã SCYK, Đơn vị báo cáo, Họ tên người bệnh');
+      alert('Vui lòng điền đầy đủ các trường bắt buộc: Số BC, Đơn vị báo cáo, Họ tên người bệnh');
       return;
     }
 
@@ -472,420 +527,318 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
     }
   };
 
-  const handleAIAnalysis = () => {
-    if (!formData.mo_ta_su_co) return;
-    setAiAnalyzing(true);
-    setTimeout(() => {
-      setAiResult(`
-**Phân tích Nguyên nhân gốc rễ (RCA) - Mô hình Xương cá:**
-
-1. **Con người (Man):**
-   - Khả năng giao tiếp giữa các kíp trực chưa hiệu quả.
-   - Nhân viên có thể đang trong trạng thái mệt mỏi hoặc thiếu tập trung.
-
-2. **Quy trình (Method):**
-   - Quy trình bàn giao ca trực có thể chưa được tuân thủ nghiêm ngặt.
-   - Thiếu bảng kiểm (checklist) đối chiếu tại thời điểm xảy ra sự cố.
-
-3. **Phương tiện/Thiết bị (Machine):**
-   - Hệ thống cảnh báo tự động trên phần mềm (nếu có) chưa kích hoạt hoặc bị bỏ qua.
-
-4. **Môi trường (Environment):**
-   - Khu vực làm việc có thể quá ồn hoặc ánh sáng không đảm bảo.
-
-**Đề xuất giải pháp sơ bộ:**
-   - Tổ chức tập huấn lại quy trình nhận diện người bệnh/thuốc.
-   - Rà soát lại quy trình bàn giao ca.
-      `);
-      setAiAnalyzing(false);
-    }, 2000);
-  };
+  const ToggleGroup = ({ label, field, options, value }: { label: string, field: string, options: string[], value: string }) => (
+    <div className="flex flex-col gap-2">
+      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</label>
+      <div className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-lg">
+        {options.map(opt => (
+          <button
+            key={opt}
+            onClick={() => handleChange(field, opt)}
+            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${value === opt ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="bg-slate-50 pb-10">
-      {/* Sticky Header */}
-      <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10 shadow-sm -mx-6 -mt-6 mb-6">
-        <div>
-          <h2 className="text-lg font-bold text-slate-800 uppercase">
-            {editingItem ? 'Chỉnh sửa Báo cáo Sự cố' : 'Báo cáo Sự cố Y khoa'}
-          </h2>
-          <p className="text-xs text-slate-500">Mẫu theo Phụ lục I - Thông tư 43/2018/TT-BYT</p>
+    <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      {/* Header Form */}
+      <div className="bg-white rounded-t-3xl border-x border-t border-slate-200 p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+        <div className="w-24 h-24 bg-primary-600 rounded-3xl flex items-center justify-center text-white shadow-xl ring-8 ring-primary-50 rotate-3 hover:rotate-0 transition-transform duration-300">
+          <FileText size={48} />
         </div>
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium transition-colors">
-            Hủy bỏ
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm disabled:opacity-50"
-          >
-            {saving ? (
-              <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            {saving ? 'Đang lưu...' : (editingItem ? 'Cập nhật' : 'Gửi báo cáo')}
-          </button>
+        <div className="flex-1 text-center md:text-left">
+          <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mb-2">
+            <span className="bg-primary-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">Hệ thống QLCL</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500 text-sm font-bold tracking-tight">Bệnh viện Quân y 103</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-tight">Báo cáo Sự cố Y khoa</h1>
+          <p className="text-slate-400 text-sm mt-2 font-medium">Mẫu quy chuẩn theo Phụ lục I - Thông tư 43/2018/TT-BYT</p>
+        </div>
+        <div className="flex flex-col gap-3 w-full md:w-auto">
+          <div className="bg-primary-50/50 border border-primary-100 rounded-2xl p-4 flex flex-col items-center md:items-end backdrop-blur-sm">
+            <span className="text-[10px] text-primary-600 font-black uppercase tracking-widest mb-1">Mã số báo cáo</span>
+            <span className="text-2xl font-mono font-black text-primary-700 leading-none">{formData.so_bc_ma_scyk || 'SCYK-0000-000'}</span>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="bg-white border-x border-b border-slate-200 rounded-b-3xl p-6 md:p-10 space-y-12 shadow-sm">
 
-        {/* Section 1: Reporter Info */}
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="bg-primary-50 px-6 py-4 border-b border-primary-100">
-            <h3 className="text-sm font-bold text-primary-800 uppercase">1. Thông tin người báo cáo</h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Hình thức báo cáo</label>
-                <div className="flex gap-4 mt-2">
-                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="reportType"
-                      checked={formData.hinh_thuc_bao_cao === 'Tự nguyện'}
-                      onChange={() => handleChange('hinh_thuc_bao_cao', 'Tự nguyện')}
-                      className="text-primary-600 focus:ring-primary-500"
-                    /> Tự nguyện
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="reportType"
-                      checked={formData.hinh_thuc_bao_cao === 'Bắt buộc'}
-                      onChange={() => handleChange('hinh_thuc_bao_cao', 'Bắt buộc')}
-                      className="text-primary-600 focus:ring-primary-500"
-                    /> Bắt buộc
-                  </label>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Số BC/Mã SCYK *</label>
+        {/* Section 1: Thông tin chung */}
+        <section className="relative">
+          <div className="absolute -left-12 top-0 hidden xl:flex w-10 h-10 bg-primary-600 text-white rounded-2xl items-center justify-center font-bold shadow-lg shadow-primary-200 -rotate-6">1</div>
+          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3 mb-8">
+            <div className="xl:hidden w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">1</div>
+            Hình thức & Đơn vị báo cáo
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-slate-50/70 p-8 rounded-3xl border border-slate-100">
+            <ToggleGroup
+              label="Hình thức báo cáo"
+              field="hinh_thuc_bao_cao"
+              options={['Tự nguyện', 'Bắt buộc']}
+              value={formData.hinh_thuc_bao_cao}
+            />
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                Đơn vị báo cáo <span className="text-red-500 font-black">*</span>
+              </label>
+              <select
+                value={formData.don_vi_bao_cao}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleChange('don_vi_bao_cao', val);
+                  const selectedUnit = dmDonVi.find(u => u.ten_don_vi === val);
+                  if (selectedUnit) generateNextCode(selectedUnit.ma_don_vi);
+                }}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all cursor-pointer shadow-sm"
+              >
+                <option value="">-- Chọn đơn vị --</option>
+                {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ma_don_vi} - {u.ten_don_vi}</option>)}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày báo cáo</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 text-slate-400" size={18} />
                 <input
-                  type="text"
-                  value={formData.so_bc_ma_scyk}
-                  onChange={(e) => handleChange('so_bc_ma_scyk', e.target.value)}
-                  placeholder="VD: SCYK-2025-001"
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Họ tên người báo cáo</label>
-                <input
-                  type="text"
-                  value={formData.ho_ten_nguoi_bc}
-                  onChange={(e) => handleChange('ho_ten_nguoi_bc', e.target.value)}
-                  placeholder="Họ và tên người báo cáo"
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Đơn vị báo cáo *</label>
-                <input
-                  type="text"
-                  value={formData.don_vi_bao_cao}
-                  onChange={(e) => handleChange('don_vi_bao_cao', e.target.value)}
-                  placeholder="Khoa/Phòng báo cáo"
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại liên hệ</label>
-                <input
-                  type="text"
-                  value={formData.sdt}
-                  onChange={(e) => handleChange('sdt', e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                  type="date"
+                  value={formData.ngay_bao_cao}
+                  onChange={(e) => handleChange('ngay_bao_cao', e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm"
                 />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 2: Incident Details & Patient Info */}
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="bg-primary-50 px-6 py-4 border-b border-primary-100">
-            <h3 className="text-sm font-bold text-primary-800 uppercase">2. Thông tin sự cố & Đối tượng xảy ra</h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Ngày xảy ra sự cố</label>
-                <input
-                  type="date"
-                  value={formData.ngay_xay_ra_sc}
-                  onChange={(e) => handleChange('ngay_xay_ra_sc', e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Thời gian</label>
-                <input
-                  type="time"
-                  value={formData.thoi_gian}
-                  onChange={(e) => handleChange('thoi_gian', e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Khoa/Phòng xảy ra</label>
-                <select
-                  value={formData.khoa_phong}
-                  onChange={(e) => handleChange('khoa_phong', e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
-                >
-                  <option value="">-- Chọn khoa phòng --</option>
-                  <option>Khoa Nội Tiêu hóa</option>
-                  <option>Khoa Ngoại Dã chiến</option>
-                  <option>Khoa Hồi sức tích cực</option>
-                  <option>Khoa Dược</option>
-                  <option>Khoa Nội Tổng hợp</option>
-                  <option>Khoa Sản</option>
-                  <option>Khoa Nhi</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Vị trí cụ thể</label>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Section 2: Thông tin người bệnh */}
+          <section className="space-y-8">
+            <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">2</div>
+              Thông tin người bệnh
+            </h2>
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Họ và tên người bệnh <span className="text-red-500 font-black">*</span></label>
                 <input
                   type="text"
-                  value={formData.vi_tri_cu_the}
-                  onChange={(e) => handleChange('vi_tri_cu_the', e.target.value)}
-                  placeholder="VD: Buồng bệnh số 5, Nhà vệ sinh..."
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Đối tượng xảy ra sự cố</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {['Người bệnh', 'Người nhà/Khách', 'Nhân viên y tế', 'Trang thiết bị'].map(option => (
-                  <label key={option} className={`flex items-center gap-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border cursor-pointer hover:border-primary-300 ${formData.doi_tuong_xay_ra_sc === option ? 'border-primary-500 bg-primary-50' : 'border-slate-200'}`}>
-                    <input
-                      type="radio"
-                      name="subject"
-                      checked={formData.doi_tuong_xay_ra_sc === option}
-                      onChange={() => handleChange('doi_tuong_xay_ra_sc', option)}
-                      className="text-primary-600 focus:ring-primary-500"
-                    /> {option}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Patient Specific Info */}
-            <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
-              <h4 className="text-xs font-bold text-primary-800 uppercase mb-3">Thông tin người bệnh *</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  type="text"
+                  placeholder="Nhập tên đầy đủ người bệnh..."
                   value={formData.ho_ten_nb}
                   onChange={(e) => handleChange('ho_ten_nb', e.target.value)}
-                  placeholder="Họ và tên NB *"
-                  className="w-full p-2 border border-primary-200 rounded-lg text-sm"
+                  className="w-full border-b-2 border-slate-100 hover:border-slate-300 focus:border-primary-500 px-0 py-3 text-lg font-bold text-slate-800 transition-all outline-none"
                 />
-                <input
-                  type="text"
-                  value={formData.so_benh_an}
-                  onChange={(e) => handleChange('so_benh_an', e.target.value)}
-                  placeholder="Số HSBA"
-                  className="w-full p-2 border border-primary-200 rounded-lg text-sm"
-                />
-                <div className="flex gap-2">
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Số HSBA / ID</label>
                   <input
-                    type="date"
-                    value={formData.ngay_sinh}
-                    onChange={(e) => handleChange('ngay_sinh', e.target.value)}
-                    placeholder="Ngày sinh"
-                    className="w-1/2 p-2 border border-primary-200 rounded-lg text-sm"
+                    type="text"
+                    placeholder="Mã hồ sơ..."
+                    value={formData.so_benh_an}
+                    onChange={(e) => handleChange('so_benh_an', e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-mono font-bold"
                   />
-                  <select
-                    value={formData.gioi}
-                    onChange={(e) => handleChange('gioi', e.target.value)}
-                    className="w-1/2 p-2 border border-primary-200 rounded-lg text-sm bg-white"
-                  >
-                    <option>Nam</option>
-                    <option>Nữ</option>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Giới tính</label>
+                  <div className="flex bg-slate-100 p-1 rounded-xl">
+                    {['Nam', 'Nữ'].map(g => (
+                      <button key={g} onClick={() => handleChange('gioi', g)} className={`flex-1 py-2 rounded-lg text-xs font-black transition-all ${formData.gioi === g ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-400'}`}>{g}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày sinh</label>
+                  <input type="date" value={formData.ngay_sinh} onChange={(e) => handleChange('ngay_sinh', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Khoa/Phòng điều trị</label>
+                  <select value={formData.khoa_phong} onChange={(e) => handleChange('khoa_phong', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold">
+                    <option value="">-- Chọn khoa --</option>
+                    {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>)}
                   </select>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Section 3: Incident Description & AI Analysis */}
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="bg-primary-50 px-6 py-4 border-b border-primary-100 flex justify-between items-center">
-            <h3 className="text-sm font-bold text-primary-800 uppercase">3. Diễn biến sự cố & Phân tích RCA</h3>
-            <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-full shadow-sm border border-primary-100">
-              <span className="text-xs text-slate-500 font-medium">Có hỗ trợ bởi AI</span>
-              <BrainCircuit className="w-4 h-4 text-purple-600" />
+          {/* Section 3: Đối tượng & Địa điểm */}
+          <section className="space-y-8">
+            <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">3</div>
+              Sự cố & Địa điểm xảy ra
+            </h2>
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
+              <ToggleGroup label="Đối tượng xảy ra sự cố" field="doi_tuong_xay_ra_sc" options={['Người bệnh', 'Người nhà', 'NV y tế', 'Trang thiết bị']} value={formData.doi_tuong_xay_ra_sc} />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày xảy ra</label>
+                  <input type="date" value={formData.ngay_xay_ra_sc} onChange={(e) => handleChange('ngay_xay_ra_sc', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Thời gian</label>
+                  <input type="time" value={formData.thoi_gian} onChange={(e) => handleChange('thoi_gian', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vị trí cụ thể tại khoa</label>
+                <input type="text" placeholder="VD: Buồng bệnh số 10, Hành lang, Nhà vệ sinh..." value={formData.vi_tri_cu_the} onChange={(e) => handleChange('vi_tri_cu_the', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
+              </div>
             </div>
-          </div>
-          <div className="p-6">
+          </section>
+        </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Mô tả ngắn gọn diễn biến</label>
+        {/* Section 4: Mô tả diễn biến */}
+        <section className="space-y-8">
+          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">4</div>
+            Mô tả diễn biến & Biện pháp can thiệp
+          </h2>
+          <div className="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 space-y-10 shadow-2xl">
+            <div className="flex flex-col gap-3">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <Sparkles size={14} className="text-primary-400" /> Diễn biến sự cố tóm tắt <span className="text-red-500">*</span>
+              </label>
               <textarea
-                rows={5}
-                className="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-200 focus:border-purple-500 transition-all"
-                placeholder="Mô tả chi tiết: Đang làm gì? Ở đâu? Như thế nào?..."
+                rows={4}
+                placeholder="Mô tả chi tiết tình huống đã xảy ra..."
                 value={formData.mo_ta_su_co}
                 onChange={(e) => handleChange('mo_ta_su_co', e.target.value)}
+                className="w-full bg-slate-800/50 border border-slate-700/50 rounded-3xl p-6 text-white text-base focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all leading-relaxed outline-none"
               ></textarea>
             </div>
-
-            {/* AI Analysis Box */}
-            <div className="border border-purple-200 rounded-xl overflow-hidden bg-purple-50/50">
-              <div className="p-4 flex items-center justify-between bg-purple-100/50 border-b border-purple-200">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
-                  <span className="font-semibold text-purple-900 text-sm">Trợ lý Phân tích RCA (AI Assistant)</span>
-                </div>
-                <button
-                  onClick={handleAIAnalysis}
-                  disabled={!formData.mo_ta_su_co || aiAnalyzing}
-                  className="px-3 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
-                >
-                  {aiAnalyzing ? (
-                    <>
-                      <span className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full"></span>
-                      Đang phân tích...
-                    </>
-                  ) : (
-                    'Phân tích ngay'
-                  )}
-                </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="flex flex-col gap-3">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Giải pháp khắc phục ngay</label>
+                <textarea rows={3} placeholder="Xử lý tại chỗ ngay sau đó..." value={formData.de_xuat_giai_phap_ban_dau} onChange={(e) => handleChange('de_xuat_giai_phap_ban_dau', e.target.value)} className="w-full bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 text-slate-200 text-sm outline-none focus:border-primary-500 transition-all" />
               </div>
-
-              {aiResult ? (
-                <div className="p-4 bg-white animate-in fade-in duration-500">
-                  <div className="prose prose-sm text-slate-700 max-w-none whitespace-pre-line">
-                    {aiResult}
-                  </div>
-                  <div className="mt-3 flex gap-2 justify-end">
-                    <button className="text-xs text-slate-500 hover:text-purple-600 underline">Sao chép kết quả</button>
-                    <button className="text-xs text-slate-500 hover:text-purple-600 underline">Phản hồi kết quả này</button>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-8 text-center text-slate-400 text-sm italic">
-                  Nhập mô tả sự cố ở trên và nhấn "Phân tích ngay" để AI gợi ý nguyên nhân gốc rễ.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Đề xuất giải pháp khắc phục ngay</label>
-              <textarea
-                rows={2}
-                value={formData.de_xuat_giai_phap_ban_dau}
-                onChange={(e) => handleChange('de_xuat_giai_phap_ban_dau', e.target.value)}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-                placeholder="Đã xử lý như thế nào ngay sau khi sự cố xảy ra?"
-              ></textarea>
+              <div className="flex flex-col gap-3">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Điều trị lâm sàng bổ sung</label>
+                <textarea rows={3} placeholder="Y lệnh bổ sung, theo dõi tích cực..." value={formData.dieu_tri_xy_ly_ban_dau_da_thuc_hien} onChange={(e) => handleChange('dieu_tri_xy_ly_ban_dau_da_thuc_hien', e.target.value)} className="w-full bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 text-slate-200 text-sm outline-none focus:border-primary-500 transition-all" />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Section 4: Classification */}
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="bg-primary-50 px-6 py-4 border-b border-primary-100">
-            <h3 className="text-sm font-bold text-primary-800 uppercase">4. Phân loại sự cố (NC)</h3>
-          </div>
-          <div className="p-6">
+        {/* Section 5: Phân loại & Thông báo */}
+        <section className="space-y-8">
+          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">5</div>
+            Thông báo, Phân loại & Đánh giá
+          </h2>
+          <div className="bg-slate-50/50 rounded-3xl border border-slate-200/60 p-8 md:p-10 space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <ToggleGroup label="Thông báo BS điều trị" field="thong_bao_bs_npt" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_bs_npt} />
+              <ToggleGroup label="Ghi vào HSBA" field="ghi_nhan_vao_hsba" options={['Có', 'Không', 'KGN']} value={formData.ghi_nhan_vao_hsba} />
+              <ToggleGroup label="Thông báo Người bệnh" field="thong_bao_nb" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_nb} />
+              <ToggleGroup label="Thông báo Người nhà" field="thong_bao_nn" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_nn} />
+            </div>
 
-            <div className="space-y-4">
-              <div
-                onClick={() => handleChange('phan_loai_ban_dau', 'Nhóm A')}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.phan_loai_ban_dau === 'Nhóm A' ? 'border-primary-500 bg-primary-50' : 'border-slate-200 hover:bg-slate-50'}`}
-              >
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="severity"
-                    checked={formData.phan_loai_ban_dau === 'Nhóm A'}
-                    onChange={() => handleChange('phan_loai_ban_dau', 'Nhóm A')}
-                    className="mt-1 text-primary-600 focus:ring-primary-500"
-                  />
-                  <div>
-                    <span className="block font-bold text-slate-800 text-sm">Nhóm A (Nguy cơ)</span>
-                    <span className="text-xs text-slate-500">Đã xảy ra tình huống có thể dẫn đến sự cố, nhưng đã được ngăn chặn kịp thời (Near miss).</span>
-                  </div>
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10 border-t border-slate-200">
+              <div className="flex flex-col gap-4">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Cơ chế sự cố</label>
+                <div className="grid grid-cols-2 gap-4">
+                  {['Chưa xảy ra', 'Đã xảy ra'].map(p => (
+                    <button key={p} onClick={() => handleChange('phan_loai_sc', p)} className={`px-6 py-4 rounded-2xl border-2 text-sm font-black transition-all ${formData.phan_loai_sc === p ? 'border-primary-600 bg-white text-primary-700 shadow-lg scale-105' : 'border-transparent bg-slate-200/50 text-slate-400 hover:bg-slate-200'}`}>
+                      {p}
+                    </button>
+                  ))}
+                </div>
               </div>
-
-              <div
-                onClick={() => handleChange('phan_loai_ban_dau', 'Nhóm B')}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.phan_loai_ban_dau === 'Nhóm B' ? 'border-primary-500 bg-primary-50' : 'border-slate-200 hover:bg-slate-50'}`}
-              >
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="severity"
-                    checked={formData.phan_loai_ban_dau === 'Nhóm B'}
-                    onChange={() => handleChange('phan_loai_ban_dau', 'Nhóm B')}
-                    className="mt-1 text-primary-600 focus:ring-primary-500"
-                  />
-                  <div>
-                    <span className="block font-bold text-slate-800 text-sm">Nhóm B (Sự cố nhẹ)</span>
-                    <span className="text-xs text-slate-500">Sự cố đã xảy ra nhưng chưa gây tổn thương cho bệnh nhân.</span>
-                  </div>
-                </label>
-              </div>
-
-              <div
-                onClick={() => handleChange('phan_loai_ban_dau', 'Nhóm C-D')}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.phan_loai_ban_dau === 'Nhóm C-D' ? 'border-amber-500 bg-amber-100' : 'border-amber-200 bg-amber-50'}`}
-              >
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="severity"
-                    checked={formData.phan_loai_ban_dau === 'Nhóm C-D'}
-                    onChange={() => handleChange('phan_loai_ban_dau', 'Nhóm C-D')}
-                    className="mt-1 text-amber-600 focus:ring-amber-500"
-                  />
-                  <div>
-                    <span className="block font-bold text-amber-900 text-sm">Nhóm C - D (Sự cố trung bình)</span>
-                    <span className="text-xs text-amber-700">Đã gây tổn thương nhẹ, cần theo dõi hoặc can thiệp điều trị tối thiểu.</span>
-                  </div>
-                </label>
-              </div>
-
-              <div
-                onClick={() => handleChange('phan_loai_ban_dau', 'Nhóm E-I')}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.phan_loai_ban_dau === 'Nhóm E-I' ? 'border-red-500 bg-red-100' : 'border-red-200 bg-red-50'}`}
-              >
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="severity"
-                    checked={formData.phan_loai_ban_dau === 'Nhóm E-I'}
-                    onChange={() => handleChange('phan_loai_ban_dau', 'Nhóm E-I')}
-                    className="mt-1 text-red-600 focus:ring-red-500"
-                  />
-                  <div>
-                    <span className="block font-bold text-red-900 text-sm">Nhóm E - I (Sự cố nặng - Sentinel Event)</span>
-                    <span className="text-xs text-red-700">Gây tổn thương tạm thời/vĩnh viễn, cần can thiệp cấp cứu, kéo dài nằm viện hoặc tử vong.</span>
-                  </div>
-                </label>
+              <div className="flex flex-col gap-4">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Mức độ ảnh hưởng ban đầu</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { val: 'Nhẹ', color: 'blue', desc: 'A-B' },
+                    { val: 'Trung bình', color: 'amber', desc: 'C-D' },
+                    { val: 'Nặng', color: 'red', desc: 'E-I' }
+                  ].map(m => (
+                    <button key={m.val} onClick={() => handleChange('phan_loai_ban_dau', m.val)} className={`px-2 py-4 rounded-2xl border-2 text-sm font-black transition-all flex flex-col items-center gap-1 ${formData.phan_loai_ban_dau === m.val ? `border-${m.color}-600 bg-white text-${m.color}-700 shadow-lg scale-105` : 'border-transparent bg-slate-200/50 text-slate-400 hover:bg-slate-200'}`}>
+                      {m.val}
+                      <span className="text-[10px] uppercase opacity-60">{m.desc}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </section>
+
+        {/* Section 6: Người báo cáo */}
+        <section className="space-y-8">
+          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">6</div>
+            Nhân sự báo cáo & Nhân chứng
+          </h2>
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 md:p-10 space-y-8 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest leading-loose">Họ tên người báo cáo</label>
+                <div className="flex items-center gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-black text-sm">{user?.username?.[0]?.toUpperCase()}</div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-800">{formData.ho_ten_nguoi_bc}</span>
+                    <span className="text-[10px] text-primary-600 font-bold uppercase tracking-widest">Hệ thống xác thực</span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">SĐT liên hệ</label>
+                  <input type="text" value={formData.sdt} onChange={(e) => handleChange('sdt', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email</label>
+                  <input type="email" value={formData.email} onChange={(e) => handleChange('email', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vai trò / Chức danh báo cáo</label>
+              <div className="flex flex-wrap gap-2">
+                {['Điều dưỡng', 'Bác sĩ', 'Người bệnh', 'Người nhà', 'Khác'].map(role => (
+                  <button key={role} onClick={() => handleChange('vaitro_nguoi_bc', role)} className={`px-6 py-2.5 rounded-full border-2 text-xs font-black transition-all ${formData.vaitro_nguoi_bc === role ? 'border-primary-600 bg-primary-50 text-primary-700' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}>{role}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Người chứng kiến 1</label>
+                <input type="text" placeholder="Họ và tên..." value={formData.chung_kien1} onChange={(e) => handleChange('chung_kien1', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Người chứng kiến 2</label>
+                <input type="text" placeholder="Họ và tên..." value={formData.chung_kien2} onChange={(e) => handleChange('chung_kien2', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Action Buttons */}
+        <div className="sticky bottom-8 flex flex-col md:flex-row justify-center items-center gap-6 pt-10 px-6">
+          <button onClick={onCancel} className="w-full md:w-auto px-12 py-4 text-slate-400 font-black uppercase tracking-widest hover:text-slate-600 transition-all">Quay lại</button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="w-full md:w-4/5 lg:w-3/5 px-12 py-5 bg-primary-600 hover:bg-primary-700 text-white font-black rounded-[2rem] shadow-2xl shadow-primary-200 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 group uppercase tracking-widest"
+          >
+            {saving ? <span className="animate-spin h-6 w-6 border-4 border-white border-t-transparent rounded-full" /> : <Save size={24} className="group-hover:scale-110 transition-transform" />}
+            {saving ? 'Đang gửi báo cáo...' : (editingItem ? 'Cập nhật nội dung báo cáo' : 'Ký và Gửi báo cáo sự cố')}
+          </button>
+        </div>
       </div>
     </div>
   );
