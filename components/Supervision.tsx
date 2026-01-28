@@ -58,6 +58,38 @@ export const Supervision: React.FC = () => {
   });
   const [activityFilter, setActivityFilter] = useState('all');
 
+  // Filter function for activities
+  const filterByDate = (schedule: LichGiamSat) => {
+    if (activityFilter === 'all') return true;
+    const createdAt = schedule.created_at ? new Date(schedule.created_at) : null;
+    if (!createdAt) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+    const startOfLastWeek = new Date(startOfWeek);
+    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+    const endOfLastWeek = new Date(startOfWeek);
+    endOfLastWeek.setDate(endOfLastWeek.getDate() - 1);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    createdAt.setHours(0, 0, 0, 0);
+    switch (activityFilter) {
+      case 'today': return createdAt.getTime() === today.getTime();
+      case 'yesterday': return createdAt.getTime() === yesterday.getTime();
+      case 'thisWeek': return createdAt >= startOfWeek && createdAt <= today;
+      case 'lastWeek': return createdAt >= startOfLastWeek && createdAt <= endOfLastWeek;
+      case 'thisMonth': return createdAt >= startOfMonth && createdAt <= today;
+      case 'lastMonth': return createdAt >= startOfLastMonth && createdAt <= endOfLastMonth;
+      default: return true;
+    }
+  };
+
+  const filteredSchedules = schedules.filter(filterByDate);
+
   const isAdmin = user?.role === 'Quản trị viên';
 
   const loadData = async () => {
@@ -387,64 +419,10 @@ export const Supervision: React.FC = () => {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
                     {loading && <div className="p-4 text-center text-slate-400">Đang tải...</div>}
-                    {!loading && schedules.filter((s) => {
-                      if (activityFilter === 'all') return true;
-                      const createdAt = s.created_at ? new Date(s.created_at) : null;
-                      if (!createdAt) return false;
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const yesterday = new Date(today);
-                      yesterday.setDate(yesterday.getDate() - 1);
-                      const startOfWeek = new Date(today);
-                      startOfWeek.setDate(today.getDate() - today.getDay() + 1);
-                      const startOfLastWeek = new Date(startOfWeek);
-                      startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
-                      const endOfLastWeek = new Date(startOfWeek);
-                      endOfLastWeek.setDate(endOfLastWeek.getDate() - 1);
-                      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                      const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                      createdAt.setHours(0, 0, 0, 0);
-                      switch (activityFilter) {
-                        case 'today': return createdAt.getTime() === today.getTime();
-                        case 'yesterday': return createdAt.getTime() === yesterday.getTime();
-                        case 'thisWeek': return createdAt >= startOfWeek && createdAt <= today;
-                        case 'lastWeek': return createdAt >= startOfLastWeek && createdAt <= endOfLastWeek;
-                        case 'thisMonth': return createdAt >= startOfMonth && createdAt <= today;
-                        case 'lastMonth': return createdAt >= startOfLastMonth && createdAt <= endOfLastMonth;
-                        default: return true;
-                      }
-                    }).length === 0 && (
+                    {!loading && filteredSchedules.length === 0 && (
                       <div className="p-4 text-center text-slate-400 italic">Không có hoạt động nào trong khoảng thời gian này</div>
                     )}
-                    {!loading && schedules.filter((s) => {
-                      if (activityFilter === 'all') return true;
-                      const createdAt = s.created_at ? new Date(s.created_at) : null;
-                      if (!createdAt) return false;
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const yesterday = new Date(today);
-                      yesterday.setDate(yesterday.getDate() - 1);
-                      const startOfWeek = new Date(today);
-                      startOfWeek.setDate(today.getDate() - today.getDay() + 1);
-                      const startOfLastWeek = new Date(startOfWeek);
-                      startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
-                      const endOfLastWeek = new Date(startOfWeek);
-                      endOfLastWeek.setDate(endOfLastWeek.getDate() - 1);
-                      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                      const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                      createdAt.setHours(0, 0, 0, 0);
-                      switch (activityFilter) {
-                        case 'today': return createdAt.getTime() === today.getTime();
-                        case 'yesterday': return createdAt.getTime() === yesterday.getTime();
-                        case 'thisWeek': return createdAt >= startOfWeek && createdAt <= today;
-                        case 'lastWeek': return createdAt >= startOfLastWeek && createdAt <= endOfLastWeek;
-                        case 'thisMonth': return createdAt >= startOfMonth && createdAt <= today;
-                        case 'lastMonth': return createdAt >= startOfLastMonth && createdAt <= endOfLastMonth;
-                        default: return true;
-                      }
-                    }).slice(0, 10).map((schedule) => (
+                    {!loading && filteredSchedules.slice(0, 10).map((schedule) => (
                         <div key={schedule.id} className="p-4 hover:bg-slate-50 transition-colors group">
                             <div className="flex items-start gap-3">
                                 <div className={`p-2 rounded-lg flex-shrink-0 ${
