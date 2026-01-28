@@ -1,8 +1,18 @@
 import { supabase } from './supabaseClient';
+
 export async function fetchDmDonVi() {
   const { data, error } = await supabase.from('dm_don_vi').select('*');
   if (error) throw error;
-  return data;
+
+  // Sort using natural/numeric sorting for codes like A1, A2, A10
+  const sorted = (data || []).sort((a, b) => {
+    return a.ma_don_vi.localeCompare(b.ma_don_vi, undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
+  });
+
+  return sorted;
 }
 
 export async function addDmDonVi(record) {

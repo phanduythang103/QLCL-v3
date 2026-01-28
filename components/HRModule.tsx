@@ -1,15 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Plus, User, Search, Filter, Phone, Award, Mail, MapPin,
-  FileSpreadsheet, Download, Upload, MoreHorizontal, Edit2, Trash2, X, Save, Eye
+  FileSpreadsheet, Download, Upload, MoreHorizontal, Edit2, Trash2, X, Save, Eye, MessageSquare, Send
 } from 'lucide-react';
 import { fetchNhanSuQlcl, addNhanSuQlcl, updateNhanSuQlcl, deleteNhanSuQlcl, NhanSuQlcl } from '../readNhanSuQlcl';
+import { fetchDmDonVi, addDmDonVi } from '../readDmDonVi';
+import { fetchDmCapBac, addDmCapBac } from '../readDmCapBac';
+import { fetchDmChucVu, addDmChucVu } from '../readDmChucVu';
+import { fetchUsers } from '../userApi';
+import { getStoredUser } from '../utils/auth';
 import * as XLSX from 'xlsx';
 
 type QARoleType = 'COUNCIL' | 'BOARD' | 'NETWORK';
 
 export const HRModule: React.FC = () => {
   const [staff, setStaff] = useState<NhanSuQlcl[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [ranks, setRanks] = useState<any[]>([]);
+  const [positions, setPositions] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'ALL' | QARoleType>('ALL');
@@ -35,6 +44,7 @@ export const HRModule: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showContactMenu, setShowContactMenu] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -54,14 +64,35 @@ export const HRModule: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const data = await fetchNhanSuQlcl();
-      setStaff(data);
+      const [staffData, deptsData, ranksData, usersData, positionsData] = await Promise.all([
+        fetchNhanSuQlcl(),
+        fetchDmDonVi(),
+        fetchDmCapBac(),
+        fetchUsers(),
+        fetchDmChucVu()
+      ]);
+      setStaff(staffData);
+      setDepartments(deptsData);
+      setRanks(ranksData);
+      setUsers(usersData);
+      setPositions(positionsData);
       setError(null);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Hàm lấy avatar cho nhân sự dựa trên matching với users
+  const getAvatarForStaff = (staffMember: NhanSuQlcl): string | null => {
+    // Tìm user có cùng họ tên VÀ đơn vị
+    const matchingUser = users.find(u =>
+      u.full_name === staffMember.ho_ten &&
+      u.department === staffMember.don_vi
+    );
+
+    return matchingUser?.avatar || null;
   };
 
   useEffect(() => {
@@ -83,6 +114,11 @@ export const HRModule: React.FC = () => {
     const matchesTrangThai = !advancedFilters.trang_thai || s.trang_thai === advancedFilters.trang_thai;
 
     return matchesTab && matchesSearch && matchesCert && matchesCapBac && matchesDonVi && matchesTrangThai;
+  }).sort((a, b) => {
+    // Sort by department using natural sorting
+    const deptA = a.don_vi || '';
+    const deptB = b.don_vi || '';
+    return deptA.localeCompare(deptB, undefined, { numeric: true, sensitivity: 'base' });
   });
 
   const totalPages = Math.ceil(filteredStaff.length / rowsPerPage);
@@ -564,8 +600,16 @@ export const HRModule: React.FC = () => {
                     onChange={() => toggleSelect(item.id)}
                     className="mt-1 w-4 h-4 text-primary-600 rounded"
                   />
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                    {item.ho_ten.charAt(0)}
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0 overflow-hidden">
+                    {getAvatarForStaff(item) ? (
+                      <img
+                        src={getAvatarForStaff(item)!}
+                        alt={item.ho_ten}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      item.ho_ten.charAt(0)
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     {/* Tên, cấp bậc, và vai trò cùng hàng */}
@@ -690,8 +734,16 @@ export const HRModule: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                            {item.ho_ten.charAt(0)}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-sm shadow-sm overflow-hidden">
+                            {getAvatarForStaff(item) ? (
+                              <img
+                                src={getAvatarForStaff(item)!}
+                                alt={item.ho_ten}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              item.ho_ten.charAt(0)
+                            )}
                           </div>
                           <div>
                             <p className="font-bold text-slate-800">{item.ho_ten}</p>
@@ -885,6 +937,9 @@ export const HRModule: React.FC = () => {
           handleSave={handleSave}
           saving={saving}
           onClose={() => { setShowForm(false); resetForm(); }}
+          departments={departments}
+          ranks={ranks}
+          positions={positions}
         />
       )}
 
@@ -904,8 +959,16 @@ export const HRModule: React.FC = () => {
             <div className="p-6">
               {/* Header with Avatar */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                  {viewingItem.ho_ten.charAt(0)}
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden">
+                  {getAvatarForStaff(viewingItem) ? (
+                    <img
+                      src={getAvatarForStaff(viewingItem)!}
+                      alt={viewingItem.ho_ten}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    viewingItem.ho_ten.charAt(0)
+                  )}
                 </div>
                 <div>
                   <h4 className="text-xl font-bold text-slate-800">{viewingItem.ho_ten}</h4>
@@ -992,19 +1055,60 @@ export const HRModule: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+            <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl relative">
               <button
                 onClick={() => setViewingItem(null)}
-                className="flex-1 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
+                className="py-2 px-4 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
               >
                 Đóng
               </button>
-              <button
-                onClick={() => { openEditForm(viewingItem); setViewingItem(null); }}
-                className="flex-1 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary-700"
-              >
-                <Edit2 size={14} /> Chỉnh sửa
-              </button>
+
+              <div className="flex-1 flex gap-2 justify-end">
+                {/* Contact Button & Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowContactMenu(!showContactMenu)}
+                    className="py-2 px-4 bg-green-600 text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-green-700 transition-colors shadow-lg shadow-green-900/20 active:scale-95"
+                  >
+                    <Phone size={16} /> Liên hệ
+                  </button>
+
+                  {showContactMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-2 duration-200 z-50">
+                      <div className="p-1">
+                        <a
+                          href={`tel:${viewingItem.so_dien_thoai}`}
+                          className={`flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${viewingItem.so_dien_thoai ? 'text-slate-700 hover:bg-slate-50 hover:text-green-600' : 'text-slate-300 cursor-not-allowed'}`}
+                          onClick={(e) => !viewingItem.so_dien_thoai && e.preventDefault()}
+                        >
+                          <Phone size={16} /> Gọi điện
+                        </a>
+                        <a
+                          href={`sms:${viewingItem.so_dien_thoai}`}
+                          className={`flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${viewingItem.so_dien_thoai ? 'text-slate-700 hover:bg-slate-50 hover:text-blue-600' : 'text-slate-300 cursor-not-allowed'}`}
+                          onClick={(e) => !viewingItem.so_dien_thoai && e.preventDefault()}
+                        >
+                          <MessageSquare size={16} /> Gửi tin nhắn
+                        </a>
+                        <a
+                          href={`mailto:${viewingItem.email}`}
+                          className={`flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${viewingItem.email ? 'text-slate-700 hover:bg-slate-50 hover:text-red-600' : 'text-slate-300 cursor-not-allowed'}`}
+                          onClick={(e) => !viewingItem.email && e.preventDefault()}
+                        >
+                          <Mail size={16} /> Gửi Email
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => { openEditForm(viewingItem); setViewingItem(null); }}
+                  className="py-2 px-4 bg-primary-600 text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-primary-700 transition-colors shadow-lg shadow-primary-900/20 active:scale-95"
+                >
+                  <Edit2 size={16} /> Chỉnh sửa
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1127,6 +1231,9 @@ interface FormModalProps {
   handleSave: () => void;
   saving: boolean;
   onClose: () => void;
+  departments: any[];
+  ranks: any[];
+  positions: any[];
 }
 
 const FormModal: React.FC<FormModalProps> = ({
@@ -1136,163 +1243,438 @@ const FormModal: React.FC<FormModalProps> = ({
   toggleRole,
   handleSave,
   saving,
-  onClose
-}) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-        <h3 className="text-lg font-bold text-slate-800">
-          {editingItem ? 'Chỉnh sửa nhân sự' : 'Thêm nhân sự mới'}
-        </h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-          <X size={20} />
-        </button>
-      </div>
-      <div className="p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Họ và tên *</label>
-            <input
-              type="text"
-              value={formData.ho_ten}
-              onChange={(e) => setFormData({ ...formData, ho_ten: e.target.value })}
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-              placeholder="Nguyễn Văn A"
-            />
+  onClose,
+  departments,
+  ranks,
+  positions
+}) => {
+  const [showDeptDropdown, setShowDeptDropdown] = React.useState(false);
+  const [deptSearchTerm, setDeptSearchTerm] = React.useState('');
+  const deptInputRef = React.useRef<HTMLInputElement>(null);
+  const deptDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Quick add modals
+  const [showAddRankModal, setShowAddRankModal] = React.useState(false);
+  const [showAddPositionModal, setShowAddPositionModal] = React.useState(false);
+  const [showAddDeptModal, setShowAddDeptModal] = React.useState(false);
+  const [newRankName, setNewRankName] = React.useState('');
+  const [newPositionName, setNewPositionName] = React.useState('');
+  const [newDeptCode, setNewDeptCode] = React.useState('');
+  const [newDeptName, setNewDeptName] = React.useState('');
+  const [newDeptKhoi, setNewDeptKhoi] = React.useState('');
+  const [addingItem, setAddingItem] = React.useState(false);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        deptDropdownRef.current &&
+        !deptDropdownRef.current.contains(event.target as Node) &&
+        deptInputRef.current &&
+        !deptInputRef.current.contains(event.target as Node)
+      ) {
+        setShowDeptDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
+          <h3 className="text-lg font-bold text-slate-800">
+            {editingItem ? 'Chỉnh sửa nhân sự' : 'Thêm nhân sự mới'}
+          </h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Họ và tên *</label>
+              <input
+                type="text"
+                value={formData.ho_ten}
+                onChange={(e) => setFormData({ ...formData, ho_ten: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                placeholder="Nguyễn Văn A"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Cấp bậc</label>
+              <div className="flex gap-2">
+                <select
+                  value={formData.cap_bac}
+                  onChange={(e) => setFormData({ ...formData, cap_bac: e.target.value })}
+                  className="flex-1 p-2 border border-slate-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">-- Chọn cấp bậc --</option>
+                  {ranks.map(rank => (
+                    <option key={rank.id} value={rank.ten_cap_bac}>{rank.ten_cap_bac}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowAddRankModal(true)}
+                  className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  title="Thêm cấp bậc mới"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Chức vụ</label>
+              <div className="flex gap-2">
+                <select
+                  value={formData.chuc_vu}
+                  onChange={(e) => setFormData({ ...formData, chuc_vu: e.target.value })}
+                  className="flex-1 p-2 border border-slate-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">-- Chọn chức vụ --</option>
+                  {positions.map(pos => (
+                    <option key={pos.id} value={pos.ten_chuc_vu}>{pos.ten_chuc_vu}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowAddPositionModal(true)}
+                  className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  title="Thêm chức vụ mới"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Đơn vị / Khoa phòng</label>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    ref={deptInputRef}
+                    type="text"
+                    value={formData.don_vi}
+                    onChange={(e) => {
+                      setFormData({ ...formData, don_vi: e.target.value });
+                      setDeptSearchTerm(e.target.value);
+                      setShowDeptDropdown(true);
+                    }}
+                    onFocus={() => setShowDeptDropdown(true)}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                    placeholder="VD: A1 - Nội tiêu hóa"
+                  />
+                  {showDeptDropdown && departments.length > 0 && (
+                    <div
+                      ref={deptDropdownRef}
+                      className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    >
+                      {departments
+                        .filter(dept => {
+                          const searchLower = (formData.don_vi || '').toLowerCase();
+                          const deptText = `${dept.ma_don_vi} - ${dept.ten_don_vi}`.toLowerCase();
+                          return deptText.includes(searchLower);
+                        })
+                        .map(dept => (
+                          <button
+                            key={dept.id}
+                            type="button"
+                            onClick={() => {
+                              const deptValue = `${dept.ma_don_vi} - ${dept.ten_don_vi}`;
+                              setFormData({ ...formData, don_vi: deptValue });
+                              setDeptSearchTerm(deptValue);
+                              setShowDeptDropdown(false);
+                            }}
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-primary-50 transition-colors border-b border-slate-100 last:border-b-0"
+                          >
+                            <span className="font-semibold text-primary-600">{dept.ma_don_vi}</span>
+                            <span className="text-slate-600"> - {dept.ten_don_vi}</span>
+                            {dept.khoi && (
+                              <span className="ml-2 text-xs text-slate-400">({dept.khoi})</span>
+                            )}
+                          </button>
+                        ))}
+                      {departments.filter(dept => {
+                        const searchLower = (formData.don_vi || '').toLowerCase();
+                        const deptText = `${dept.ma_don_vi} - ${dept.ten_don_vi}`.toLowerCase();
+                        return deptText.includes(searchLower);
+                      }).length === 0 && (
+                          <div className="px-3 py-4 text-sm text-slate-400 text-center">
+                            Không tìm thấy đơn vị phù hợp
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddDeptModal(true)}
+                  className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors self-start mt-7"
+                  title="Thêm đơn vị mới"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
+              <input
+                type="text"
+                value={formData.so_dien_thoai}
+                onChange={(e) => setFormData({ ...formData, so_dien_thoai: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                placeholder="0912.345.678"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                placeholder="email@example.com"
+              />
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Cấp bậc</label>
-            <select
-              value={formData.cap_bac}
-              onChange={(e) => setFormData({ ...formData, cap_bac: e.target.value })}
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
-            >
-              <option value="">-- Chọn cấp bậc --</option>
-              <option>Thiếu tướng</option>
-              <option>Đại tá</option>
-              <option>Thượng tá</option>
-              <option>Trung tá</option>
-              <option>Thiếu tá</option>
-              <option>Đại úy</option>
-              <option>Thượng úy</option>
-              <option>Trung úy</option>
-            </select>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Vai trò QLCL</label>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { id: 'COUNCIL', label: 'Hội đồng QLCLBV' },
+                { id: 'BOARD', label: 'Ban QLCL (Chuyên trách)' },
+                { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
+              ].map(role => (
+                <label
+                  key={role.id}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${formData.vai_tro_qlcl.includes(role.id)
+                    ? 'bg-primary-100 border-primary-500 text-primary-800'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.vai_tro_qlcl.includes(role.id)}
+                    onChange={() => toggleRole(role.id)}
+                    className="hidden"
+                  />
+                  {role.label}
+                </label>
+              ))}
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Chức vụ</label>
-            <input
-              type="text"
-              value={formData.chuc_vu}
-              onChange={(e) => setFormData({ ...formData, chuc_vu: e.target.value })}
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-              placeholder="Trưởng khoa"
-            />
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.co_chung_chi}
+                onChange={(e) => setFormData({ ...formData, co_chung_chi: e.target.checked })}
+                className="rounded text-primary-600"
+              />
+              <span className="text-sm text-slate-700">Có chứng chỉ QLCL</span>
+            </label>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Đơn vị / Khoa phòng</label>
-            <input
-              type="text"
-              value={formData.don_vi}
-              onChange={(e) => setFormData({ ...formData, don_vi: e.target.value })}
+            <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
+            <textarea
+              value={formData.ghi_chu}
+              onChange={(e) => setFormData({ ...formData, ghi_chu: e.target.value })}
               className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-              placeholder="Khoa Nội"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
-            <input
-              type="text"
-              value={formData.so_dien_thoai}
-              onChange={(e) => setFormData({ ...formData, so_dien_thoai: e.target.value })}
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-              placeholder="0912.345.678"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-              placeholder="email@example.com"
+              rows={2}
             />
           </div>
         </div>
+        <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+          >
+            {saving ? (
+              <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+            ) : (
+              <Save size={16} />
+            )}
+            {saving ? 'Đang lưu...' : 'Lưu'}
+          </button>
+        </div>
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Vai trò QLCL</label>
-          <div className="flex gap-2 flex-wrap">
-            {[
-              { id: 'COUNCIL', label: 'Hội đồng QLCLBV' },
-              { id: 'BOARD', label: 'Ban QLCL (Chuyên trách)' },
-              { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
-            ].map(role => (
-              <label
-                key={role.id}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${formData.vai_tro_qlcl.includes(role.id)
-                  ? 'bg-primary-100 border-primary-500 text-primary-800'
-                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                  }`}
+      {/* Quick Add Rank Modal */}
+      {showAddRankModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <h4 className="text-lg font-bold text-slate-800 mb-4">Thêm cấp bậc mới</h4>
+            <input
+              type="text"
+              value={newRankName}
+              onChange={(e) => setNewRankName(e.target.value)}
+              placeholder="Nhập tên cấp bậc"
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm mb-4"
+              autoFocus
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setShowAddRankModal(false); setNewRankName(''); }}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm"
               >
-                <input
-                  type="checkbox"
-                  checked={formData.vai_tro_qlcl.includes(role.id)}
-                  onChange={() => toggleRole(role.id)}
-                  className="hidden"
-                />
-                {role.label}
-              </label>
-            ))}
+                Hủy
+              </button>
+              <button
+                onClick={async () => {
+                  if (!newRankName.trim()) return;
+                  setAddingItem(true);
+                  try {
+                    await addDmCapBac({ ten_cap_bac: newRankName.trim() });
+                    const updatedRanks = await fetchDmCapBac();
+                    // Update parent component's ranks state through formData
+                    setFormData({ ...formData, cap_bac: newRankName.trim() });
+                    setShowAddRankModal(false);
+                    setNewRankName('');
+                    // Reload data to refresh ranks list
+                    window.location.reload();
+                  } catch (err) {
+                    alert('Lỗi khi thêm cấp bậc');
+                  }
+                  setAddingItem(false);
+                }}
+                disabled={addingItem || !newRankName.trim()}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm disabled:opacity-50"
+              >
+                {addingItem ? 'Đang lưu...' : 'Thêm'}
+              </button>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 cursor-pointer">
+      {/* Quick Add Position Modal */}
+      {showAddPositionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <h4 className="text-lg font-bold text-slate-800 mb-4">Thêm chức vụ mới</h4>
             <input
-              type="checkbox"
-              checked={formData.co_chung_chi}
-              onChange={(e) => setFormData({ ...formData, co_chung_chi: e.target.checked })}
-              className="rounded text-primary-600"
+              type="text"
+              value={newPositionName}
+              onChange={(e) => setNewPositionName(e.target.value)}
+              placeholder="Nhập tên chức vụ"
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm mb-4"
+              autoFocus
             />
-            <span className="text-sm text-slate-700">Có chứng chỉ QLCL</span>
-          </label>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setShowAddPositionModal(false); setNewPositionName(''); }}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={async () => {
+                  if (!newPositionName.trim()) return;
+                  setAddingItem(true);
+                  try {
+                    await addDmChucVu({ ten_chuc_vu: newPositionName.trim() });
+                    setFormData({ ...formData, chuc_vu: newPositionName.trim() });
+                    setShowAddPositionModal(false);
+                    setNewPositionName('');
+                    window.location.reload();
+                  } catch (err) {
+                    alert('Lỗi khi thêm chức vụ');
+                  }
+                  setAddingItem(false);
+                }}
+                disabled={addingItem || !newPositionName.trim()}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm disabled:opacity-50"
+              >
+                {addingItem ? 'Đang lưu...' : 'Thêm'}
+              </button>
+            </div>
+          </div>
         </div>
+      )}
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
-          <textarea
-            value={formData.ghi_chu}
-            onChange={(e) => setFormData({ ...formData, ghi_chu: e.target.value })}
-            className="w-full p-2 border border-slate-300 rounded-lg text-sm"
-            rows={2}
-          />
+      {/* Quick Add Department Modal */}
+      {showAddDeptModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <h4 className="text-lg font-bold text-slate-800 mb-4">Thêm đơn vị mới</h4>
+            <div className="space-y-3 mb-4">
+              <input
+                type="text"
+                value={newDeptCode}
+                onChange={(e) => setNewDeptCode(e.target.value)}
+                placeholder="Mã đơn vị (VD: A1)"
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                autoFocus
+              />
+              <input
+                type="text"
+                value={newDeptName}
+                onChange={(e) => setNewDeptName(e.target.value)}
+                placeholder="Tên đơn vị (VD: Nội tiêu hóa)"
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+              />
+              <input
+                type="text"
+                value={newDeptKhoi}
+                onChange={(e) => setNewDeptKhoi(e.target.value)}
+                placeholder="Khối (VD: Khối Lâm sàng)"
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setShowAddDeptModal(false); setNewDeptCode(''); setNewDeptName(''); setNewDeptKhoi(''); }}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={async () => {
+                  if (!newDeptCode.trim() || !newDeptName.trim() || !newDeptKhoi.trim()) return;
+                  setAddingItem(true);
+                  try {
+                    await addDmDonVi({
+                      ma_don_vi: newDeptCode.trim(),
+                      ten_don_vi: newDeptName.trim(),
+                      khoi: newDeptKhoi.trim()
+                    });
+                    const deptValue = `${newDeptCode.trim()} - ${newDeptName.trim()}`;
+                    setFormData({ ...formData, don_vi: deptValue });
+                    setShowAddDeptModal(false);
+                    setNewDeptCode('');
+                    setNewDeptName('');
+                    setNewDeptKhoi('');
+                    window.location.reload();
+                  } catch (err) {
+                    alert('Lỗi khi thêm đơn vị');
+                  }
+                  setAddingItem(false);
+                }}
+                disabled={addingItem || !newDeptCode.trim() || !newDeptName.trim() || !newDeptKhoi.trim()}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm disabled:opacity-50"
+              >
+                {addingItem ? 'Đang lưu...' : 'Thêm'}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
-        >
-          Hủy
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
-        >
-          {saving ? (
-            <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-          ) : (
-            <Save size={16} />
-          )}
-          {saving ? 'Đang lưu...' : 'Lưu'}
-        </button>
-      </div>
+      )}
     </div>
-  </div>
-);
-
+  );
+};
 const CheckIcon = () => (
   <span className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 border border-green-200">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

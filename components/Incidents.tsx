@@ -424,6 +424,17 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [dmDonVi, setDmDonVi] = useState<any[]>([]);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const stepLabels = [
+    { id: 1, title: 'Đơn vị', icon: <FileText size={18} /> },
+    { id: 2, title: 'Người bệnh', icon: <History size={18} /> },
+    { id: 3, title: 'Sự cố', icon: <AlertTriangle size={18} /> },
+    { id: 4, title: 'Diễn biến', icon: <Sparkles size={18} /> },
+    { id: 5, title: 'Đánh giá', icon: <CheckCircle2 size={18} /> },
+    { id: 6, title: 'Xác nhận', icon: <Save size={18} /> }
+  ];
+
   const [formData, setFormData] = useState({
     hinh_thuc_bao_cao: editingItem?.hinh_thuc_bao_cao || 'Tự nguyện',
     so_bc_ma_scyk: editingItem?.so_bc_ma_scyk || '',
@@ -547,297 +558,365 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
   return (
     <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       {/* Header Form */}
-      <div className="bg-white rounded-t-3xl border-x border-t border-slate-200 p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 shadow-sm">
-        <div className="w-24 h-24 bg-primary-600 rounded-3xl flex items-center justify-center text-white shadow-xl ring-8 ring-primary-50 rotate-3 hover:rotate-0 transition-transform duration-300">
-          <FileText size={48} />
+      <div className="bg-white rounded-t-2xl md:rounded-t-3xl border-x border-t border-slate-200 p-5 md:p-10 flex flex-col md:flex-row items-center gap-4 md:gap-8 shadow-sm">
+        <div className="w-16 h-16 md:w-24 md:h-24 bg-primary-600 rounded-2xl md:rounded-3xl flex items-center justify-center text-white shadow-xl ring-4 md:ring-8 ring-primary-50 rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
+          <FileText size={32} className="md:w-12 md:h-12" />
         </div>
         <div className="flex-1 text-center md:text-left">
-          <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mb-2">
-            <span className="bg-primary-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">Hệ thống QLCL</span>
-            <span className="text-slate-300">•</span>
-            <span className="text-slate-500 text-sm font-bold tracking-tight">Bệnh viện Quân y 103</span>
+          <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 md:gap-3 mb-1 md:mb-2">
+            <span className="bg-primary-600 text-white text-[9px] md:text-[10px] font-black px-2 py-0.5 md:px-2.5 md:py-1 rounded-full uppercase tracking-widest shadow-sm">Hệ thống QLCL</span>
+            <span className="text-slate-300 hidden md:inline">•</span>
+            <span className="text-slate-500 text-xs md:text-sm font-bold tracking-tight">Bệnh viện Quân y 103</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-tight">Báo cáo Sự cố Y khoa</h1>
-          <p className="text-slate-400 text-sm mt-2 font-medium">Mẫu quy chuẩn theo Phụ lục I - Thông tư 43/2018/TT-BYT</p>
+          <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-tight">Báo cáo Sự cố Y khoa</h1>
+          <p className="text-slate-400 text-[10px] md:text-sm mt-1 md:mt-2 font-medium">Mẫu quy chuẩn theo Phụ lục I - Thông tư 43/2018/TT-BYT</p>
         </div>
-        <div className="flex flex-col gap-3 w-full md:w-auto">
-          <div className="bg-primary-50/50 border border-primary-100 rounded-2xl p-4 flex flex-col items-center md:items-end backdrop-blur-sm">
-            <span className="text-[10px] text-primary-600 font-black uppercase tracking-widest mb-1">Mã số báo cáo</span>
-            <span className="text-2xl font-mono font-black text-primary-700 leading-none">{formData.so_bc_ma_scyk || 'SCYK-0000-000'}</span>
+        <div className="w-full md:w-auto">
+          <div className="bg-primary-50 px-4 py-3 rounded-xl md:rounded-2xl border border-primary-100 flex flex-row md:flex-col justify-between items-center md:items-end backdrop-blur-sm gap-2">
+            <span className="text-[9px] md:text-[10px] text-primary-600 font-black uppercase tracking-widest whitespace-nowrap">Mã số báo cáo</span>
+            <span className="text-lg md:text-2xl font-mono font-black text-primary-700 leading-none">{formData.so_bc_ma_scyk || 'SCYK-0000-000'}</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white border-x border-b border-slate-200 rounded-b-3xl p-6 md:p-10 space-y-12 shadow-sm">
-
-        {/* Section 1: Thông tin chung */}
-        <section className="relative">
-          <div className="absolute -left-12 top-0 hidden xl:flex w-10 h-10 bg-primary-600 text-white rounded-2xl items-center justify-center font-bold shadow-lg shadow-primary-200 -rotate-6">1</div>
-          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3 mb-8">
-            <div className="xl:hidden w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">1</div>
-            Hình thức & Đơn vị báo cáo
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-slate-50/70 p-8 rounded-3xl border border-slate-100">
-            <ToggleGroup
-              label="Hình thức báo cáo"
-              field="hinh_thuc_bao_cao"
-              options={['Tự nguyện', 'Bắt buộc']}
-              value={formData.hinh_thuc_bao_cao}
-            />
-
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-between">
-                Đơn vị báo cáo <span className="text-red-500 font-black">*</span>
-              </label>
-              <select
-                value={formData.don_vi_bao_cao}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  handleChange('don_vi_bao_cao', val);
-                  const selectedUnit = dmDonVi.find(u => u.ten_don_vi === val);
-                  if (selectedUnit) generateNextCode(selectedUnit.ma_don_vi);
-                }}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all cursor-pointer shadow-sm"
+      {/* Stepper Component */}
+      <div className="bg-slate-50/50 border-x border-slate-200 px-4 md:px-10 py-6 overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-between min-w-[600px] md:min-w-0">
+          {stepLabels.map((s, idx) => (
+            <React.Fragment key={s.id}>
+              <div
+                onClick={() => currentStep > s.id && setCurrentStep(s.id)}
+                className={`flex flex-col items-center gap-2 cursor-pointer transition-all duration-300 ${currentStep === s.id ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
               >
-                <option value="">-- Chọn đơn vị --</option>
-                {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ma_don_vi} - {u.ten_don_vi}</option>)}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày báo cáo</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3 text-slate-400" size={18} />
-                <input
-                  type="date"
-                  value={formData.ngay_bao_cao}
-                  onChange={(e) => handleChange('ngay_bao_cao', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm"
-                />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all ${currentStep === s.id ? 'bg-primary-600 text-white ring-4 ring-primary-100' :
+                  currentStep > s.id ? 'bg-green-500 text-white' : 'bg-white text-slate-400 border border-slate-200'
+                  }`}>
+                  {currentStep > s.id ? <CheckCircle2 size={20} /> : s.icon}
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-tighter ${currentStep === s.id ? 'text-primary-700' : 'text-slate-500'}`}>
+                  {s.title}
+                </span>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Section 2: Thông tin người bệnh */}
-          <section className="space-y-8">
-            <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">2</div>
-              Thông tin người bệnh
-            </h2>
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Họ và tên người bệnh <span className="text-red-500 font-black">*</span></label>
-                <input
-                  type="text"
-                  placeholder="Nhập tên đầy đủ người bệnh..."
-                  value={formData.ho_ten_nb}
-                  onChange={(e) => handleChange('ho_ten_nb', e.target.value)}
-                  className="w-full border-b-2 border-slate-100 hover:border-slate-300 focus:border-primary-500 px-0 py-3 text-lg font-bold text-slate-800 transition-all outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Số HSBA / ID</label>
-                  <input
-                    type="text"
-                    placeholder="Mã hồ sơ..."
-                    value={formData.so_benh_an}
-                    onChange={(e) => handleChange('so_benh_an', e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-mono font-bold"
+              {idx < stepLabels.length - 1 && (
+                <div className="flex-1 h-[2px] mx-2 bg-slate-200 relative mb-6">
+                  <div
+                    className="absolute inset-0 bg-primary-500 transition-all duration-500"
+                    style={{ width: currentStep > s.id ? '100%' : '0%' }}
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Giới tính</label>
-                  <div className="flex bg-slate-100 p-1 rounded-xl">
-                    {['Nam', 'Nữ'].map(g => (
-                      <button key={g} onClick={() => handleChange('gioi', g)} className={`flex-1 py-2 rounded-lg text-xs font-black transition-all ${formData.gioi === g ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-400'}`}>{g}</button>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white/80 backdrop-blur-xl border-x border-b border-slate-200 rounded-b-3xl p-6 md:p-10 space-y-12 shadow-2xl shadow-slate-200/50 min-h-[500px] relative overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl opacity-50 -mr-32 -mt-32 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-30 -ml-32 -mb-32 pointer-events-none" />
+
+        {/* Section 1: Thông tin chung */}
+        {currentStep === 1 && (
+          <section className="relative animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="absolute -left-12 top-0 hidden xl:flex w-10 h-10 bg-primary-600 text-white rounded-2xl items-center justify-center font-bold shadow-lg shadow-primary-200 -rotate-6">1</div>
+            <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-3 mb-6 md:mb-8 px-2 md:px-0">
+              <div className="xl:hidden w-7 h-7 md:w-8 md:h-8 bg-primary-600 text-white rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm shadow-md">1</div>
+              Hình thức & Đơn vị báo cáo
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 bg-slate-50/70 p-4 md:p-8 rounded-2xl md:rounded-3xl border border-slate-100">
+              <ToggleGroup
+                label="Hình thức báo cáo"
+                field="hinh_thuc_bao_cao"
+                options={['Tự nguyện', 'Bắt buộc']}
+                value={formData.hinh_thuc_bao_cao}
+              />
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                  Đơn vị báo cáo <span className="text-red-500 font-black">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.don_vi_bao_cao}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleChange('don_vi_bao_cao', val);
+                      const selectedUnit = dmDonVi.find(u => u.ten_don_vi === val);
+                      if (selectedUnit) generateNextCode(selectedUnit.ma_don_vi);
+                    }}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all cursor-pointer shadow-sm appearance-none"
+                  >
+                    <option value="">-- Chọn đơn vị --</option>
+                    {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ma_don_vi} - {u.ten_don_vi}</option>)}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày báo cáo</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-2.5 md:top-3 text-slate-400" size={16} />
+                  <input
+                    type="date"
+                    value={formData.ngay_bao_cao}
+                    onChange={(e) => handleChange('ngay_bao_cao', e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
+          {currentStep === 2 && (
+            <section className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+              <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-3 px-2 md:px-0">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-primary-600 text-white rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm shadow-md">2</div>
+                Thông tin người bệnh
+              </h2>
+              <div className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-5 md:p-8 space-y-5 md:space-y-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col gap-1.5 md:gap-2">
+                  <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Họ và tên người bệnh <span className="text-red-500 font-black">*</span></label>
+                  <input
+                    type="text"
+                    placeholder="Nhập tên đầy đủ người bệnh..."
+                    value={formData.ho_ten_nb}
+                    onChange={(e) => handleChange('ho_ten_nb', e.target.value)}
+                    className="w-full border-b-2 border-slate-100 hover:border-slate-300 focus:border-primary-500 px-0 py-2 md:py-3 text-base md:text-lg font-bold text-slate-800 transition-all outline-none bg-transparent"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Số HSBA / ID</label>
+                    <input
+                      type="text"
+                      placeholder="Mã hồ sơ..."
+                      value={formData.so_benh_an}
+                      onChange={(e) => handleChange('so_benh_an', e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 md:py-3 text-sm font-mono font-bold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Giới tính</label>
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                      {['Nam', 'Nữ'].map(g => (
+                        <button key={g} onClick={() => handleChange('gioi', g)} className={`flex-1 py-1.5 md:py-2 rounded-lg text-xs font-black transition-all ${formData.gioi === g ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-400'}`}>{g}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày sinh</label>
+                    <input type="date" value={formData.ngay_sinh} onChange={(e) => handleChange('ngay_sinh', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Khoa/Phòng điều trị</label>
+                    <div className="relative">
+                      <select value={formData.khoa_phong} onChange={(e) => handleChange('khoa_phong', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="">-- Chọn khoa --</option>
+                        {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={16} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Section 3: Đối tượng & Địa điểm */}
+          {currentStep === 3 && (
+            <section className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+              <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-3 px-2 md:px-0">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-primary-600 text-white rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm shadow-md">3</div>
+                Sự cố & Địa điểm xảy ra
+              </h2>
+              <div className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-5 md:p-8 space-y-5 md:space-y-6 shadow-sm hover:shadow-md transition-shadow">
+                <ToggleGroup label="Đối tượng xảy ra sự cố" field="doi_tuong_xay_ra_sc" options={['Người bệnh', 'Người nhà', 'NV y tế', 'Trang thiết bị']} value={formData.doi_tuong_xay_ra_sc} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày xảy ra</label>
+                    <input type="date" value={formData.ngay_xay_ra_sc} onChange={(e) => handleChange('ngay_xay_ra_sc', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Thời gian</label>
+                    <input type="time" value={formData.thoi_gian} onChange={(e) => handleChange('thoi_gian', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5 md:gap-2">
+                  <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Vị trí cụ thể tại khoa</label>
+                  <input type="text" placeholder="VD: Buồng bệnh số 10, Hành lang, Nhà vệ sinh..." value={formData.vi_tri_cu_the} onChange={(e) => handleChange('vi_tri_cu_the', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* Section 4: Mô tả diễn biến */}
+        {currentStep === 4 && (
+          <section className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-3 px-2 md:px-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-primary-600 text-white rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm shadow-md">4</div>
+              Mô tả diễn biến & Biện pháp can thiệp
+            </h2>
+            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[2.5rem] p-5 md:p-12 space-y-6 md:space-y-10 shadow-sm">
+              <div className="flex flex-col gap-2 md:gap-3">
+                <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Sparkles size={14} className="text-primary-400" /> Diễn biến sự cố tóm tắt <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  rows={6}
+                  placeholder="Mô tả chi tiết tình huống đã xảy ra..."
+                  value={formData.mo_ta_su_co}
+                  onChange={(e) => handleChange('mo_ta_su_co', e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl md:rounded-3xl p-4 md:p-6 text-slate-800 text-sm md:text-base focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all leading-relaxed outline-none shadow-inner"
+                ></textarea>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                <div className="flex flex-col gap-2 md:gap-3">
+                  <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Giải pháp khắc phục ngay</label>
+                  <textarea rows={4} placeholder="Xử lý tại chỗ ngay sau đó..." value={formData.de_xuat_giai_phap_ban_dau} onChange={(e) => handleChange('de_xuat_giai_phap_ban_dau', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl p-4 text-slate-700 text-sm outline-none focus:border-primary-500 transition-all shadow-inner" />
+                </div>
+                <div className="flex flex-col gap-2 md:gap-3">
+                  <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Điều trị lâm sàng bổ sung</label>
+                  <textarea rows={4} placeholder="Y lệnh bổ sung, theo dõi tích cực..." value={formData.dieu_tri_xy_ly_ban_dau_da_thuc_hien} onChange={(e) => handleChange('dieu_tri_xy_ly_ban_dau_da_thuc_hien', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl p-4 text-slate-700 text-sm outline-none focus:border-primary-500 transition-all shadow-inner" />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Section 5: Phân loại & Thông báo */}
+        {currentStep === 5 && (
+          <section className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-3 px-2 md:px-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-primary-600 text-white rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm shadow-md">5</div>
+              Thông báo, Phân loại & Đánh giá
+            </h2>
+            <div className="bg-slate-50/50 rounded-2xl md:rounded-3xl border border-slate-200/60 p-5 md:p-10 space-y-8 md:space-y-12 shadow-sm">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                <ToggleGroup label="Thông báo BS" field="thong_bao_bs_npt" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_bs_npt} />
+                <ToggleGroup label="Ghi HSBA" field="ghi_nhan_vao_hsba" options={['Có', 'Không', 'KGN']} value={formData.ghi_nhan_vao_hsba} />
+                <ToggleGroup label="Báo NB" field="thong_bao_nb" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_nb} />
+                <ToggleGroup label="Báo NN" field="thong_bao_nn" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_nn} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 pt-6 md:pt-10 border-t border-slate-200">
+                <div className="flex flex-col gap-3 md:gap-4">
+                  <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.1em] md:tracking-[0.2em]">Cơ chế sự cố</label>
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    {['Chưa xảy ra', 'Đã xảy ra'].map(p => (
+                      <button key={p} onClick={() => handleChange('phan_loai_sc', p)} className={`px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl border-2 text-xs md:text-sm font-black transition-all ${formData.phan_loai_sc === p ? 'border-primary-600 bg-white text-primary-700 shadow-lg scale-102 md:scale-105' : 'border-transparent bg-slate-200/50 text-slate-400 hover:bg-slate-200'}`}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 md:gap-4">
+                  <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.1em] md:tracking-[0.2em]">Mức độ ảnh hưởng ban đầu</label>
+                  <div className="grid grid-cols-3 gap-2 md:gap-3">
+                    {[
+                      { val: 'Nhẹ', color: 'blue', desc: 'A-B' },
+                      { val: 'Trung bình', color: 'amber', desc: 'C-D' },
+                      { val: 'Nặng', color: 'red', desc: 'E-I' }
+                    ].map(m => (
+                      <button key={m.val} onClick={() => handleChange('phan_loai_ban_dau', m.val)} className={`px-1 py-3 md:px-2 md:py-4 rounded-xl md:rounded-2xl border-2 text-[10px] md:text-sm font-black transition-all flex flex-col items-center gap-1 ${formData.phan_loai_ban_dau === m.val ? `border-${m.color}-600 bg-white text-${m.color}-700 shadow-lg scale-102 md:scale-105` : 'border-transparent bg-slate-200/50 text-slate-400 hover:bg-slate-200'}`}>
+                        {m.val}
+                        <span className="text-[8px] md:text-[10px] uppercase opacity-60">{m.desc}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày sinh</label>
-                  <input type="date" value={formData.ngay_sinh} onChange={(e) => handleChange('ngay_sinh', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Khoa/Phòng điều trị</label>
-                  <select value={formData.khoa_phong} onChange={(e) => handleChange('khoa_phong', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold">
-                    <option value="">-- Chọn khoa --</option>
-                    {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>)}
-                  </select>
-                </div>
-              </div>
             </div>
           </section>
-
-          {/* Section 3: Đối tượng & Địa điểm */}
-          <section className="space-y-8">
-            <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">3</div>
-              Sự cố & Địa điểm xảy ra
-            </h2>
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
-              <ToggleGroup label="Đối tượng xảy ra sự cố" field="doi_tuong_xay_ra_sc" options={['Người bệnh', 'Người nhà', 'NV y tế', 'Trang thiết bị']} value={formData.doi_tuong_xay_ra_sc} />
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ngày xảy ra</label>
-                  <input type="date" value={formData.ngay_xay_ra_sc} onChange={(e) => handleChange('ngay_xay_ra_sc', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Thời gian</label>
-                  <input type="time" value={formData.thoi_gian} onChange={(e) => handleChange('thoi_gian', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vị trí cụ thể tại khoa</label>
-                <input type="text" placeholder="VD: Buồng bệnh số 10, Hành lang, Nhà vệ sinh..." value={formData.vi_tri_cu_the} onChange={(e) => handleChange('vi_tri_cu_the', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-semibold" />
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* Section 4: Mô tả diễn biến */}
-        <section className="space-y-8">
-          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">4</div>
-            Mô tả diễn biến & Biện pháp can thiệp
-          </h2>
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 space-y-10 shadow-2xl">
-            <div className="flex flex-col gap-3">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Sparkles size={14} className="text-primary-400" /> Diễn biến sự cố tóm tắt <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                rows={4}
-                placeholder="Mô tả chi tiết tình huống đã xảy ra..."
-                value={formData.mo_ta_su_co}
-                onChange={(e) => handleChange('mo_ta_su_co', e.target.value)}
-                className="w-full bg-slate-800/50 border border-slate-700/50 rounded-3xl p-6 text-white text-base focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all leading-relaxed outline-none"
-              ></textarea>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="flex flex-col gap-3">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Giải pháp khắc phục ngay</label>
-                <textarea rows={3} placeholder="Xử lý tại chỗ ngay sau đó..." value={formData.de_xuat_giai_phap_ban_dau} onChange={(e) => handleChange('de_xuat_giai_phap_ban_dau', e.target.value)} className="w-full bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 text-slate-200 text-sm outline-none focus:border-primary-500 transition-all" />
-              </div>
-              <div className="flex flex-col gap-3">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Điều trị lâm sàng bổ sung</label>
-                <textarea rows={3} placeholder="Y lệnh bổ sung, theo dõi tích cực..." value={formData.dieu_tri_xy_ly_ban_dau_da_thuc_hien} onChange={(e) => handleChange('dieu_tri_xy_ly_ban_dau_da_thuc_hien', e.target.value)} className="w-full bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 text-slate-200 text-sm outline-none focus:border-primary-500 transition-all" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 5: Phân loại & Thông báo */}
-        <section className="space-y-8">
-          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">5</div>
-            Thông báo, Phân loại & Đánh giá
-          </h2>
-          <div className="bg-slate-50/50 rounded-3xl border border-slate-200/60 p-8 md:p-10 space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <ToggleGroup label="Thông báo BS điều trị" field="thong_bao_bs_npt" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_bs_npt} />
-              <ToggleGroup label="Ghi vào HSBA" field="ghi_nhan_vao_hsba" options={['Có', 'Không', 'KGN']} value={formData.ghi_nhan_vao_hsba} />
-              <ToggleGroup label="Thông báo Người bệnh" field="thong_bao_nb" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_nb} />
-              <ToggleGroup label="Thông báo Người nhà" field="thong_bao_nn" options={['Có', 'Không', 'KGN']} value={formData.thong_bao_nn} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10 border-t border-slate-200">
-              <div className="flex flex-col gap-4">
-                <label className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Cơ chế sự cố</label>
-                <div className="grid grid-cols-2 gap-4">
-                  {['Chưa xảy ra', 'Đã xảy ra'].map(p => (
-                    <button key={p} onClick={() => handleChange('phan_loai_sc', p)} className={`px-6 py-4 rounded-2xl border-2 text-sm font-black transition-all ${formData.phan_loai_sc === p ? 'border-primary-600 bg-white text-primary-700 shadow-lg scale-105' : 'border-transparent bg-slate-200/50 text-slate-400 hover:bg-slate-200'}`}>
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-4">
-                <label className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Mức độ ảnh hưởng ban đầu</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { val: 'Nhẹ', color: 'blue', desc: 'A-B' },
-                    { val: 'Trung bình', color: 'amber', desc: 'C-D' },
-                    { val: 'Nặng', color: 'red', desc: 'E-I' }
-                  ].map(m => (
-                    <button key={m.val} onClick={() => handleChange('phan_loai_ban_dau', m.val)} className={`px-2 py-4 rounded-2xl border-2 text-sm font-black transition-all flex flex-col items-center gap-1 ${formData.phan_loai_ban_dau === m.val ? `border-${m.color}-600 bg-white text-${m.color}-700 shadow-lg scale-105` : 'border-transparent bg-slate-200/50 text-slate-400 hover:bg-slate-200'}`}>
-                      {m.val}
-                      <span className="text-[10px] uppercase opacity-60">{m.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        )}
 
         {/* Section 6: Người báo cáo */}
-        <section className="space-y-8">
-          <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md">6</div>
-            Nhân sự báo cáo & Nhân chứng
-          </h2>
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 md:p-10 space-y-8 shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest leading-loose">Họ tên người báo cáo</label>
-                <div className="flex items-center gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                  <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-black text-sm">{user?.username?.[0]?.toUpperCase()}</div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-800">{formData.ho_ten_nguoi_bc}</span>
-                    <span className="text-[10px] text-primary-600 font-bold uppercase tracking-widest">Hệ thống xác thực</span>
+        {currentStep === 6 && (
+          <section className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-3 px-2 md:px-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-primary-600 text-white rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm shadow-md">6</div>
+              Nhân sự báo cáo & Nhân chứng
+            </h2>
+            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-5 md:p-10 space-y-6 md:space-y-8 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest leading-loose">Họ tên người báo cáo</label>
+                  <div className="flex items-center gap-3 md:gap-4 bg-slate-50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-100">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-black text-xs md:text-sm shrink-0">{user?.username?.[0]?.toUpperCase()}</div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs md:text-sm font-black text-slate-800 truncate">{formData.ho_ten_nguoi_bc}</span>
+                      <span className="text-[9px] md:text-[10px] text-primary-600 font-bold uppercase tracking-widest">Hệ thống xác thực</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">SĐT liên hệ</label>
+                    <input type="text" value={formData.sdt} onChange={(e) => handleChange('sdt', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 text-xs md:text-sm font-bold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:gap-2">
+                    <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Email</label>
+                    <input type="email" value={formData.email} onChange={(e) => handleChange('email', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 text-xs md:text-sm font-bold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">SĐT liên hệ</label>
-                  <input type="text" value={formData.sdt} onChange={(e) => handleChange('sdt', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email</label>
-                  <input type="email" value={formData.email} onChange={(e) => handleChange('email', e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold" />
-                </div>
-              </div>
-            </div>
 
-            <div className="flex flex-col gap-4">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Vai trò / Chức danh báo cáo</label>
-              <div className="flex flex-wrap gap-2">
-                {['Điều dưỡng', 'Bác sĩ', 'Người bệnh', 'Người nhà', 'Khác'].map(role => (
-                  <button key={role} onClick={() => handleChange('vaitro_nguoi_bc', role)} className={`px-6 py-2.5 rounded-full border-2 text-xs font-black transition-all ${formData.vaitro_nguoi_bc === role ? 'border-primary-600 bg-primary-50 text-primary-700' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}>{role}</button>
-                ))}
+              <div className="flex flex-col gap-3 md:gap-4">
+                <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Vai trò / Chức danh báo cáo</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Điều dưỡng', 'Bác sĩ', 'NB/NN', 'Khác'].map(role => (
+                    <button key={role} onClick={() => handleChange('vaitro_nguoi_bc', role)} className={`px-4 py-2 md:px-6 md:py-2.5 rounded-full border-2 text-[10px] md:text-xs font-black transition-all ${formData.vaitro_nguoi_bc === role ? 'border-primary-600 bg-primary-50 text-primary-700' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}>{role}</button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Người chứng kiến 1</label>
-                <input type="text" placeholder="Họ và tên..." value={formData.chung_kien1} onChange={(e) => handleChange('chung_kien1', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Người chứng kiến 2</label>
-                <input type="text" placeholder="Họ và tên..." value={formData.chung_kien2} onChange={(e) => handleChange('chung_kien2', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 pt-4 md:pt-6 border-t border-slate-100">
+                <div className="flex flex-col gap-1.5 md:gap-2">
+                  <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Người chứng kiến 1</label>
+                  <input type="text" placeholder="Họ và tên..." value={formData.chung_kien1} onChange={(e) => handleChange('chung_kien1', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                </div>
+                <div className="flex flex-col gap-1.5 md:gap-2">
+                  <label className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Người chứng kiến 2</label>
+                  <input type="text" placeholder="Họ và tên..." value={formData.chung_kien2} onChange={(e) => handleChange('chung_kien2', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 md:py-3 text-sm font-semibold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all" />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Action Buttons */}
-        <div className="sticky bottom-8 flex flex-col md:flex-row justify-center items-center gap-6 pt-10 px-6">
-          <button onClick={onCancel} className="w-full md:w-auto px-12 py-4 text-slate-400 font-black uppercase tracking-widest hover:text-slate-600 transition-all">Quay lại</button>
+        <div className="sticky bottom-4 md:bottom-8 flex flex-col md:flex-row justify-between items-center gap-4 pt-6 md:pt-10 px-2 md:px-6 z-40">
           <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="w-full md:w-4/5 lg:w-3/5 px-12 py-5 bg-primary-600 hover:bg-primary-700 text-white font-black rounded-[2rem] shadow-2xl shadow-primary-200 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 group uppercase tracking-widest"
+            onClick={currentStep === 1 ? onCancel : () => setCurrentStep(currentStep - 1)}
+            className="w-full md:w-auto px-8 py-3 md:py-4 text-slate-500 font-black uppercase tracking-widest hover:text-slate-800 transition-all text-xs md:text-sm flex items-center justify-center gap-2"
           >
-            {saving ? <span className="animate-spin h-6 w-6 border-4 border-white border-t-transparent rounded-full" /> : <Save size={24} className="group-hover:scale-110 transition-transform" />}
-            {saving ? 'Đang gửi báo cáo...' : (editingItem ? 'Cập nhật nội dung báo cáo' : 'Ký và Gửi báo cáo sự cố')}
+            {currentStep === 1 ? 'Hủy bỏ' : 'Quay lại'}
           </button>
+
+          <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            {currentStep < 6 ? (
+              <button
+                onClick={() => setCurrentStep(currentStep + 1)}
+                className="w-full md:w-auto px-12 py-4 md:py-5 bg-primary-600 hover:bg-primary-700 text-white font-black rounded-2xl md:rounded-[2rem] shadow-xl md:shadow-2xl shadow-primary-200 flex items-center justify-center gap-2 md:gap-3 transition-all active:scale-95 group uppercase tracking-widest text-sm md:text-base"
+              >
+                Tiếp theo <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={saving}
+                className="w-full md:w-auto px-12 py-4 md:py-5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl md:rounded-[2rem] shadow-xl md:shadow-2xl shadow-red-200 flex items-center justify-center gap-2 md:gap-3 transition-all active:scale-95 disabled:opacity-50 group uppercase tracking-widest text-sm md:text-base"
+              >
+                {saving ? <span className="animate-spin h-5 w-5 border-3 border-white border-t-transparent rounded-full" /> : <Save size={20} />}
+                {saving ? 'Đang gửi...' : (editingItem ? 'Cập nhật nội dung' : 'Ký và Gửi báo cáo')}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,14 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchUsers, addUser, updateUser, deleteUser } from '../../readUsers';
-import { Edit2, Trash2, Plus, X, Check } from 'lucide-react';
+import { fetchDmDonVi } from '../../readDmDonVi';
+import { uploadAvatar } from '../../userApi';
+import { Edit2, Trash2, Plus, X, Check, ChevronDown, Upload, Image } from 'lucide-react';
 
 export default function UsersTable() {
   const [users, setUsers] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showDeptDropdown, setShowDeptDropdown] = useState(false);
+  const [deptSearchTerm, setDeptSearchTerm] = useState('');
+  const deptInputRef = useRef<HTMLInputElement>(null);
+  const deptDropdownRef = useRef<HTMLDivElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [form, setForm] = useState({
     username: '',
     password: '',
@@ -21,12 +32,17 @@ export default function UsersTable() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await fetchUsers();
-      console.log('Users from Supabase:', data);
-      setUsers(data || []);
+      const [usersData, deptsData] = await Promise.all([
+        fetchUsers(),
+        fetchDmDonVi()
+      ]);
+      console.log('Users from Supabase:', usersData);
+      console.log('Departments from Supabase:', deptsData);
+      setUsers(usersData || []);
+      setDepartments(deptsData || []);
       setError(null);
     } catch (err: any) {
-      console.error('Error fetching users:', err);
+      console.error('Error fetching data:', err);
       setError(err.message);
     }
     setLoading(false);
@@ -36,15 +52,51 @@ export default function UsersTable() {
     loadData();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        deptDropdownRef.current &&
+        !deptDropdownRef.current.contains(event.target as Node) &&
+        deptInputRef.current &&
+        !deptInputRef.current.contains(event.target as Node)
+      ) {
+        setShowDeptDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const resetForm = () => {
     setForm({ username: '', password: '', full_name: '', department: '', role: 'Người dùng', status: 'Hoạt động' });
     setEditingId(null);
     setShowForm(false);
+    setShowDeptDropdown(false);
+    setDeptSearchTerm('');
+    setAvatarFile(null);
+    setAvatarPreview(null);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      // Tạo preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let userId = editingId;
+
       if (editingId) {
         // Nếu không nhập mật khẩu mới, bỏ qua trường password khi update
         const updateData = form.password
@@ -53,9 +105,23 @@ export default function UsersTable() {
         await updateUser(editingId, updateData);
         setMessage('Cập nhật thành công!');
       } else {
-        await addUser({ ...form, username: form.username.toLowerCase() });
+        const newUser = await addUser({ ...form, username: form.username.toLowerCase() });
+        userId = newUser.id;
         setMessage('Thêm mới thành công!');
       }
+
+      // Upload avatar nếu có
+      if (avatarFile && userId) {
+        setUploadingAvatar(true);
+        try {
+          await uploadAvatar(avatarFile, userId);
+          setMessage('Lưu thành công (bao gồm avatar)!');
+        } catch (avatarErr: any) {
+          setMessage('Lưu thành công nhưng lỗi khi upload avatar: ' + avatarErr.message);
+        }
+        setUploadingAvatar(false);
+      }
+
       resetForm();
       loadData();
     } catch (err: any) {
@@ -75,6 +141,10 @@ export default function UsersTable() {
     });
     setEditingId(user.id);
     setShowForm(true);
+    // Hiển thị avatar hiện tại nếu có
+    if (user.avatar) {
+      setAvatarPreview(user.avatar);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -131,12 +201,66 @@ export default function UsersTable() {
               onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
             />
-            <input
-              placeholder="Khoa/Phòng"
-              value={form.department}
-              onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
-            />
+            <div className="relative">
+              <input
+                ref={deptInputRef}
+                placeholder="Khoa/Phòng (VD: A1 - Nội tiêu hóa)"
+                value={form.department}
+                onChange={e => {
+                  setForm(f => ({ ...f, department: e.target.value }));
+                  setDeptSearchTerm(e.target.value);
+                  setShowDeptDropdown(true);
+                }}
+                onFocus={() => setShowDeptDropdown(true)}
+                className="w-full px-3 py-2 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+              />
+              <ChevronDown
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                size={16}
+              />
+
+              {showDeptDropdown && (
+                <div
+                  ref={deptDropdownRef}
+                  className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                >
+                  {departments
+                    .filter(dept => {
+                      const searchLower = deptSearchTerm.toLowerCase();
+                      const deptText = `${dept.ma_don_vi} - ${dept.ten_don_vi}`.toLowerCase();
+                      return deptText.includes(searchLower);
+                    })
+                    .map(dept => (
+                      <button
+                        key={dept.id}
+                        type="button"
+                        onClick={() => {
+                          const deptValue = `${dept.ma_don_vi} - ${dept.ten_don_vi}`;
+                          setForm(f => ({ ...f, department: deptValue }));
+                          setDeptSearchTerm(deptValue);
+                          setShowDeptDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-primary-50 transition-colors border-b border-slate-100 last:border-b-0"
+                      >
+                        <span className="font-semibold text-primary-600">{dept.ma_don_vi}</span>
+                        <span className="text-slate-600"> - {dept.ten_don_vi}</span>
+                        {dept.khoi && (
+                          <span className="ml-2 text-xs text-slate-400">({dept.khoi})</span>
+                        )}
+                      </button>
+                    ))}
+                  {departments.filter(dept => {
+                    const searchLower = deptSearchTerm.toLowerCase();
+                    const deptText = `${dept.ma_don_vi} - ${dept.ten_don_vi}`.toLowerCase();
+                    return deptText.includes(searchLower);
+                  }).length === 0 && (
+                      <div className="px-3 py-4 text-sm text-slate-400 text-center">
+                        Không tìm thấy đơn vị phù hợp
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
             <select
               value={form.role}
               onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
@@ -153,9 +277,66 @@ export default function UsersTable() {
               <option value="Hoạt động">Hoạt động</option>
               <option value="Khóa">Khóa</option>
             </select>
-            <div className="flex gap-2">
-              <button type="submit" className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
-                <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
+
+            {/* Avatar Upload */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Ảnh đại diện
+              </label>
+              <div className="flex items-center gap-4">
+                {/* Preview */}
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl shadow-md overflow-hidden flex-shrink-0">
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Avatar preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image size={32} className="text-white/70" />
+                  )}
+                </div>
+
+                {/* Upload Button */}
+                <div className="flex-1">
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <Upload size={16} />
+                    {avatarPreview ? 'Đổi ảnh' : 'Chọn ảnh'}
+                  </button>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Định dạng: JPG, PNG, WebP. Kích thước đề xuất: 200x200px
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 md:col-span-2 lg:col-span-3">
+              <button
+                type="submit"
+                disabled={uploadingAvatar}
+                className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uploadingAvatar ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Đang upload...
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
+                  </>
+                )}
               </button>
               <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
                 Hủy

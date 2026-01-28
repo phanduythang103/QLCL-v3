@@ -3,12 +3,17 @@ import {
   Search, FileText, Download, Filter, Bookmark, Globe, Building,
   Landmark, ShieldCheck, Eye, Link, PlayCircle, GraduationCap,
   HelpCircle, CheckSquare, Youtube, Lightbulb, MessageCircle,
-  BookOpen, Video, Plus, Edit2, Trash2, Heart, X, Save
+  BookOpen, Video, Plus, Edit2, Trash2, Heart, X, Save,
+  ThumbsUp, ThumbsDown, MessageSquare
 } from 'lucide-react';
 import { fetchThuVienVb, addThuVienVb, updateThuVienVb, deleteThuVienVb } from '../readThuVienVb';
 import { supabase } from '../supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 import { fetchThuVienVideo, addThuVienVideo, deleteThuVienVideo } from '../readThuVienVideo';
-import { fetchChiaSe, addChiaSe, deleteChiaSe } from '../readChiaSe';
+import {
+  fetchChiaSe, addChiaSe, deleteChiaSe, updateChiaSe,
+  fetchComments, addComment, fetchReactions, toggleReaction, fetchBookmarks, toggleBookmark
+} from '../readChiaSe';
 
 import { fetchCoQuanBanHanh, addCoQuanBanHanh } from '../readCoQuanBanHanh';
 
@@ -556,20 +561,138 @@ const TrainingCenter = () => {
 const KnowledgeSharing = () => {
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
+
+  const initialFormData = {
+    tieu_de: '',
+    noi_dung: '',
+    phan_loai: 'Thực hành tốt',
+    hinh_anh: '',
+    video: '',
+    file_tai_lieu: '',
+    nguoi_dang: user?.full_name || 'Anonymous'
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
+
+  const loadArticles = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchChiaSe();
+      setArticles(data || []);
+    } catch (err) {
+      console.error('Error loading articles:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBookmarks = async () => {
+    if (!user) return;
+    try {
+      const data = await fetchBookmarks(user.id);
+      setBookmarks(data);
+    } catch (err) {
+      console.error('Error loading bookmarks:', err);
+    }
+  };
 
   useEffect(() => {
-    const loadArticles = async () => {
-      try {
-        const data = await fetchChiaSe();
-        setArticles(data || []);
-      } catch (err) {
-        console.error('Error loading articles:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadArticles();
-  }, []);
+    if (user) loadBookmarks();
+  }, [user]);
+
+  const handleToggleBookmark = async (articleId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    const isBookmarked = bookmarks.includes(articleId);
+    try {
+      await toggleBookmark(articleId, user.id, !isBookmarked);
+      loadBookmarks();
+    } catch (err) {
+      console.error('Error toggling bookmark:', err);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.tieu_de.trim() || !formData.noi_dung.trim()) {
+      alert('Vui lòng nhập tiêu đề và nội dung');
+      return;
+    }
+    setSaving(true);
+    try {
+      let uploadPath = '';
+      if (fileUpload) {
+        const ext = fileUpload.name.split('.').pop();
+        const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const { error } = await supabase.storage.from('chia_se_file').upload(uniqueName, fileUpload);
+        if (error) throw error;
+        uploadPath = uniqueName;
+      }
+
+      const saveData = {
+        ...formData,
+        nguoi_dang: user?.full_name || formData.nguoi_dang
+      };
+
+      if (uploadPath) {
+        if (fileUpload?.type.startsWith('image/')) {
+          saveData.hinh_anh = uploadPath;
+        } else if (fileUpload?.type.startsWith('video/')) {
+          saveData.video = uploadPath;
+        } else {
+          saveData.file_tai_lieu = uploadPath;
+        }
+      }
+
+      if (editingId) {
+        await updateChiaSe(editingId, saveData);
+      } else {
+        await addChiaSe(saveData);
+      }
+
+      setShowForm(false);
+      setFormData(initialFormData);
+      setEditingId(null);
+      setFileUpload(null);
+      loadArticles();
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = (article: any) => {
+    setFormData({
+      tieu_de: article.tieu_de || '',
+      noi_dung: article.noi_dung || '',
+      phan_loai: article.phan_loai || 'Thực hành tốt',
+      hinh_anh: article.hinh_anh || '',
+      video: article.video || '',
+      file_tai_lieu: article.file_tai_lieu || '',
+      nguoi_dang: article.nguoi_dang || user?.full_name || ''
+    });
+    setEditingId(article.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Bạn có chắc muốn xóa bài viết này?')) {
+      try {
+        await deleteChiaSe(id);
+        loadArticles();
+      } catch (err: any) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+  };
 
   const getCategoryStyle = (category: string) => {
     switch (category) {
@@ -582,30 +705,61 @@ const KnowledgeSharing = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Loading State */}
         {loading && (
-          <div className="col-span-full text-center py-8 text-slate-500">Đang tải...</div>
+          <div className="col-span-full text-center py-8 text-slate-500">Đang tải bài viết...</div>
         )}
 
-        {/* Featured Articles from Supabase */}
         {!loading && articles.map(article => (
-          <div key={article.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-            <div className="flex items-start justify-between mb-3">
+          <div
+            key={article.id}
+            onClick={() => setSelectedArticle(article)}
+            className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-all flex flex-col group cursor-pointer relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary-50 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity -mr-12 -mt-12 pointer-events-none" />
+
+            <div className="flex items-start justify-between mb-3 relative z-10">
               <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${getCategoryStyle(article.phan_loai || 'Khác')}`}>
                 {article.phan_loai || 'Bài viết'}
               </span>
-              <Bookmark className="text-slate-300 hover:text-primary-600 cursor-pointer" size={18} />
+              <div className="flex gap-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleToggleBookmark(article.id, e); }}
+                  className={`p-1.5 rounded-full transition-colors ${bookmarks.includes(article.id) ? 'text-primary-600 bg-primary-50' : 'text-slate-400 hover:bg-slate-100'}`}
+                >
+                  <Bookmark size={16} fill={bookmarks.includes(article.id) ? 'currentColor' : 'none'} />
+                </button>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                  <button onClick={(e) => { e.stopPropagation(); handleEdit(article); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full"><Edit2 size={14} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(article.id); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded-full"><Trash2 size={14} /></button>
+                </div>
+              </div>
             </div>
-            <h3 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 hover:text-primary-700 cursor-pointer">{article.tieu_de}</h3>
-            <div className="mt-auto pt-4 flex items-center justify-between text-xs text-slate-500">
-              <span>{article.ngay_dang || '-'}</span>
-              <span className="flex items-center gap-1"><Heart size={14} /> {article.luot_thich || 0} quan tâm</span>
+
+            <h3 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 group-hover:text-primary-700 transition-colors leading-tight">{article.tieu_de}</h3>
+            <p className="text-sm text-slate-600 line-clamp-3 mb-4 leading-relaxed">{article.noi_dung}</p>
+
+            <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold overflow-hidden">
+                  {article.nguoi_dang?.[0]?.toUpperCase()}
+                </div>
+                <span className="text-slate-500">{article.nguoi_dang || 'Anonymous'}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <MessageSquare size={12} className="opacity-60" />
+                  <span>{article.phan_loai === 'Hỏi đáp' ? 'Q&A' : ''}</span>
+                </div>
+                <span>{article.ngay_dang ? new Date(article.ngay_dang).toLocaleDateString('vi-VN') : '-'}</span>
+              </div>
             </div>
           </div>
         ))}
 
-        {/* Add New Contribution Card */}
-        <div className="bg-slate-50 p-5 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors cursor-pointer group">
+        <div
+          onClick={() => { setEditingId(null); setFormData(initialFormData); setShowForm(true); }}
+          className="bg-slate-50 p-5 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors cursor-pointer group h-full"
+        >
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
             <Plus size={24} className="text-primary-600" />
           </div>
@@ -614,24 +768,42 @@ const KnowledgeSharing = () => {
         </div>
       </div>
 
-      {/* FAQ Section */}
+      {showForm && (
+        <SharingFormModal
+          formData={formData}
+          setFormData={setFormData}
+          fileUpload={fileUpload}
+          setFileUpload={setFileUpload}
+          onSave={handleSave}
+          onClose={() => setShowForm(false)}
+          saving={saving}
+          isEdit={!!editingId}
+        />
+      )}
+
+      {selectedArticle && (
+        <SharingDetailModal
+          article={selectedArticle}
+          onClose={() => setSelectedArticle(null)}
+        />
+      )}
+
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
           <HelpCircle className="text-purple-600" /> Câu hỏi thường gặp (Q&A)
         </h3>
         <div className="divide-y divide-slate-100">
-          <div className="py-3">
-            <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Làm thế nào để đăng ký đề án cải tiến chất lượng mới?</h4>
-            <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Các khoa phòng truy cập module "Cải tiến chất lượng", chọn "Lập kế hoạch mới" và điền theo mẫu PDCA. Sau khi lưu, Ban QLCL sẽ nhận được thông báo để duyệt.</p>
-          </div>
-          <div className="py-3">
-            <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Thời gian báo cáo chỉ số chất lượng hàng tháng là khi nào?</h4>
-            <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Hệ thống mở cổng nhập liệu từ ngày 25 đến ngày 30 hàng tháng. Sau thời gian này, dữ liệu sẽ bị khóa để tổng hợp báo cáo.</p>
-          </div>
-          <div className="py-3">
-            <h4 className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600">Quên mật khẩu đăng nhập hệ thống thì liên hệ ai?</h4>
-            <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200">Vui lòng liên hệ Ban Quản lý chất lượng (SĐT: 1234) hoặc Tổ Công nghệ thông tin để được cấp lại mật khẩu.</p>
-          </div>
+          {articles.filter(a => a.phan_loai === 'Hỏi đáp').slice(0, 5).map((qa) => (
+            <div key={qa.id} className="py-3">
+              <h4 onClick={() => setSelectedArticle(qa)} className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600 line-clamp-1">{qa.tieu_de}</h4>
+              <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200 line-clamp-2">{qa.noi_dung}</p>
+            </div>
+          ))}
+          {articles.filter(a => a.phan_loai === 'Hỏi đáp').length === 0 && (
+            <div className="py-6 text-center">
+              <p className="text-sm text-slate-400 italic">Chưa có câu hỏi nào được cập nhật.</p>
+            </div>
+          )}
         </div>
         <button className="mt-4 text-sm text-primary-600 font-medium hover:underline">Xem thêm câu hỏi...</button>
       </div>
@@ -794,8 +966,8 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
             <div>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Trạng thái</label>
               <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border ${doc.trang_thai === 'Còn hiệu lực' ? 'bg-green-50 text-green-700 border-green-200' :
-                  doc.trang_thai === 'Hết hiệu lực' ? 'bg-red-50 text-red-700 border-red-200' :
-                    'bg-slate-100 text-slate-600 border-slate-200'
+                doc.trang_thai === 'Hết hiệu lực' ? 'bg-red-50 text-red-700 border-red-200' :
+                  'bg-slate-100 text-slate-600 border-slate-200'
                 }`}>
                 {doc.trang_thai}
               </span>
@@ -849,3 +1021,250 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
     </div>
   );
 };
+
+const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, onSave, onClose, saving, isEdit }: any) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white z-10">
+          <h3 className="text-lg font-bold text-slate-800">{isEdit ? 'Sửa bài viết' : 'Đóng góp bài viết mới'}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Tiêu đề *</label>
+            <input
+              type="text"
+              value={formData.tieu_de}
+              onChange={e => setFormData({ ...formData, tieu_de: e.target.value })}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+              placeholder="Nhập tiêu đề bài viết..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Phân loại *</label>
+            <select
+              value={formData.phan_loai}
+              onChange={e => setFormData({ ...formData, phan_loai: e.target.value })}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+            >
+              <option value="Thực hành tốt">Thực hành tốt</option>
+              <option value="Bài học kinh nghiệm">Bài học kinh nghiệm</option>
+              <option value="Hỏi đáp">Hỏi đáp</option>
+              <option value="Thảo luận">Thảo luận</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nội dung *</label>
+            <textarea
+              rows={6}
+              value={formData.noi_dung}
+              onChange={e => setFormData({ ...formData, noi_dung: e.target.value })}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+              placeholder="Nhập nội dung chia sẻ..."
+            ></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">File đính kèm (Ảnh, Video, Tài liệu)</label>
+            <input
+              type="file"
+              onChange={e => setFileUpload(e.target.files?.[0] || null)}
+              className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+            />
+            {fileUpload && <p className="text-xs text-slate-500 mt-1">Đã chọn: {fileUpload.name}</p>}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
+          <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Hủy</button>
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+          >
+            {saving ? <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span> : <Save size={16} />}
+            {saving ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Đăng bài')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SharingDetailModal = ({ article, onClose }: any) => {
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [reactions, setReactions] = useState<any[]>([]);
+  const { user } = useAuth();
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  const loadSocialData = async () => {
+    try {
+      const [commentsData, reactionsData] = await Promise.all([
+        fetchComments(article.id),
+        fetchReactions(article.id)
+      ]);
+      setComments(commentsData);
+      setReactions(reactionsData);
+    } catch (err) {
+      console.error('Error loading social data:', err);
+    }
+  };
+
+  useEffect(() => {
+    const getFileUrl = async () => {
+      const path = article.hinh_anh || article.video || article.file_tai_lieu;
+      if (path) {
+        const { data } = supabase.storage.from('chia_se_file').getPublicUrl(path);
+        if (data?.publicUrl) setFileUrl(data.publicUrl);
+      }
+    };
+    getFileUrl();
+    loadSocialData();
+  }, [article]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !user) return;
+    setLoadingComments(true);
+    try {
+      await addComment(article.id, user.id, user.full_name, newComment);
+      setNewComment('');
+      loadSocialData();
+    } catch (err) {
+      alert('Lỗi khi gửi bình luận');
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleToggleReaction = async (type: 'like' | 'dislike') => {
+    if (!user) return;
+    const currentReaction = reactions.find(r => r.user_id === user.id);
+    const newType = currentReaction?.type === type ? null : type;
+    try {
+      await toggleReaction(article.id, user.id, newType);
+      loadSocialData();
+    } catch (err) {
+      console.error('Error toggling reaction:', err);
+    }
+  };
+
+  const likeCount = reactions.filter(r => r.type === 'like').length;
+  const dislikeCount = reactions.filter(r => r.type === 'dislike').length;
+  const userReaction = reactions.find(r => r.user_id === user?.id)?.type;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-20 flex justify-between items-start">
+          <div>
+            <span className="px-2 py-0.5 rounded bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest">{article.phan_loai || 'Chia sẻ'}</span>
+            <h3 className="text-2xl font-black text-slate-900 mt-2">{article.tieu_de}</h3>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><X size={24} /></button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+          {/* Main Content */}
+          <div className="lg:col-span-2 p-8">
+            <div className="flex items-center gap-4 mb-8 text-sm text-slate-500">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold">
+                  {article.nguoi_dang?.[0]?.toUpperCase()}
+                </div>
+                <span className="font-bold text-slate-700">{article.nguoi_dang || 'Anonymous'}</span>
+              </div>
+              <span>•</span>
+              <span>{article.ngay_dang ? new Date(article.ngay_dang).toLocaleDateString('vi-VN') : '-'}</span>
+            </div>
+
+            <div className="prose max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap mb-8">
+              {article.noi_dung}
+            </div>
+
+            {fileUrl && (
+              <div className="my-8">
+                {article.hinh_anh && <img src={fileUrl} alt="Article attachment" className="rounded-xl shadow-lg w-full object-cover" />}
+                {article.video && <video src={fileUrl} controls className="w-full rounded-xl shadow-lg" />}
+                {article.file_tai_lieu && (
+                  <a href={fileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
+                    <FileText className="text-primary-600" />
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">Tải tài liệu đính kèm</p>
+                      <p className="text-xs text-slate-500">Nhấn để xem hoặc tải về máy</p>
+                    </div>
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Reaction Bar */}
+            <div className="flex items-center gap-6 pt-6 border-t border-slate-100">
+              <button
+                onClick={() => handleToggleReaction('like')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${userReaction === 'like' ? 'bg-primary-50 text-primary-600 ring-1 ring-primary-100' : 'text-slate-500 hover:bg-slate-50'}`}
+              >
+                <ThumbsUp size={20} fill={userReaction === 'like' ? 'currentColor' : 'none'} />
+                <span className="font-bold">{likeCount || 0}</span>
+              </button>
+              <button
+                onClick={() => handleToggleReaction('dislike')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${userReaction === 'dislike' ? 'bg-red-50 text-red-600 ring-1 ring-red-100' : 'text-slate-500 hover:bg-slate-50'}`}
+              >
+                <ThumbsDown size={20} fill={userReaction === 'dislike' ? 'currentColor' : 'none'} />
+                <span className="font-bold">{dislikeCount || 0}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Comment Section (Right Column) */}
+          <div className="p-6 bg-slate-50 flex flex-col max-h-[70vh] lg:max-h-full overflow-hidden">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <MessageCircle size={14} /> Bình luận ({comments.length})
+            </h4>
+
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar mb-4">
+              {comments.map((comment, idx) => (
+                <div key={comment.id || idx} className="bg-white p-3 rounded-xl shadow-sm border border-white">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black text-slate-700">{comment.user_full_name}</span>
+                    <span className="text-[8px] text-slate-400 font-mono">{new Date(comment.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">{comment.content}</p>
+                </div>
+              ))}
+              {comments.length === 0 && (
+                <div className="text-center py-8">
+                  <MessageCircle size={32} className="text-slate-300 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs text-slate-400 italic">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-auto">
+              <div className="relative">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Viết bình luận..."
+                  className="w-full p-3 pr-12 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none shadow-sm"
+                  rows={2}
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim() || loadingComments}
+                  className="absolute right-3 bottom-3 p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors shadow-lg shadow-primary-200"
+                >
+                  <Save size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+

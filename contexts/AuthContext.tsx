@@ -8,6 +8,7 @@ interface User {
     full_name: string;
     role: string;
     department?: string;
+    avatar?: string;
 }
 
 interface AuthContextType {
@@ -36,16 +37,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (username: string, password: string) => {
         try {
+            console.log('Login Attempt:', { username, password, status: 'Hoạt động' });
+
             // Query user from database
-            const { data, error } = await supabase
+            const query = supabase
                 .from('users')
                 .select('*')
-                .ilike('username', username)
-                .eq('password', password)
-                .eq('status', 'Hoạt động')
-                .single();
+                .ilike('username', username.trim())
+                .eq('password', password.trim())
+                .eq('status', 'Hoạt động');
 
-            if (error || !data) {
+            console.log('Executing query...');
+            const { data, error } = await query.maybeSingle();
+
+            if (error) {
+                console.error('Supabase Login Error:', error);
+                return { success: false, error: 'Lỗi kết nối database' };
+            }
+
+            if (!data) {
+                console.log('Login failed: User not found or incorrect password');
                 return { success: false, error: 'Tên đăng nhập hoặc mật khẩu không đúng' };
             }
 
@@ -55,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 full_name: data.full_name,
                 role: data.role,
                 department: data.department,
+                avatar: data.avatar || null,
             };
 
             setUser(userData);

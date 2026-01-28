@@ -38,15 +38,19 @@ export const HeaderUserMenu: React.FC = () => {
                 className={`flex items-center gap-2 md:gap-3 p-1.5 pr-2.5 rounded-xl transition-all duration-200 border ${isOpen ? 'bg-primary-50 border-primary-200' : 'hover:bg-slate-50 border-transparent'
                     }`}
             >
-                <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-primary-900/10">
-                    {user.full_name?.charAt(0).toUpperCase()}
+                <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-primary-900/10 overflow-hidden">
+                    {user.avatar ? (
+                        <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                        user.full_name?.charAt(0).toUpperCase()
+                    )}
                 </div>
                 <div className="hidden md:block text-left">
                     <p className="text-sm font-bold text-slate-700 leading-tight truncate max-w-[150px]">
-                        {user.full_name}
+                        {user.full_name?.toUpperCase()}
                     </p>
                     <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 leading-none mt-0.5">
-                        {user.role}
+                        {user.role?.toLowerCase()}
                     </p>
                 </div>
                 <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -57,7 +61,7 @@ export const HeaderUserMenu: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-4 py-3 border-b border-slate-50">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">Đang đăng nhập với</p>
-                        <p className="text-sm font-bold text-slate-800 truncate">{user.full_name}</p>
+                        <p className="text-sm font-bold text-slate-800 truncate">{user.full_name?.toUpperCase()}</p>
                         <p className="text-xs text-slate-500 truncate">{user.department || 'Nhân viên'}</p>
                     </div>
 

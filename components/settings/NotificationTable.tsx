@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { fetchThongBao, addThongBao, updateThongBao, deleteThongBao, uploadCVFile, ThongBao } from '../../readThongBao';
-import { fetchDmDonVi } from '../../readDmDonVi';
+import { fetchDmDonVi, addDmDonVi } from '../../readDmDonVi';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     Edit2, Trash2, Plus, X, Check, Paperclip, Loader,
     Calendar, Users, Info, Bell, Eye, ChevronRight,
-    MoreHorizontal, Download, FileText, User, LayoutLarge, Table as TableIcon, CreditCard
+    MoreHorizontal, Download, FileText, User, Table as TableIcon, CreditCard
 } from 'lucide-react';
 
 export default function NotificationTable() {
@@ -19,11 +19,16 @@ export default function NotificationTable() {
     // Modals state
     const [showFormModal, setShowFormModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showAddUnitModal, setShowAddUnitModal] = useState(false); // New modal state
     const [selectedNoti, setSelectedNoti] = useState<ThongBao | null>(null);
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // New unit form state
+    const [newUnit, setNewUnit] = useState({ ma_don_vi: '', ten_don_vi: '', khoi: '' });
+    const [addingUnit, setAddingUnit] = useState(false);
 
     const [form, setForm] = useState({
         noi_dung: '',
@@ -33,6 +38,9 @@ export default function NotificationTable() {
         ghi_chu: '',
         file_dinh_kem: ''
     });
+
+    // Check permissions
+    const isAdmin = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase().includes('quản trị');
 
     const loadData = async () => {
         setLoading(true);
@@ -145,6 +153,28 @@ export default function NotificationTable() {
         }));
     };
 
+    const handleSaveUnit = () => {
+        if (!newUnit.ten_don_vi) {
+            alert('Vui lòng nhập tên đơn vị');
+            return;
+        }
+
+        // Check if already exists in selected list
+        if (form.don_vi_thuc_hien.includes(newUnit.ten_don_vi)) {
+            alert('Đơn vị này đã được chọn');
+            return;
+        }
+
+        // Add direct to form state, no DB save
+        setForm(f => ({
+            ...f,
+            don_vi_thuc_hien: [...f.don_vi_thuc_hien, newUnit.ten_don_vi]
+        }));
+
+        setShowAddUnitModal(false);
+        setNewUnit({ ma_don_vi: '', ten_don_vi: '', khoi: '' });
+    };
+
     const openDetail = (noti: ThongBao) => {
         setSelectedNoti(noti);
         setShowDetailModal(true);
@@ -168,17 +198,19 @@ export default function NotificationTable() {
                     <p className="text-xs lg:text-sm text-slate-400 font-bold uppercase tracking-widest">Quản lý hệ thống</p>
                     <p className="text-lg lg:text-xl font-black text-slate-800">Danh sách thông báo</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingId(null);
-                        setForm({ noi_dung: '', don_vi_thuc_hien: [], ngay_bat_dau: '', ngay_ket_thuc: '', ghi_chu: '', file_dinh_kem: '' });
-                        setShowFormModal(true);
-                    }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-2xl hover:bg-primary-700 font-black transition-all shadow-xl shadow-primary-900/20 active:scale-95"
-                >
-                    <Plus size={20} />
-                    Tạo thông báo
-                </button>
+                {isAdmin && (
+                    <button
+                        onClick={() => {
+                            setEditingId(null);
+                            setForm({ noi_dung: '', don_vi_thuc_hien: [], ngay_bat_dau: '', ngay_ket_thuc: '', ghi_chu: '', file_dinh_kem: '' });
+                            setShowFormModal(true);
+                        }}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-2xl hover:bg-primary-700 font-black transition-all shadow-xl shadow-primary-900/20 active:scale-95"
+                    >
+                        <Plus size={20} />
+                        Tạo thông báo
+                    </button>
+                )}
             </div>
 
             {/* Content View: Table (Desktop) / Cards (Mobile) */}
@@ -232,12 +264,33 @@ export default function NotificationTable() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <button
-                                            onClick={() => openDetail(noti)}
-                                            className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
-                                        >
-                                            <MoreHorizontal size={20} />
-                                        </button>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => openDetail(noti)}
+                                                className="p-2 text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all"
+                                                title="Xem chi tiết"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                            {isAdmin && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEdit(noti)}
+                                                        className="p-2 text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all"
+                                                        title="Chỉnh sửa"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(noti.id)}
+                                                        className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all"
+                                                        title="Xóa"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -269,7 +322,7 @@ export default function NotificationTable() {
                         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
                                 <Calendar size={14} className="text-primary-500" />
-                                <span>{noti.ngay_bat_dau ? new Date(noti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'} - {noti.ngay_ket_thuc ? new Date(noti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}</span>
+                                <span className="text-[10px] font-bold text-slate-500">{noti.ngay_bat_dau ? new Date(noti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'} - {noti.ngay_ket_thuc ? new Date(noti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}</span>
                             </div>
                             <ChevronRight size={16} className="text-slate-300" />
                         </div>
@@ -334,21 +387,43 @@ export default function NotificationTable() {
 
                                 <div className="md:col-span-2">
                                     <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Chọn đơn vị thực hiện</label>
-                                    <div className="flex flex-wrap gap-2 p-5 bg-slate-50 rounded-[24px] border border-slate-100 max-h-52 overflow-y-auto">
-                                        {units.map(unit => (
-                                            <button
-                                                key={unit.id}
-                                                type="button"
-                                                onClick={() => toggleUnit(unit.ten_don_vi || unit.ten)}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 ${form.don_vi_thuc_hien.includes(unit.ten_don_vi || unit.ten)
-                                                        ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-900/10'
-                                                        : 'bg-white text-slate-500 border-slate-100 hover:border-primary-200'
-                                                    }`}
-                                            >
-                                                {unit.ten_don_vi || unit.ten}
-                                            </button>
+
+                                    <div className="flex gap-2 mb-3">
+                                        <select
+                                            className="flex-1 px-4 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all bg-white"
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val && !form.don_vi_thuc_hien.includes(val)) {
+                                                    toggleUnit(val);
+                                                }
+                                                e.target.value = ""; // Reset select
+                                            }}
+                                        >
+                                            <option value="">-- Chọn đơn vị để thêm --</option>
+                                            {units.map(unit => (
+                                                <option key={unit.id} value={unit.ten_don_vi || unit.ten}>{unit.ten_don_vi || unit.ten}</option>
+                                            ))}
+                                        </select>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAddUnitModal(true)}
+                                            className="px-4 py-3 bg-primary-100 text-primary-700 rounded-2xl font-bold hover:bg-primary-200 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
+                                        >
+                                            <Plus size={20} /> Thêm khác
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 min-h-[60px]">
+                                        {form.don_vi_thuc_hien.map((u, i) => (
+                                            <span key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-sm animate-in zoom-in-95 duration-200">
+                                                {u}
+                                                <button type="button" onClick={() => toggleUnit(u)} className="text-slate-400 hover:text-red-500 transition-colors">
+                                                    <X size={14} />
+                                                </button>
+                                            </span>
                                         ))}
-                                        {units.length === 0 && <p className="text-xs text-slate-400 italic">Đang tải danh sách đơn vị...</p>}
+                                        {form.don_vi_thuc_hien.length === 0 && <p className="text-xs text-slate-400 italic py-1">Chưa chọn đơn vị nào.</p>}
                                     </div>
                                 </div>
 
@@ -458,20 +533,24 @@ export default function NotificationTable() {
 
                             {/* Actions with Icon + Text */}
                             <div className="pt-8 grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => handleEdit(selectedNoti)}
-                                    className="flex items-center justify-center gap-3 px-6 py-3.5 bg-slate-800 text-white rounded-2xl font-black hover:bg-slate-950 transition-all shadow-lg active:scale-95"
-                                >
-                                    <Edit2 size={18} />
-                                    <span>Chỉnh sửa</span>
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(selectedNoti.id)}
-                                    className="flex items-center justify-center gap-3 px-6 py-3.5 bg-red-50 text-red-600 rounded-2xl font-black hover:bg-red-100 hover:text-red-700 transition-all active:scale-95 border border-red-100"
-                                >
-                                    <Trash2 size={18} />
-                                    <span>Xóa bỏ</span>
-                                </button>
+                                {isAdmin && (
+                                    <>
+                                        <button
+                                            onClick={() => handleEdit(selectedNoti)}
+                                            className="flex items-center justify-center gap-3 px-6 py-3.5 bg-slate-800 text-white rounded-2xl font-black hover:bg-slate-950 transition-all shadow-lg active:scale-95"
+                                        >
+                                            <Edit2 size={18} />
+                                            <span>Chỉnh sửa</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(selectedNoti.id)}
+                                            className="flex items-center justify-center gap-3 px-6 py-3.5 bg-red-50 text-red-600 rounded-2xl font-black hover:bg-red-100 hover:text-red-700 transition-all active:scale-95 border border-red-100"
+                                        >
+                                            <Trash2 size={18} />
+                                            <span>Xóa bỏ</span>
+                                        </button>
+                                    </>
+                                )}
                                 {selectedNoti.file_dinh_kem && (
                                     <a
                                         href={selectedNoti.file_dinh_kem}
@@ -484,6 +563,51 @@ export default function NotificationTable() {
                                     </a>
                                 )}
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: Add Unit */}
+            {showAddUnitModal && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-5 duration-300">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="text-lg font-black text-slate-800">Thêm đơn vị khác</h3>
+                            <button onClick={() => setShowAddUnitModal(false)} className="text-slate-400 hover:text-slate-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tên đơn vị *</label>
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Nhập tên đơn vị..."
+                                value={newUnit.ten_don_vi}
+                                onChange={e => setNewUnit({ ...newUnit, ten_don_vi: e.target.value })}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleSaveUnit();
+                                    }
+                                }}
+                                className="w-full px-4 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500"
+                            />
+                        </div>
+                        <div className="p-6 border-t border-slate-100 flex gap-3">
+                            <button
+                                onClick={handleSaveUnit}
+                                className="flex-1 bg-primary-600 text-white py-3 rounded-xl font-black hover:bg-primary-700 transition-all shadow-lg shadow-primary-900/20 active:scale-95"
+                            >
+                                Thêm vào danh sách
+                            </button>
+                            <button
+                                onClick={() => setShowAddUnitModal(false)}
+                                className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+                            >
+                                Hủy
+                            </button>
                         </div>
                     </div>
                 </div>
