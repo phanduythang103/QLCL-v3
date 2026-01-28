@@ -17,11 +17,14 @@ export interface KeHoachCaiTien {
   created_at?: string;
 }
 
+// Tối ưu: Chỉ select các trường cần thiết
+const KHCT_SELECT_FIELDS = 'id, tieu_de, don_vi, trang_thai, tien_do, ngay_bat_dau, ngay_ket_thuc, muc_tieu, van_de, giai_phap, ket_qua, nguoi_phu_trach, ghi_chu, created_at';
+
 // Lấy toàn bộ kế hoạch cải tiến
 export async function fetchKeHoachCaiTien(): Promise<KeHoachCaiTien[]> {
   const { data, error } = await supabase
     .from('ke_hoach_cai_tien')
-    .select('*')
+    .select(KHCT_SELECT_FIELDS)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -32,7 +35,7 @@ export async function addKeHoachCaiTien(record: Omit<KeHoachCaiTien, 'id' | 'cre
   const { data, error } = await supabase
     .from('ke_hoach_cai_tien')
     .insert([record])
-    .select();
+    .select(KHCT_SELECT_FIELDS);
   if (error) throw error;
   return data?.[0];
 }
@@ -43,7 +46,7 @@ export async function updateKeHoachCaiTien(id: string, updates: Partial<KeHoachC
     .from('ke_hoach_cai_tien')
     .update(updates)
     .eq('id', id)
-    .select();
+    .select(KHCT_SELECT_FIELDS);
   if (error) throw error;
   return data?.[0];
 }

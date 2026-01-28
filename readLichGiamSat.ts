@@ -8,6 +8,7 @@ export interface LichGiamSat {
   nhan_vien_gs?: string;
   dv_duoc_gs?: string;
   trang_thai?: string;
+  nguoi_tao?: string;
   created_at?: string;
   // Alias fields for component compatibility
   ngay_giam_sat?: string;
@@ -17,8 +18,14 @@ export interface LichGiamSat {
   don_vi?: string;
 }
 
+// Tối ưu: Chỉ select các trường cần thiết
+const LGS_SELECT_FIELDS = 'id, tu_ngay, den_ngay, nd_giam_sat, nhan_vien_gs, dv_duoc_gs, trang_thai, nguoi_tao, created_at';
+
 export async function fetchLichGiamSat(): Promise<LichGiamSat[]> {
-  const { data, error } = await supabase.from('lich_giam_sat').select('*').order('tu_ngay', { ascending: false });
+  const { data, error } = await supabase
+    .from('lich_giam_sat')
+    .select(LGS_SELECT_FIELDS)
+    .order('tu_ngay', { ascending: false });
   if (error) throw error;
   // Map fields for component compatibility
   return (data || []).map(item => ({
@@ -29,26 +36,26 @@ export async function fetchLichGiamSat(): Promise<LichGiamSat[]> {
   }));
 }
 
-export async function addLichGiamSat(record) {
+export async function addLichGiamSat(record: Partial<LichGiamSat>): Promise<LichGiamSat> {
   const { data, error } = await supabase
     .from('lich_giam_sat')
     .insert([record])
-    .select();
+    .select(LGS_SELECT_FIELDS);
   if (error) throw error;
   return data?.[0];
 }
 
-export async function updateLichGiamSat(id, updates) {
+export async function updateLichGiamSat(id: string, updates: Partial<LichGiamSat>): Promise<LichGiamSat> {
   const { data, error } = await supabase
     .from('lich_giam_sat')
     .update(updates)
     .eq('id', id)
-    .select();
+    .select(LGS_SELECT_FIELDS);
   if (error) throw error;
   return data?.[0];
 }
 
-export async function deleteLichGiamSat(id) {
+export async function deleteLichGiamSat(id: string): Promise<boolean> {
   const { error } = await supabase
     .from('lich_giam_sat')
     .delete()

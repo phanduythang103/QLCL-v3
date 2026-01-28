@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Users,
   FileText,
@@ -20,6 +20,7 @@ import {
   Line
 } from 'recharts';
 
+// Static chart data - định nghĩa ngoài component để không recreate mỗi render
 const dataIncidents = [
   { name: 'T1', count: 12 },
   { name: 'T2', count: 19 },
@@ -41,6 +42,37 @@ import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
 import { fetchThuVienVb } from '../readThuVienVb';
 import { supabase } from '../supabaseClient';
 
+// Tách StatCard ra ngoài để tránh re-render không cần thiết
+const StatCard = React.memo<{
+  title: string;
+  value: string;
+  subtext?: string;
+  icon: React.ReactNode;
+  trend?: string;
+  trendDown?: boolean;
+}>(({ title, value, subtext, icon, trend, trendDown }) => (
+  <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-sm font-medium text-slate-500">{title}</p>
+        <h4 className="text-2xl font-bold text-slate-800 mt-1">{value}</h4>
+        {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
+      </div>
+      <div className="p-2 bg-slate-50 rounded-lg">
+        {icon}
+      </div>
+    </div>
+    {trend && (
+      <div className={`mt-4 text-xs font-medium flex items-center ${trendDown ? 'text-red-500' : 'text-green-500'}`}>
+        <span>{trend}</span>
+        <span className="text-slate-400 ml-1">so với tháng trước</span>
+      </div>
+    )}
+  </div>
+));
+
+StatCard.displayName = 'StatCard';
+
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = React.useState({
     nhanSu: { total: 0, certified: 0 },
@@ -48,13 +80,24 @@ export const Dashboard: React.FC = () => {
     loading: true
   });
 
+  // Memoize first day of month để tránh tính toán lại
+  const firstDayOfMonth = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }, []);
+
   React.useEffect(() => {
+    let isMounted = true;
+
     const loadStats = async () => {
       try {
+        // Parallel fetch với caching từ API
         const [nhanSuData, vanBanData] = await Promise.all([
           fetchNhanSuQlcl(),
           fetchThuVienVb()
         ]);
+
+        if (!isMounted) return;
 
         // Calculate personnel stats
         const nsTotal = nhanSuData.length;
@@ -62,9 +105,7 @@ export const Dashboard: React.FC = () => {
 
         // Calculate document stats
         const vbTotal = vanBanData?.length || 0;
-        const now = new Date();
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const vbMonthly = (vanBanData as any[])?.filter(i => {
+        const vbMonthly = vanBanData?.filter(i => {
           const createdAt = new Date(i.created_at || i.ngay_ban_hanh || '');
           return createdAt >= firstDayOfMonth;
         }).length || 0;
@@ -76,7 +117,7 @@ export const Dashboard: React.FC = () => {
         });
       } catch (err) {
         console.error("Error loading dashboard stats:", err);
-        setStats(s => ({ ...s, loading: false }));
+        if (isMounted) setStats(s => ({ ...s, loading: false }));
       }
     };
 
@@ -92,10 +133,11 @@ export const Dashboard: React.FC = () => {
       .subscribe();
 
     return () => {
+      isMounted = false;
       supabase.removeChannel(nsChannel);
       supabase.removeChannel(vbChannel);
     };
-  }, []);
+  }, [firstDayOfMonth]);
 
   return (
     <div className="space-y-6">
@@ -200,31 +242,3 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
-
-const StatCard: React.FC<{
-  title: string;
-  value: string;
-  subtext?: string;
-  icon: React.ReactNode;
-  trend?: string;
-  trendDown?: boolean;
-}> = ({ title, value, subtext, icon, trend, trendDown }) => (
-  <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start">
-      <div>
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <h4 className="text-2xl font-bold text-slate-800 mt-1">{value}</h4>
-        {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
-      </div>
-      <div className="p-2 bg-slate-50 rounded-lg">
-        {icon}
-      </div>
-    </div>
-    {trend && (
-      <div className={`mt-4 text-xs font-medium flex items-center ${trendDown ? 'text-red-500' : 'text-green-500'}`}>
-        <span>{trend}</span>
-        <span className="text-slate-400 ml-1">so với tháng trước</span>
-      </div>
-    )}
-  </div>
-);

@@ -18,10 +18,13 @@ export interface ChiSoQlcl {
   updated_at?: string;
 }
 
+// Tối ưu: Chỉ select các trường cần thiết cho danh sách
+const CS_SELECT_FIELDS = 'id, ten_chi_so, nhom_chi_so, don_vi_tinh, gia_tri, muc_tieu, gia_tri_max, thang_nam, khoa_phong, xu_huong, mau_hien_thi, ghi_chu, trang_thai';
+
 export async function fetchChiSoQlcl(): Promise<ChiSoQlcl[]> {
   const { data, error } = await supabase
     .from('chi_so_qlcl')
-    .select('*')
+    .select(CS_SELECT_FIELDS)
     .order('nhom_chi_so', { ascending: true })
     .order('id', { ascending: true });
   
@@ -35,7 +38,7 @@ export async function fetchChiSoQlcl(): Promise<ChiSoQlcl[]> {
 export async function fetchChiSoByNhom(nhomChiSo: string): Promise<ChiSoQlcl[]> {
   const { data, error } = await supabase
     .from('chi_so_qlcl')
-    .select('*')
+    .select(CS_SELECT_FIELDS)
     .eq('nhom_chi_so', nhomChiSo)
     .order('id', { ascending: true });
   
@@ -49,7 +52,7 @@ export async function fetchChiSoByNhom(nhomChiSo: string): Promise<ChiSoQlcl[]> 
 export async function fetchChiSoByThangNam(thangNam: string): Promise<ChiSoQlcl[]> {
   const { data, error } = await supabase
     .from('chi_so_qlcl')
-    .select('*')
+    .select(CS_SELECT_FIELDS)
     .eq('thang_nam', thangNam)
     .order('nhom_chi_so', { ascending: true })
     .order('id', { ascending: true });

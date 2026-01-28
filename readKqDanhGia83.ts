@@ -1,4 +1,6 @@
 import { supabase } from './supabaseClient';
+// Re-export từ readDmDonVi để tránh duplicate
+export { fetchDmDonVi as fetchDonVi, type DmDonVi as DonVi } from './readDmDonVi';
 
 export interface KqDanhGia83 {
     id?: string;
@@ -143,26 +145,6 @@ export async function deletePhieuDanhGia(phieuId: string): Promise<void> {
         .delete()
         .eq('phieu_id', phieuId);
     if (error) throw error;
-}
-
-export interface DonVi {
-    id: string;
-    ma_don_vi: string;
-    ten_don_vi: string;
-    khoi: string;
-}
-
-export async function fetchDonVi(): Promise<DonVi[]> {
-    const { data, error } = await supabase
-        .from('dm_don_vi')
-        .select('*')
-        .order('ten_don_vi', { ascending: true });
-
-    if (error) {
-        console.error('Error fetching don_vi:', error);
-        throw error;
-    }
-    return data || [];
 }
 
 export async function saveKqDanhGia83Bulk(items: KqDanhGia83[]): Promise<KqDanhGia83[]> {

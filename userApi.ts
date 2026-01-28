@@ -1,15 +1,23 @@
 import { supabase } from './supabaseClient';
+import { cachedFetch, CACHE_KEYS, DEFAULT_TTL, invalidateCache } from './utils/cache';
+import type { Personnel } from './types';
+
+// Tối ưu: Chỉ select các trường cần thiết cho user list
+const USER_SELECT_FIELDS = 'id, username, full_name, role, department, status, avatar, created_at';
 
 /**
- * Lấy danh sách tất cả users với thông tin avatar
+ * Lấy danh sách tất cả users với caching
  */
-export async function fetchUsers() {
-    const { data, error } = await supabase
-        .from('users')
-        .select('*');
+export async function fetchUsers(): Promise<Personnel[]> {
+    return cachedFetch(CACHE_KEYS.USERS, async () => {
+        const { data, error } = await supabase
+            .from('users')
+            .select(USER_SELECT_FIELDS)
+            .order('full_name');
 
-    if (error) throw error;
-    return data || [];
+        if (error) throw error;
+        return data || [];
+    }, DEFAULT_TTL);
 }
 
 /**
@@ -20,9 +28,10 @@ export async function updateUserAvatar(userId: string, avatarUrl: string) {
         .from('users')
         .update({ avatar: avatarUrl })
         .eq('id', userId)
-        .select();
+        .select(USER_SELECT_FIELDS);
 
     if (error) throw error;
+    invalidateCache(CACHE_KEYS.USERS);
     return data?.[0];
 }
 

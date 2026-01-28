@@ -101,7 +101,6 @@ const DocumentLibrary = () => {
     co_quan_ban_hanh: '',
     hieu_luc: '',
     trang_thai: 'Còn hiệu lực',
-    file_dinh_kem: '',
     file_van_ban: ''
   };
   const [formData, setFormData] = useState(initialFormData);
@@ -192,9 +191,8 @@ const DocumentLibrary = () => {
       ten_vb: doc.ten_vb || '',
       loai_vb: doc.loai_vb || '',
       co_quan_ban_hanh: doc.co_quan_ban_hanh || '',
-      hieu_luc: doc.hieu_luc ? doc.hieu_luc.split('T')[0] : '',
+      hieu_luc: doc.hieu_luc || '',
       trang_thai: doc.trang_thai || 'Còn hiệu lực',
-      file_dinh_kem: doc.file_dinh_kem || '',
       file_van_ban: doc.file_van_ban || ''
     });
     // Store ID for update logic if needed, currently addThuVienVb handles insert. 
@@ -904,8 +902,9 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Ngày có hiệu lực *</label>
-              <input type="date" value={formData.hieu_luc} onChange={e => setFormData({ ...formData, hieu_luc: e.target.value })}
+              <label className="block text-sm font-medium text-slate-700 mb-1">Hiệu lực *</label>
+              <input type="text" value={formData.hieu_luc} onChange={e => setFormData({ ...formData, hieu_luc: e.target.value })}
+                placeholder="VD: Từ 01/01/2024"
                 className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
             </div>
 
@@ -983,8 +982,8 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Ngày hiệu lực</label>
-              <span className="text-sm text-slate-700">{doc.hieu_luc ? new Date(doc.hieu_luc).toLocaleDateString('vi-VN') : '---'}</span>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Hiệu lực</label>
+              <span className="text-sm text-slate-700">{doc.hieu_luc || '---'}</span>
             </div>
           </div>
 

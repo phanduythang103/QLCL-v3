@@ -1,9 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { fetchLichGiamSat, addLichGiamSat, updateLichGiamSat, deleteLichGiamSat } from '../../readLichGiamSat';
+import { fetchDmDonVi } from '../../readDmDonVi';
+import { fetchUsers } from '../../userApi';
+import { useAuth } from '../../contexts/AuthContext';
 import { Edit2, Trash2, Plus, X, Check } from 'lucide-react';
 
+// Hàm tính trạng thái tự động dựa trên ngày
+const getAutoStatus = (tuNgay: string, denNgay: string): string => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const startDate = new Date(tuNgay);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(denNgay);
+  endDate.setHours(0, 0, 0, 0);
+  
+  if (today < startDate) return 'Chưa thực hiện';
+  if (today > endDate) return 'Quá hạn';
+  return 'Đang thực hiện';
+};
+
+// Hàm format ngày dd/mm/yyyy
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function ScheduleTable() {
+  const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
+  const [donViList, setDonViList] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -21,9 +53,15 @@ export default function ScheduleTable() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await fetchLichGiamSat();
+      const [data, donVi, users] = await Promise.all([
+        fetchLichGiamSat(),
+        fetchDmDonVi(),
+        fetchUsers()
+      ]);
       console.log('LichGiamSat from Supabase:', data);
       setItems(data || []);
+      setDonViList(donVi || []);
+      setUsersList(users || []);
       setError(null);
     } catch (err: any) {
       console.error('Error fetching lich_giam_sat:', err);
@@ -49,7 +87,11 @@ export default function ScheduleTable() {
         await updateLichGiamSat(editingId, form);
         setMessage('Cập nhật thành công!');
       } else {
-        await addLichGiamSat(form);
+        // Thêm nguoi_tao khi tạo lịch mới
+        await addLichGiamSat({
+          ...form,
+          nguoi_tao: user?.full_name || user?.username || 'Hệ thống'
+        });
         setMessage('Thêm mới thành công!');
       }
       resetForm();
@@ -122,7 +164,13 @@ export default function ScheduleTable() {
                 <option value="Chưa thực hiện">Chưa thực hiện</option>
                 <option value="Đang thực hiện">Đang thực hiện</option>
                 <option value="Hoàn thành">Hoàn thành</option>
+                <option value="Quá hạn">Quá hạn</option>
               </select>
+              {form.tu_ngay && form.den_ngay && (
+                <p className="text-xs text-slate-500 mt-1">
+                  Trạng thái tự động: <span className="font-medium text-primary-600">{getAutoStatus(form.tu_ngay, form.den_ngay)}</span>
+                </p>
+              )}
             </div>
             <div className="md:col-span-2 lg:col-span-3">
               <label className="block text-xs text-slate-500 mb-1">Nội dung giám sát *</label>
@@ -130,11 +178,23 @@ export default function ScheduleTable() {
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-1">Nhân viên giám sát *</label>
-              <input required placeholder="Nhân viên giám sát" value={form.nhan_vien_gs} onChange={e => setForm(f => ({ ...f, nhan_vien_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
+              <select required value={form.nhan_vien_gs} onChange={e => setForm(f => ({ ...f, nhan_vien_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500">
+                <option value="">-- Chọn nhân viên --</option>
+                {usersList.map(user => (
+                  <option key={user.id} value={user.full_name}>{user.full_name}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-1">Đơn vị được giám sát *</label>
-              <input required placeholder="Đơn vị được giám sát" value={form.dv_duoc_gs} onChange={e => setForm(f => ({ ...f, dv_duoc_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
+              <select required value={form.dv_duoc_gs} onChange={e => setForm(f => ({ ...f, dv_duoc_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500">
+                <option value="">-- Chọn đơn vị --</option>
+                {donViList.map(dv => (
+                  <option key={dv.id} value={`${dv.ma_don_vi} - ${dv.ten_don_vi}`}>
+                    {dv.ma_don_vi} - {dv.ten_don_vi}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="flex gap-2 items-end">
               <button type="submit" className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
@@ -170,21 +230,30 @@ export default function ScheduleTable() {
             {items.length === 0 ? (
               <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-400">Chưa có dữ liệu</td></tr>
             ) : (
-              items.map((item, idx) => (
+              items.map((item, idx) => {
+                const autoStatus = getAutoStatus(item.tu_ngay, item.den_ngay);
+                return (
                 <tr key={item.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
-                  <td className="px-4 py-3 text-slate-700">{item.tu_ngay}</td>
-                  <td className="px-4 py-3 text-slate-700">{item.den_ngay}</td>
+                  <td className="px-4 py-3 text-slate-700">{formatDate(item.tu_ngay)}</td>
+                  <td className="px-4 py-3 text-slate-700">{formatDate(item.den_ngay)}</td>
                   <td className="px-4 py-3 text-slate-700 font-medium">{item.nd_giam_sat}</td>
                   <td className="px-4 py-3 text-slate-600">{item.nhan_vien_gs}</td>
                   <td className="px-4 py-3 text-slate-600">{item.dv_duoc_gs}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' : 
-                      item.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
-                    }`}>
-                      {item.trang_thai}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' : 
+                        item.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' : 
+                        item.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
+                        'bg-slate-100 text-slate-700'
+                      }`}>
+                        {item.trang_thai}
+                      </span>
+                      {item.trang_thai !== autoStatus && (
+                        <span className="text-[10px] text-slate-400">Tự động: {autoStatus}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-1">
@@ -193,7 +262,8 @@ export default function ScheduleTable() {
                     </div>
                   </td>
                 </tr>
-              ))
+              );
+              })
             )}
           </tbody>
         </table>

@@ -244,7 +244,7 @@ const AppContent: React.FC = () => {
       case ModuleType.INCIDENTS: return 'Sự cố Y khoa';
       case ModuleType.IMPROVEMENT: return 'Cải tiến Chất lượng';
       case ModuleType.INDICATORS: return 'Chỉ số QLCL';
-      case ModuleType.SUPERVISION: return 'Kiểm tra Giám sát';
+      case ModuleType.SUPERVISION: return 'Kiểm tra & Giám sát tuân thủ';
       case ModuleType.REPORTS: return 'Báo cáo Tổng hợp';
       case ModuleType.SETTINGS: return 'Cấu hình Hệ thống';
       default: return '';
