@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetchLichGiamSat } from '../readLichGiamSat';
+import { fetchLichGiamSat, LichGiamSat } from '../readLichGiamSat';
 export default function LichGiamSatList() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<LichGiamSat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   useEffect(() => {

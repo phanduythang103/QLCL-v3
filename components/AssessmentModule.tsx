@@ -112,12 +112,7 @@ export const AssessmentModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Đánh giá Chất lượng Bệnh viện</h2>
-          <p className="text-sm text-slate-500">Tự đánh giá, chấm điểm dựa trên danh mục bảng data83.</p>
-        </div>
-
+      <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
         {/* Global Actions */}
         <div className="flex flex-wrap gap-2">
           <input
@@ -152,7 +147,7 @@ export const AssessmentModule: React.FC = () => {
             }`}
         >
           <Award size={18} />
-          Danh mục 83 Tiêu chí (data83)
+          Bộ 83 Tiêu chí CLBV
         </button>
         <button
           onClick={() => setActiveTab('BASIC')}
@@ -361,7 +356,7 @@ const Criteria83Data83View = () => {
         <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="text-primary-600" size={20} />
-            <h3 className="font-bold text-slate-800">Bộ 83 Tiêu chí (data83)</h3>
+            <h3 className="font-bold text-slate-800">Bộ 83 Tiêu chí CLBV</h3>
           </div>
 
           <div className="text-xs text-slate-500 font-medium">

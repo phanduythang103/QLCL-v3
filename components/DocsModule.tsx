@@ -38,11 +38,7 @@ export const DocsModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Module Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Văn bản - Đào tạo - Thư viện</h2>
-          <p className="text-sm text-slate-500">Hệ thống tri thức Quản lý chất lượng Bệnh viện 103.</p>
-        </div>
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
         <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1">
           <button
             onClick={() => setActiveTab('LIBRARY')}
@@ -60,7 +56,7 @@ export const DocsModule: React.FC = () => {
               : 'text-primary-600 hover:bg-white hover:shadow-sm'
               }`}
           >
-            <GraduationCap size={18} /> Đào tạo & E-Learning
+            <GraduationCap size={18} /> Đào tạo
           </button>
           <button
             onClick={() => setActiveTab('SHARING')}
@@ -69,7 +65,7 @@ export const DocsModule: React.FC = () => {
               : 'text-primary-600 hover:bg-white hover:shadow-sm'
               }`}
           >
-            <Lightbulb size={18} /> Góc Chia sẻ
+            <Lightbulb size={18} /> Góc Chia sẻ/Diễn đàn QLCL
           </button>
         </div>
       </div>
@@ -271,7 +267,7 @@ const DocumentLibrary = () => {
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
           <div className="flex gap-2">
             <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
-              <Plus size={16} /> <span>Thêm VB</span>
+              <Plus size={16} /> <span>Thêm văn bản</span>
             </button>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />

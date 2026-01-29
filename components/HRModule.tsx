@@ -414,11 +414,7 @@ export const HRModule: React.FC = () => {
         className="hidden"
       />
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Quản lý Nhân sự & Mạng lưới QLCL</h2>
-          <p className="text-sm text-slate-500">Cập nhật thông tin Hội đồng, Ban chuyên trách và Mạng lưới viên.</p>
-        </div>
+      <div className="flex flex-col lg:flex-row justify-end items-start lg:items-center gap-4">
         <div className="flex flex-wrap gap-2 w-full lg:w-auto">
           <button
             onClick={handleExportExcel}

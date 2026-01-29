@@ -9,13 +9,13 @@ import { Edit2, Trash2, Plus, X, Check } from 'lucide-react';
 const getAutoStatus = (tuNgay: string, denNgay: string): string => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const startDate = new Date(tuNgay);
   startDate.setHours(0, 0, 0, 0);
-  
+
   const endDate = new Date(denNgay);
   endDate.setHours(0, 0, 0, 0);
-  
+
   if (today < startDate) return 'Chưa thực hiện';
   if (today > endDate) return 'Quá hạn';
   return 'Đang thực hiện';
@@ -233,36 +233,32 @@ export default function ScheduleTable() {
               items.map((item, idx) => {
                 const autoStatus = getAutoStatus(item.tu_ngay, item.den_ngay);
                 return (
-                <tr key={item.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
-                  <td className="px-4 py-3 text-slate-700">{formatDate(item.tu_ngay)}</td>
-                  <td className="px-4 py-3 text-slate-700">{formatDate(item.den_ngay)}</td>
-                  <td className="px-4 py-3 text-slate-700 font-medium">{item.nd_giam_sat}</td>
-                  <td className="px-4 py-3 text-slate-600">{item.nhan_vien_gs}</td>
-                  <td className="px-4 py-3 text-slate-600">{item.dv_duoc_gs}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' : 
-                        item.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' : 
-                        item.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
-                        'bg-slate-100 text-slate-700'
-                      }`}>
-                        {item.trang_thai}
-                      </span>
-                      {item.trang_thai !== autoStatus && (
-                        <span className="text-[10px] text-slate-400">Tự động: {autoStatus}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-1">
-                      <button onClick={() => handleEdit(item)} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded"><Edit2 size={16} /></button>
-                      <button onClick={() => handleDelete(item.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={16} /></button>
-                    </div>
-                  </td>
-                </tr>
-              );
+                  <tr key={item.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
+                    <td className="px-4 py-3 text-slate-700">{formatDate(item.tu_ngay)}</td>
+                    <td className="px-4 py-3 text-slate-700">{formatDate(item.den_ngay)}</td>
+                    <td className="px-4 py-3 text-slate-700 font-medium">{item.nd_giam_sat}</td>
+                    <td className="px-4 py-3 text-slate-600">{item.nhan_vien_gs}</td>
+                    <td className="px-4 py-3 text-slate-600">{item.dv_duoc_gs}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
+                            item.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' :
+                              item.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
+                                'bg-slate-100 text-slate-700'
+                          }`}>
+                          {item.trang_thai}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={() => handleEdit(item)} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
               })
             )}
           </tbody>

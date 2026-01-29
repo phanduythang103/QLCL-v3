@@ -14,7 +14,7 @@ export interface BaoCaoScyk {
 }
 
 // Tối ưu: Chỉ select các trường cần thiết cho danh sách
-const BC_SELECT_FIELDS = 'id, hinh_thuc_bao_cao, so_bc_ma_scyk, ngay_bao_cao, don_vi_bao_cao, ho_ten_nb, mo_ta_su_co, trang_thai, ho_ten_nguoi_bc, created_at';
+const BC_SELECT_FIELDS = '*';
 
 export async function fetchBaoCaoScyk(): Promise<BaoCaoScyk[]> {
   const { data, error } = await supabase
