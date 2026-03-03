@@ -33,6 +33,10 @@ export interface BienBanXacMinh {
     // Liên kết báo cáo (Optional)
     scyk_id?: string;
     ma_baocao_scyk?: string; // Cache mã để hiển thị
+
+    // File đính kèm (Lưu trên bucket scyk)
+    file_url?: string;    // Signed URL hoặc path file PDF trên bucket
+    file_name?: string;   // Tên file PDF
 }
 
 // Columns to select

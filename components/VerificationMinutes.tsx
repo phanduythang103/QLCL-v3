@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     FileText, Plus, Search, Calendar, Edit2, Trash2, Printer,
-    Download, ArrowLeft, Save, X, User, Users, MapPin, Clock, Copy, Mail
+    Download, ArrowLeft, Save, X, User, Users, MapPin, Clock, Copy, Mail, Eye, CheckCircle, Loader2
 } from 'lucide-react';
 import {
     BienBanXacMinh, ThanhVienDoan, NguoiThamDu,
@@ -10,6 +10,7 @@ import {
 import { fetchBaoCaoScyk, BaoCaoScyk } from '../readBaoCaoScyk';
 import { fetchNhanSuQlcl, NhanSuQlcl } from '../readNhanSuQlcl';
 import { useAuth } from '../contexts/AuthContext';
+import { exportBienBanToPdf } from '../utils/generateBienBanPdf';
 
 const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
     value: string,
@@ -57,9 +58,12 @@ const VerificationMinutes = () => {
     const [incidents, setIncidents] = useState<BaoCaoScyk[]>([]);
     const [personnel, setPersonnel] = useState<NhanSuQlcl[]>([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'PRINT'>('LIST');
+    const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'PRINT' | 'VIEW'>('LIST');
     const [editingItem, setEditingItem] = useState<BienBanXacMinh | null>(null);
+    const [viewingItem, setViewingItem] = useState<BienBanXacMinh | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [exportLoading, setExportLoading] = useState(false);
+    const [exportResult, setExportResult] = useState<{ success: boolean; message: string; fileUrl?: string } | null>(null);
 
     // Form State
     const initialForm: Partial<BienBanXacMinh> = {
@@ -113,6 +117,11 @@ const VerificationMinutes = () => {
         setViewMode('FORM');
     };
 
+    const handleView = (item: BienBanXacMinh) => {
+        setViewingItem(item);
+        setViewMode('VIEW');
+    };
+
     const handleEdit = (item: BienBanXacMinh) => {
         setEditingItem(item);
         // Ensure arrays exist
@@ -159,6 +168,44 @@ const VerificationMinutes = () => {
             alert('Lỗi lưu dữ liệu: ' + e.message);
         }
     };
+
+    const handleExportPdf = async (item: BienBanXacMinh) => {
+        const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
+        setExportLoading(true);
+        setExportResult(null);
+        try {
+            const { fileUrl, fileName } = await exportBienBanToPdf({
+                ...item,
+                ma_baocao_scyk: linkedInc?.so_bc_ma_scyk || item.scyk_id || '',
+            });
+
+            // Cập nhật state items ngay (không cần reload trang)
+            setItems(prev => prev.map(i =>
+                i.id === item.id ? { ...i, file_url: fileUrl, file_name: fileName } : i
+            ));
+            // Cập nhật viewingItem nếu đang xem chi tiết
+            if (viewingItem?.id === item.id) {
+                setViewingItem(prev => prev ? { ...prev, file_url: fileUrl, file_name: fileName } : prev);
+            }
+
+            // Lưu vào DB (silent)
+            if (item.id) {
+                updateBienBanXacMinh(item.id, { file_url: fileUrl, file_name: fileName } as any).catch(() => { });
+            }
+
+            setExportResult({ success: true, message: `File "${fileName}" đã được lưu thành công.`, fileUrl });
+            setTimeout(() => setExportResult(null), 8000);
+        } catch (err: any) {
+            setExportResult({
+                success: false,
+                message: `Xuất PDF thất bại: ${err.message}. (Kiểm tra bucket 'scyk' đã được tạo trong Supabase chưa?)`,
+            });
+            setTimeout(() => setExportResult(null), 8000);
+        } finally {
+            setExportLoading(false);
+        }
+    };
+
 
     const handlePrint = (item: BienBanXacMinh) => {
         setEditingItem(item); // Set context for print
@@ -220,6 +267,183 @@ const VerificationMinutes = () => {
     };
 
     // --- Render ---
+
+    // --- TOAST NOTIFICATION ---
+    const ExportToast = () => exportResult ? (
+        <div className={`fixed bottom-6 right-6 z-50 max-w-md px-5 py-4 rounded-xl shadow-2xl border flex items-start gap-3 animate-in slide-in-from-bottom-4 duration-300 ${exportResult.success
+            ? 'bg-green-50 border-green-300 text-green-800'
+            : 'bg-red-50 border-red-300 text-red-800'
+            }`}>
+            <div className="mt-0.5">{exportResult.success ? <CheckCircle size={20} className="text-green-600" /> : <X size={20} className="text-red-600" />}</div>
+            <div className="flex-1">
+                <p className="font-bold text-sm">{exportResult.success ? 'Xuất báo cáo thành công' : 'Xuất báo cáo thất bại'}</p>
+                <p className="text-xs mt-1">{exportResult.message}</p>
+                {exportResult.fileUrl && (
+                    <a
+                        href={exportResult.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-green-700 hover:underline"
+                    >
+                        <Download size={12} /> Đọn file PDF
+                    </a>
+                )}
+            </div>
+            <button onClick={() => setExportResult(null)} className="text-current opacity-60 hover:opacity-100">
+                <X size={16} />
+            </button>
+        </div>
+    ) : null;
+
+    // --- VIEW MODE: Chi tiết biên bản ---
+    if (viewMode === 'VIEW' && viewingItem) {
+        const chuTri = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.find(m => m.vai_tro === 'CHU_TRI') : null;
+        const thuKy = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.find(m => m.vai_tro === 'THU_KY') : null;
+        const thanhVien = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.filter(m => m.vai_tro !== 'CHU_TRI' && m.vai_tro !== 'THU_KY' && m.vai_tro !== 'NGUOI_CHUNG_KIEN') : [];
+        const chungKien = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.filter(m => m.vai_tro === 'NGUOI_CHUNG_KIEN') : [];
+        const linkedInc = incidents.find(inc => inc.id === viewingItem.scyk_id);
+        return (
+            <div className="space-y-4 animate-in fade-in duration-200">
+                <ExportToast />
+                {/* Header bar */}
+                <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => setViewMode('LIST')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 transition-colors">
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <h2 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                <FileText className="text-primary-600" size={20} />
+                                Chi tiết Biên bản xác minh
+                            </h2>
+                            {linkedInc && <span className="text-xs text-slate-500">Liên kết SCYK: <span className="font-mono font-bold text-blue-700">{linkedInc.so_bc_ma_scyk}</span></span>}
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => handleEdit(viewingItem)}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                        >
+                            <Edit2 size={16} /> Chỉnh sửa
+                        </button>
+                        <button
+                            onClick={() => handleExportPdf(viewingItem)}
+                            disabled={exportLoading}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                        >
+                            {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                            {exportLoading ? 'Đang xuất PDF...' : 'Xuất báo cáo PDF'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Detail content */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+                    {/* Thời gian và địa điểm */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">Thời gian bắt đầu</p>
+                            <p className="font-bold text-slate-800 flex items-center gap-2">
+                                <Clock size={16} className="text-primary-500" />
+                                {new Date(viewingItem.thoi_gian_bat_dau).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            </p>
+                        </div>
+                        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">Địa điểm</p>
+                            <p className="font-bold text-slate-800 flex items-center gap-2">
+                                <MapPin size={16} className="text-primary-500" />
+                                {viewingItem.dia_diem || 'Chưa cập nhật'}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Thành phần đoàn */}
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
+                            <Users size={16} className="text-primary-600" /> Thành phần đoàn xác minh
+                        </h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+                                <thead className="bg-primary-600 text-white text-xs">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left">Họ tên</th>
+                                        <th className="px-4 py-2 text-left">Chức vụ</th>
+                                        <th className="px-4 py-2 text-left">Đơn vị</th>
+                                        <th className="px-4 py-2 text-left">Vai trò</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {(viewingItem.thanh_phan || []).map((mem, idx) => (
+                                        <tr key={idx} className="hover:bg-slate-50">
+                                            <td className="px-4 py-2 font-medium">{mem.ho_ten}</td>
+                                            <td className="px-4 py-2 text-slate-600">{mem.chuc_vu}</td>
+                                            <td className="px-4 py-2 text-slate-600">{mem.don_vi}</td>
+                                            <td className="px-4 py-2">
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${mem.vai_tro === 'CHU_TRI' ? 'bg-primary-100 text-primary-700' :
+                                                    mem.vai_tro === 'THU_KY' ? 'bg-amber-100 text-amber-700' :
+                                                        mem.vai_tro === 'NGUOI_CHUNG_KIEN' ? 'bg-slate-100 text-slate-700' :
+                                                            'bg-green-100 text-green-700'
+                                                    }`}>
+                                                    {mem.vai_tro === 'CHU_TRI' ? 'Chủ trì' :
+                                                        mem.vai_tro === 'THU_KY' ? 'Thư ký' :
+                                                            mem.vai_tro === 'NGUOI_CHUNG_KIEN' ? 'Người chứng kiến' : 'Thành viên'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Người tham dự */}
+                    {viewingItem.nguoi_tham_du && viewingItem.nguoi_tham_du.length > 0 && (
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
+                                <User size={16} className="text-slate-500" /> Với sự tham dự của
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {viewingItem.nguoi_tham_du.map((mem, idx) => (
+                                    <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
+                                        <div className="font-bold text-slate-800">{mem.ho_ten}</div>
+                                        <div className="text-slate-500 text-xs">{mem.chuc_vu} {mem.don_vi ? `- ${mem.don_vi}` : ''}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Nội dung xác minh */}
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-700 uppercase mb-2">1. Nội dung xác minh</h3>
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-700 whitespace-pre-wrap min-h-[60px]">
+                            {viewingItem.noi_dung_xac_minh || <span className="italic text-slate-400">Không có nội dung</span>}
+                        </div>
+                    </div>
+
+                    {/* Kết quả xác minh */}
+                    <div>
+                        <h3 className="text-sm font-bold text-red-600 uppercase mb-2 flex items-center gap-2">
+                            <CheckCircle size={16} /> 2. Kết quả xác minh
+                        </h3>
+                        <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-sm text-slate-700 whitespace-pre-wrap min-h-[100px]">
+                            {viewingItem.ket_qua_xac_minh || <span className="italic text-slate-400">Chưa có kết quả</span>}
+                        </div>
+                    </div>
+
+                    {/* Ý kiến tham gia */}
+                    {viewingItem.y_kien_tham_gia && (
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-700 uppercase mb-2">3. Ý kiến tham gia</h3>
+                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-700 whitespace-pre-wrap">
+                                {viewingItem.y_kien_tham_gia}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     if (viewMode === 'PRINT' && editingItem) {
         return (
@@ -520,6 +744,7 @@ const VerificationMinutes = () => {
     // --- List Mode ---
     return (
         <div className="space-y-6">
+            <ExportToast />
             {/* Actions Bar */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                 <div className="relative w-full md:w-96">
@@ -552,6 +777,7 @@ const VerificationMinutes = () => {
                                 <th className="px-6 py-4">Thời gian / Địa điểm</th>
                                 <th className="px-6 py-4">Chủ trì đoàn</th>
                                 <th className="px-6 py-4">Nội dung xác minh</th>
+                                <th className="px-6 py-4">Báo cáo</th>
                                 <th className="px-6 py-4 text-right">Thao tác</th>
                             </tr>
                         </thead>
@@ -582,10 +808,33 @@ const VerificationMinutes = () => {
                                         <td className="px-6 py-4 max-w-xs truncate text-slate-600">
                                             {item.noi_dung_xac_minh || 'Không có nội dung'}
                                         </td>
+                                        <td className="px-6 py-4">
+                                            {item.file_url ? (
+                                                <a
+                                                    href={item.file_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
+                                                    title={item.file_name || 'Mở file PDF'}
+                                                >
+                                                    <FileText size={14} /> Xem BC
+                                                </a>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleExportPdf(item)}
+                                                    disabled={exportLoading}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 text-slate-500 rounded-lg text-xs font-medium transition-colors disabled:opacity-40"
+                                                    title="Xuất PDF và lưu báo cáo"
+                                                >
+                                                    {exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                                                    Xuất PDF
+                                                </button>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => handlePrint(item)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem & Tải PDF">
-                                                    <Printer size={18} />
+                                                <button onClick={() => handleView(item)} className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Xem chi tiết">
+                                                    <Eye size={18} />
                                                 </button>
                                                 <button onClick={() => handleEdit(item)} className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Chỉnh sửa">
                                                     <Edit2 size={18} />

@@ -9,6 +9,7 @@ export interface BaoCaoScyk {
   ho_ten_nb?: string;
   mo_ta_su_co?: string;
   trang_thai?: string;
+  tien_do_xu_ly?: string;
   ho_ten_nguoi_bc?: string;
   created_at?: string;
 }

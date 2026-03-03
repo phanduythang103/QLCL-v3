@@ -5,13 +5,14 @@ import {
   ChevronDown, ChevronUp, CheckCircle2, AlertOctagon,
   BarChart2, PieChart as PieChartIcon, Calendar, Download, Printer,
   History, Edit2, Trash2, Eye, ArrowLeft, Target, Users, LayoutGrid, User, CheckSquare,
-  LayoutDashboard, List, FileCheck, Files, Menu
+  LayoutDashboard, List, FileCheck, Files, Menu, RefreshCw, Clock
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
 import { fetchBaoCaoScyk, addBaoCaoScyk, updateBaoCaoScyk, deleteBaoCaoScyk, fetchLatestBaoCaoScykByYear } from '../readBaoCaoScyk';
+import { addScykTienDoLog, fetchScykTienDoLogs, fetchLatestLogPerIncident, ScykTienDoLog } from '../readScykTienDoLogs';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
@@ -24,6 +25,7 @@ type ViewMode = 'LIST' | 'STATS' | 'FORM' | 'VIEW';
 export const Incidents: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<MenuItem>('OVERVIEW');
   const [viewMode, setViewMode] = useState<ViewMode>('STATS'); // Default for Overview
+  const [activePeriod, setActivePeriod] = useState<string>('YEAR'); // MONTH, QUARTER, YEAR
   const [incidents, setIncidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +34,20 @@ export const Incidents: React.FC = () => {
 
   // Specific filters state passed down to lists
   const [listStatusFilter, setListStatusFilter] = useState<string>('ALL');
+  const [latestLogs, setLatestLogs] = useState<Record<string, ScykTienDoLog>>({});
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await fetchBaoCaoScyk();
+      const [data, logsMap] = await Promise.all([
+        fetchBaoCaoScyk(),
+        fetchLatestLogPerIncident(),
+      ]);
       setIncidents(data || []);
+      setLatestLogs(logsMap);
       setError(null);
     } catch (err: any) {
-      console.error('Error fetching bao_cao_scyk:', err);
+      console.error('Error fetching data:', err);
       setError(err.message);
     }
     setLoading(false);
@@ -53,9 +60,35 @@ export const Incidents: React.FC = () => {
   // Compute statistics (reused)
   const computeStats = () => {
     const byDept: Record<string, { mild: number; moderate: number; severe: number }> = {};
-    const byStatus = { 'Mới': 0, 'Đang phân tích': 0, 'Đã kết luận': 0 };
+    const byStatusGroups = {
+      'Chưa tiếp nhận': 0,
+      'Đã tiếp nhận': 0,
+      'Đang xác minh': 0,
+      'Đang phân tích': 0,
+      'Đã kết luận': 0
+    };
 
-    incidents.forEach(inc => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const filteredIncidents = incidents.filter(inc => {
+      if (!inc.ngay_bao_cao) return true;
+      const reportDate = new Date(inc.ngay_bao_cao);
+      const reportYear = reportDate.getFullYear();
+      const reportMonth = reportDate.getMonth();
+
+      if (activePeriod === 'YEAR') return reportYear === currentYear;
+      if (activePeriod === 'MONTH') return reportYear === currentYear && reportMonth === currentMonth;
+      if (activePeriod === 'QUARTER') {
+        const currentQuarter = Math.floor(currentMonth / 3);
+        const reportQuarter = Math.floor(reportMonth / 3);
+        return reportYear === currentYear && reportQuarter === currentQuarter;
+      }
+      return true;
+    });
+
+    filteredIncidents.forEach(inc => {
       const dept = inc.khoa_phong || inc.don_vi_bao_cao || 'Khác';
       if (!byDept[dept]) byDept[dept] = { mild: 0, moderate: 0, severe: 0 };
 
@@ -69,17 +102,27 @@ export const Incidents: React.FC = () => {
       }
 
       const status = inc.trang_thai || 'Mới';
-      if (byStatus[status as keyof typeof byStatus] !== undefined) {
-        byStatus[status as keyof typeof byStatus]++;
+      if (status === 'Mới' || status === 'Chưa tiếp nhận') {
+        byStatusGroups['Chưa tiếp nhận']++;
+      } else if (status === 'Đã tiếp nhận') {
+        byStatusGroups['Đã tiếp nhận']++;
+      } else if (status === 'Đang xác minh' || status === 'Đang tiếp nhận') {
+        byStatusGroups['Đang xác minh']++;
+      } else if (status === 'Đang phân tích') {
+        byStatusGroups['Đang phân tích']++;
+      } else if (status === 'Đã kết luận') {
+        byStatusGroups['Đã kết luận']++;
       }
     });
 
     return {
       byDept: Object.entries(byDept).map(([name, vals]) => ({ name, ...vals })),
       byStatus: [
-        { name: 'Mới', value: byStatus['Mới'], color: '#3b82f6' },
-        { name: 'Đang phân tích', value: byStatus['Đang phân tích'], color: '#f59e0b' },
-        { name: 'Đã kết luận', value: byStatus['Đã kết luận'], color: '#10b981' },
+        { name: 'Chưa tiếp nhận', value: byStatusGroups['Chưa tiếp nhận'], color: '#ef4444' }, // Red
+        { name: 'Đã tiếp nhận', value: byStatusGroups['Đã tiếp nhận'], color: '#0891b2' },   // Cyan
+        { name: 'Đang xác minh', value: byStatusGroups['Đang xác minh'], color: '#2563eb' }, // Blue
+        { name: 'Đang phân tích', value: byStatusGroups['Đang phân tích'], color: '#f59e0b' }, // Amber
+        { name: 'Đã kết luận', value: byStatusGroups['Đã kết luận'], color: '#059669' },     // Green
       ]
     };
   };
@@ -97,31 +140,29 @@ export const Incidents: React.FC = () => {
   const menuItems = [
     { id: 'OVERVIEW', label: 'Tổng quan SCYK', icon: <LayoutDashboard size={20} /> },
     { id: 'LIST', label: 'Danh sách SCYK', icon: <List size={20} /> },
-    { id: 'VERIFICATION', label: 'DS Biên bản xác minh', icon: <FileCheck size={20} /> },
     { id: 'REPORTS', label: 'Danh sách báo cáo', icon: <Files size={20} /> },
+    { id: 'VERIFICATION', label: 'DS Biên bản xác minh', icon: <FileCheck size={20} /> },
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Navigation - Horizontal Tabs */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
-        <div className="px-4 pt-4 pb-0">
-
-
-          <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar">
+      <div className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="p-3 md:px-4 md:pt-4 md:pb-0">
+          <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:gap-1 md:overflow-x-auto hide-scrollbar">
             {menuItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleMenuChange(item.id as MenuItem)}
-                className={`relative flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all whitespace-nowrap rounded-t-lg ${activeMenu === item.id
-                  ? 'text-primary-600 bg-primary-50/50'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                className={`relative flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-2 py-2 px-1 md:px-5 md:py-3 text-xs md:text-sm font-medium transition-all rounded-xl md:rounded-none md:rounded-t-lg border md:border-transparent ${activeMenu === item.id
+                  ? 'text-primary-600 bg-primary-50 border-primary-200 shadow-sm md:shadow-none md:bg-primary-50/50 md:border-transparent'
+                  : 'text-slate-500 bg-white border-slate-200 hover:text-slate-700 hover:bg-slate-50 md:bg-transparent md:border-transparent'
                   }`}
               >
-                {item.icon}
-                {item.label}
+                <div className="scale-90 md:scale-100">{item.icon}</div>
+                <span className="text-center md:text-left leading-tight md:whitespace-nowrap">{item.label}</span>
                 {activeMenu === item.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary-600 rounded-t-full shadow-[0_-2px_6px_rgba(37,99,235,0.3)]"></div>
+                  <div className="hidden md:block absolute bottom-0 left-0 right-0 h-[3px] bg-primary-600 rounded-t-full shadow-[0_-2px_6px_rgba(37,99,235,0.3)]"></div>
                 )}
               </button>
             ))}
@@ -176,7 +217,26 @@ export const Incidents: React.FC = () => {
                 <>
                   {/* 1. Overview */}
                   {activeMenu === 'OVERVIEW' && (
-                    <IncidentStatistics stats={computeStats()} totalCount={incidents.length} />
+                    <IncidentStatistics
+                      stats={computeStats()}
+                      totalCount={incidents.filter(inc => {
+                        if (activePeriod === 'ALL') return true;
+                        if (!inc.ngay_bao_cao) return true;
+                        const reportDate = new Date(inc.ngay_bao_cao);
+                        const reportYear = reportDate.getFullYear();
+                        const reportMonth = reportDate.getMonth();
+                        const now = new Date();
+                        if (activePeriod === 'YEAR') return reportYear === now.getFullYear();
+                        if (activePeriod === 'MONTH') return reportYear === now.getFullYear() && reportMonth === now.getMonth();
+                        if (activePeriod === 'QUARTER') {
+                          return reportYear === now.getFullYear() && Math.floor(reportMonth / 3) === Math.floor(now.getMonth() / 3);
+                        }
+                        return true;
+                      }).length}
+                      period={activePeriod}
+                      setPeriod={setActivePeriod}
+                      onViewReports={() => handleMenuChange('REPORTS')}
+                    />
                   )}
 
                   {/* 2. Main List with Quick Filters */}
@@ -193,6 +253,8 @@ export const Incidents: React.FC = () => {
                           }
                         }}
                         onView={(item) => { setViewingItem(item); setViewMode('VIEW'); }}
+                        onStatusUpdated={() => loadData()}
+                        latestLogs={latestLogs}
                         showStatusFilter={true} // Enable Quick Filters
                       />
                     </div>
@@ -214,6 +276,8 @@ export const Incidents: React.FC = () => {
                         onEdit={(item) => { setEditingItem(item); setViewMode('FORM'); }}
                         onDelete={async (id) => { await deleteBaoCaoScyk(id); loadData(); }}
                         onView={(item) => { setViewingItem(item); setViewMode('VIEW'); }}
+                        onStatusUpdated={() => loadData()}
+                        latestLogs={latestLogs}
                         showReportFilter={true} // Enable Report Filters
                       />
                     </div>
@@ -228,19 +292,197 @@ export const Incidents: React.FC = () => {
   );
 };
 
+// --- Component: Update Status Modal ---
+const UpdateStatusModal = ({ item, onClose, onSaved }: { item: any, onClose: () => void, onSaved: () => void }) => {
+  const { user } = useAuth();
+  const statusOptions = ['Mới', 'Đã tiếp nhận', 'Đang xác minh', 'Đang phân tích', 'Đã kết luận'];
+
+  const [trangThai, setTrangThai] = useState(item.trang_thai || 'Mới');
+  const [ghiChu, setGhiChu] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [logs, setLogs] = useState<ScykTienDoLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(true);
+
+  // Load log history
+  useEffect(() => {
+    const loadLogs = async () => {
+      try {
+        const data = await fetchScykTienDoLogs(item.id);
+        setLogs(data);
+      } catch (err) {
+        console.error('Error fetching logs:', err);
+      }
+      setLoadingLogs(false);
+    };
+    loadLogs();
+  }, [item.id]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      // 1. Update trang_thai in bao_cao_scyk
+      await updateBaoCaoScyk(item.id, { trang_thai: trangThai });
+      // 2. Write log entry
+      await addScykTienDoLog({
+        bao_cao_id: item.id,
+        trang_thai: trangThai,
+        ghi_chu: ghiChu.trim() || undefined,
+        nguoi_cap_nhat: user?.full_name || user?.username || 'Không rõ',
+      });
+      onSaved();
+    } catch (err: any) {
+      setError('Lỗi khi cập nhật: ' + err.message);
+    }
+    setSaving(false);
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'Mới': case 'Chưa tiếp nhận': return 'bg-red-100 text-red-700';
+      case 'Đã tiếp nhận': return 'bg-cyan-100 text-cyan-700';
+      case 'Đang xác minh': return 'bg-blue-100 text-blue-700';
+      case 'Đang phân tích': return 'bg-amber-100 text-amber-700';
+      case 'Đã kết luận': return 'bg-green-100 text-green-700';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  };
+
+  const formatTime = (iso: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-slate-200 shrink-0">
+          <div className="flex items-center gap-2">
+            <RefreshCw size={20} className="text-primary-600" />
+            <div>
+              <h2 className="text-base font-bold text-slate-800">Cập nhật tiến độ xử lý</h2>
+              <p className="text-xs text-slate-500">{item.so_bc_ma_scyk || 'Sự cố'}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500"><X size={18} /></button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Form section */}
+          <div className="p-5 space-y-4 border-b border-slate-100">
+            <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600 line-clamp-2">
+              <span className="font-medium">Sự cố: </span>{item.mo_ta_su_co || 'N/A'}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Trạng thái xử lý</label>
+              <select
+                value={trangThai}
+                onChange={e => setTrangThai(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+              >
+                {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Ghi chú tiến độ <span className="text-slate-400 font-normal">(tùy chọn)</span></label>
+              <textarea
+                value={ghiChu}
+                onChange={e => setGhiChu(e.target.value)}
+                rows={2}
+                placeholder="Nhập nội dung cập nhật..."
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 resize-none"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+              <User size={13} className="text-slate-400" />
+              <span>Người cập nhật: <span className="font-semibold text-slate-700">{user?.full_name || user?.username || 'Chưa đăng nhập'}</span></span>
+            </div>
+            {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
+          </div>
+
+          {/* Log history section */}
+          <div className="p-5">
+            <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+              <History size={14} className="text-slate-400" /> Lịch sử cập nhật
+            </h3>
+            {loadingLogs ? (
+              <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                <div className="w-3 h-3 border-2 border-slate-300 border-t-primary-500 rounded-full animate-spin" />
+                Đang tải...
+              </div>
+            ) : logs.length === 0 ? (
+              <p className="text-xs text-slate-400 italic py-2">Chưa có lịch sử cập nhật.</p>
+            ) : (
+              <div className="space-y-3">
+                {logs.map((log, idx) => (
+                  <div key={log.id || idx} className="flex gap-3">
+                    {/* Timeline dot */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary-400 mt-0.5 shrink-0" />
+                      {idx < logs.length - 1 && <div className="w-px flex-1 bg-slate-200 mt-1" />}
+                    </div>
+                    {/* Log content */}
+                    <div className="flex-1 pb-3">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getStatusBadgeClass(log.trang_thai || '')}`}>
+                          {log.trang_thai || 'Không rõ'}
+                        </span>
+                        <span className="text-[10px] text-slate-400">{formatTime(log.thoi_gian_cap_nhat || '')}</span>
+                      </div>
+                      {log.ghi_chu && (
+                        <p className="text-xs text-slate-600 leading-relaxed">{log.ghi_chu}</p>
+                      )}
+                      <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                        <User size={10} /> {log.nguoi_cap_nhat}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 p-5 border-t border-slate-200 shrink-0">
+          <button onClick={onClose} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-1.5">
+            <X size={15} /> Hủy
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 shadow-sm disabled:opacity-60"
+          >
+            {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save size={15} />}
+            {saving ? 'Đang lưu...' : 'Lưu cập nhật'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Component: Incident List ---
-const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilter = false, showReportFilter = false }: {
+const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdated, latestLogs = {}, showStatusFilter = false, showReportFilter = false }: {
   data: any[],
   onCreate: () => void,
   onEdit: (item: any) => void,
   onDelete: (id: string) => void,
   onView: (item: any) => void,
+  onStatusUpdated?: () => void,
+  latestLogs?: Record<string, ScykTienDoLog>,
   showStatusFilter?: boolean,
   showReportFilter?: boolean
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
   const [activeStatusFilter, setActiveStatusFilter] = useState('ALL');
   const [activeReportFilter, setActiveReportFilter] = useState('ALL');
+  const [updatingItem, setUpdatingItem] = useState<any | null>(null);
 
   const filteredData = data.filter(inc => {
     // 1. Text Search
@@ -252,7 +494,9 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
     let matchesStatus = true;
     if (activeStatusFilter !== 'ALL') {
       if (activeStatusFilter === 'CHUA_TIEP_NHAN') matchesStatus = (!inc.trang_thai || inc.trang_thai === 'Chưa tiếp nhận' || inc.trang_thai === 'Mới');
-      else if (activeStatusFilter === 'DA_TIEP_NHAN') matchesStatus = (inc.trang_thai === 'Đang xác minh' || inc.trang_thai === 'Đang tiếp nhận');
+      else if (activeStatusFilter === 'DA_TIEP_NHAN') matchesStatus = (inc.trang_thai === 'Đã tiếp nhận');
+      else if (activeStatusFilter === 'DANG_XAC_MINH') matchesStatus = (inc.trang_thai === 'Đang xác minh' || inc.trang_thai === 'Đang tiếp nhận');
+      else if (activeStatusFilter === 'DANG_PHAN_TICH') matchesStatus = (inc.trang_thai === 'Đang phân tích');
       else if (activeStatusFilter === 'DA_KET_LUAN') matchesStatus = (inc.trang_thai === 'Đã kết luận');
       else matchesStatus = (inc.trang_thai === activeStatusFilter);
     }
@@ -275,11 +519,12 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
     switch (status) {
       case 'Mới': return 'Chưa tiếp nhận';
       case 'Chưa tiếp nhận': return 'Chưa tiếp nhận';
+      case 'Đã tiếp nhận': return 'Đã tiếp nhận';
       case 'Đang xác minh': return 'Đang xác minh';
       case 'Đang tiếp nhận': return 'Đang xác minh';
       case 'Đang phân tích': return 'Đang phân tích (RCA)';
       case 'Đã kết luận': return 'Đã kết luận';
-      default: return 'Chưa tiếp nhận';
+      default: return status || 'Chưa tiếp nhận';
     }
   };
 
@@ -287,6 +532,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
     switch (status) {
       case 'Mới': return 'text-red-500';
       case 'Chưa tiếp nhận': return 'text-red-500';
+      case 'Đã tiếp nhận': return 'text-cyan-600';
       case 'Đang xác minh': return 'text-blue-600';
       case 'Đang tiếp nhận': return 'text-blue-600';
       case 'Đang phân tích': return 'text-amber-600';
@@ -311,11 +557,12 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-300">
       {/* Quick Status Filter Bar */}
       {showStatusFilter && (
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-wrap gap-2">
+        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-wrap gap-2 items-center">
           <button onClick={() => setActiveStatusFilter('ALL')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'ALL' ? 'bg-slate-800 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}>Tất cả</button>
-          <button onClick={() => setActiveStatusFilter('CHUA_TIEP_NHAN')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'CHUA_TIEP_NHAN' ? 'bg-slate-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}>Chưa tiếp nhận</button>
-          <button onClick={() => setActiveStatusFilter('DA_TIEP_NHAN')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'DA_TIEP_NHAN' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'}`}>Đã tiếp nhận</button>
-          <button onClick={() => setActiveStatusFilter('Đang phân tích')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'Đang phân tích' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'}`}>Đang phân tích</button>
+          <button onClick={() => setActiveStatusFilter('CHUA_TIEP_NHAN')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'CHUA_TIEP_NHAN' ? 'bg-red-600 text-white shadow-md' : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'}`}>Chưa tiếp nhận</button>
+          <button onClick={() => setActiveStatusFilter('DA_TIEP_NHAN')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'DA_TIEP_NHAN' ? 'bg-cyan-600 text-white shadow-md' : 'bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50'}`}>Đã tiếp nhận</button>
+          <button onClick={() => setActiveStatusFilter('DANG_XAC_MINH')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'DANG_XAC_MINH' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'}`}>Đang xác minh</button>
+          <button onClick={() => setActiveStatusFilter('DANG_PHAN_TICH')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'DANG_PHAN_TICH' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'}`}>Đang phân tích (RCA)</button>
           <button onClick={() => setActiveStatusFilter('DA_KET_LUAN')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${activeStatusFilter === 'DA_KET_LUAN' ? 'bg-green-600 text-white shadow-md' : 'bg-white text-green-600 border border-green-200 hover:bg-green-50'}`}>Đã kết luận</button>
         </div>
       )}
@@ -353,65 +600,84 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-slate-600 border-collapse border border-slate-300 table-fixed">
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-sm text-left text-slate-600 border-collapse border border-slate-300">
           <thead className="bg-primary-600 text-white font-bold text-[11px] uppercase text-center align-middle h-16">
             <tr>
               <th className="border border-slate-300 px-1 py-1 w-8">TT</th>
-              <th className="border border-slate-300 px-1 py-1 w-24">Đối tượng xảy ra SC<br />hoặc có tình huống gây ra SC</th>
-              <th className="border border-slate-300 px-1 py-1 w-24">Vị trí xảy ra SC</th>
-              <th className="border border-slate-300 px-1 py-1 w-24">Thời gian</th>
-              <th className="border border-slate-300 px-1 py-1 w-32">Mô tả ngắn gọn về SCYK</th>
-              <th className="border border-slate-300 px-1 py-1 w-20">Mức độ ảnh hưởng của SC</th>
-              <th className="border border-slate-300 px-1 py-1 w-24">Xử lý ban đầu thực hiện</th>
-              <th className="border border-slate-300 px-1 py-1 w-24">Giải pháp phòng ngừa</th>
-              <th className="border border-slate-300 px-1 py-1 w-20">Hình thức báo cáo</th>
-              <th className="border border-slate-300 px-1 py-1 w-32">Tiến độ xử lý</th>
-              <th className="border border-slate-300 px-1 py-1 text-center w-24">Thao tác</th>
+              <th className="border border-slate-300 px-1 py-1 w-28">Dối tượng xảy ra SC<br />hoặc có tình huống gây ra SC</th>
+              <th className="border border-slate-300 px-1 py-1 w-28">Vị trí &amp; Thời gian</th>
+              <th className="border border-slate-300 px-1 py-1 w-36">Mô tả ngắn gọn về SCYK</th>
+              <th className="border border-slate-300 px-1 py-1 w-24">Hình thức báo cáo &amp; Mức độ ảnh hưởng</th>
+              <th className="border border-slate-300 px-1 py-1 w-28">Xử lý ban đầu thực hiện</th>
+              <th className="border border-slate-300 px-1 py-1 w-28">Giải pháp phòng ngừa</th>
+              <th className="border border-slate-300 px-1 py-1 w-32">Trạng thái</th>
+              <th className="border border-slate-300 px-1 py-1 text-center w-36">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredData.length === 0 ? (
-              <tr><td colSpan={11} className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</td></tr>
+              <tr><td colSpan={9} className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</td></tr>
             ) : (
               filteredData.map((inc, index) => (
                 <tr key={inc.id} className="hover:bg-slate-50 transition-colors text-xs">
                   <td className="border border-slate-300 px-2 py-2 text-center">{index + 1}</td>
                   <td className="border border-slate-300 px-2 py-2">{inc.doi_tuong_xay_ra_sc || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2">{inc.noi_xay_ra_sc || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2 text-center">
-                    {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : ''}
-                    <div className="text-[10px] text-slate-500">{inc.thoi_gian || ''}</div>
-                  </td>
-                  <td className="border border-slate-300 px-2 py-2 truncate max-w-[150px]" title={inc.mo_ta_su_co}>{inc.mo_ta_su_co || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2 text-center">{inc.phan_loai_ban_dau || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2 truncate max-w-[150px]" title={inc.dieu_tri_xy_ly_ban_dau_da_thuc_hien}>{inc.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2 truncate max-w-[150px]" title={inc.de_xuat_giai_phap_ban_dau}>{inc.de_xuat_giai_phap_ban_dau || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2 text-center">{inc.hinh_thuc_bao_cao || '-'}</td>
                   <td className="border border-slate-300 px-2 py-2">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className={`text-[10px] font-bold text-center leading-tight ${getStatusColor(inc.trang_thai)}`}>
-                        {getStatusLabel(inc.trang_thai)}
-                      </span>
-                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
-                        <div className={`h-full rounded-full ${!inc.trang_thai || inc.trang_thai === 'Chưa tiếp nhận' ? 'bg-slate-400' :
-                          inc.trang_thai === 'Đang xác minh' ? 'bg-blue-500' :
-                            inc.trang_thai === 'Đang phân tích' ? 'bg-amber-500' :
-                              'bg-green-500'
-                          } ${getStatusWidth(inc.trang_thai)}`}></div>
-                      </div>
+                    <div className="font-medium">{inc.noi_xay_ra_sc || '-'}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : ''}
+                      {inc.thoi_gian ? ` • ${inc.thoi_gian}` : ''}
                     </div>
                   </td>
+                  <td className="border border-slate-300 px-2 py-2 max-w-[160px]" title={inc.mo_ta_su_co}>
+                    <div className="line-clamp-3">{inc.mo_ta_su_co || '-'}</div>
+                  </td>
                   <td className="border border-slate-300 px-2 py-2 text-center">
-                    <div className="flex justify-center gap-1">
-                      <button onClick={() => onView(inc)} className="text-slate-500 hover:text-green-600 p-1 hover:bg-green-50 rounded" title="Xem chi tiết">
-                        <Eye size={16} />
+                    <div className="font-medium">{inc.hinh_thuc_bao_cao || '-'}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5 italic">{inc.phan_loai_ban_dau || ''}</div>
+                  </td>
+                  <td className="border border-slate-300 px-2 py-2 max-w-[140px]" title={inc.dieu_tri_xy_ly_ban_dau_da_thuc_hien}>
+                    <div className="line-clamp-2">{inc.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '-'}</div>
+                  </td>
+                  <td className="border border-slate-300 px-2 py-2 max-w-[140px]" title={inc.de_xuat_giai_phap_ban_dau}>
+                    <div className="line-clamp-2">{inc.de_xuat_giai_phap_ban_dau || '-'}</div>
+                  </td>
+                  <td className="border border-slate-300 px-2 py-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${!inc.trang_thai || inc.trang_thai === 'Mới' || inc.trang_thai === 'Chưa tiếp nhận' ? 'bg-red-100 text-red-700' :
+                        inc.trang_thai === 'Đã tiếp nhận' ? 'bg-cyan-100 text-cyan-700' :
+                          inc.trang_thai === 'Đang xác minh' ? 'bg-blue-100 text-blue-700' :
+                            inc.trang_thai === 'Đang phân tích' ? 'bg-amber-100 text-amber-700' :
+                              'bg-green-100 text-green-700'
+                        }`}>{getStatusLabel(inc.trang_thai)}</span>
+                      {(() => {
+                        const log = latestLogs[inc.id];
+                        return log?.ghi_chu ? (
+                          <div className="text-[9px] text-slate-500 text-center leading-tight mt-1 line-clamp-2 italic" title={log.ghi_chu}>
+                            {log.ghi_chu}
+                            <span className="block text-[8px] text-slate-400 not-italic">{log.nguoi_cap_nhat}</span>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                  </td>
+                  <td className="border border-slate-300 px-1 py-2 text-center">
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      <button onClick={() => onView(inc)} className="flex items-center gap-1 text-[10px] font-medium text-green-700 hover:text-green-800 px-2 py-1 bg-green-50 hover:bg-green-100 rounded border border-green-200 whitespace-nowrap">
+                        <Eye size={11} /> Xem
                       </button>
-                      <button onClick={() => onEdit(inc)} className="text-slate-500 hover:text-primary-600 p-1 hover:bg-slate-100 rounded" title="Sửa">
-                        <Edit2 size={16} />
+                      {user?.role === 'Quản trị viên' && (
+                        <button onClick={() => setUpdatingItem(inc)} className="flex items-center gap-1 text-[10px] font-medium text-blue-700 hover:text-blue-800 px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 whitespace-nowrap">
+                          <RefreshCw size={11} /> Cập nhật
+                        </button>
+                      )}
+                      <button onClick={() => onEdit(inc)} className="flex items-center gap-1 text-[10px] font-medium text-amber-700 hover:text-amber-800 px-2 py-1 bg-amber-50 hover:bg-amber-100 rounded border border-amber-200 whitespace-nowrap">
+                        <Edit2 size={11} /> Sửa
                       </button>
-                      <button onClick={() => onDelete(inc.id)} className="text-slate-500 hover:text-red-600 p-1 hover:bg-red-50 rounded" title="Xóa">
-                        <Trash2 size={16} />
+                      <button onClick={() => onDelete(inc.id)} className="flex items-center gap-1 text-[10px] font-medium text-red-700 hover:text-red-800 px-2 py-1 bg-red-50 hover:bg-red-100 rounded border border-red-200 whitespace-nowrap">
+                        <Trash2 size={11} /> Xóa
                       </button>
                     </div>
                   </td>
@@ -421,6 +687,96 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Card List */}
+      <div className="md:hidden divide-y divide-slate-100">
+        {filteredData.length === 0 ? (
+          <div className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</div>
+        ) : (
+          filteredData.map((inc, index) => (
+            <div key={inc.id} className="p-4 hover:bg-slate-50 transition-colors">
+              {/* Card Header */}
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 rounded px-1.5 py-0.5">#{index + 1}</span>
+                  <span className="text-xs font-semibold text-slate-800">{inc.so_bc_ma_scyk || 'Chưa có mã'}</span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${!inc.trang_thai || inc.trang_thai === 'Mới' || inc.trang_thai === 'Chưa tiếp nhận' ? 'bg-red-100 text-red-700' :
+                  inc.trang_thai === 'Đã tiếp nhận' ? 'bg-cyan-100 text-cyan-700' :
+                    inc.trang_thai === 'Đang xác minh' ? 'bg-blue-100 text-blue-700' :
+                      inc.trang_thai === 'Đang phân tích' ? 'bg-amber-100 text-amber-700' :
+                        'bg-green-100 text-green-700'
+                  }`}>
+                  {getStatusLabel(inc.trang_thai)}
+                </span>
+              </div>
+
+              {/* Incident Description */}
+              {inc.mo_ta_su_co && (
+                <p className="text-xs text-slate-700 mb-2 line-clamp-2 leading-relaxed">{inc.mo_ta_su_co}</p>
+              )}
+
+              {/* Card Meta Info */}
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-slate-500 mb-2">
+                {inc.doi_tuong_xay_ra_sc && (
+                  <div><span className="font-medium text-slate-600">Đối tượng:</span> {inc.doi_tuong_xay_ra_sc}</div>
+                )}
+                {inc.noi_xay_ra_sc && (
+                  <div><span className="font-medium text-slate-600">Vị trí:</span> {inc.noi_xay_ra_sc}</div>
+                )}
+                {inc.ngay_xay_ra_sc && (
+                  <div><span className="font-medium text-slate-600">Ngày:</span> {new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN')}</div>
+                )}
+                {inc.hinh_thuc_bao_cao && (
+                  <div><span className="font-medium text-slate-600">Hình thức:</span> {inc.hinh_thuc_bao_cao}</div>
+                )}
+                {inc.phan_loai_ban_dau && (
+                  <div className="col-span-2"><span className="font-medium text-slate-600">Mức độ:</span> {inc.phan_loai_ban_dau}</div>
+                )}
+              </div>
+
+              {/* Progress bar */}
+              <div className="mb-3">
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${!inc.trang_thai || inc.trang_thai === 'Mới' || inc.trang_thai === 'Chưa tiếp nhận' ? 'bg-slate-400' :
+                    inc.trang_thai === 'Đã tiếp nhận' ? 'bg-cyan-500 w-1/4' :
+                      inc.trang_thai === 'Đang xác minh' ? 'bg-blue-500' :
+                        inc.trang_thai === 'Đang phân tích' ? 'bg-amber-500' :
+                          'bg-green-500'
+                    } ${getStatusWidth(inc.trang_thai)}`}></div>
+                </div>
+                {(() => {
+                  const log = latestLogs[inc.id];
+                  return log?.ghi_chu ? (
+                    <div className="text-[10px] text-slate-500 mt-1 italic line-clamp-1" title={log.ghi_chu}>
+                      {log.ghi_chu} <span className="text-slate-400 not-italic">– {log.nguoi_cap_nhat}</span>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-1.5 flex-wrap">
+                <button onClick={() => onView(inc)} className="flex items-center gap-1 text-[10px] font-medium text-green-700 px-2.5 py-1 bg-green-50 hover:bg-green-100 rounded-md border border-green-200">
+                  <Eye size={11} /> Xem
+                </button>
+                {user?.role === 'Quản trị viên' && (
+                  <button onClick={() => setUpdatingItem(inc)} className="flex items-center gap-1 text-[10px] font-medium text-blue-700 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded-md border border-blue-200">
+                    <RefreshCw size={11} /> Cập nhật
+                  </button>
+                )}
+                <button onClick={() => onEdit(inc)} className="flex items-center gap-1 text-[10px] font-medium text-amber-700 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 rounded-md border border-amber-200">
+                  <Edit2 size={11} /> Sửa
+                </button>
+                <button onClick={() => onDelete(inc.id)} className="flex items-center gap-1 text-[10px] font-medium text-red-700 px-2.5 py-1 bg-red-50 hover:bg-red-100 rounded-md border border-red-200">
+                  <Trash2 size={11} /> Xóa
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-xs text-slate-500">
         <span>Hiển thị {filteredData.length} sự cố</span>
         <div className="flex gap-1">
@@ -428,14 +784,27 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, showStatusFilt
           <button className="px-2 py-1 border rounded bg-white disabled:opacity-50" disabled>Sau</button>
         </div>
       </div>
+
+      {/* Update Status Modal */}
+      {updatingItem && (
+        <UpdateStatusModal
+          item={updatingItem}
+          onClose={() => setUpdatingItem(null)}
+          onSaved={() => { setUpdatingItem(null); if (onStatusUpdated) onStatusUpdated(); }}
+        />
+      )}
     </div>
   )
 }
 
 // --- Component: Incident Statistics ---
-const IncidentStatistics = ({ stats, totalCount }: { stats: { byDept: any[], byStatus: any[] }, totalCount: number }) => {
-  const [period, setPeriod] = useState('MONTH'); // MONTH, QUARTER, YEAR
-
+const IncidentStatistics = ({ stats, totalCount, period, setPeriod, onViewReports }: {
+  stats: { byDept: any[], byStatus: any[] },
+  totalCount: number,
+  period: string,
+  setPeriod: (p: string) => void,
+  onViewReports: () => void
+}) => {
   const severeCount = stats.byDept.reduce((sum, d) => sum + d.severe, 0);
   const analyzedCount = stats.byStatus.find(s => s.name === 'Đã kết luận')?.value || 0;
 
@@ -443,21 +812,28 @@ const IncidentStatistics = ({ stats, totalCount }: { stats: { byDept: any[], byS
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Filter className="text-slate-400" size={20} />
-          <span className="font-bold text-slate-700 text-sm">Bộ lọc thời gian:</span>
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2"
-          >
-            <option value="MONTH">Tháng này</option>
-            <option value="QUARTER">Quý này</option>
-            <option value="YEAR">Năm nay</option>
-          </select>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="p-2 bg-primary-50 rounded-lg text-primary-600">
+            <Filter size={18} />
+          </div>
+          <span className="font-bold text-slate-700 text-sm whitespace-nowrap">Thời gian báo cáo:</span>
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+            {['MONTH', 'QUARTER', 'YEAR'].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${period === p
+                  ? 'bg-white text-primary-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+                  }`}
+              >
+                {p === 'MONTH' ? 'Tháng' : p === 'QUARTER' ? 'Quý' : 'Năm'}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="hidden md:flex gap-2">
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">
             <Printer size={16} /> In báo cáo
           </button>
@@ -468,26 +844,38 @@ const IncidentStatistics = ({ stats, totalCount }: { stats: { byDept: any[], byS
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-xs font-medium uppercase mb-1">Tổng số sự cố</p>
-          <h3 className="text-3xl font-bold text-slate-800">{totalCount}</h3>
-          <span className="text-xs text-slate-400 mt-2">Dữ liệu từ Supabase</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm">
+          <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase mb-1">Tổng số sự cố</p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-2xl md:text-3xl font-bold text-slate-800">{totalCount}</h3>
+            <span className="text-xs text-slate-400 font-normal">Sự cố</span>
+          </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-xs font-medium uppercase mb-1">Sự cố nặng (E-I)</p>
-          <h3 className="text-3xl font-bold text-red-600">{severeCount}</h3>
-          <span className="text-xs text-slate-400 mt-2">Chiếm {totalCount > 0 ? ((severeCount / totalCount) * 100).toFixed(1) : 0}%</span>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-red-500">
+          <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase mb-1 text-red-600">Sự cố nặng (E-I)</p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-2xl md:text-3xl font-bold text-red-600">{severeCount}</h3>
+            <span className="text-xs text-red-400 font-normal">Ca</span>
+          </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-xs font-medium uppercase mb-1">Đã kết luận</p>
-          <h3 className="text-3xl font-bold text-primary-600">{analyzedCount}</h3>
-          <span className="text-xs text-slate-400 mt-2">Đạt {totalCount > 0 ? ((analyzedCount / totalCount) * 100).toFixed(0) : 0}%</span>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-cyan-500">
+          <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase mb-1 text-cyan-700">Đang xử lý</p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-2xl md:text-3xl font-bold text-cyan-600">
+              {(stats.byStatus.find(s => s.name === 'Đã tiếp nhận')?.value || 0) +
+                (stats.byStatus.find(s => s.name === 'Đang xác minh')?.value || 0) +
+                (stats.byStatus.find(s => s.name === 'Đang phân tích')?.value || 0)}
+            </h3>
+            <span className="text-xs text-cyan-400 font-normal">Đang giải quyết</span>
+          </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-xs font-medium uppercase mb-1">Chưa xử lý</p>
-          <h3 className="text-3xl font-bold text-slate-800">{stats.byStatus.find(s => s.name === 'Mới')?.value || 0}</h3>
-          <span className="text-xs text-amber-600 font-medium mt-2">Cần xử lý</span>
+        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-green-500">
+          <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase mb-1 text-green-700">Đã kết luận</p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-2xl md:text-3xl font-bold text-green-600">{analyzedCount}</h3>
+            <span className="text-xs text-green-400 font-normal">Hoàn thành</span>
+          </div>
         </div>
       </div>
 
@@ -495,19 +883,36 @@ const IncidentStatistics = ({ stats, totalCount }: { stats: { byDept: any[], byS
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bar Chart */}
         <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h3 className="font-bold text-slate-800 mb-6">Phân bố sự cố theo Khoa/Phòng và Mức độ</h3>
-          <div className="h-80">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-slate-800">Phân bố sự cố theo Khoa/Phòng và Mức độ</h3>
+            <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 font-bold uppercase tracking-wider">Thống kê tích lũy</span>
+          </div>
+          <div className="h-[450px]">
             {stats.byDept.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.byDept}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: '#f8fafc' }} />
-                  <Legend />
-                  <Bar dataKey="mild" name="Nhẹ (Nhóm A-B)" stackId="a" fill="#60a5fa" barSize={40} />
-                  <Bar dataKey="moderate" name="Trung bình (C-D)" stackId="a" fill="#f59e0b" barSize={40} />
-                  <Bar dataKey="severe" name="Nặng (E-I)" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={40} />
+                <BarChart
+                  data={stats.byDept}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    axisLine={false}
+                    tickLine={false}
+                    width={150}
+                    tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: '#f8fafc' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '11px' }} />
+                  <Bar dataKey="mild" name="Nhẹ (Nhóm A-B)" stackId="a" fill="#3b82f6" barSize={12} radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="moderate" name="Trung bình (C-D)" stackId="a" fill="#f59e0b" barSize={12} radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="severe" name="Nặng (E-I)" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={12} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -560,7 +965,10 @@ const IncidentStatistics = ({ stats, totalCount }: { stats: { byDept: any[], byS
 
       {/* Detailed Report Link */}
       <div className="flex justify-center mt-8">
-        <button className="text-primary-600 font-medium hover:underline text-sm flex items-center gap-2">
+        <button
+          onClick={onViewReports}
+          className="text-primary-600 font-medium hover:underline text-sm flex items-center gap-2"
+        >
           Xem báo cáo chi tiết toàn viện <ArrowRight size={16} />
         </button>
       </div>
@@ -588,6 +996,11 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
     isOpen: boolean;
     data: { code: string; requester: string; timestamp: string } | null;
   }>({ isOpen: false, data: null });
+  const [detailLogs, setDetailLogs] = useState<ScykTienDoLog[]>([]);
+
+  useEffect(() => {
+    fetchScykTienDoLogs(item.id).then(setDetailLogs).catch(console.error);
+  }, [item.id]);
 
   // Handle Accept & Verify with confirmation popup
   const handleAcceptVerify = async () => {
@@ -994,28 +1407,14 @@ TRẢ VỀ DƯỚI DẠNG JSON HỢP LỆ (không có markdown code block, chỉ
             <ArrowLeft size={20} className="mr-2" /> Quay lại danh sách
           </button>
           <div className="flex flex-wrap gap-2">
-            {/* Workflow Actions */}
-            <button
-              onClick={handleAcceptVerify}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm"
-            >
-              <CheckSquare size={16} /> Tiếp nhận & Xác minh
-            </button>
             <button
               onClick={() => document.getElementById('ai-rca-section')?.scrollIntoView({ behavior: 'smooth' })}
               className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm"
             >
               <BrainCircuit size={16} /> Phân tích sự cố
             </button>
-            {/* Document Actions */}
             <button onClick={handlePrint} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center gap-2">
               <Download size={16} /> Tải PDF
-            </button>
-            <button onClick={onEdit} className="bg-primary-50 text-primary-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors flex items-center gap-2">
-              <Edit2 size={16} /> Chỉnh sửa
-            </button>
-            <button onClick={onDelete} className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center gap-2">
-              <Trash2 size={16} /> Xóa
             </button>
           </div>
         </div>
@@ -1042,7 +1441,10 @@ TRẢ VỀ DƯỚI DẠNG JSON HỢP LỆ (không có markdown code block, chỉ
           <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Thông tin sự cố</h3>
+                <div className="flex items-center gap-2 mb-3 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wide">Thông tin sự cố</h3>
+                </div>
                 <div className="p-4 bg-slate-50 rounded-xl space-y-3">
                   <p className="text-sm"><span className="font-semibold text-slate-700">Khoa phòng:</span> {item.don_vi_bao_cao}</p>
                   <p className="text-sm"><span className="font-semibold text-slate-700">Vị trí:</span> {item.noi_xay_ra_sc} - {item.vi_tri_cu_the}</p>
@@ -1080,13 +1482,88 @@ TRẢ VỀ DƯỚI DẠNG JSON HỢP LỆ (không có markdown code block, chỉ
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Xử trí ban đầu</h3>
+                <div className="flex items-center gap-2 mb-3 px-4 py-2 bg-orange-50 border border-orange-100 rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                  <h3 className="text-sm font-bold text-orange-700 uppercase tracking-wide">Mô tả chi tiết</h3>
+                </div>
+                <div className="p-4 bg-orange-50/40 border border-orange-100 rounded-xl space-y-3">
+                  <p className="text-sm leading-relaxed">{item.mo_ta_su_co || '---'}</p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-3 px-4 py-2 bg-green-50 border border-green-100 rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <h3 className="text-sm font-bold text-green-700 uppercase tracking-wide">Xử trí ban đầu</h3>
+                </div>
                 <div className="p-4 bg-green-50/50 border border-green-100 rounded-xl space-y-3">
                   <p className="text-sm"><span className="font-semibold text-green-800">Giải pháp khắc phục:</span> <br /> {item.de_xuat_giai_phap_ban_dau || '---'}</p>
                   <p className="text-sm"><span className="font-semibold text-green-800">Điều trị bổ sung:</span> <br /> {item.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '---'}</p>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Status Update Log Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+          <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-violet-50 to-slate-50 border-b border-slate-100">
+            <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+              <History size={16} className="text-violet-600" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-800">Lịch sử cập nhật trạng thái</h2>
+              <p className="text-xs text-slate-500">{detailLogs.length} lần cập nhật</p>
+            </div>
+          </div>
+          <div className="p-6">
+            {detailLogs.length === 0 ? (
+              <div className="flex items-center gap-3 text-slate-400 text-sm py-4">
+                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                  <History size={14} className="text-slate-300" />
+                </div>
+                Chưa có lịch sử cập nhật nào.
+              </div>
+            ) : (
+              <div className="space-y-0">
+                {detailLogs.map((log, idx) => {
+                  const statusColors: Record<string, string> = {
+                    'Mới': 'bg-red-100 text-red-700',
+                    'Chưa tiếp nhận': 'bg-red-100 text-red-700',
+                    'Đã tiếp nhận': 'bg-cyan-100 text-cyan-700',
+                    'Đang xác minh': 'bg-blue-100 text-blue-700',
+                    'Đang phân tích': 'bg-amber-100 text-amber-700',
+                    'Đã kết luận': 'bg-green-100 text-green-700',
+                  };
+                  const badgeClass = statusColors[log.trang_thai || ''] || 'bg-slate-100 text-slate-600';
+                  const timeStr = log.thoi_gian_cap_nhat
+                    ? new Date(log.thoi_gian_cap_nhat).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '';
+                  return (
+                    <div key={log.id || idx} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-3 h-3 rounded-full bg-violet-400 mt-1.5 shrink-0 ring-2 ring-violet-100" />
+                        {idx < detailLogs.length - 1 && <div className="w-px flex-1 bg-slate-200 mt-1" />}
+                      </div>
+                      <div className="flex-1 pb-5">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${badgeClass}`}>{log.trang_thai || 'Không rõ'}</span>
+                          <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                            <Clock size={10} /> {timeStr}
+                          </span>
+                        </div>
+                        {log.ghi_chu && (
+                          <p className="text-sm text-slate-600 leading-relaxed mb-1">{log.ghi_chu}</p>
+                        )}
+                        <p className="text-xs text-slate-400 flex items-center gap-1">
+                          <User size={11} /> {log.nguoi_cap_nhat}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
