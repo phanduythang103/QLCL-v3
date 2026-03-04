@@ -11,6 +11,14 @@ export interface BaoCaoScyk {
   trang_thai?: string;
   tien_do_xu_ly?: string;
   ho_ten_nguoi_bc?: string;
+  khoa_phong?: string;
+  doi_tuong_xay_ra_sc?: string;
+  noi_xay_ra_sc?: string;
+  ngay_xay_ra_sc?: string;
+  thoi_gian?: string;
+  phan_loai_ban_dau?: string;
+  dieu_tri_xy_ly_ban_dau_da_thuc_hien?: string;
+  de_xuat_giai_phap_ban_dau?: string;
   created_at?: string;
 }
 

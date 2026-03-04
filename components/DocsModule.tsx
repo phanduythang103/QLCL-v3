@@ -97,7 +97,8 @@ const DocumentLibrary = () => {
     co_quan_ban_hanh: '',
     hieu_luc: '',
     trang_thai: 'Còn hiệu lực',
-    file_van_ban: ''
+    file_van_ban: '',
+    phan_loai: 'BYT'
   };
   const [formData, setFormData] = useState(initialFormData);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
@@ -189,7 +190,8 @@ const DocumentLibrary = () => {
       co_quan_ban_hanh: doc.co_quan_ban_hanh || '',
       hieu_luc: doc.hieu_luc || '',
       trang_thai: doc.trang_thai || 'Còn hiệu lực',
-      file_van_ban: doc.file_van_ban || ''
+      file_van_ban: doc.file_van_ban || '',
+      phan_loai: doc.phan_loai || 'BYT'
     });
     // Store ID for update logic if needed, currently addThuVienVb handles insert. 
     // We might need to update addThuVienVb to handle upsert or add updateThuVienVb support properly.
@@ -229,11 +231,11 @@ const DocumentLibrary = () => {
 
   const CATEGORIES = [
     { id: 'ALL', label: 'Tất cả' },
-    { id: 'LEGAL', label: 'Pháp lý', icon: <Landmark size={14} /> },
-    { id: 'MOH', label: 'Bộ Y tế', icon: <ShieldCheck size={14} /> },
-    { id: 'HOSPITAL', label: 'Nội bộ BV', icon: <Building size={14} /> },
-    { id: 'SOP', label: 'Quy trình SOP', icon: <FileText size={14} /> },
-    { id: 'INTL', label: 'Quốc tế', icon: <Globe size={14} /> },
+    { id: 'BYT', label: 'Bộ Y tế', icon: <ShieldCheck size={14} /> },
+    { id: 'BQP', label: 'Bộ Quốc phòng', icon: <ShieldCheck size={14} /> },
+    { id: 'CQY', label: 'Cục quân y', icon: <Building size={14} /> },
+    { id: 'BV103', label: 'BVQY103', icon: <Building size={14} /> },
+    { id: 'OTHER', label: 'Khác', icon: <FileText size={14} /> },
   ];
 
   const filteredDocs = docs.filter(doc =>
@@ -911,6 +913,21 @@ const FormModal: React.FC<FormModalProps> = ({
                 <option value="Hết hiệu lực">Hết hiệu lực</option>
                 <option value="Dự thảo">Dự thảo</option>
                 <option value="Hủy bỏ">Hủy bỏ</option>
+              </select>
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Phân loại (Lọc nhanh) *</label>
+              <select
+                value={formData.phan_loai}
+                onChange={e => setFormData({ ...formData, phan_loai: e.target.value })}
+                className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-primary-50/50"
+              >
+                <option value="BYT">Bộ Y tế</option>
+                <option value="BQP">Bộ Quốc phòng</option>
+                <option value="CQY">Cục quân y</option>
+                <option value="BV103">BVQY103</option>
+                <option value="OTHER">Khác</option>
               </select>
             </div>
           </div>

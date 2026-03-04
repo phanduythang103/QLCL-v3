@@ -9,6 +9,7 @@ export interface ThuVienVb {
   hieu_luc: string;
   trang_thai: string;
   file_van_ban?: string;
+  phan_loai?: string;
   created_at?: string;
 }
 

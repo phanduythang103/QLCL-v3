@@ -18,14 +18,19 @@ import { fetchDmDonVi } from '../readDmDonVi';
 import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
 import { analyzeWithGemini } from '../geminiClient';
 import VerificationMinutes from './VerificationMinutes';
+import IncidentAnalysis from './IncidentAnalysis';
+import BcCqyList from './BcCqyList';
 
-type MenuItem = 'OVERVIEW' | 'LIST' | 'VERIFICATION' | 'REPORTS';
+type MenuItem = 'OVERVIEW' | 'LIST' | 'VERIFICATION' | 'REPORTS' | 'ANALYSIS';
 type ViewMode = 'LIST' | 'STATS' | 'FORM' | 'VIEW';
 
 export const Incidents: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<MenuItem>('OVERVIEW');
   const [viewMode, setViewMode] = useState<ViewMode>('STATS'); // Default for Overview
   const [activePeriod, setActivePeriod] = useState<string>('YEAR'); // MONTH, QUARTER, YEAR
+  const [filterYear, setFilterYear] = useState<number>(new Date().getFullYear());
+  const [filterMonth, setFilterMonth] = useState<number>(new Date().getMonth() + 1);
+  const [filterQuarter, setFilterQuarter] = useState<number>(Math.floor(new Date().getMonth() / 3) + 1);
   const [incidents, setIncidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,14 +81,13 @@ export const Incidents: React.FC = () => {
       if (!inc.ngay_bao_cao) return true;
       const reportDate = new Date(inc.ngay_bao_cao);
       const reportYear = reportDate.getFullYear();
-      const reportMonth = reportDate.getMonth();
+      const reportMonth = reportDate.getMonth() + 1; // 1-12
 
-      if (activePeriod === 'YEAR') return reportYear === currentYear;
-      if (activePeriod === 'MONTH') return reportYear === currentYear && reportMonth === currentMonth;
+      if (activePeriod === 'YEAR') return reportYear === filterYear;
+      if (activePeriod === 'MONTH') return reportYear === filterYear && reportMonth === filterMonth;
       if (activePeriod === 'QUARTER') {
-        const currentQuarter = Math.floor(currentMonth / 3);
-        const reportQuarter = Math.floor(reportMonth / 3);
-        return reportYear === currentYear && reportQuarter === currentQuarter;
+        const reportQuarter = Math.floor((reportMonth - 1) / 3) + 1;
+        return reportYear === filterYear && reportQuarter === filterQuarter;
       }
       return true;
     });
@@ -140,8 +144,9 @@ export const Incidents: React.FC = () => {
   const menuItems = [
     { id: 'OVERVIEW', label: 'Tổng quan SCYK', icon: <LayoutDashboard size={20} /> },
     { id: 'LIST', label: 'Danh sách SCYK', icon: <List size={20} /> },
-    { id: 'REPORTS', label: 'Danh sách báo cáo', icon: <Files size={20} /> },
     { id: 'VERIFICATION', label: 'DS Biên bản xác minh', icon: <FileCheck size={20} /> },
+    { id: 'ANALYSIS', label: 'Phân tích RCA', icon: <BrainCircuit size={20} /> },
+    { id: 'REPORTS', label: 'Báo cáo Cục Quân y', icon: <Files size={20} /> },
   ];
 
   return (
@@ -220,21 +225,27 @@ export const Incidents: React.FC = () => {
                     <IncidentStatistics
                       stats={computeStats()}
                       totalCount={incidents.filter(inc => {
-                        if (activePeriod === 'ALL') return true;
                         if (!inc.ngay_bao_cao) return true;
                         const reportDate = new Date(inc.ngay_bao_cao);
                         const reportYear = reportDate.getFullYear();
-                        const reportMonth = reportDate.getMonth();
-                        const now = new Date();
-                        if (activePeriod === 'YEAR') return reportYear === now.getFullYear();
-                        if (activePeriod === 'MONTH') return reportYear === now.getFullYear() && reportMonth === now.getMonth();
+                        const reportMonth = reportDate.getMonth() + 1;
+
+                        if (activePeriod === 'YEAR') return reportYear === filterYear;
+                        if (activePeriod === 'MONTH') return reportYear === filterYear && reportMonth === filterMonth;
                         if (activePeriod === 'QUARTER') {
-                          return reportYear === now.getFullYear() && Math.floor(reportMonth / 3) === Math.floor(now.getMonth() / 3);
+                          const reportQuarter = Math.floor((reportMonth - 1) / 3) + 1;
+                          return reportYear === filterYear && reportQuarter === filterQuarter;
                         }
                         return true;
                       }).length}
                       period={activePeriod}
                       setPeriod={setActivePeriod}
+                      filterYear={filterYear}
+                      setFilterYear={setFilterYear}
+                      filterMonth={filterMonth}
+                      setFilterMonth={setFilterMonth}
+                      filterQuarter={filterQuarter}
+                      setFilterQuarter={setFilterQuarter}
                       onViewReports={() => handleMenuChange('REPORTS')}
                     />
                   )}
@@ -267,19 +278,17 @@ export const Incidents: React.FC = () => {
                     </div>
                   )}
 
-                  {/* 4. Reports List (Filtered by Destination?) */}
+                  {/* 4. Reports List (Cục Quân y) */}
                   {activeMenu === 'REPORTS' && (
-                    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                      <IncidentList
-                        data={incidents}
-                        onCreate={() => { setEditingItem(null); setViewMode('FORM'); }}
-                        onEdit={(item) => { setEditingItem(item); setViewMode('FORM'); }}
-                        onDelete={async (id) => { await deleteBaoCaoScyk(id); loadData(); }}
-                        onView={(item) => { setViewingItem(item); setViewMode('VIEW'); }}
-                        onStatusUpdated={() => loadData()}
-                        latestLogs={latestLogs}
-                        showReportFilter={true} // Enable Report Filters
-                      />
+                    <div className="animate-in fade-in zoom-in-95 duration-200 h-full">
+                      <BcCqyList />
+                    </div>
+                  )}
+
+                  {/* 5. Analysis (RCA) */}
+                  {activeMenu === 'ANALYSIS' && (
+                    <div className="animate-in fade-in zoom-in-95 duration-200 h-full">
+                      <IncidentAnalysis />
                     </div>
                   )}
                 </>
@@ -603,81 +612,69 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm text-left text-slate-600 border-collapse border border-slate-300">
-          <thead className="bg-primary-600 text-white font-bold text-[11px] uppercase text-center align-middle h-16">
+          <thead className="bg-[#009900] text-white font-bold text-[11px] uppercase text-center align-middle h-14">
             <tr>
-              <th className="border border-slate-300 px-1 py-1 w-8">TT</th>
-              <th className="border border-slate-300 px-1 py-1 w-28">Dối tượng xảy ra SC<br />hoặc có tình huống gây ra SC</th>
-              <th className="border border-slate-300 px-1 py-1 w-28">Vị trí &amp; Thời gian</th>
-              <th className="border border-slate-300 px-1 py-1 w-36">Mô tả ngắn gọn về SCYK</th>
-              <th className="border border-slate-300 px-1 py-1 w-24">Hình thức báo cáo &amp; Mức độ ảnh hưởng</th>
-              <th className="border border-slate-300 px-1 py-1 w-28">Xử lý ban đầu thực hiện</th>
-              <th className="border border-slate-300 px-1 py-1 w-28">Giải pháp phòng ngừa</th>
-              <th className="border border-slate-300 px-1 py-1 w-32">Trạng thái</th>
-              <th className="border border-slate-300 px-1 py-1 text-center w-36">Thao tác</th>
+              <th className="border border-slate-300 px-3 py-2 w-48 text-left">Ngày báo cáo</th>
+              <th className="border border-slate-300 px-3 py-2 w-48 text-left">Đơn vị báo cáo</th>
+              <th className="border border-slate-300 px-3 py-2">Mô tả sự cố</th>
+              <th className="border border-slate-300 px-3 py-2 w-40">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredData.length === 0 ? (
-              <tr><td colSpan={9} className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</td></tr>
+              <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</td></tr>
             ) : (
-              filteredData.map((inc, index) => (
-                <tr key={inc.id} className="hover:bg-slate-50 transition-colors text-xs">
-                  <td className="border border-slate-300 px-2 py-2 text-center">{index + 1}</td>
-                  <td className="border border-slate-300 px-2 py-2">{inc.doi_tuong_xay_ra_sc || '-'}</td>
-                  <td className="border border-slate-300 px-2 py-2">
-                    <div className="font-medium">{inc.noi_xay_ra_sc || '-'}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
-                      {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : ''}
-                      {inc.thoi_gian ? ` • ${inc.thoi_gian}` : ''}
+              filteredData.map((inc) => (
+                <tr key={inc.id} className="hover:bg-slate-50 transition-colors text-xs group">
+                  <td className="border border-slate-300 px-3 py-4">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} className="text-slate-400" />
+                        <span className="font-bold text-slate-700">{inc.ngay_bao_cao ? new Date(inc.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] w-fit font-bold ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                        {inc.hinh_thuc_bao_cao || 'Tự nguyện'}
+                      </span>
+                      <div className="mt-1 text-[10px] font-mono text-slate-400 italic">#{inc.so_bc_ma_scyk}</div>
                     </div>
                   </td>
-                  <td className="border border-slate-300 px-2 py-2 max-w-[160px]" title={inc.mo_ta_su_co}>
-                    <div className="line-clamp-3">{inc.mo_ta_su_co || '-'}</div>
-                  </td>
-                  <td className="border border-slate-300 px-2 py-2 text-center">
-                    <div className="font-medium">{inc.hinh_thuc_bao_cao || '-'}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5 italic">{inc.phan_loai_ban_dau || ''}</div>
-                  </td>
-                  <td className="border border-slate-300 px-2 py-2 max-w-[140px]" title={inc.dieu_tri_xy_ly_ban_dau_da_thuc_hien}>
-                    <div className="line-clamp-2">{inc.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '-'}</div>
-                  </td>
-                  <td className="border border-slate-300 px-2 py-2 max-w-[140px]" title={inc.de_xuat_giai_phap_ban_dau}>
-                    <div className="line-clamp-2">{inc.de_xuat_giai_phap_ban_dau || '-'}</div>
-                  </td>
-                  <td className="border border-slate-300 px-2 py-2">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${!inc.trang_thai || inc.trang_thai === 'Mới' || inc.trang_thai === 'Chưa tiếp nhận' ? 'bg-red-100 text-red-700' :
-                        inc.trang_thai === 'Đã tiếp nhận' ? 'bg-cyan-100 text-cyan-700' :
-                          inc.trang_thai === 'Đang xác minh' ? 'bg-blue-100 text-blue-700' :
-                            inc.trang_thai === 'Đang phân tích' ? 'bg-amber-100 text-amber-700' :
-                              'bg-green-100 text-green-700'
-                        }`}>{getStatusLabel(inc.trang_thai)}</span>
-                      {(() => {
-                        const log = latestLogs[inc.id];
-                        return log?.ghi_chu ? (
-                          <div className="text-[9px] text-slate-500 text-center leading-tight mt-1 line-clamp-2 italic" title={log.ghi_chu}>
-                            {log.ghi_chu}
-                            <span className="block text-[8px] text-slate-400 not-italic">{log.nguoi_cap_nhat}</span>
-                          </div>
-                        ) : null;
-                      })()}
+                  <td className="border border-slate-300 px-3 py-4">
+                    <div className="flex flex-col gap-1">
+                      <div className="font-bold text-slate-800 text-sm">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</div>
+                      <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                        <Clock size={12} /> Xảy ra: {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : '---'}
+                      </div>
                     </div>
                   </td>
-                  <td className="border border-slate-300 px-1 py-2 text-center">
-                    <div className="flex gap-1 justify-center flex-wrap">
-                      <button onClick={() => onView(inc)} className="flex items-center gap-1 text-[10px] font-medium text-green-700 hover:text-green-800 px-2 py-1 bg-green-50 hover:bg-green-100 rounded border border-green-200 whitespace-nowrap">
-                        <Eye size={11} /> Xem
+                  <td className="border border-slate-300 px-3 py-4 max-w-md">
+                    <div className="flex flex-col gap-2">
+                      <p className="line-clamp-3 text-slate-600 leading-relaxed font-medium">{inc.mo_ta_su_co || '---'}</p>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${getStatusColor(inc.trang_thai)} bg-white border border-current opacity-80`}>
+                          {getStatusLabel(inc.trang_thai)}
+                        </span>
+                        {inc.phan_loai_ban_dau && (
+                          <span className="text-[10px] text-slate-400 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{inc.phan_loai_ban_dau}</span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="border border-slate-300 px-3 py-4 w-44">
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button onClick={() => onView(inc)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all border border-green-200 shadow-sm">
+                        <Eye size={12} /> Xem
+                      </button>
+                      <button onClick={() => onEdit(inc)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all border border-amber-200 shadow-sm">
+                        <Edit2 size={12} /> Sửa
                       </button>
                       {user?.role === 'Quản trị viên' && (
-                        <button onClick={() => setUpdatingItem(inc)} className="flex items-center gap-1 text-[10px] font-medium text-blue-700 hover:text-blue-800 px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 whitespace-nowrap">
-                          <RefreshCw size={11} /> Cập nhật
+                        <button onClick={() => setUpdatingItem(inc)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm">
+                          <RefreshCw size={12} /> Trạng thái
                         </button>
                       )}
-                      <button onClick={() => onEdit(inc)} className="flex items-center gap-1 text-[10px] font-medium text-amber-700 hover:text-amber-800 px-2 py-1 bg-amber-50 hover:bg-amber-100 rounded border border-amber-200 whitespace-nowrap">
-                        <Edit2 size={11} /> Sửa
-                      </button>
-                      <button onClick={() => onDelete(inc.id)} className="flex items-center gap-1 text-[10px] font-medium text-red-700 hover:text-red-800 px-2 py-1 bg-red-50 hover:bg-red-100 rounded border border-red-200 whitespace-nowrap">
-                        <Trash2 size={11} /> Xóa
+                      <button onClick={() => onDelete(inc.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm">
+                        <Trash2 size={12} /> Xóa
                       </button>
                     </div>
                   </td>
@@ -717,22 +714,27 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
               )}
 
               {/* Card Meta Info */}
-              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-slate-500 mb-2">
-                {inc.doi_tuong_xay_ra_sc && (
-                  <div><span className="font-medium text-slate-600">Đối tượng:</span> {inc.doi_tuong_xay_ra_sc}</div>
-                )}
-                {inc.noi_xay_ra_sc && (
-                  <div><span className="font-medium text-slate-600">Vị trí:</span> {inc.noi_xay_ra_sc}</div>
-                )}
-                {inc.ngay_xay_ra_sc && (
-                  <div><span className="font-medium text-slate-600">Ngày:</span> {new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN')}</div>
-                )}
-                {inc.hinh_thuc_bao_cao && (
-                  <div><span className="font-medium text-slate-600">Hình thức:</span> {inc.hinh_thuc_bao_cao}</div>
-                )}
-                {inc.phan_loai_ban_dau && (
-                  <div className="col-span-2"><span className="font-medium text-slate-600">Mức độ:</span> {inc.phan_loai_ban_dau}</div>
-                )}
+              <div className="space-y-3 mb-4">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={12} className="text-slate-400" />
+                    <span className="text-xs font-bold text-slate-700">Báo cáo: {inc.ngay_bao_cao ? new Date(inc.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock size={12} className="text-slate-400" />
+                    <span className="text-[10px] text-slate-500 font-medium italic">Xảy ra: {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : '---'}</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-100">
+                  <div className="font-bold text-slate-800 text-[11px] mb-1 leading-tight">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-slate-500 font-medium">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'text-red-600' : 'text-blue-600'}`}>
+                      {inc.hinh_thuc_bao_cao || 'Tự nguyện'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Progress bar */}
@@ -798,25 +800,48 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
 }
 
 // --- Component: Incident Statistics ---
-const IncidentStatistics = ({ stats, totalCount, period, setPeriod, onViewReports }: {
+const IncidentStatistics = ({
+  stats,
+  totalCount,
+  period,
+  setPeriod,
+  filterYear,
+  setFilterYear,
+  filterMonth,
+  setFilterMonth,
+  filterQuarter,
+  setFilterQuarter,
+  onViewReports
+}: {
   stats: { byDept: any[], byStatus: any[] },
   totalCount: number,
   period: string,
   setPeriod: (p: string) => void,
+  filterYear: number,
+  setFilterYear: (y: number) => void,
+  filterMonth: number,
+  setFilterMonth: (m: number) => void,
+  filterQuarter: number,
+  setFilterQuarter: (q: number) => void,
   onViewReports: () => void
 }) => {
   const severeCount = stats.byDept.reduce((sum, d) => sum + d.severe, 0);
   const analyzedCount = stats.byStatus.find(s => s.name === 'Đã kết luận')?.value || 0;
 
+  const years = [];
+  for (let y = 2020; y <= new Date().getFullYear(); y++) {
+    years.push(y);
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="p-2 bg-primary-50 rounded-lg text-primary-600">
+        <div className="flex flex-wrap items-center gap-3 w-full">
+          <div className="p-2 bg-primary-50 rounded-lg text-primary-600 hidden md:block">
             <Filter size={18} />
           </div>
-          <span className="font-bold text-slate-700 text-sm whitespace-nowrap">Thời gian báo cáo:</span>
+
           <div className="flex bg-slate-100 p-1 rounded-lg">
             {['MONTH', 'QUARTER', 'YEAR'].map((p) => (
               <button
@@ -831,15 +856,40 @@ const IncidentStatistics = ({ stats, totalCount, period, setPeriod, onViewReport
               </button>
             ))}
           </div>
-        </div>
 
-        <div className="hidden md:flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">
-            <Printer size={16} /> In báo cáo
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 shadow-sm">
-            <Download size={16} /> Xuất Excel TT43
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={filterYear}
+              onChange={(e) => setFilterYear(Number(e.target.value))}
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500/20"
+            >
+              {years.map(y => <option key={y} value={y}>Năm {y}</option>)}
+            </select>
+
+            {period === 'MONTH' && (
+              <select
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(Number(e.target.value))}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500/20 animate-in fade-in slide-in-from-left-2"
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
+                ))}
+              </select>
+            )}
+
+            {period === 'QUARTER' && (
+              <select
+                value={filterQuarter}
+                onChange={(e) => setFilterQuarter(Number(e.target.value))}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500/20 animate-in fade-in slide-in-from-left-2"
+              >
+                {[1, 2, 3, 4].map(q => (
+                  <option key={q} value={q}>Quý {q}</option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
       </div>
 
@@ -961,16 +1011,6 @@ const IncidentStatistics = ({ stats, totalCount, period, setPeriod, onViewReport
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Detailed Report Link */}
-      <div className="flex justify-center mt-8">
-        <button
-          onClick={onViewReports}
-          className="text-primary-600 font-medium hover:underline text-sm flex items-center gap-2"
-        >
-          Xem báo cáo chi tiết toàn viện <ArrowRight size={16} />
-        </button>
       </div>
     </div>
   )

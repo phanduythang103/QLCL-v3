@@ -338,7 +338,7 @@ const VerificationMinutes = () => {
                 </div>
 
                 {/* Detail content */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 space-y-8" style={{ fontSize: '14pt', fontFamily: 'Times New Roman, serif' }}>
                     {/* Thời gian và địa điểm */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
@@ -364,7 +364,7 @@ const VerificationMinutes = () => {
                         </h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
-                                <thead className="bg-primary-600 text-white text-xs">
+                                <thead className="bg-[#009900] text-white text-xs font-bold">
                                     <tr>
                                         <th className="px-4 py-2 text-left">Họ tên</th>
                                         <th className="px-4 py-2 text-left">Chức vụ</th>
@@ -415,18 +415,18 @@ const VerificationMinutes = () => {
 
                     {/* Nội dung xác minh */}
                     <div>
-                        <h3 className="text-sm font-bold text-slate-700 uppercase mb-2">1. Nội dung xác minh</h3>
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-700 whitespace-pre-wrap min-h-[60px]">
+                        <h3 className="text-[14pt] font-bold text-slate-700 uppercase mb-2">1. Nội dung xác minh</h3>
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-[14pt] text-slate-700 whitespace-pre-wrap min-h-[60px] leading-relaxed">
                             {viewingItem.noi_dung_xac_minh || <span className="italic text-slate-400">Không có nội dung</span>}
                         </div>
                     </div>
 
                     {/* Kết quả xác minh */}
                     <div>
-                        <h3 className="text-sm font-bold text-red-600 uppercase mb-2 flex items-center gap-2">
-                            <CheckCircle size={16} /> 2. Kết quả xác minh
+                        <h3 className="text-[14pt] font-bold text-red-600 uppercase mb-2 flex items-center gap-2">
+                            <CheckCircle size={20} /> 2. Kết quả xác minh
                         </h3>
-                        <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-sm text-slate-700 whitespace-pre-wrap min-h-[100px]">
+                        <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-[14pt] text-slate-700 whitespace-pre-wrap min-h-[100px] leading-relaxed">
                             {viewingItem.ket_qua_xac_minh || <span className="italic text-slate-400">Chưa có kết quả</span>}
                         </div>
                     </div>
@@ -434,8 +434,8 @@ const VerificationMinutes = () => {
                     {/* Ý kiến tham gia */}
                     {viewingItem.y_kien_tham_gia && (
                         <div>
-                            <h3 className="text-sm font-bold text-slate-700 uppercase mb-2">3. Ý kiến tham gia</h3>
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-700 whitespace-pre-wrap">
+                            <h3 className="text-[14pt] font-bold text-slate-700 uppercase mb-2">3. Ý kiến tham gia</h3>
+                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-[14pt] text-slate-700 whitespace-pre-wrap leading-relaxed">
                                 {viewingItem.y_kien_tham_gia}
                             </div>
                         </div>
@@ -474,7 +474,7 @@ const VerificationMinutes = () => {
                     </button>
                 </div>
 
-                <div className="max-w-[210mm] mx-auto leading-relaxed">
+                <div className="max-w-[210mm] mx-auto leading-relaxed text-[14pt]">
                     <div className="text-center font-bold mb-6">
                         <p className="uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
                         <p className="font-bold underline mb-4">Độc lập – Tự do – Hạnh phúc</p>
@@ -575,7 +575,7 @@ const VerificationMinutes = () => {
                                         ma_baocao_scyk: sc?.so_bc_ma_scyk
                                     });
                                 }}
-                                className="w-full border border-blue-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full border border-blue-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-blue-500 bg-white font-medium"
                             >
                                 <option value="">-- Chọn sự cố y khoa để lập biên bản --</option>
                                 {incidents.map(inc => (
@@ -598,7 +598,7 @@ const VerificationMinutes = () => {
                                 type="datetime-local"
                                 value={formData.thoi_gian_bat_dau}
                                 onChange={(e) => setFormData({ ...formData, thoi_gian_bat_dau: e.target.value })}
-                                className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
                             />
                         </div>
                         <div className="space-y-1">
@@ -608,7 +608,7 @@ const VerificationMinutes = () => {
                                 placeholder="VD: Phòng họp Khoa Hồi sức tích cực..."
                                 value={formData.dia_diem}
                                 onChange={(e) => setFormData({ ...formData, dia_diem: e.target.value })}
-                                className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500"
+                                className="w-full border border-slate-300 rounded-lg p-2.5 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
                             />
                         </div>
                     </div>
@@ -709,7 +709,7 @@ const VerificationMinutes = () => {
                             <label className="text-sm font-bold text-slate-700 uppercase">1. Nội dung xác minh</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-500"
+                                className="w-full border border-slate-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
                                 value={formData.noi_dung_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, noi_dung_xac_minh: e.target.value })}
                                 placeholder="Tiến hành xác minh về việc..."
@@ -719,7 +719,7 @@ const VerificationMinutes = () => {
                             <label className="text-sm font-bold text-slate-700 uppercase text-red-600">2. Kết quả xác minh (Quan trọng)</label>
                             <textarea
                                 rows={10}
-                                className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-500 font-medium"
+                                className="w-full border border-slate-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
                                 value={formData.ket_qua_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, ket_qua_xac_minh: e.target.value })}
                                 placeholder="Ghi chi tiết kết quả xác minh..."
@@ -729,7 +729,7 @@ const VerificationMinutes = () => {
                             <label className="text-sm font-bold text-slate-700 uppercase">3. Ý kiến tham gia</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-500"
+                                className="w-full border border-slate-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
                                 value={formData.y_kien_tham_gia}
                                 onChange={(e) => setFormData({ ...formData, y_kien_tham_gia: e.target.value })}
                                 placeholder="Ý kiến của các thành viên khác (nếu có)..."
@@ -771,13 +771,13 @@ const VerificationMinutes = () => {
                     </div>
                 ) : (
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                        <thead className="bg-[#009900] text-white font-bold uppercase text-xs">
                             <tr>
                                 <th className="px-6 py-4">Mã SCYK</th>
                                 <th className="px-6 py-4">Thời gian / Địa điểm</th>
                                 <th className="px-6 py-4">Chủ trì đoàn</th>
                                 <th className="px-6 py-4">Nội dung xác minh</th>
-                                <th className="px-6 py-4">Báo cáo</th>
+                                <th className="px-6 py-4 w-28">Báo cáo</th>
                                 <th className="px-6 py-4 text-right">Thao tác</th>
                             </tr>
                         </thead>
@@ -831,16 +831,16 @@ const VerificationMinutes = () => {
                                                 </button>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => handleView(item)} className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Xem chi tiết">
-                                                    <Eye size={18} />
+                                        <td className="px-6 py-4 text-right w-44">
+                                            <div className="grid grid-cols-2 gap-1.5">
+                                                <button onClick={() => handleView(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all border border-green-200 shadow-sm">
+                                                    <Eye size={12} /> Xem
                                                 </button>
-                                                <button onClick={() => handleEdit(item)} className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Chỉnh sửa">
-                                                    <Edit2 size={18} />
+                                                <button onClick={() => handleEdit(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm">
+                                                    <Edit2 size={12} /> Sửa
                                                 </button>
-                                                <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa">
-                                                    <Trash2 size={18} />
+                                                <button onClick={() => handleDelete(item.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm col-span-2">
+                                                    <Trash2 size={12} /> Xóa biên bản
                                                 </button>
                                             </div>
                                         </td>

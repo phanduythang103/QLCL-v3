@@ -69,3 +69,13 @@ export interface SupervisionChecklist {
   lastChecked: string;
   complianceRate: number;
 }
+
+export interface BcCqy {
+  id?: string;
+  ngay_bao_cao: string;
+  noi_dung_bao_cao: string;
+  noi_xay_ra: string;
+  thoi_gian_xay_ra: string;
+  noi_dung_ket_luan: string;
+  created_at?: string;
+}

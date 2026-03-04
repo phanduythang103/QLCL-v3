@@ -426,8 +426,8 @@ export const Supervision: React.FC = () => {
                   <div key={schedule.id} className="p-4 hover:bg-slate-50 transition-colors group">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded-lg flex-shrink-0 ${schedule.trang_thai === 'Đã hoàn thành' ? 'bg-green-50 text-green-600' :
-                          schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-50 text-blue-600' :
-                            'bg-slate-50 text-slate-600'
+                        schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-50 text-blue-600' :
+                          'bg-slate-50 text-slate-600'
                         }`}>
                         <CheckSquare size={18} />
                       </div>
@@ -445,9 +445,9 @@ export const Supervision: React.FC = () => {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <span className={`px-2 py-0.5 rounded text-xs font-bold ${schedule.trang_thai === 'Đã hoàn thành' ? 'bg-green-100 text-green-700' :
-                            schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
-                              schedule.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
-                                'bg-slate-100 text-slate-700'
+                          schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
+                            schedule.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
+                              'bg-slate-100 text-slate-700'
                           }`}>
                           {schedule.trang_thai || 'Chưa thực hiện'}
                         </span>
@@ -484,9 +484,9 @@ export const Supervision: React.FC = () => {
                         {schedule.dv_duoc_gs || 'Chưa xác định'} - {schedule.nhan_vien_gs || 'Chưa phân công'}
                       </p>
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${schedule.trang_thai === 'Đã hoàn thành' || schedule.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' :
-                          schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
-                            schedule.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
-                              'bg-slate-100 text-slate-700'
+                        schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
+                          schedule.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
+                            'bg-slate-100 text-slate-700'
                         }`}>
                         {schedule.trang_thai || 'Chưa thực hiện'}
                       </span>
@@ -562,17 +562,17 @@ export const Supervision: React.FC = () => {
                           <td className="p-3">
                             <div>
                               <span className={`px-2 py-0.5 rounded text-xs font-bold ${schedule.trang_thai === 'Đã hoàn thành' ? 'bg-green-100 text-green-700' :
-                                  schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
-                                    schedule.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
-                                      'bg-slate-100 text-slate-700'
+                                schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
+                                  schedule.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
+                                    'bg-slate-100 text-slate-700'
                                 }`}>
                                 {schedule.trang_thai || 'Chưa thực hiện'}
                               </span>
                             </div>
                           </td>
                           {isAdmin && (
-                            <td className="p-3 text-right">
-                              <div className="flex justify-end gap-2">
+                            <td className="p-3 text-right w-44">
+                              <div className="grid grid-cols-2 gap-1.5 justify-end">
                                 <button
                                   onClick={() => {
                                     setEditingSchedule(schedule);
@@ -585,8 +585,9 @@ export const Supervision: React.FC = () => {
                                       trang_thai: schedule.trang_thai || 'Chưa thực hiện'
                                     });
                                   }}
-                                  className="text-blue-600 hover:bg-blue-50 p-1 rounded">
-                                  <Edit2 size={14} />
+                                  className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm"
+                                  title="Sửa">
+                                  <Edit2 size={12} /> Sửa
                                 </button>
                                 <button
                                   onClick={async () => {
@@ -599,8 +600,9 @@ export const Supervision: React.FC = () => {
                                       }
                                     }
                                   }}
-                                  className="text-red-600 hover:bg-red-50 p-1 rounded">
-                                  <Trash2 size={14} />
+                                  className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm"
+                                  title="Xóa">
+                                  <Trash2 size={12} /> Xóa
                                 </button>
                               </div>
                             </td>
