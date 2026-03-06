@@ -643,7 +643,9 @@ const QualityAssessmentView = () => {
   const [donViDuocDanhGia, setDonViDuocDanhGia] = useState("");
 
   // Filters
-  const [filterNhom, setFilterNhom] = useState("");
+  const [filterNhom, setFilterNhom] = useState<string[]>([]);
+  const [nhomDropdownOpen, setNhomDropdownOpen] = useState(false);
+  const nhomDropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Exanded Groups
   const [expandedPhan, setExpandedPhan] = useState<string | null>(null);
@@ -695,13 +697,34 @@ const QualityAssessmentView = () => {
     return [...new Set(splitNhoms)].sort();
   }, [criteriaList]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (nhomDropdownRef.current && !nhomDropdownRef.current.contains(e.target as Node)) {
+        setNhomDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleNhom = (nhom: string) => {
+    setFilterNhom(prev =>
+      prev.includes(nhom) ? prev.filter(n => n !== nhom) : [...prev, nhom]
+    );
+    // Reset expanded when filter changes
+    setExpandedPhan(null);
+    setExpandedChuong(null);
+    setExpandedTieuChi(null);
+  };
+
   // Hierarchical Data Structure
   const groupedData = useMemo(() => {
-    if (!filterNhom) return {};
+    if (filterNhom.length === 0) return {};
 
-    // 1. Filter by nhom
+    // 1. Filter by nhom (match any selected nhom)
     const filtered = criteriaList.filter(item =>
-      item.nhom && item.nhom.toLowerCase().includes(filterNhom.toLowerCase())
+      item.nhom && filterNhom.some(fn => item.nhom!.split(',').map(s => s.trim()).includes(fn))
     );
 
     // 2. Build Hierarchy
@@ -892,7 +915,9 @@ const QualityAssessmentView = () => {
       setNgayDanhGia(sheet.ngay_danh_gia);
       setNguoiDanhGia(sheet.nguoi_danh_gia);
       setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
-      setFilterNhom(sheet.nhom || "");
+      // Parse saved nhom string back to array
+      const savedNhom = sheet.nhom || "";
+      setFilterNhom(savedNhom ? savedNhom.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
       setViewMode('FORM');
     } catch (err) {
       console.error(err);
@@ -933,13 +958,17 @@ const QualityAssessmentView = () => {
     setResults({});
     setDonViDuocDanhGia("");
     setNguoiDanhGia(user?.full_name || "");
-    setFilterNhom("");
+    setFilterNhom([]);
     setViewMode('FORM');
   };
 
   const handleSaveAssessment = async () => {
     if (!nguoiDanhGia || !donViDuocDanhGia) {
       alert("Vui lòng nhập đầy đủ thông tin: Người đánh giá và Đơn vị được đánh giá.");
+      return;
+    }
+    if (filterNhom.length === 0) {
+      alert("Vui lòng chọn ít nhất một nhóm phụ trách.");
       return;
     }
 
@@ -968,7 +997,7 @@ const QualityAssessmentView = () => {
                 tieu_chi: item.tieu_chi, // Ensure tieu_chi is saved
                 ma_tieu_muc: item.ma_tieu_muc!,
                 tieu_muc: item.tieu_muc,
-                nhom: item.nhom,
+                nhom: filterNhom.join(', '),
                 dat: res.dat,
                 khong_dat: res.khong_dat,
                 khong_danh_gia: res.khong_danh_gia,
@@ -1048,9 +1077,13 @@ const QualityAssessmentView = () => {
                         <span className="font-bold text-slate-700">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-1.5">
                           <span className="font-bold text-slate-800">{sheet.don_vi_duoc_danh_gia}</span>
-                          <span className="text-[10px] text-primary-600 font-bold uppercase">Nhóm: {sheet.nhom}</span>
+                          <div className="flex flex-wrap gap-1">
+                            {(sheet.nhom || '').split(',').map((n: string) => n.trim()).filter(Boolean).map((n: string) => (
+                              <span key={n} className="inline-block px-1.5 py-0.5 bg-primary-50 text-primary-700 border border-primary-200 rounded text-[9px] font-bold uppercase">{n}</span>
+                            ))}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -1112,7 +1145,11 @@ const QualityAssessmentView = () => {
                   </div>
                 </div>
                 <div className="flex justify-between items-center bg-slate-50 p-2 rounded-xl">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Nhóm {sheet.nhom}</span>
+                  <div className="flex flex-wrap gap-1">
+                    {(sheet.nhom || '').split(',').map((n: string) => n.trim()).filter(Boolean).map((n: string) => (
+                      <span key={n} className="inline-block px-1.5 py-0.5 bg-primary-50 text-primary-700 border border-primary-200 rounded text-[9px] font-bold uppercase">{n}</span>
+                    ))}
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-primary-600 border border-slate-200 rounded-lg shadow-sm">
                       <Eye size={14} /> <span className="text-[10px] font-bold">Xem</span>
@@ -1211,25 +1248,59 @@ const QualityAssessmentView = () => {
           <div className="flex items-center gap-4 w-full md:w-auto font-bold">
             <div className="flex items-center gap-2">
               <Filter size={16} className="text-slate-400" />
-              <span className="text-sm text-slate-600">Lọc theo Nhóm phụ trách:</span>
+              <span className="text-sm text-slate-600">Nhóm phụ trách:</span>
             </div>
-            <select
-              value={filterNhom}
-              onChange={(e) => {
-                setFilterNhom(e.target.value);
-                setExpandedPhan(null);
-                setExpandedChuong(null);
-                setExpandedTieuChi(null);
-              }}
-              className="flex-1 md:w-64 px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 bg-white font-bold"
-            >
-              <option value="">-- Chọn nhóm để bắt đầu --</option>
-              {uniqueNhom.map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
+            {/* Multi-select Nhom Dropdown */}
+            <div className="relative flex-1 md:w-72" ref={nhomDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setNhomDropdownOpen(prev => !prev)}
+                className="w-full flex items-center justify-between px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white font-bold hover:border-primary-300 focus:ring-2 focus:ring-primary-500/20 transition-colors"
+              >
+                <span className={filterNhom.length === 0 ? 'text-slate-400' : 'text-slate-700'}>
+                  {filterNhom.length === 0
+                    ? '-- Chọn nhóm để bắt đầu --'
+                    : filterNhom.join(', ')}
+                </span>
+                <ChevronDown size={16} className={`text-slate-400 transition-transform ${nhomDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {nhomDropdownOpen && (
+                <div className="absolute z-50 top-full mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+                  <div className="p-2 border-b border-slate-100 flex justify-between items-center">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Chọn một hoặc nhiều nhóm</span>
+                    {filterNhom.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => { setFilterNhom([]); setExpandedPhan(null); setExpandedChuong(null); setExpandedTieuChi(null); }}
+                        className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-1"
+                      >
+                        <XCircle size={12} /> Bỏ chọn tất cả
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-56 overflow-y-auto p-1">
+                    {uniqueNhom.map(n => (
+                      <label
+                        key={n}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-primary-50 cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filterNhom.includes(n)}
+                          onChange={() => toggleNhom(n)}
+                          className="w-4 h-4 accent-primary-600 rounded"
+                        />
+                        <span className="text-sm font-bold text-slate-700">{n}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {filterNhom && (
+        {filterNhom.length > 0 && (
           <div className="px-6 py-3 bg-white border-b border-slate-100 flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase font-bold text-slate-400">Thống kê lọc:</span>
@@ -1279,7 +1350,7 @@ const QualityAssessmentView = () => {
 
         {/* Hierarchical UI */}
         <div className="p-4 space-y-4">
-          {!filterNhom ? (
+          {filterNhom.length === 0 ? (
             <div className="py-20 text-center text-slate-400 flex flex-col items-center gap-3">
               <LayoutGrid size={48} className="opacity-20" />
               <p className="italic font-medium">Vui lòng chọn Nhóm đơn vị phụ trách để bắt đầu chấm điểm</p>
