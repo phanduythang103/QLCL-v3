@@ -33,8 +33,8 @@ export const NotificationDashboard: React.FC = () => {
         <>
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
                 <div className="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                        <Bell className="text-primary-600" size={18} />
+                    <h3 className="text-label font-black text-black uppercase flex items-center gap-2">
+                        <Bell className="text-[#009900]" size={18} />
                         Thông báo mới nhất
                     </h3>
                 </div>
@@ -46,17 +46,17 @@ export const NotificationDashboard: React.FC = () => {
                             className="p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
                         >
                             <div className="flex justify-between items-start mb-1">
-                                <span className="text-[10px] font-bold text-primary-600 uppercase tracking-widest">
+                                <span className="text-table font-black text-[#009900] uppercase tracking-widest">
                                     {noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : 'Mới'}
                                 </span>
                                 {noti.file_dinh_kem && (
                                     <Paperclip size={12} className="text-slate-300 group-hover:text-primary-500" />
                                 )}
                             </div>
-                            <p className="text-sm font-bold text-slate-800 group-hover:text-primary-700 transition-colors line-clamp-2 mb-1">
+                            <p className="text-table font-black text-black group-hover:text-[#009900] transition-colors line-clamp-2 mb-1 uppercase">
                                 {noti.noi_dung}
                             </p>
-                            <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
+                            <div className="flex items-center gap-2 text-table font-bold text-black/40 uppercase">
                                 <Calendar size={12} />
                                 <span>{noti.ngay_bat_dau ? new Date(noti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}</span>
                                 <ChevronRight size={8} />
@@ -68,7 +68,7 @@ export const NotificationDashboard: React.FC = () => {
                 <div className="p-3 bg-slate-50 text-center border-t border-slate-100">
                     <button
                         onClick={() => navigateToModule(ModuleType.SETTINGS, 'NOTI')}
-                        className="text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors flex items-center justify-center gap-1 w-full"
+                        className="text-table font-black text-[#009900] hover:underline transition-colors flex items-center justify-center gap-1 w-full uppercase"
                     >
                         Xem tất cả thông báo <ChevronRight size={14} />
                     </button>
@@ -90,27 +90,27 @@ export const NotificationDashboard: React.FC = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-lg font-black text-slate-800">{selectedNoti.nguoi_tao_name}</p>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
+                                    <p className="text-label font-black text-black uppercase">{selectedNoti.nguoi_tao_name}</p>
+                                    <p className="text-table font-black text-black/40 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="p-8 space-y-6">
                             <div className="space-y-4">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                <label className="flex items-center gap-2 text-table font-black text-black/40 uppercase tracking-[0.2em]">
                                     <FileText size={14} /> Nội dung thông báo
                                 </label>
-                                <p className="text-base font-bold text-slate-700 leading-relaxed bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                                <p className="text-section font-black text-black uppercase leading-relaxed bg-slate-50 p-5 rounded-3xl border border-slate-100">
                                     {selectedNoti.noi_dung}
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hiệu lực</p>
-                                    <p className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                                        <Calendar size={14} className="text-primary-600" />
+                                    <p className="text-table font-black text-black/40 uppercase tracking-widest mb-1">Hiệu lực</p>
+                                    <p className="text-table font-black text-black uppercase flex items-center gap-1.5">
+                                        <Calendar size={14} className="text-[#009900]" />
                                         {selectedNoti.ngay_bat_dau ? new Date(selectedNoti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'} - {selectedNoti.ngay_ket_thuc ? new Date(selectedNoti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}
                                     </p>
                                 </div>
@@ -123,18 +123,18 @@ export const NotificationDashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                             <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-table font-black text-black/40 uppercase tracking-[0.2em]">
                                     <Building size={14} /> Đơn vị áp dụng
                                 </label>
                                 <div className="flex flex-wrap gap-1.5">
                                     {selectedNoti.don_vi_thuc_hien?.map((u, i) => (
-                                        <span key={i} className="px-3 py-1 bg-primary-50 text-primary-600 text-[10px] font-black rounded-full border border-primary-100">
+                                        <span key={i} className="px-3 py-1 bg-green-50 text-[#009900] text-table font-black uppercase rounded-full border border-green-100">
                                             {u}
                                         </span>
                                     ))}
                                     {(!selectedNoti.don_vi_thuc_hien || selectedNoti.don_vi_thuc_hien.length === 0) && (
-                                        <span className="text-xs text-slate-400 italic font-medium">Tất cả các đơn vị.</span>
+                                        <span className="text-table text-black/40 italic font-black uppercase">Tất cả các đơn vị.</span>
                                     )}
                                 </div>
                             </div>
@@ -145,7 +145,7 @@ export const NotificationDashboard: React.FC = () => {
                                         href={selectedNoti.file_dinh_kem}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary-600 text-white rounded-2xl font-black hover:bg-primary-700 transition-all shadow-xl shadow-primary-900/10 active:scale-95"
+                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#009900] text-white rounded-2xl text-input font-black uppercase hover:bg-[#0d6e39] transition-all shadow-xl shadow-green-900/10 active:scale-95"
                                     >
                                         <Eye size={20} />
                                         Xem tài liệu đính kèm

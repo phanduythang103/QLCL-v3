@@ -3,7 +3,7 @@ import { Plus, Search, Edit2, Trash2, Save, X, AlertCircle } from 'lucide-react'
 import { fetchCoQuanBanHanh, addCoQuanBanHanh, updateCoQuanBanHanh, deleteCoQuanBanHanh } from '../../readCoQuanBanHanh';
 
 interface Authority {
-    id: number;
+    id: string;
     ten_co_quan: string;
     mo_ta?: string;
 }
@@ -12,7 +12,7 @@ const AuthorityTable = () => {
     const [authorities, setAuthorities] = useState<Authority[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({ ten_co_quan: '', mo_ta: '' });
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -88,7 +88,7 @@ const AuthorityTable = () => {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: string) => {
         if (!window.confirm('Bạn có chắc chắn muốn xóa cơ quan này?')) return;
 
         try {
@@ -114,12 +114,12 @@ const AuthorityTable = () => {
                         placeholder="Tìm kiếm cơ quan ban hành..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                     />
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#009900] text-white rounded-lg text-input font-black hover:bg-[#0d6e39] transition-colors shadow-sm uppercase"
                 >
                     <Plus size={16} /> Thêm mới
                 </button>
@@ -128,7 +128,7 @@ const AuthorityTable = () => {
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                        <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest border-b border-[#0d6e39] h-12">
                             <tr>
                                 <th className="px-6 py-4 w-16 text-center">STT</th>
                                 <th className="px-6 py-4">Tên cơ quan ban hành</th>
@@ -149,8 +149,8 @@ const AuthorityTable = () => {
                             ) : (
                                 filteredData.map((item, index) => (
                                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-center text-slate-500">{index + 1}</td>
-                                        <td className="px-6 py-4 font-medium text-slate-700">{item.ten_co_quan}</td>
+                                        <td className="px-6 py-4 text-center text-black/40 font-bold text-table">{index + 1}</td>
+                                        <td className="px-6 py-4 font-black text-black text-table uppercase">{item.ten_co_quan}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex justify-center gap-2">
                                                 <button
@@ -182,7 +182,7 @@ const AuthorityTable = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <h3 className="font-bold text-slate-800">{editingId ? 'Cập nhật cơ quan' : 'Thêm cơ quan mới'}</h3>
+                             <h3 className="text-label font-black text-black uppercase">{editingId ? 'Cập nhật cơ quan' : 'Thêm cơ quan mới'}</h3>
                             <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 transition-colors">
                                 <X size={20} />
                             </button>
@@ -197,12 +197,12 @@ const AuthorityTable = () => {
                             )}
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tên cơ quan ban hành *</label>
+                                 <label className="block text-label font-bold text-black mb-1 uppercase">Tên cơ quan ban hành *</label>
                                 <input
                                     type="text"
                                     value={formData.ten_co_quan}
                                     onChange={(e) => setFormData({ ...formData, ten_co_quan: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                                     placeholder="Nhập tên cơ quan..."
                                     autoFocus
                                 />
@@ -212,14 +212,14 @@ const AuthorityTable = () => {
                         <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
                             <button
                                 onClick={handleCloseModal}
-                                className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors"
+                                 className="px-4 py-2 text-black hover:bg-slate-200 rounded-lg text-input font-black transition-colors uppercase"
                             >
                                 Hủy
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                 className="px-4 py-2 bg-[#009900] text-white rounded-lg text-input font-black hover:bg-[#0d6e39] transition-colors disabled:opacity-50 flex items-center gap-2 uppercase shadow-md"
                             >
                                 {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={16} />}
                                 {saving ? 'Đang lưu...' : 'Lưu'}

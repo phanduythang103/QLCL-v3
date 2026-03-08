@@ -4,11 +4,11 @@ import { fetchChiSoQlcl, ChiSoQlcl } from '../readChiSoQlcl';
 
 const ChartBar = ({ label, value, max, color, target, donVi }: { label: string, value: number, max: number, color: string, target?: number, donVi?: string }) => (
   <div className="mb-4 group">
-    <div className="flex justify-between text-sm mb-1.5">
-      <span className="text-slate-700 font-medium group-hover:text-primary-700 transition-colors">{label}</span>
+    <div className="flex justify-between text-label mb-1.5">
+      <span className="text-black font-black uppercase group-hover:text-[#009900] transition-colors">{label}</span>
       <div className="flex items-center gap-2">
-        {target && <span className="text-xs text-slate-400">Mục tiêu: {target}{donVi || '%'}</span>}
-        <span className={`font-bold ${target && value < target ? 'text-red-600' : 'text-slate-900'
+        {target && <span className="text-table text-black/60 font-bold">Mục tiêu: {target}{donVi || '%'}</span>}
+        <span className={`text-input font-black ${target && value < target ? 'text-red-600' : 'text-black'
           }`}>{value}{donVi || '%'}</span>
       </div>
     </div>
@@ -65,7 +65,7 @@ export const IndicatorsModule: React.FC = () => {
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5 focus:ring-primary-500 focus:border-primary-500"
+            className="bg-white border border-slate-200 text-black text-input font-bold rounded-lg p-2.5 focus:ring-green-500 focus:border-green-500"
           >
             <option value="06/2024">Tháng 6/2024</option>
             <option value="05/2024">Tháng 5/2024</option>
@@ -81,7 +81,7 @@ export const IndicatorsModule: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
-            <h3 className="font-bold text-slate-800 flex items-center">
+            <h3 className="text-section font-black text-black flex items-center uppercase">
               <BarChart2 className="w-5 h-5 mr-2 text-indigo-600" />
               Chỉ số Chuyên môn & An toàn
             </h3>
@@ -109,7 +109,7 @@ export const IndicatorsModule: React.FC = () => {
 
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
-            <h3 className="font-bold text-slate-800 flex items-center">
+            <h3 className="text-section font-black text-black flex items-center uppercase">
               <TrendingUp className="w-5 h-5 mr-2 text-pink-600" />
               Chỉ số Hài lòng & Quản lý
             </h3>
@@ -141,8 +141,8 @@ export const IndicatorsModule: React.FC = () => {
           <div className="bg-red-50 border border-red-100 rounded-lg p-4 flex items-start gap-3">
             <TrendingDown className="w-5 h-5 text-red-600 mt-0.5" />
             <div>
-              <h4 className="font-bold text-red-800 text-sm">Cảnh báo chỉ số</h4>
-              <p className="text-xs text-red-600 mt-1">
+              <h4 className="font-black text-red-800 text-label uppercase">Cảnh báo chỉ số</h4>
+              <p className="text-table text-red-600 font-bold mt-1">
                 {warningIndicators[0].ten_chi_so}: {warningIndicators[0].gia_tri}{warningIndicators[0].don_vi_tinh}
                 {warningIndicators[0].muc_tieu ? ` (Mục tiêu: ${warningIndicators[0].muc_tieu}${warningIndicators[0].don_vi_tinh})` : ''}
               </p>
@@ -152,8 +152,8 @@ export const IndicatorsModule: React.FC = () => {
         <div className={`bg-primary-50 border border-primary-100 rounded-lg p-4 flex items-start gap-3 ${warningIndicators.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
           <AlertCircle className="w-5 h-5 text-primary-600 mt-0.5" />
           <div>
-            <h4 className="font-bold text-primary-800 text-sm">Tổng quan</h4>
-            <p className="text-xs text-primary-600 mt-1">
+            <h4 className="font-black text-primary-800 text-label uppercase">Tổng quan</h4>
+            <p className="text-table text-primary-600 font-bold mt-1">
               Đã đạt {achievedCount}/{totalIndicators} chỉ số ({Math.round(achievedCount / totalIndicators * 100)}%).
               {warningIndicators.length > 0 ? ` Có ${warningIndicators.length} chỉ số cần cải thiện.` : ' Tất cả chỉ số đang trong tầm kiểm soát.'}
             </p>

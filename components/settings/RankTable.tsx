@@ -92,7 +92,7 @@ export default function RankTable() {
             {showForm && (
                 <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-semibold text-slate-800">{editingId ? 'Sửa cấp bậc' : 'Thêm cấp bậc mới'}</h4>
+                        <h4 className="text-label font-black text-black uppercase">{editingId ? 'Sửa cấp bậc' : 'Thêm cấp bậc mới'}</h4>
                         <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
                     </div>
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,35 +102,35 @@ export default function RankTable() {
                                 placeholder="Tên cấp bậc *"
                                 value={form.ten_cap_bac}
                                 onChange={e => setForm(f => ({ ...f, ten_cap_bac: e.target.value }))}
-                                className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+                                className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
                             />
                             <input
                                 type="number"
                                 placeholder="Thứ tự"
                                 value={form.thu_tu}
                                 onChange={e => setForm(f => ({ ...f, thu_tu: parseInt(e.target.value) || 0 }))}
-                                className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+                                className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
                             />
                         </div>
                         <div className="flex gap-2">
-                            <button type="submit" className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
+                            <button type="submit" className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
                                 <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
                             </button>
-                            <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Hủy</button>
+                            <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-input font-black text-black hover:bg-slate-50 uppercase">Hủy</button>
                         </div>
                     </form>
                 </div>
             )}
 
             {!showForm && (
-                <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
+                <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
                     <Plus size={16} /> Thêm cấp bậc
                 </button>
             )}
 
             <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-primary-600 text-white font-bold uppercase text-xs">
+                    <thead className="bg-[#009900] text-white font-black uppercase text-table h-12">
                         <tr>
                             <th className="px-4 py-3 w-12 text-center">#</th>
                             <th className="px-4 py-3">Tên cấp bậc</th>
@@ -145,7 +145,7 @@ export default function RankTable() {
                             items.map((item, idx) => (
                                 <tr key={item.id} className="hover:bg-slate-50">
                                     <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
-                                    <td className="px-4 py-3 text-slate-700 font-medium">{item.ten_cap_bac}</td>
+                                    <td className="px-4 py-3 text-black font-black text-table uppercase">{item.ten_cap_bac}</td>
                                     <td className="px-4 py-3 text-center text-slate-600">{item.thu_tu || '-'}</td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-end gap-1">

@@ -7,8 +7,11 @@ import {
 import { fetchBcCqy, addBcCqy, updateBcCqy, deleteBcCqy } from '../readBcCqy';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import { BcCqy } from '../types';
-
+import { useAuth } from '../contexts/AuthContext';
 export default function BcCqyList() {
+    const { user } = useAuth();
+    const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
+    const uDept = user?.department?.trim().toLowerCase() || '';
     const [items, setItems] = useState<BcCqy[]>([]);
     const [depts, setDepts] = useState<DmDonVi[]>([]);
     const [loading, setLoading] = useState(true);
@@ -198,10 +201,16 @@ export default function BcCqyList() {
         document.body.removeChild(link);
     };
 
-    const filteredItems = items.filter(item =>
-        item.noi_dung_bao_cao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.noi_xay_ra.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredItems = items.filter(item => {
+        const matchesSearch = item.noi_dung_bao_cao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             item.noi_xay_ra.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        if (isAdmin || !uDept) return matchesSearch;
+        
+        const iDept = (item.noi_xay_ra || '').trim().toLowerCase();
+        const matchesUnit = iDept !== '' && (uDept === iDept || iDept.includes(uDept) || uDept.includes(iDept));
+        return matchesSearch && matchesUnit;
+    });
 
     if (viewMode === 'FORM') {
         return (
@@ -419,50 +428,59 @@ export default function BcCqyList() {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredItems.map(item => (
-                                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-700">
-                                            {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : 'N/A'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">
-                                            {item.noi_dung_bao_cao}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">
-                                            {item.noi_xay_ra}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">
-                                            {item.thoi_gian_xay_ra}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleExportWord(item)}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 hover:bg-blue-50 rounded-lg transition-colors font-bold text-sm border border-blue-100"
-                                                >
-                                                    <Download size={16} /> Xuất Word
-                                                </button>
-                                                <button
-                                                    onClick={() => { setEditingItem(item); setViewMode('VIEW'); }}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors font-bold text-sm border border-emerald-100"
-                                                >
-                                                    <Eye size={16} /> Xem
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEdit(item)}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-bold text-sm border border-blue-100"
-                                                >
-                                                    <Edit2 size={16} /> Sửa
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(item.id!)}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-bold text-sm border border-red-100"
-                                                >
-                                                    <Trash2 size={16} /> Xóa
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                filteredItems.map(item => {
+                                    const iDept = (item.noi_xay_ra || '').trim().toLowerCase();
+                                    const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept || iDept.includes(uDept) || uDept.includes(iDept)));
+
+                                    return (
+                                        <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-700">
+                                                {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : 'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">
+                                                {item.noi_dung_bao_cao}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">
+                                                {item.noi_xay_ra}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">
+                                                {item.thoi_gian_xay_ra}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleExportWord(item)}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 hover:bg-blue-50 rounded-lg transition-colors font-bold text-sm border border-blue-100"
+                                                    >
+                                                        <Download size={16} /> Xuất Word
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setEditingItem(item); setViewMode('VIEW'); }}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors font-bold text-sm border border-emerald-100"
+                                                    >
+                                                        <Eye size={16} /> Xem
+                                                    </button>
+                                                    {isOwnUnit && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleEdit(item)}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-bold text-sm border border-blue-100"
+                                                            >
+                                                                <Edit2 size={16} /> Sửa
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(item.id!)}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-bold text-sm border border-red-100"
+                                                            >
+                                                                <Trash2 size={16} /> Xóa
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -470,46 +488,55 @@ export default function BcCqyList() {
 
                 {/* Mobile View */}
                 <div className="md:hidden divide-y divide-slate-100">
-                    {filteredItems.map(item => (
-                        <div key={item.id} className="p-4 space-y-3">
-                            <div className="flex justify-between items-start">
-                                <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded">
-                                    {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : 'N/A'}
-                                </span>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleExportWord(item)}
-                                        className="flex items-center gap-1 px-2 py-1 text-blue-600 bg-blue-50 rounded text-xs font-bold"
-                                    >
-                                        <Download size={14} /> Xuất
-                                    </button>
-                                    <button
-                                        onClick={() => { setEditingItem(item); setViewMode('VIEW'); }}
-                                        className="flex items-center gap-1 px-2 py-1 text-emerald-600 bg-emerald-50 rounded text-xs font-bold"
-                                    >
-                                        <Eye size={14} /> Xem
-                                    </button>
-                                    <button
-                                        onClick={() => handleEdit(item)}
-                                        className="flex items-center gap-1 px-2 py-1 text-blue-600 bg-blue-50 rounded text-xs font-bold"
-                                    >
-                                        <Edit2 size={14} /> Sửa
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(item.id!)}
-                                        className="flex items-center gap-1 px-2 py-1 text-red-600 bg-red-50 rounded text-xs font-bold"
-                                    >
-                                        <Trash2 size={14} /> Xóa
-                                    </button>
+                    {filteredItems.map(item => {
+                        const iDept = (item.noi_xay_ra || '').trim().toLowerCase();
+                        const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept || iDept.includes(uDept) || uDept.includes(iDept)));
+
+                        return (
+                            <div key={item.id} className="p-4 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                                        {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : 'N/A'}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleExportWord(item)}
+                                            className="flex items-center gap-1 px-2 py-1 text-blue-600 bg-blue-50 rounded text-xs font-bold"
+                                        >
+                                            <Download size={14} /> Xuất
+                                        </button>
+                                        <button
+                                            onClick={() => { setEditingItem(item); setViewMode('VIEW'); }}
+                                            className="flex items-center gap-1 px-2 py-1 text-emerald-600 bg-emerald-50 rounded text-xs font-bold"
+                                        >
+                                            <Eye size={14} /> Xem
+                                        </button>
+                                        {isOwnUnit && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleEdit(item)}
+                                                    className="flex items-center gap-1 px-2 py-1 text-blue-600 bg-blue-50 rounded text-xs font-bold"
+                                                >
+                                                    <Edit2 size={14} /> Sửa
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(item.id!)}
+                                                    className="flex items-center gap-1 px-2 py-1 text-red-600 bg-red-50 rounded text-xs font-bold"
+                                                >
+                                                    <Trash2 size={14} /> Xóa
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-sm font-bold text-slate-800 line-clamp-2">{item.noi_dung_bao_cao}</p>
+                                <div className="flex items-center gap-4 text-xs text-slate-500">
+                                    <span className="flex items-center gap-1"><MapPin size={12} /> {item.noi_xay_ra}</span>
+                                    <span className="flex items-center gap-1"><Clock size={12} /> {item.thoi_gian_xay_ra}</span>
                                 </div>
                             </div>
-                            <p className="text-sm font-bold text-slate-800 line-clamp-2">{item.noi_dung_bao_cao}</p>
-                            <div className="flex items-center gap-4 text-xs text-slate-500">
-                                <span className="flex items-center gap-1"><MapPin size={12} /> {item.noi_xay_ra}</span>
-                                <span className="flex items-center gap-1"><Clock size={12} /> {item.thoi_gian_xay_ra}</span>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

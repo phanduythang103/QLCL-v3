@@ -195,13 +195,13 @@ export const Supervision: React.FC = () => {
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex gap-3 items-start">
               <Syringe className="text-blue-600 mt-1" size={20} />
               <div>
-                <h4 className="font-bold text-blue-800 text-sm">Ghi nhận sự kiện công khai thuốc</h4>
-                <p className="text-xs text-blue-600 mt-1">Hệ thống yêu cầu nhập liệu ngay tại thời điểm thực hiện công khai thuốc cho người bệnh/người nhà.</p>
+                <h4 className="text-label font-black text-black uppercase">Ghi nhận sự kiện công khai thuốc</h4>
+                <p className="text-table font-black text-black/40 mt-1 uppercase">Hệ thống yêu cầu nhập liệu ngay tại thời điểm thực hiện công khai thuốc cho người bệnh/người nhà.</p>
               </div>
             </div>
             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
-              <span className="font-semibold text-slate-700">Lịch sử nhập liệu gần đây</span>
-              <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 flex items-center gap-2 shadow-sm">
+              <span className="text-label font-black text-black uppercase line-clamp-1">Lịch sử nhập liệu gần đây</span>
+              <button className="bg-[#009900] text-white px-4 py-2 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all">
                 <Plus size={16} /> Nhập liệu Ca mới
               </button>
             </div>
@@ -216,19 +216,19 @@ export const Supervision: React.FC = () => {
                     <th className="p-3">Điều dưỡng thực hiện</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 font-black text-black uppercase">
                   <tr>
-                    <td className="p-3">12/06 08:30</td>
+                    <td className="p-3 text-black/40">12/06 08:30</td>
                     <td className="p-3 font-mono">BN-10293</td>
                     <td className="p-3">Kháng sinh Ceftriaxon 1g</td>
-                    <td className="p-3 text-center"><CheckSquare className="inline text-green-600" size={16} /></td>
+                    <td className="p-3 text-center"><CheckSquare className="inline text-[#009900]" size={16} /></td>
                     <td className="p-3">Nguyễn Thị C</td>
                   </tr>
                   <tr>
-                    <td className="p-3">12/06 09:15</td>
+                    <td className="p-3 text-black/40">12/06 09:15</td>
                     <td className="p-3 font-mono">BN-10294</td>
                     <td className="p-3">Paracetamol Kabi</td>
-                    <td className="p-3 text-center"><CheckSquare className="inline text-green-600" size={16} /></td>
+                    <td className="p-3 text-center"><CheckSquare className="inline text-[#009900]" size={16} /></td>
                     <td className="p-3">Nguyễn Thị C</td>
                   </tr>
                 </tbody>
@@ -241,21 +241,21 @@ export const Supervision: React.FC = () => {
           <div className="space-y-4">
             <div className="flex gap-4 mb-4">
               <div className="flex-1 bg-green-50 p-3 rounded border border-green-100 text-center">
-                <div className="text-xs text-green-600 uppercase font-bold">Sign In</div>
-                <div className="font-bold text-green-800 text-lg">100%</div>
+                <div className="text-table text-black/40 uppercase font-black">Sign In</div>
+                <div className="font-black text-[#009900] text-section">100%</div>
               </div>
               <div className="flex-1 bg-amber-50 p-3 rounded border border-amber-100 text-center">
-                <div className="text-xs text-amber-600 uppercase font-bold">Time Out</div>
-                <div className="font-bold text-amber-800 text-lg">98%</div>
+                <div className="text-table text-black/40 uppercase font-black">Time Out</div>
+                <div className="font-black text-amber-600 text-section">98%</div>
               </div>
               <div className="flex-1 bg-blue-50 p-3 rounded border border-blue-100 text-center">
-                <div className="text-xs text-blue-600 uppercase font-bold">Sign Out</div>
-                <div className="font-bold text-blue-800 text-lg">100%</div>
+                <div className="text-table text-black/40 uppercase font-black">Sign Out</div>
+                <div className="font-black text-blue-600 text-section">100%</div>
               </div>
             </div>
             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
-              <span className="font-semibold text-slate-700">Danh sách các ca phẫu thuật cần giám sát</span>
-              <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 flex items-center gap-2 shadow-sm">
+              <span className="text-label font-black text-black uppercase">Danh sách các ca phẫu thuật cần giám sát</span>
+              <button className="bg-[#009900] text-white px-4 py-2 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all">
                 <Stethoscope size={16} /> Checklist An toàn PT
               </button>
             </div>
@@ -298,8 +298,8 @@ export const Supervision: React.FC = () => {
         return (
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
-              <span className="font-semibold text-slate-700">Phiếu kiểm tra hiện có</span>
-              <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 flex items-center gap-2 shadow-sm">
+              <span className="text-label font-black text-black uppercase">Phiếu kiểm tra hiện có</span>
+              <button className="bg-[#009900] text-white px-4 py-2 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all">
                 <PlayCircle size={16} /> Thực hiện giám sát mới
               </button>
             </div>
@@ -315,12 +315,12 @@ export const Supervision: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  <tr className="border-t border-slate-100">
-                    <td className="p-3 font-mono text-xs">PK-001</td>
-                    <td className="p-3">12/06/2024</td>
+                  <tr className="border-t border-slate-100 font-black text-black">
+                    <td className="p-3 font-mono text-black/40">PK-001</td>
+                    <td className="p-3 text-black/40">12/06/2024</td>
                     <td className="p-3">Nguyễn Văn A</td>
                     <td className="p-3">Khoa Nội</td>
-                    <td className="p-3 text-right"><span className="text-green-600 font-bold">Đạt (95%)</span></td>
+                    <td className="p-3 text-right"><span className="text-[#009900] font-black uppercase">Đạt (95%)</span></td>
                   </tr>
                   <tr className="border-t border-slate-100">
                     <td className="p-3 font-mono text-xs">PK-002</td>
@@ -360,8 +360,8 @@ export const Supervision: React.FC = () => {
                 {supervisionTypes.find(t => t.id === category)?.icon}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-800">{supervisionTypes.find(t => t.id === category)?.title}</h3>
-                <p className="text-slate-500">{supervisionTypes.find(t => t.id === category)?.desc}</p>
+                <h3 className="text-title font-black text-black uppercase">{supervisionTypes.find(t => t.id === category)?.title}</h3>
+                <p className="text-table font-black text-black/40 uppercase tracking-widest">{supervisionTypes.find(t => t.id === category)?.desc}</p>
               </div>
             </div>
 
@@ -381,10 +381,10 @@ export const Supervision: React.FC = () => {
                     {item.icon}
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-base group-hover:text-primary-700 leading-tight mb-1">{item.title}</h3>
+                    <h3 className="text-label font-black text-black uppercase group-hover:text-[#009900] border-b-2 border-transparent group-hover:border-[#009900] transition-all pb-1">{item.title}</h3>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-auto pl-1 border-l-2 border-slate-100">{item.desc}</p>
+                <p className="text-table font-bold text-black/40 mt-auto pl-1 border-l-2 border-slate-100 uppercase uppercase-tracking-widest">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -396,8 +396,8 @@ export const Supervision: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-slate-200 animate-in slide-in-from-bottom-4 fade-in duration-500">
           {/* Left: Recent Activities List */}
           <div className="lg:col-span-2 space-y-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2 flex-wrap">
-              <ClipboardCheck size={20} className="text-primary-600" />
+            <h3 className="text-label font-black text-black uppercase flex items-center gap-2 flex-wrap">
+              <ClipboardCheck size={20} className="text-[#009900]" />
               Hoạt động gần đây
               <select
                 value={activityFilter}
@@ -432,13 +432,13 @@ export const Supervision: React.FC = () => {
                         <CheckSquare size={18} />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-slate-800 text-sm mb-1">
-                          Đã thêm lịch giám sát mới: <span className="text-primary-600">{schedule.nd_giam_sat || 'Giám sát chung'}</span>
+                        <p className="text-table font-black text-black uppercase leading-relaxed">
+                          Đã thêm lịch giám sát mới: <span className="text-[#009900]">{schedule.nd_giam_sat || 'Giám sát chung'}</span>
                         </p>
-                        <p className="text-xs text-slate-500 mb-1">
-                          Người thực hiện: <span className="font-medium">{schedule.nhan_vien_gs || 'Chưa phân công'}</span> tại đơn vị <span className="font-medium">{schedule.dv_duoc_gs || 'Chưa xác định'}</span>
+                        <p className="text-table font-black text-black/40 uppercase mb-1">
+                          Người thực hiện: <span className="text-black">{schedule.nhan_vien_gs || 'Chưa phân công'}</span> tại <span className="text-black">{schedule.dv_duoc_gs || 'Chưa xác định'}</span>
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <div className="flex items-center gap-2 text-table font-bold text-black/40 uppercase">
                           <FolderClock size={11} />
                           {schedule.created_at ? new Date(schedule.created_at).toLocaleDateString('vi-VN') : 'Mới đây'}
                         </div>
@@ -461,8 +461,8 @@ export const Supervision: React.FC = () => {
 
           {/* Right: Schedule */}
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Calendar size={20} className="text-primary-600" />
+            <h3 className="text-label font-black text-black uppercase flex items-center gap-2">
+              <Calendar size={20} className="text-[#009900]" />
               Lịch giám sát tuần này
             </h3>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
@@ -476,12 +476,12 @@ export const Supervision: React.FC = () => {
                   return (
                     <li key={schedule.id} className={`${idx < schedules.length - 1 ? 'mb-6' : ''} ml-4`}>
                       <div className={`absolute w-3 h-3 ${idx === 0 ? 'bg-primary-500' : 'bg-slate-200'} rounded-full mt-1.5 -left-1.5 border border-white`}></div>
-                      <time className="mb-1 text-xs font-normal text-slate-400">
+                      <time className="mb-1 text-table font-black text-black/40 uppercase tracking-widest block">
                         {formatDate(schedule.tu_ngay || '')} - {formatDate(schedule.den_ngay || '')}
                       </time>
-                      <h3 className="text-sm font-semibold text-slate-900">{schedule.nd_giam_sat || 'Giám sát chung'}</h3>
-                      <p className="text-xs text-slate-500">
-                        {schedule.dv_duoc_gs || 'Chưa xác định'} - {schedule.nhan_vien_gs || 'Chưa phân công'}
+                      <h3 className="text-table font-black text-black uppercase">{schedule.nd_giam_sat || 'Giám sát chung'}</h3>
+                      <p className="text-table font-bold text-black/40 uppercase">
+                        {schedule.dv_duoc_gs || 'Chưa xác định'} | {schedule.nhan_vien_gs || 'Chưa phân công'}
                       </p>
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${schedule.trang_thai === 'Đã hoàn thành' || schedule.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' :
                         schedule.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
@@ -496,7 +496,7 @@ export const Supervision: React.FC = () => {
               </ol>
               <button
                 onClick={() => setShowScheduleModal(true)}
-                className="w-full mt-4 py-2 border border-primary-200 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors">
+                className="w-full mt-4 py-2 bg-slate-50 border border-slate-200 text-black rounded-lg text-table font-black uppercase hover:bg-slate-100 transition-all active:scale-95">
                 Xem toàn bộ lịch
               </button>
             </div>
@@ -508,10 +508,10 @@ export const Supervision: React.FC = () => {
       {showScheduleModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-800">Lịch giám sát</h2>
-              <button onClick={() => setShowScheduleModal(false)} className="text-slate-400 hover:text-slate-600">
-                <X size={24} />
+            <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-label font-black text-black uppercase">Lịch giám sát</h2>
+              <button onClick={() => setShowScheduleModal(false)} className="p-1 px-4 py-2 bg-white text-black/40 hover:text-red-500 border border-slate-200 rounded-lg text-table font-black uppercase transition-all active:scale-95 flex items-center gap-1">
+                Đóng
               </button>
             </div>
 
@@ -530,15 +530,15 @@ export const Supervision: React.FC = () => {
                         trang_thai: 'Chưa thực hiện'
                       });
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#009900] text-white rounded-xl text-input font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all">
                     <Plus size={16} /> Thêm lịch mới
                   </button>
                 </div>
               )}
 
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-primary-600 text-white font-bold uppercase text-xs">
+                <table className="w-full text-table uppercase">
+                  <thead className="bg-[#009900] text-white font-black uppercase text-table">
                     <tr>
                       <th className="p-3 text-left">Từ ngày</th>
                       <th className="p-3 text-left">Đến ngày</th>
@@ -553,9 +553,9 @@ export const Supervision: React.FC = () => {
                     {schedules.map((schedule) => {
                       const autoStatus = getAutoStatus(schedule.tu_ngay || '', schedule.den_ngay || '');
                       return (
-                        <tr key={schedule.id} className="hover:bg-slate-50">
-                          <td className="p-3">{formatDate(schedule.tu_ngay || '')}</td>
-                          <td className="p-3">{formatDate(schedule.den_ngay || '')}</td>
+                        <tr key={schedule.id} className="hover:bg-slate-50 font-black text-black">
+                          <td className="p-3 text-black/40">{formatDate(schedule.tu_ngay || '')}</td>
+                          <td className="p-3 text-black/40">{formatDate(schedule.den_ngay || '')}</td>
                           <td className="p-3">{schedule.nd_giam_sat || '---'}</td>
                           <td className="p-3">{schedule.nhan_vien_gs || '---'}</td>
                           <td className="p-3">{schedule.dv_duoc_gs || '---'}</td>
@@ -612,7 +612,7 @@ export const Supervision: React.FC = () => {
                     })}
                     {schedules.length === 0 && (
                       <tr>
-                        <td colSpan={isAdmin ? 7 : 6} className="p-8 text-center text-slate-400 italic">
+                        <td colSpan={isAdmin ? 7 : 6} className="p-8 text-center text-black/40 italic uppercase text-table font-black">
                           Chưa có lịch giám sát nào
                         </td>
                       </tr>
@@ -621,59 +621,59 @@ export const Supervision: React.FC = () => {
                 </table>
               </div>
 
-              {/* Form thêm/sửa (chỉ hiển thị khi admin đang edit) */}
-              {isAdmin && (editingSchedule !== null || scheduleForm.nd_giam_sat) && (
-                <div className="mt-6 p-6 bg-slate-50 rounded-lg border border-slate-200">
-                  <h3 className="font-bold text-slate-800 mb-4">
+              {/* Form thêm/sửa (chỉ hiển thị khi admin đang edit hoặc tạo mới) */}
+              {isAdmin && (editingSchedule !== null || scheduleForm.nd_giam_sat !== '' || scheduleForm.tu_ngay !== '') && (
+                <div className="mt-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                  <h3 className="text-label font-black text-black uppercase mb-4">
                     {editingSchedule ? 'Chỉnh sửa lịch' : 'Thêm lịch mới'}
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Từ ngày</label>
+                      <label className="block text-label font-bold text-black uppercase mb-1">Từ ngày</label>
                       <input
                         type="date"
                         value={scheduleForm.tu_ngay}
                         onChange={(e) => setScheduleForm({ ...scheduleForm, tu_ngay: e.target.value })}
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                        className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Đến ngày</label>
+                      <label className="block text-label font-bold text-black uppercase mb-1">Đến ngày</label>
                       <input
                         type="date"
                         value={scheduleForm.den_ngay}
                         onChange={(e) => setScheduleForm({ ...scheduleForm, den_ngay: e.target.value })}
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                        className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black"
                       />
                     </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Nội dung giám sát</label>
+                    <div className="md:col-span-2">
+                      <label className="block text-label font-bold text-black uppercase mb-1">Nội dung giám sát</label>
                       <input
                         type="text"
                         value={scheduleForm.nd_giam_sat}
                         onChange={(e) => setScheduleForm({ ...scheduleForm, nd_giam_sat: e.target.value })}
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                        className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black"
                         placeholder="VD: Giám sát vệ sinh tay"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Nhân viên giám sát</label>
+                      <label className="block text-label font-bold text-black uppercase mb-1">Nhân viên giám sát</label>
                       <select
                         value={scheduleForm.nhan_vien_gs}
                         onChange={(e) => setScheduleForm({ ...scheduleForm, nhan_vien_gs: e.target.value })}
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                        className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                         <option value="">-- Chọn nhân viên --</option>
-                        {usersList.map(user => (
-                          <option key={user.id} value={user.full_name}>{user.full_name}</option>
+                        {usersList.map(userItem => (
+                          <option key={userItem.id} value={userItem.full_name}>{userItem.full_name}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Đơn vị được giám sát</label>
+                      <label className="block text-label font-bold text-black uppercase mb-1">Đơn vị được giám sát</label>
                       <select
                         value={scheduleForm.dv_duoc_gs}
                         onChange={(e) => setScheduleForm({ ...scheduleForm, dv_duoc_gs: e.target.value })}
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                        className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                         <option value="">-- Chọn đơn vị --</option>
                         {donViList.map(dv => (
                           <option key={dv.id} value={`${dv.ma_don_vi} - ${dv.ten_don_vi}`}>
@@ -682,19 +682,20 @@ export const Supervision: React.FC = () => {
                         ))}
                       </select>
                     </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Trạng thái</label>
+                    <div className="md:col-span-2">
+                      <label className="block text-label font-bold text-black uppercase mb-1">Trạng thái</label>
                       <select
                         value={scheduleForm.trang_thai}
                         onChange={(e) => setScheduleForm({ ...scheduleForm, trang_thai: e.target.value })}
-                        className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                        className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                         <option value="Chưa thực hiện">Chưa thực hiện</option>
                         <option value="Đang thực hiện">Đang thực hiện</option>
                         <option value="Đã hoàn thành">Đã hoàn thành</option>
+                        <option value="Quá hạn">Quá hạn</option>
                       </select>
                     </div>
                   </div>
-                  <div className="flex justify-end gap-2 mt-4">
+                  <div className="flex justify-end gap-3 mt-6">
                     <button
                       onClick={() => {
                         setEditingSchedule(null);
@@ -707,7 +708,7 @@ export const Supervision: React.FC = () => {
                           trang_thai: 'Chưa thực hiện'
                         });
                       }}
-                      className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">
+                      className="px-6 py-2 border border-slate-300 text-black rounded-lg text-table font-black uppercase hover:bg-white active:scale-95 transition-all">
                       Hủy
                     </button>
                     <button
@@ -716,7 +717,6 @@ export const Supervision: React.FC = () => {
                           if (editingSchedule) {
                             await updateLichGiamSat(editingSchedule.id!, scheduleForm);
                           } else {
-                            // Thêm nguoi_tao khi tạo lịch mới
                             await addLichGiamSat({
                               ...scheduleForm,
                               nguoi_tao: user?.full_name || user?.username || 'Hệ thống'
@@ -736,8 +736,8 @@ export const Supervision: React.FC = () => {
                           alert('Lỗi khi lưu: ' + (err as Error).message);
                         }
                       }}
-                      className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
-                      {editingSchedule ? 'Cập nhật' : 'Thêm mới'}
+                      className="px-6 py-2 bg-[#009900] text-white rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] active:scale-95 transition-all shadow-xl shadow-green-900/10">
+                      {editingSchedule ? 'Cập nhật' : 'Lưu lịch'}
                     </button>
                   </div>
                 </div>

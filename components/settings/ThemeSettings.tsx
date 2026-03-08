@@ -205,36 +205,36 @@ export default function ThemeSettings() {
                 {/* Left Column - Form */}
                 <div className="space-y-6">
                     <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                        <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <ImageIcon size={20} className="text-primary-600" />
+                        <h3 className="text-label font-black text-black uppercase mb-4 flex items-center gap-2">
+                            <ImageIcon size={20} className="text-[#009900]" />
                             Thông tin giao diện
                         </h3>
 
                         <div className="space-y-4">
                             {/* Tiêu đề chính */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                <label className="block text-label font-bold text-black mb-2 uppercase">
                                     Tiêu đề chính <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={tieuDeChinh}
                                     onChange={(e) => setTieuDeChinh(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                     placeholder="VD: Quản lý Chất lượng Bệnh viện"
                                 />
                             </div>
 
                             {/* Tiêu đề phụ */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                <label className="block text-label font-bold text-black mb-2 uppercase">
                                     Tiêu đề phụ
                                 </label>
                                 <input
                                     type="text"
                                     value={tieuDePhu}
                                     onChange={(e) => setTieuDePhu(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                     placeholder="VD: Đăng nhập"
                                 />
                             </div>
@@ -242,7 +242,7 @@ export default function ThemeSettings() {
                             {/* Cỡ chữ */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-label font-bold text-black mb-2 uppercase">
                                         Cỡ chữ chính ({coChuChinh}px)
                                     </label>
                                     <input
@@ -252,11 +252,11 @@ export default function ThemeSettings() {
                                         step="2"
                                         value={coChuChinh}
                                         onChange={(e) => setCoChuChinh(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#009900]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-label font-bold text-black mb-2 uppercase">
                                         Cỡ chữ phụ ({coChuPhu}px)
                                     </label>
                                     <input
@@ -266,17 +266,17 @@ export default function ThemeSettings() {
                                         step="1"
                                         value={coChuPhu}
                                         onChange={(e) => setCoChuPhu(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#009900]"
                                     />
                                 </div>
                             </div>
 
                             {/* Upload ảnh */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                <label className="block text-label font-bold text-black mb-2 uppercase">
                                     Ảnh nền đăng nhập
                                 </label>
-                                <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors">
+                                <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors bg-white">
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -308,12 +308,12 @@ export default function ThemeSettings() {
                     <button
                         onClick={handleSave}
                         disabled={saving || uploading || !tieuDeChinh}
-                        className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-[#009900] text-white py-3 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-xl shadow-green-900/20 active:scale-95"
                     >
                         {saving || uploading ? (
                             <>
                                 <Loader className="animate-spin" size={20} />
-                                {uploading ? 'Đang upload ảnh...' : 'Đang lưu...'}
+                                {uploading ? 'Đang upload...' : 'Đang lưu...'}
                             </>
                         ) : (
                             <>

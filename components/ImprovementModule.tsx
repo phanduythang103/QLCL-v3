@@ -13,10 +13,12 @@ import {
 import { saveAs } from 'file-saver';
 import { fetchKeHoachCaiTien, addKeHoachCaiTien, updateKeHoachCaiTien, deleteKeHoachCaiTien, KeHoachCaiTien } from '../readKeHoachCaiTien';
 import { fetchKhctcl, addKhctcl, updateKhctcl, deleteKhctcl, Khctcl, GiaiPhapToChuc } from '../readKhctcl';
+import { fetchBaoCaoTienDoCtcl, addBaoCaoTienDoCtcl, updateBaoCaoTienDoCtcl, deleteBaoCaoTienDoCtcl, BaoCaoTienDoCtcl } from '../readBaoCaoTienDoCtcl';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionsContext';
 
-type ViewState = 'LIST' | 'CREATE_PLAN' | 'CREATE_REPORT' | 'KHCTCL_FORM' | 'VIEW_PLAN';
+type ViewState = 'LIST' | 'CREATE_PLAN' | 'CREATE_REPORT' | 'VIEW_REPORT' | 'KHCTCL_FORM' | 'VIEW_PLAN';
 
 // Define props interface for ImprovementCard to ensure key and other React props are handled correctly
 interface ImprovementCardProps {
@@ -62,9 +64,20 @@ export const ImprovementModule: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [khctclPlans, setKhctclPlans] = useState<Khctcl[]>([]);
+  const [baoCaoReports, setBaoCaoReports] = useState<BaoCaoTienDoCtcl[]>([]);
   const [editingKhctcl, setEditingKhctcl] = useState<Khctcl | null>(null);
+  const [editingBaoCao, setEditingBaoCao] = useState<BaoCaoTienDoCtcl | null>(null);
   const [statusPopup, setStatusPopup] = useState<Khctcl | null>(null);
   const [activeMainTab, setActiveMainTab] = useState<'PLAN' | 'REPORT'>('PLAN');
+
+  const { canView } = usePermissions();
+
+  useEffect(() => {
+    // Set initial tab based on permissions
+    if (!canView('IMPROVEMENT', 'PLAN') && canView('IMPROVEMENT', 'REPORT')) {
+      setActiveMainTab('REPORT');
+    }
+  }, [canView]);
 
   const loadData = async () => {
     try {
@@ -74,7 +87,8 @@ export const ImprovementModule: React.FC = () => {
       // Fetch data independently to prevent one failure from blocking everything
       const results = await Promise.allSettled([
         fetchKeHoachCaiTien(),
-        fetchKhctcl()
+        fetchKhctcl(),
+        fetchBaoCaoTienDoCtcl()
       ]);
 
       if (results[0].status === 'fulfilled') {
@@ -90,6 +104,12 @@ export const ImprovementModule: React.FC = () => {
         setError(fetchError);
         console.error('KHCTCL Fetch Error:', results[1].reason);
       }
+
+      if (results[2].status === 'fulfilled') {
+        setBaoCaoReports(results[2].value);
+      } else {
+        console.error('Bao Cao Fetch Error:', results[2].reason);
+      }
     } catch (err: any) {
       setError('Lỗi hệ thống: ' + err.message);
     } finally {
@@ -103,12 +123,34 @@ export const ImprovementModule: React.FC = () => {
 
   const renderKhctclView = () => {
     if (activeMainTab === 'REPORT') {
-      return <KhctclReport plans={khctclPlans} />;
+      if (view === 'CREATE_REPORT' || view === 'VIEW_REPORT') {
+        // Handled by switch(view) below or similar
+      } else {
+        return (
+          <KhctclReport 
+            plans={khctclPlans} 
+            reports={baoCaoReports} 
+            onCreateReport={() => setView('CREATE_REPORT')}
+            onViewReport={(report) => { setEditingBaoCao(report); setView('VIEW_REPORT'); }}
+            onEditReport={(report) => { setEditingBaoCao(report); setView('CREATE_REPORT'); }}
+            onRefresh={loadData}
+          />
+        );
+      }
     }
 
     switch (view) {
       case 'CREATE_REPORT':
-        return <ReportForm onCancel={() => setView('LIST')} />;
+      case 'VIEW_REPORT':
+        return (
+          <BaoCaoTienDoForm 
+            plans={khctclPlans}
+            initialData={editingBaoCao}
+            isViewOnly={view === 'VIEW_REPORT'}
+            onCancel={() => { setView('LIST'); setEditingBaoCao(null); }}
+            onSaved={() => { setView('LIST'); setEditingBaoCao(null); loadData(); }}
+          />
+        );
       case 'VIEW_PLAN':
         return (
           <KhctclView 
@@ -148,26 +190,30 @@ export const ImprovementModule: React.FC = () => {
     <div className="space-y-6">
       {/* Top Navigation Tabs */}
       <div className="flex gap-4 p-1 bg-slate-100 rounded-2xl w-fit">
-        <button
-          onClick={() => setActiveMainTab('PLAN')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-            activeMainTab === 'PLAN' 
-            ? 'bg-white text-[#108545] shadow-lg' 
-            : 'text-slate-500 hover:bg-slate-200'
-          }`}
-        >
-          <FileText size={20} /> Kế hoạch CTCL
-        </button>
-        <button
-          onClick={() => setActiveMainTab('REPORT')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-            activeMainTab === 'REPORT' 
-            ? 'bg-white text-[#108545] shadow-lg' 
-            : 'text-slate-500 hover:bg-slate-200'
-          }`}
-        >
-          <BarChart3 size={20} /> Báo cáo tiến độ
-        </button>
+        {canView('IMPROVEMENT', 'PLAN') && (
+          <button
+            onClick={() => setActiveMainTab('PLAN')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+              activeMainTab === 'PLAN' 
+              ? 'bg-white text-[#108545] shadow-lg' 
+              : 'text-slate-500 hover:bg-slate-200'
+            }`}
+          >
+            <FileText size={20} /> Kế hoạch CTCL
+          </button>
+        )}
+        {canView('IMPROVEMENT', 'REPORT') && (
+          <button
+            onClick={() => setActiveMainTab('REPORT')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+              activeMainTab === 'REPORT' 
+              ? 'bg-white text-[#108545] shadow-lg' 
+              : 'text-slate-500 hover:bg-slate-200'
+            }`}
+          >
+            <BarChart3 size={20} /> Báo cáo tiến độ
+          </button>
+        )}
       </div>
 
       {renderKhctclView()}
@@ -182,7 +228,22 @@ export const ImprovementModule: React.FC = () => {
   );
 };
 
-const KhctclReport: React.FC<{ plans: Khctcl[] }> = ({ plans }) => {
+const KhctclReport: React.FC<{ 
+  plans: Khctcl[], 
+  reports: BaoCaoTienDoCtcl[], 
+  onCreateReport: () => void,
+  onViewReport: (report: BaoCaoTienDoCtcl) => void,
+  onEditReport: (report: BaoCaoTienDoCtcl) => void,
+  onRefresh: () => void
+}> = ({ plans, reports, onCreateReport, onViewReport, onEditReport, onRefresh }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Quản trị viên' || user?.role === 'admin';
+  
+  // Filter reports: admin sees all, others only see their unit's reports
+  const visibleReports = isAdmin 
+    ? reports 
+    : reports.filter(r => r.don_vi_bao_cao === user?.department);
+
   const stats = {
     total: plans.length,
     draft: plans.filter(p => p.trang_thai === 'Dự thảo').length,
@@ -213,24 +274,27 @@ const KhctclReport: React.FC<{ plans: Khctcl[] }> = ({ plans }) => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+      {/* Stats Summary - 1 row on desktop, 3+2 layout on mobile */}
+      <div className="grid grid-cols-6 md:grid-cols-5 gap-6">
+        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
           <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Tổng số</span>
           <span className="text-4xl font-black text-slate-800">{stats.total}</span>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
           <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Hoàn thành</span>
           <span className="text-4xl font-black text-emerald-600">{stats.completed}</span>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
           <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Đang làm</span>
           <span className="text-4xl font-black text-blue-600">{stats.ongoing}</span>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+        
+        {/* Mobile Row 2 (3 columns each for 2 items) */}
+        <div className="col-span-3 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
           <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Tạm dừng</span>
           <span className="text-4xl font-black text-amber-600">{stats.paused}</span>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+        <div className="col-span-3 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
           <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Dự thảo</span>
           <span className="text-4xl font-black text-slate-500">{stats.draft}</span>
         </div>
@@ -239,8 +303,89 @@ const KhctclReport: React.FC<{ plans: Khctcl[] }> = ({ plans }) => {
       {/* Detail List with Progress */}
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
         <div className="px-8 py-6 bg-[#009900] text-white flex justify-between items-center">
-          <h3 className="text-xl font-black">Theo dõi tiến độ chi tiết</h3>
-          <span className="text-sm bg-black/20 px-4 py-1 rounded-full font-bold">Cập nhật thời gian thực</span>
+          <div className="flex items-center gap-3">
+            <BarChart3 size={24} />
+            <h3 className="text-title text-white">Lịch sử báo cáo tiến độ</h3>
+          </div>
+          <button 
+            onClick={onCreateReport}
+            className="flex items-center gap-2 bg-white text-[#009900] px-6 py-2 rounded-xl font-black shadow-lg hover:shadow-xl transition-all active:scale-95"
+          >
+            <Plus size={20} /> Thêm báo cáo mới
+          </button>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {visibleReports.map((report) => (
+            <div key={report.id} className="p-8 hover:bg-slate-50 transition-colors group">
+              <div className="flex flex-col md:flex-row md:items-center gap-6">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase">
+                      {report.ky_bao_cao}
+                    </span>
+                    <span className="text-black text-table font-black">{report.don_vi_bao_cao}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-black text-table font-bold">Báo cáo ngày: {new Date(report.ngay_bao_cao).toLocaleDateString('vi-VN')}</span>
+                  </div>
+                  <h4 className="text-section font-bold text-slate-800">
+                    Kế hoạch: {(report as any).khctcl?.ten_van_de || 'N/A'}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div className="text-table">
+                      <p className="font-black text-black uppercase text-[10px] tracking-wider mb-1">Hạng mục đã hoàn thành:</p>
+                      <p className="text-black line-clamp-2 italic font-bold">{report.hang_muc_hoan_thanh || '...'}</p>
+                    </div>
+                    <div className="text-table">
+                      <p className="font-black text-black uppercase text-[10px] tracking-wider mb-1">Kết quả hiện tại:</p>
+                      <p className="text-black line-clamp-2 font-black">{report.ket_qua_hien_tai || report.muc_tieu_de_ra}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => onViewReport(report)}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all border border-slate-200"
+                    title="Xem chi tiết"
+                  >
+                    <Eye size={18} /> <span>Xem</span>
+                  </button>
+                  <button 
+                    onClick={() => onEditReport(report)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all border border-blue-200"
+                    title="Chỉnh sửa"
+                  >
+                    <Edit2 size={18} /> <span>Sửa</span>
+                  </button>
+                  <button 
+                    onClick={async () => {
+                      if (window.confirm('Bạn có chắc muốn xóa báo cáo này?')) {
+                        await deleteBaoCaoTienDoCtcl(report.id!);
+                        onRefresh();
+                      }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all border border-red-200"
+                    title="Xóa"
+                  >
+                    <Trash2 size={18} /> <span>Xóa</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {visibleReports.length === 0 && (
+            <div className="p-20 text-center text-slate-400 space-y-4">
+              <BarChart3 size={64} className="mx-auto opacity-20" />
+              <p className="font-bold text-lg">Chưa có báo cáo tiến độ nào</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Existing Progress Summary for all plans */}
+      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+        <div className="px-8 py-6 bg-slate-800 text-white flex justify-between items-center">
+          <h3 className="text-xl font-black">Tổng hợp tiến độ các kế hoạch</h3>
+          <span className="text-sm bg-white/10 px-4 py-1 rounded-full font-bold">Trạng thái hiện tại</span>
         </div>
         <div className="divide-y divide-slate-100">
           {plans.map((plan) => (
@@ -291,6 +436,11 @@ const KhctclReport: React.FC<{ plans: Khctcl[] }> = ({ plans }) => {
 // --- Sub-component: KHCTCL Formal View ---
 const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => void }> = ({ item, onBack, onEdit }) => {
   const [exporting, setExporting] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Quản trị viên' || user?.role === 'admin';
+  const uDeptView = user?.department?.trim().toLowerCase() || '';
+  const iDeptView = item.don_vi?.trim().toLowerCase() || '';
+  const canEditItem = isAdmin || (uDeptView !== '' && (uDeptView === iDeptView || iDeptView.includes(uDeptView) || uDeptView.includes(iDeptView)));
 
   const handleExportWord = async () => {
     try {
@@ -516,9 +666,11 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
             >
                <FileDown size={20} /> {exporting ? 'Đang chuẩn bị...' : 'Xuất file Word'}
             </button>
-            <button onClick={onEdit} className="flex items-center gap-2 px-6 py-3 bg-[#108545] text-white rounded-2xl hover:bg-[#0e723b] font-black transition-all shadow-xl shadow-emerald-200 active:scale-95">
-               Chỉnh sửa
-            </button>
+            {canEditItem && (
+              <button onClick={onEdit} className="flex items-center gap-2 px-6 py-3 bg-[#108545] text-white rounded-2xl hover:bg-[#0e723b] font-black transition-all shadow-xl shadow-emerald-200 active:scale-95">
+                 Chỉnh sửa
+              </button>
+            )}
           </div>
         </div>
 
@@ -721,6 +873,14 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
   onUpdateStatus,
   onRefresh 
 }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Quản trị viên' || user?.role === 'admin';
+  const canEdit = (item: Khctcl) => {
+    if (isAdmin) return true;
+    const userDept = user?.department?.trim().toLowerCase() || '';
+    const itemDept = item.don_vi?.trim().toLowerCase() || '';
+    return userDept !== '' && (userDept === itemDept || itemDept.includes(userDept) || userDept.includes(itemDept));
+  };
 
   const handleDeleteKhctcl = async (id: string) => {
     if (window.confirm('Bạn có chắc muốn xóa kế hoạch cải tiến này?')) {
@@ -782,7 +942,8 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-[#009900] text-white font-black uppercase text-[11px] tracking-widest">
               <tr>
@@ -794,9 +955,9 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr><td colSpan={5} className="px-8 py-20 text-center text-slate-400 font-bold">Đang tải dữ liệu...</td></tr>
+                <tr><td colSpan={4} className="px-8 py-20 text-center text-slate-400 font-bold">Đang tải dữ liệu...</td></tr>
               ) : khctclPlans.length === 0 ? (
-                <tr><td colSpan={5} className="px-8 py-20 text-center text-slate-400 italic font-bold">Chưa có kế hoạch cải tiến nào được lập.</td></tr>
+                <tr><td colSpan={4} className="px-8 py-20 text-center text-slate-400 italic font-bold">Chưa có kế hoạch cải tiến nào được lập.</td></tr>
               ) : khctclPlans.map((item) => (
                 <tr key={item.id} className="hover:bg-[#108545]/5 transition-colors group">
                   <td className="px-8 py-6 whitespace-nowrap font-black text-slate-500 text-[12pt]">
@@ -834,33 +995,118 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                       >
                         <Eye size={16} /> Xem
                       </button>
-                      <button 
-                        onClick={() => onUpdateStatus(item)} 
-                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-emerald-200/50" 
-                        title="Cập nhật trạng thái"
-                      >
-                        <RefreshCw size={16} /> Update
-                      </button>
-                      <button 
-                        onClick={() => onEditKhctcl(item)} 
-                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-blue-200/50" 
-                        title="Chỉnh sửa nội dung"
-                      >
-                        <Edit2 size={16} /> Sửa
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteKhctcl(item.id!)} 
-                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-red-200/50" 
-                        title="Xóa kế hoạch"
-                      >
-                        <Trash2 size={16} /> Xóa
-                      </button>
+                      {canEdit(item) && (
+                        <button 
+                          onClick={() => onUpdateStatus(item)} 
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-emerald-200/50" 
+                          title="Cập nhật trạng thái"
+                        >
+                          <RefreshCw size={16} /> Update
+                        </button>
+                      )}
+                      {canEdit(item) ? (
+                        <button 
+                          onClick={() => onEditKhctcl(item)} 
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-blue-200/50" 
+                          title="Chỉnh sửa nội dung"
+                        >
+                          <Edit2 size={16} /> Sửa
+                        </button>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-tight border border-slate-100 cursor-not-allowed" title="Không có quyền chỉnh sửa">
+                          <Edit2 size={16} /> Sửa
+                        </div>
+                      )}
+                      {canEdit(item) && (
+                        <button 
+                          onClick={() => handleDeleteKhctcl(item.id!)} 
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-red-200/50" 
+                          title="Xóa kế hoạch"
+                        >
+                          <Trash2 size={16} /> Xóa
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="p-10 text-center text-slate-400 font-bold">Đang tải dữ liệu...</div>
+          ) : khctclPlans.length === 0 ? (
+            <div className="p-10 text-center text-slate-400 italic font-bold">Chưa có kế hoạch cải tiến nào.</div>
+          ) : khctclPlans.map((item) => (
+            <div key={item.id} className="p-5 space-y-4 hover:bg-slate-50 transition-colors">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-1">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                    item.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' :
+                    item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
+                    item.trang_thai === 'Tạm dừng' ? 'bg-amber-100 text-amber-700' :
+                    'bg-slate-100 text-slate-600'
+                  }`}>
+                    {item.trang_thai}
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-[12px] font-black text-slate-600">{item.don_vi}</span>
+                    <span className="text-[10px] text-slate-400 font-bold">
+                      {new Date(item.ngay_lap_ke_hoach).toLocaleDateString('vi-VN')}
+                    </span>
+                  </div>
+                </div>
+                {(item.ngay_bat_dau || item.ngay_ket_thuc) && (
+                  <div className="text-right">
+                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Thời hạn</p>
+                    <p className="text-[10px] text-slate-500 font-bold">
+                      {item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '?'} - {item.ngay_ket_thuc ? new Date(item.ngay_ket_thuc).toLocaleDateString('vi-VN') : '?'}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <h4 className="font-black text-slate-800 text-[14pt] leading-snug line-clamp-3">
+                {item.ten_van_de}
+              </h4>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button 
+                  onClick={() => onViewKhctcl(item)} 
+                  className="flex items-center justify-center gap-2 px-3 py-3 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-tight border border-slate-200"
+                >
+                  <Eye size={14} /> Chi tiết
+                </button>
+                {canEdit(item) && (
+                  <button 
+                    onClick={() => onUpdateStatus(item)} 
+                    className="flex items-center justify-center gap-2 px-3 py-3 bg-emerald-50 text-emerald-700 rounded-xl font-black text-[10px] uppercase tracking-tight border border-emerald-200"
+                  >
+                    <RefreshCw size={14} /> Trạng thái
+                  </button>
+                )}
+                {canEdit(item) && (
+                  <button 
+                    onClick={() => onEditKhctcl(item)} 
+                    className="flex items-center justify-center gap-2 px-3 py-3 bg-blue-50 text-blue-700 rounded-xl font-black text-[10px] uppercase tracking-tight border border-blue-200"
+                  >
+                    <Edit2 size={14} /> Sửa
+                  </button>
+                )}
+                {canEdit(item) && (
+                  <button 
+                    onClick={() => handleDeleteKhctcl(item.id!)} 
+                    className="flex items-center justify-center gap-2 px-3 py-3 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-tight border border-red-200"
+                  >
+                    <Trash2 size={14} /> Xóa
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
         <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center font-bold text-[12pt] text-slate-500">
           <span>Tổng số: <span className="text-[#108545]">{khctclPlans.length}</span> kế hoạch</span>
@@ -1256,121 +1502,282 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
   );
 };
 
-// --- Sub-component: Report Form (Báo cáo) ---
-const ReportForm = ({ onCancel }: { onCancel: () => void }) => (
-  <div className="bg-white rounded-xl border border-slate-200 shadow-sm max-w-4xl mx-auto">
-    <div className="border-b border-slate-200 p-6 flex justify-between items-center sticky top-0 bg-white rounded-t-xl z-10">
-      <div className="flex items-center gap-3">
-        <button onClick={onCancel} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h2 className="text-lg font-bold text-slate-800">BÁO CÁO KẾT QUẢ CẢI TIẾN</h2>
-          <p className="text-xs text-slate-500">Đánh giá hiệu quả sau can thiệp (Check & Act)</p>
+// --- Sub-component: BaoCaoTienDoForm ---
+const BaoCaoTienDoForm = ({ plans, initialData, onCancel, onSaved, isViewOnly = false }: { 
+  plans: Khctcl[], 
+  initialData?: BaoCaoTienDoCtcl | null, 
+  onCancel: () => void, 
+  onSaved: () => void,
+  isViewOnly?: boolean
+}) => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  
+  // Filter plans that belong to the current user's department and are in progress
+  const filteredPlans = plans.filter(p => {
+    const pDept = p.don_vi?.trim().toLowerCase() || '';
+    const uDept = user?.department?.trim().toLowerCase() || '';
+    const pStatus = p.trang_thai?.trim() || '';
+    
+    if (!uDept) return false;
+
+    const isCorrectDept = pDept === uDept || pDept.includes(uDept) || uDept.includes(pDept);
+    const isInProgress = pStatus === 'Đang thực hiện' || pStatus === 'Dự thảo';
+    
+    return isCorrectDept && isInProgress;
+  });
+
+  const [formData, setFormData] = useState<Omit<BaoCaoTienDoCtcl, 'id' | 'created_at' | 'nguoi_tao_id'>>({
+    ngay_bao_cao: initialData?.ngay_bao_cao || new Date().toISOString().split('T')[0],
+    don_vi_bao_cao: initialData?.don_vi_bao_cao || user?.department || '',
+    nguoi_bao_cao: initialData?.nguoi_bao_cao || user?.full_name || '',
+    ky_bao_cao: initialData?.ky_bao_cao || '',
+    ke_hoach_id: initialData?.ke_hoach_id || '',
+    muc_tieu_de_ra: initialData?.muc_tieu_de_ra || '',
+    ket_qua_hien_tai: initialData?.ket_qua_hien_tai || '',
+    hang_muc_hoan_thanh: initialData?.hang_muc_hoan_thanh || '',
+    hang_muc_dang_thuc_hien: initialData?.hang_muc_dang_thuc_hien || '',
+    kho_khan: initialData?.kho_khan || '',
+    de_xuat: initialData?.de_xuat || ''
+  });
+
+  const handlePlanChange = (planId: string) => {
+    const selectedPlan = plans.find(p => p.id === planId);
+    setFormData(prev => ({
+      ...prev,
+      ke_hoach_id: planId,
+      muc_tieu_de_ra: selectedPlan ? selectedPlan.muc_tieu : prev.muc_tieu_de_ra
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!formData.ke_hoach_id || !formData.ky_bao_cao) {
+      alert('Vui lòng chọn kế hoạch và nhập kỳ báo cáo.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      if (initialData?.id) {
+        await updateBaoCaoTienDoCtcl(initialData.id, formData);
+      } else {
+        await addBaoCaoTienDoCtcl({
+          ...formData,
+          nguoi_tao_id: user?.id || ''
+        });
+      }
+      onSaved();
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-[#f8fafc] min-h-screen pb-20" style={{ fontFamily: '"Be Vietnam Pro", "Inter", system-ui, -apple-system, sans-serif' }}>
+      <div className="bg-white border-b border-slate-200 py-6 px-10 shadow-sm sticky top-0 z-50">
+        <div className="flex justify-between items-center max-w-none mx-auto">
+          <div className="flex items-center gap-6">
+            <button onClick={onCancel} className="p-3 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl border border-slate-200 transition-all">
+              <ArrowLeft size={24} />
+            </button>
+            <div>
+              <h2 className="text-title text-black uppercase tracking-tight">Báo cáo Tiến độ Cải tiến</h2>
+              <p className="text-blue-600 font-bold text-label tracking-wide">Cập nhật kết quả thực hiện định kỳ</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={onCancel} className="px-6 py-3 text-slate-600 font-bold hover:bg-slate-50 rounded-2xl transition-all">
+              {isViewOnly ? 'Đóng' : 'Hủy'}
+            </button>
+            {!isViewOnly && (
+              <button 
+                onClick={handleSave} 
+                disabled={loading}
+                className="px-10 py-3 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:shadow-xl hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+              >
+                <Save size={20} /> {loading ? 'Đang lưu...' : 'Lưu báo cáo'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex gap-2">
-        <button onClick={onCancel} className="px-4 py-2 text-slate-600 hover:bg-slate-50 font-medium text-sm rounded-lg">Hủy</button>
-        <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm shadow-sm">
-          <Save size={16} /> Nộp báo cáo
-        </button>
+
+      <div className="max-w-none mx-auto p-10 space-y-8 animate-in fade-in duration-500">
+        {/* Header Info */}
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-3">
+            <label className="text-label font-black text-black uppercase tracking-widest">Kế hoạch cải tiến</label>
+            <select
+              value={formData.ke_hoach_id}
+              disabled={isViewOnly}
+              onChange={e => handlePlanChange(e.target.value)}
+              className={`w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold text-black text-input outline-none transition-all ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              <option value="">-- Chọn kế hoạch của đơn vị --</option>
+              {filteredPlans.map(plan => (
+                <option key={plan.id} value={plan.id}>{plan.ten_van_de}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-3">
+            <label className="text-label font-black text-black uppercase tracking-widest">Ngày báo cáo</label>
+            <input
+              type="date"
+              value={formData.ngay_bao_cao}
+              disabled={isViewOnly}
+              onChange={e => setFormData({ ...formData, ngay_bao_cao: e.target.value })}
+              className={`w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold text-black text-input outline-none transition-all ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-label font-black text-black uppercase tracking-widest">Kỳ báo cáo</label>
+            <input
+              type="text"
+              placeholder="VD: Tháng 3/2024 hoặc Quý 1/2024"
+              value={formData.ky_bao_cao}
+              disabled={isViewOnly}
+              onChange={e => setFormData({ ...formData, ky_bao_cao: e.target.value })}
+              className={`w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold text-black text-input outline-none transition-all ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-label font-black text-black uppercase tracking-widest">Đơn vị báo cáo</label>
+            <input
+              type="text"
+              readOnly
+              value={formData.don_vi_bao_cao}
+              className="w-full px-5 py-4 bg-slate-100 border-none rounded-2xl font-bold text-black text-input outline-none"
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-label font-black text-black uppercase tracking-widest">Người báo cáo</label>
+            <input
+              type="text"
+              value={formData.nguoi_bao_cao}
+              disabled={isViewOnly}
+              onChange={e => setFormData({ ...formData, nguoi_bao_cao: e.target.value })}
+              className={`w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold text-black text-input outline-none transition-all ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+            />
+          </div>
+        </div>
+
+        {/* Status Content - Single Column Layout */}
+        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-12">
+          <div className="grid grid-cols-1 gap-12">
+            {/* 1. Mục tiêu đề ra */}
+            <div className="space-y-4">
+              <label className="text-section font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+                  <Target size={18} />
+                </div>
+                Mục tiêu đề ra
+              </label>
+              <textarea
+                rows={4}
+                value={formData.muc_tieu_de_ra}
+                disabled={isViewOnly}
+                onChange={e => setFormData({ ...formData, muc_tieu_de_ra: e.target.value })}
+                className={`w-full px-8 py-6 bg-slate-50 border-none rounded-3xl focus:bg-white focus:ring-4 focus:ring-blue-100 font-bold text-black text-input outline-none transition-all shadow-inner ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                placeholder="Nhập mục tiêu cụ thể..."
+              />
+            </div>
+
+            {/* 2. Kết quả hiện tại */}
+            <div className="space-y-4">
+              <label className="text-section font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                  <BarChart3 size={18} />
+                </div>
+                Kết quả hiện tại
+              </label>
+              <textarea
+                rows={4}
+                value={formData.ket_qua_hien_tai}
+                disabled={isViewOnly}
+                onChange={e => setFormData({ ...formData, ket_qua_hien_tai: e.target.value })}
+                className={`w-full px-8 py-6 bg-slate-50 border-none rounded-3xl focus:bg-white focus:ring-4 focus:ring-emerald-100 font-bold text-black text-input outline-none transition-all shadow-inner ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                placeholder="Nhập số liệu hoặc kết quả đạt được..."
+              />
+            </div>
+
+            {/* 3. Hạng mục đã hoàn thành */}
+            <div className="space-y-4">
+              <label className="text-section font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                  <CheckCircle2 size={18} />
+                </div>
+                Hạng mục đã hoàn thành
+              </label>
+              <textarea
+                rows={4}
+                value={formData.hang_muc_hoan_thanh}
+                disabled={isViewOnly}
+                onChange={e => setFormData({ ...formData, hang_muc_hoan_thanh: e.target.value })}
+                className={`w-full px-8 py-6 bg-slate-50 border-none rounded-3xl focus:bg-white focus:ring-4 focus:ring-indigo-100 font-bold text-black text-input outline-none transition-all shadow-inner ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                placeholder="Mô tả các công việc đã xong..."
+              />
+            </div>
+
+            {/* 4. Hạng mục đang thực hiện */}
+            <div className="space-y-4">
+              <label className="text-section font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-500 flex items-center justify-center">
+                  <RefreshCw size={18} />
+                </div>
+                Hạng mục đang thực hiện
+              </label>
+              <textarea
+                rows={4}
+                value={formData.hang_muc_dang_thuc_hien}
+                disabled={isViewOnly}
+                onChange={e => setFormData({ ...formData, hang_muc_dang_thuc_hien: e.target.value })}
+                className={`w-full px-8 py-6 bg-slate-50 border-none rounded-3xl focus:bg-white focus:ring-4 focus:ring-cyan-100 font-bold text-black text-input outline-none transition-all shadow-inner ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                placeholder="Mô tả các công việc đang triển khai..."
+              />
+            </div>
+
+            {/* 5. Khó khăn */}
+            <div className="space-y-4">
+              <label className="text-section font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center">
+                  <AlertCircle size={18} />
+                </div>
+                Khó khăn
+              </label>
+              <textarea
+                rows={4}
+                value={formData.kho_khan}
+                disabled={isViewOnly}
+                onChange={e => setFormData({ ...formData, kho_khan: e.target.value })}
+                className={`w-full px-8 py-6 bg-slate-50 border-none rounded-3xl focus:bg-white focus:ring-4 focus:ring-red-100 font-bold text-black text-input outline-none transition-all shadow-inner ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                placeholder="Các vướng mắc kỹ thuật, nhân sự, kinh phí..."
+              />
+            </div>
+
+            {/* 6. Đề xuất */}
+            <div className="space-y-4">
+              <label className="text-section font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
+                  <ArrowUpRight size={18} />
+                </div>
+                Đề xuất
+              </label>
+              <textarea
+                rows={4}
+                value={formData.de_xuat}
+                disabled={isViewOnly}
+                onChange={e => setFormData({ ...formData, de_xuat: e.target.value })}
+                className={`w-full px-8 py-6 bg-slate-50 border-none rounded-3xl focus:bg-white focus:ring-4 focus:ring-amber-100 font-bold text-black text-input outline-none transition-all shadow-inner ${isViewOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                placeholder="Kiến nghị nâng cấp, hỗ trợ, thay đổi quy trình..."
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  );
+};
 
-    <div className="p-8 space-y-8">
-      {/* 1. Project Selection */}
-      <section className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-        <label className="block text-sm font-bold text-slate-700 mb-2">Chọn đề tài/kế hoạch cần báo cáo</label>
-        <select className="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white">
-          <option>-- Chọn đề tài đang thực hiện --</option>
-          <option selected>Cải tiến quy trình cấp phát thuốc nội trú (Khoa Dược)</option>
-          <option>Giảm thời gian chờ tại Khoa Khám bệnh</option>
-        </select>
-      </section>
-
-      {/* 2. Implementation Results */}
-      <section>
-        <h3 className="text-sm font-bold text-slate-800 uppercase border-b border-slate-100 pb-2 mb-4 flex items-center">
-          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs mr-2">1</span>
-          Kết quả thực hiện (Check)
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Thời gian bắt đầu</label>
-            <input type="date" className="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50" value="2024-01-01" readOnly />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Thời gian kết thúc</label>
-            <input type="date" className="w-full p-2.5 border border-slate-300 rounded-lg text-sm" />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-slate-700 mb-2">So sánh chỉ số (Trước vs Sau)</label>
-          <div className="border border-slate-200 rounded-lg overflow-hidden">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-primary-600 text-white font-bold text-xs uppercase">
-                <tr>
-                  <th className="p-3 border-r border-primary-500">Chỉ số đo lường</th>
-                  <th className="p-3 border-r border-primary-500 w-32 text-white">Trước cải tiến</th>
-                  <th className="p-3 border-r border-primary-500 w-32 text-white">Sau cải tiến</th>
-                  <th className="p-3 w-32">Tỷ lệ thay đổi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                <tr>
-                  <td className="p-2"><input type="text" className="w-full border-none focus:ring-0 text-sm" placeholder="VD: Thời gian chờ trung bình" /></td>
-                  <td className="p-2 border-l border-slate-100"><input type="text" className="w-full border-none focus:ring-0 text-sm text-center font-medium" /></td>
-                  <td className="p-2 border-l border-slate-100"><input type="text" className="w-full border-none focus:ring-0 text-sm text-center font-bold text-green-700" /></td>
-                  <td className="p-2 border-l border-slate-100"><input type="text" className="w-full border-none focus:ring-0 text-sm text-center" placeholder="%" /></td>
-                </tr>
-                <tr>
-                  <td className="p-2"><input type="text" className="w-full border-none focus:ring-0 text-sm" placeholder="VD: Số sự cố y khoa" /></td>
-                  <td className="p-2 border-l border-slate-100"><input type="text" className="w-full border-none focus:ring-0 text-sm text-center font-medium" /></td>
-                  <td className="p-2 border-l border-slate-100"><input type="text" className="w-full border-none focus:ring-0 text-sm text-center font-bold text-green-700" /></td>
-                  <td className="p-2 border-l border-slate-100"><input type="text" className="w-full border-none focus:ring-0 text-sm text-center" placeholder="%" /></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Analysis & Evaluation */}
-      <section>
-        <h3 className="text-sm font-bold text-slate-800 uppercase border-b border-slate-100 pb-2 mb-4 flex items-center">
-          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs mr-2">2</span>
-          Đánh giá & Bài học kinh nghiệm (Act)
-        </h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Đánh giá chung về hiệu quả</label>
-            <textarea rows={3} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Đề án đã đạt được mục tiêu đề ra chưa? Những lợi ích mang lại là gì?"></textarea>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Những tồn tại/Khó khăn</label>
-            <textarea rows={2} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder=""></textarea>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Bài học kinh nghiệm & Hướng phát triển tiếp theo</label>
-            <textarea rows={3} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Cần duy trì hoạt động nào? Có mở rộng đề án không?"></textarea>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <input type="checkbox" id="standardize" className="rounded text-primary-600 focus:ring-primary-500" />
-            <label htmlFor="standardize" className="text-sm text-slate-700">Đề xuất chuẩn hóa thành quy trình thường quy (SOP)</label>
-          </div>
-        </div>
-      </section>
-
-      {/* Attachments */}
-      <section>
-        <label className="block text-sm font-medium text-slate-700 mb-2">Tài liệu minh chứng đính kèm</label>
-        <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer">
-          <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-          <p className="text-sm text-slate-500">Kéo thả file báo cáo chi tiết, hình ảnh, biểu đồ tại đây</p>
-          <p className="text-xs text-slate-400 mt-1">(Hỗ trợ: .doc, .pdf, .xlsx, .jpg)</p>
-        </div>
-      </section>
-    </div>
-  </div>
-);
+// Redundant ReportForm replaced by BaoCaoTienDoForm

@@ -15,6 +15,7 @@ import {
 import { fetchData83, addData83Bulk, updateData83, deleteData83, Data83 } from '../readData83';
 import { fetchDonVi, saveKqDanhGia83Bulk, uploadEvidenceImage, KqDanhGia83, DonVi, fetchAssessmentSheets, fetchKqByPhieuId, deletePhieuDanhGia, AssessmentSheet } from '../readKqDanhGia83';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 // --- Helper Functions ---
 
@@ -27,6 +28,7 @@ const naturalSort = (a: string, b: string) => {
 type AssessmentTab = 'CRITERIA_83' | 'BASIC' | 'QUALITY_ASSESSMENT';
 
 export const AssessmentModule: React.FC = () => {
+  const { canUpdate } = usePermissions();
   const [activeTab, setActiveTab] = useState<AssessmentTab>('CRITERIA_83');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,36 +116,38 @@ export const AssessmentModule: React.FC = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
         {/* Global Actions */}
-        <div className="flex flex-wrap gap-2">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept=".xlsx, .xls"
-            onChange={handleFileChange}
-          />
-          <button
-            onClick={handleDownloadTemplate}
-            className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors"
-          >
-            <Download size={16} /> Tải file mẫu Excel
-          </button>
-          <button
-            onClick={handleFileUpload}
-            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm"
-          >
-            <Upload size={16} /> Upload Danh mục Excel
-          </button>
-        </div>
+        {canUpdate('ASSESSMENT') && (
+          <div className="flex flex-wrap gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".xlsx, .xls"
+              onChange={handleFileChange}
+            />
+            <button
+              onClick={handleDownloadTemplate}
+              className="flex items-center gap-2 bg-white border border-slate-300 text-black px-4 py-2 rounded-lg hover:bg-slate-50 text-label font-black transition-colors shadow-sm"
+            >
+              <Download size={16} /> Tải file mẫu Excel
+            </button>
+            <button
+              onClick={handleFileUpload}
+              className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#008800] text-label font-black transition-colors shadow-sm"
+            >
+              <Upload size={16} /> Upload Danh mục Excel
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tabs Navigation */}
       <div className="bg-slate-100 p-1 rounded-xl inline-flex mb-2">
         <button
           onClick={() => setActiveTab('CRITERIA_83')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'CRITERIA_83'
-            ? 'bg-white text-primary-700 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-label font-black transition-all ${activeTab === 'CRITERIA_83'
+            ? 'bg-white text-[#009900] shadow-sm'
+            : 'text-slate-500 hover:text-black font-black'
             }`}
         >
           <Award size={18} />
@@ -151,9 +155,9 @@ export const AssessmentModule: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('BASIC')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'BASIC'
-            ? 'bg-white text-primary-700 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-label font-black transition-all ${activeTab === 'BASIC'
+            ? 'bg-white text-[#009900] shadow-sm'
+            : 'text-slate-500 hover:text-black font-black'
             }`}
         >
           <ClipboardList size={18} />
@@ -161,9 +165,9 @@ export const AssessmentModule: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('QUALITY_ASSESSMENT')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'QUALITY_ASSESSMENT'
-            ? 'bg-white text-primary-700 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-label font-black transition-all ${activeTab === 'QUALITY_ASSESSMENT'
+            ? 'bg-white text-[#009900] shadow-sm'
+            : 'text-slate-500 hover:text-black font-black'
             }`}
         >
           <FileCheck size={18} />
@@ -283,8 +287,8 @@ const Criteria83Data83View = () => {
       {/* Filter Bar */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold">
-          <LayoutGrid size={18} className="text-primary-600" />
-          <h3>Bộ lọc danh mục</h3>
+          <LayoutGrid size={18} className="text-[#009900]" />
+          <h3 className="text-section font-black text-black uppercase">Bộ lọc danh mục</h3>
           {(searchTerm || filterPhan || filterChuong || filterNhom) && (
             <button
               onClick={clearFilters}
@@ -298,25 +302,25 @@ const Criteria83Data83View = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase flex items-center gap-1.5"><Search size={12} />Tìm kiếm nhanh</label>
+            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><Search size={12} />Tìm kiếm nhanh</label>
             <div className="relative">
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Nhập mã, tên tiểu mục..."
-                className="w-full pl-3 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20"
+                className="w-full pl-3 pr-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20"
               />
             </div>
           </div>
 
           {/* Filter Phần */}
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase flex items-center gap-1.5"><ListFilter size={12} />Lọc theo Phần</label>
+            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><ListFilter size={12} />Lọc theo Phần</label>
             <select
               value={filterPhan}
               onChange={(e) => setFilterPhan(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 bg-white"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20 bg-white"
             >
               <option value="">Tất cả các Phần</option>
               {uniquePhan.map(p => <option key={p} value={p}>{p}</option>)}
@@ -325,11 +329,11 @@ const Criteria83Data83View = () => {
 
           {/* Filter Chương */}
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase flex items-center gap-1.5"><ListFilter size={12} />Lọc theo Chương</label>
+            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><ListFilter size={12} />Lọc theo Chương</label>
             <select
               value={filterChuong}
               onChange={(e) => setFilterChuong(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 bg-white"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20 bg-white"
             >
               <option value="">Tất cả các Chương</option>
               {uniqueChuong.map(c => <option key={c} value={c}>{c}</option>)}
@@ -338,11 +342,11 @@ const Criteria83Data83View = () => {
 
           {/* Filter Nhóm */}
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase flex items-center gap-1.5"><Filter size={12} />Lọc theo Nhóm</label>
+            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><Filter size={12} />Lọc theo Nhóm</label>
             <select
               value={filterNhom}
               onChange={(e) => setFilterNhom(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 bg-white"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20 bg-white"
             >
               <option value="">Tất cả các Nhóm</option>
               {uniqueNhom.map(n => <option key={n} value={n}>{n}</option>)}
@@ -356,7 +360,7 @@ const Criteria83Data83View = () => {
         <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="text-primary-600" size={20} />
-            <h3 className="font-bold text-slate-800">Bộ 83 Tiêu chí CLBV</h3>
+            <h3 className="text-section font-black text-black uppercase">Bộ 83 Tiêu chí CLBV</h3>
           </div>
 
           <div className="text-xs text-slate-500 font-medium">
@@ -366,7 +370,7 @@ const Criteria83Data83View = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-[#108545] text-white font-bold uppercase text-[10px] tracking-wider whitespace-nowrap hidden md:table-header-group">
+            <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-wider whitespace-nowrap hidden md:table-header-group h-12">
               <tr>
                 <th className="px-4 py-4">Phần</th>
                 <th className="px-4 py-4">Chương</th>
@@ -386,12 +390,12 @@ const Criteria83Data83View = () => {
                 <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-400 italic">Không tìm thấy dữ liệu nào khớp với bộ lọc.</td></tr>
               ) : filteredData.map((item, index) => (
                 <tr key={item.id || index} className="hover:bg-slate-50 transition-colors group flex flex-col md:table-row border-b md:border-b-0 border-slate-100 last:border-0 p-4 md:p-0">
-                  <td className="px-4 py-2 md:py-4 align-top text-[10px] text-slate-400 md:text-slate-500 font-medium leading-relaxed max-w-full md:max-w-[120px] order-1 hidden md:table-cell italic">{item.phan}</td>
-                  <td className="px-4 py-2 md:py-4 align-top text-[10px] text-slate-400 md:text-slate-500 leading-relaxed max-w-full md:max-w-[150px] order-2 hidden md:table-cell italic">{item.chuong}</td>
+                  <td className="px-4 py-2 md:py-4 align-top text-table text-black/60 font-bold leading-relaxed max-w-full md:max-w-[120px] order-1 hidden md:table-cell italic">{item.phan}</td>
+                  <td className="px-4 py-2 md:py-4 align-top text-table text-black/50 leading-relaxed max-w-full md:max-w-[150px] order-2 hidden md:table-cell italic">{item.chuong}</td>
 
                   {/* Mobile Row 1: Tieu Chi + Muc */}
                   <td className="px-4 py-2 md:py-4 align-top order-3 flex justify-between items-center md:table-cell">
-                    <span className="text-[#108545] font-bold text-[11px] md:text-xs">{item.tieu_chi}</span>
+                    <span className="text-[#009900] font-black text-table">{item.tieu_chi}</span>
                     <span className="md:hidden inline-block px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-[9px] font-bold border border-amber-200 uppercase">
                       {item.muc}
                     </span>
@@ -408,10 +412,10 @@ const Criteria83Data83View = () => {
                   <td className="px-4 py-1 md:py-4 align-top order-4 border-t border-slate-50 md:border-t-0 md:table-cell" colSpan={2}>
                     <div className="flex flex-col md:flex-none">
                       <div className="flex flex-wrap items-baseline gap-2">
-                        <span className="text-[10px] md:text-[10px] font-mono text-primary-600 md:text-slate-600 font-bold whitespace-nowrap">
+                        <span className="text-table font-mono text-black/70 font-black whitespace-nowrap">
                           {item.ma_tieu_muc}
                         </span>
-                        <span className="text-slate-700 font-medium leading-relaxed text-xs">
+                        <span className="text-black font-bold leading-relaxed text-table">
                           {item.tieu_muc}
                         </span>
                       </div>
@@ -446,6 +450,11 @@ const Criteria83Data83View = () => {
 
 // --- View 2: Bộ Tiêu chuẩn Cơ bản ---
 const BasicStandardsView = () => {
+  const { user } = useAuth();
+  const { canCreate, canUpdate, canDelete } = usePermissions();
+  const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
+  const uDept = user?.department || "";
+
   const [standards, setStandards] = useState<BoTieuChuan[]>([]);
   const [evaluations, setEvaluations] = useState<KetQuaDanhGia[]>([]);
   const [loading, setLoading] = useState(true);
@@ -460,7 +469,17 @@ const BasicStandardsView = () => {
         fetchKetQuaDanhGia()
       ]);
       setStandards(stdData);
-      setEvaluations(evalData);
+      
+      // Filter evaluations for non-admins
+      if (isAdmin) {
+        setEvaluations(evalData);
+      } else {
+        const filtered = evalData.filter(e => 
+          e.don_vi_duoc_danh_gia?.toLowerCase().includes(uDept.toLowerCase()) ||
+          uDept.toLowerCase().includes(e.don_vi_duoc_danh_gia?.toLowerCase() || "")
+        );
+        setEvaluations(filtered);
+      }
     } catch (err) {
       setError('Không thể tải dữ liệu. Vui lòng thử lại.');
       console.error(err);
@@ -490,17 +509,19 @@ const BasicStandardsView = () => {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-            <h3 className="text-lg font-bold text-slate-800">Danh mục Bộ tiêu chuẩn chất lượng</h3>
-            <p className="text-sm text-slate-500">Các bộ tiêu chuẩn xây dựng riêng cho từng lĩnh vực.</p>
+            <h3 className="text-section font-black text-black uppercase">Danh mục Bộ tiêu chuẩn chất lượng</h3>
+            <p className="text-table text-black/60 font-bold">Các bộ tiêu chuẩn xây dựng riêng cho từng lĩnh vực.</p>
           </div>
-          <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium shadow-sm">
-            <Plus size={16} /> Thêm bộ tiêu chuẩn mới
-          </button>
+          {canCreate('ASSESSMENT') && (
+            <button className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium shadow-sm">
+              <Plus size={16} /> Thêm bộ tiêu chuẩn mới
+            </button>
+          )}
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-[#108545] text-white font-bold border-b border-[#0d6e39] uppercase text-xs">
+            <thead className="bg-[#009900] text-white font-black border-b border-[#0d6e39] uppercase text-table h-12">
               <tr>
                 <th className="px-6 py-4">Mã & Tên bộ tiêu chuẩn</th>
                 <th className="px-6 py-4">Đơn vị phụ trách</th>
@@ -522,13 +543,13 @@ const BasicStandardsView = () => {
               {!loading && !error && standards.map(std => (
                 <tr key={std.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-800">{std.ten_tieu_chuan}</div>
-                    <div className="text-xs text-slate-500 font-mono mt-1">{std.ma_tieu_chuan}</div>
+                    <div className="font-black text-black text-table uppercase">{std.ten_tieu_chuan}</div>
+                    <div className="text-table text-black/60 font-mono mt-1">{std.ma_tieu_chuan}</div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="flex items-center gap-2 text-slate-700">
-                      <UserPlus size={14} className="text-slate-400" />
-                      {std.don_vi_phu_trach || 'Chưa phân công'}
+                      <UserPlus size={14} className="text-black/40" />
+                      <span className="text-table font-bold text-black/80">{std.don_vi_phu_trach || 'Chưa phân công'}</span>
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-600">
@@ -547,15 +568,19 @@ const BasicStandardsView = () => {
                       <button className="flex items-center gap-1.5 px-3 py-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-all" title="Xem">
                         <Eye size={16} /> <span className="text-xs font-bold">Xem</span>
                       </button>
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Sửa">
-                        <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(std.id!)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Xóa"
-                      >
-                        <Trash2 size={16} /> <span className="text-xs font-bold">Xóa</span>
-                      </button>
+                      {canUpdate('ASSESSMENT') && (
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Sửa">
+                          <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
+                        </button>
+                      )}
+                      {canDelete('ASSESSMENT') && (
+                        <button
+                          onClick={() => handleDelete(std.id!)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Xóa"
+                        >
+                          <Trash2 size={16} /> <span className="text-xs font-bold">Xóa</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -568,7 +593,7 @@ const BasicStandardsView = () => {
       {/* Recent Evaluations */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-          <h3 className="font-bold text-slate-800 text-sm uppercase">Kết quả chấm điểm gần đây</h3>
+          <h3 className="text-section font-black text-black uppercase">Kết quả chấm điểm gần đây</h3>
           <div className="flex gap-2">
             <button className="p-1.5 hover:bg-white rounded border border-transparent hover:border-slate-300 transition-colors"><Search size={14} /></button>
             <button className="p-1.5 hover:bg-white rounded border border-transparent hover:border-slate-300 transition-colors"><Filter size={14} /></button>
@@ -576,7 +601,7 @@ const BasicStandardsView = () => {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-[#108545] text-white font-bold text-xs uppercase border-b border-[#0d6e39]">
+            <thead className="bg-[#009900] text-white font-black text-table uppercase border-b border-[#0d6e39] h-12">
               <tr>
                 <th className="px-6 py-3">Đơn vị được đánh giá</th>
                 <th className="px-6 py-3">Bộ tiêu chuẩn áp dụng</th>
@@ -594,8 +619,8 @@ const BasicStandardsView = () => {
               )}
               {!loading && evaluations.map(evalItem => (
                 <tr key={evalItem.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-3 font-bold text-slate-800">{evalItem.don_vi_duoc_danh_gia}</td>
-                  <td className="px-6 py-3 text-slate-600">{evalItem.ten_tieu_chuan}</td>
+                  <td className="px-6 py-3 font-black text-black text-table uppercase">{evalItem.don_vi_duoc_danh_gia}</td>
+                  <td className="px-6 py-3 text-black font-bold text-table">{evalItem.ten_tieu_chuan}</td>
                   <td className="px-6 py-3 text-slate-500 text-xs">
                     {evalItem.ngay_danh_gia ? new Date(evalItem.ngay_danh_gia).toLocaleDateString('vi-VN') : ''}
                   </td>
@@ -624,12 +649,16 @@ const BasicStandardsView = () => {
 
 // --- View 3: Chấm điểm Tiêu chí CLBV ---
 const QualityAssessmentView = () => {
+  const { user } = useAuth();
+  const { canCreate, canUpdate, canDelete } = usePermissions();
+  const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
+  const uDept = user?.department || "";
+
   const [criteriaList, setCriteriaList] = useState<Data83[]>([]);
   const [units, setUnits] = useState<DonVi[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { user } = useAuth();
-
+  
   // Mode: LIST or FORM
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
@@ -668,7 +697,16 @@ const QualityAssessmentView = () => {
   const loadSheetList = async () => {
     try {
       const sheets = await fetchAssessmentSheets();
-      setSheetList(sheets);
+      if (isAdmin) {
+        setSheetList(sheets);
+      } else {
+        const filtered = sheets.filter(s =>
+          s.don_vi_duoc_danh_gia?.toLowerCase().includes(uDept.toLowerCase()) ||
+          uDept.toLowerCase().includes(s.don_vi_duoc_danh_gia?.toLowerCase() || "") ||
+          s.nguoi_tao_id === user?.id
+        );
+        setSheetList(filtered);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -972,6 +1010,12 @@ const QualityAssessmentView = () => {
       return;
     }
 
+    // Security check: non-admins can only save for their own unit
+    if (!isAdmin && donViDuocDanhGia.toLowerCase() !== uDept.toLowerCase() && !uDept.toLowerCase().includes(donViDuocDanhGia.toLowerCase()) && !donViDuocDanhGia.toLowerCase().includes(uDept.toLowerCase())) {
+        alert("Bạn không có quyền lưu kết quả cho đơn vị khác.");
+        return;
+    }
+
     setSaving(true);
     try {
       const allPayload: KqDanhGia83[] = [];
@@ -1037,21 +1081,23 @@ const QualityAssessmentView = () => {
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div>
-            <h3 className="text-lg font-bold text-slate-800">Danh sách Phiếu đánh giá 83 tiêu chí</h3>
-            <p className="text-sm text-slate-500">Quản lý các đợt đánh giá đã thực hiện.</p>
+            <h3 className="text-section font-black text-black uppercase">Danh sách Phiếu đánh giá 83 tiêu chí</h3>
+            <p className="text-table text-black/60 font-bold">Quản lý các đợt đánh giá đã thực hiện.</p>
           </div>
-          <button
-            onClick={handleAddNew}
-            className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl hover:bg-primary-700 font-bold transition-all shadow-lg active:scale-95"
-          >
-            <Plus size={20} /> <span>Tạo phiếu mới</span>
-          </button>
+          {canCreate('ASSESSMENT') && (
+            <button
+              onClick={handleAddNew}
+              className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl hover:bg-primary-700 font-bold transition-all shadow-lg active:scale-95"
+            >
+              <Plus size={20} /> <span>Tạo phiếu mới</span>
+            </button>
+          )}
         </div>
 
         {/* Desktop Table */}
         <div className="hidden md:block bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
           <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+            <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest border-b border-slate-100 h-12">
               <tr>
                 <th className="px-6 py-4">Ngày đánh giá</th>
                 <th className="px-6 py-4">Đơn vị</th>
@@ -1067,18 +1113,18 @@ const QualityAssessmentView = () => {
                 </tr>
               ) : (
                 sheetList.map((sheet) => {
-                  const isAdmin = user?.role === 'Quản trị viên';
                   const isOwner = user?.id === sheet.nguoi_tao_id || user?.full_name === sheet.nguoi_danh_gia;
-                  const canEdit = isAdmin || isOwner;
+                  const canEditSheet = isAdmin || isOwner || canUpdate('ASSESSMENT');
+                  const canDeleteSheet = isAdmin || isOwner || canDelete('ASSESSMENT');
 
                   return (
                     <tr key={sheet.phieu_id} className="hover:bg-primary-50/30 transition-colors group">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-bold text-slate-700">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</span>
+                        <span className="font-black text-black text-table">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1.5">
-                          <span className="font-bold text-slate-800">{sheet.don_vi_duoc_danh_gia}</span>
+                           <span className="font-black text-black text-table uppercase">{sheet.don_vi_duoc_danh_gia}</span>
                           <div className="flex flex-wrap gap-1">
                             {(sheet.nhom || '').split(',').map((n: string) => n.trim()).filter(Boolean).map((n: string) => (
                               <span key={n} className="inline-block px-1.5 py-0.5 bg-primary-50 text-primary-700 border border-primary-200 rounded text-[9px] font-bold uppercase">{n}</span>
@@ -1106,10 +1152,12 @@ const QualityAssessmentView = () => {
                           <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-all border border-transparent hover:border-primary-100" title="Xem chi tiết">
                             <Eye size={16} /> <span className="text-xs font-bold">Xem</span>
                           </button>
-                          <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-100" title="Sửa phiếu">
-                            <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
-                          </button>
-                          {canEdit && (
+                          {canEditSheet && (
+                            <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-100" title="Sửa phiếu">
+                              <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
+                            </button>
+                          )}
+                          {canDeleteSheet && (
                             <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-100" title="Xóa phiếu">
                               <Trash2 size={16} /> <span className="text-xs font-bold">Xóa</span>
                             </button>
@@ -1127,9 +1175,9 @@ const QualityAssessmentView = () => {
         {/* Mobile Cards */}
         <div className="md:hidden space-y-4">
           {sheetList.map((sheet) => {
-            const isAdmin = user?.role === 'Quản trị viên';
             const isOwner = user?.id === sheet.nguoi_tao_id || user?.full_name === sheet.nguoi_danh_gia;
-            const canEdit = isAdmin || isOwner;
+            const canEditSheet = isAdmin || isOwner || canUpdate('ASSESSMENT');
+            const canDeleteSheet = isAdmin || isOwner || canDelete('ASSESSMENT');
 
             return (
               <div key={sheet.phieu_id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-4">
@@ -1154,10 +1202,12 @@ const QualityAssessmentView = () => {
                     <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-primary-600 border border-slate-200 rounded-lg shadow-sm">
                       <Eye size={14} /> <span className="text-[10px] font-bold">Xem</span>
                     </button>
-                    <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-blue-600 border border-slate-200 rounded-lg shadow-sm">
-                      <Edit2 size={14} /> <span className="text-[10px] font-bold">Sửa</span>
-                    </button>
-                    {canEdit && (
+                    {canEditSheet && (
+                      <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-blue-600 border border-slate-200 rounded-lg shadow-sm">
+                        <Edit2 size={14} /> <span className="text-[10px] font-bold">Sửa</span>
+                      </button>
+                    )}
+                    {canDeleteSheet && (
                       <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-red-500 border border-slate-200 rounded-lg shadow-sm">
                         <Trash2 size={14} /> <span className="text-[10px] font-bold">Xóa</span>
                       </button>
@@ -1201,42 +1251,44 @@ const QualityAssessmentView = () => {
             <FileText size={20} />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">Thông tin Phiếu đánh giá</h3>
-            <p className="text-xs text-slate-500">Nhập thông tin chung trước khi tiến hành chấm điểm</p>
+            <h3 className="text-section font-black text-black uppercase">Thông tin Phiếu đánh giá</h3>
+            <p className="text-table text-black/60 font-bold">Nhập thông tin chung trước khi tiến hành chấm điểm</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase">Ngày đánh giá</label>
+            <label className="text-label text-black font-bold uppercase">Ngày đánh giá</label>
             <input
               type="date"
               value={ngayDanhGia}
               onChange={(e) => setNgayDanhGia(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 font-bold"
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-input bg-white focus:ring-2 focus:ring-green-500/20 font-bold text-black"
             />
           </div>
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase">Người đánh giá</label>
+            <label className="text-label text-black font-bold uppercase">Người đánh giá</label>
             <input
               type="text"
               placeholder="Nhập tên người đánh giá..."
               value={nguoiDanhGia}
               onChange={(e) => setNguoiDanhGia(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 font-bold"
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-input bg-white focus:ring-2 focus:ring-green-500/20 font-bold text-black"
             />
           </div>
           <div className="space-y-1.5 font-bold">
-            <label className="text-[11px] text-slate-500 uppercase">Đơn vị được đánh giá</label>
+            <label className="text-label text-black font-bold uppercase">Đơn vị được đánh giá</label>
             <select
               value={donViDuocDanhGia}
               onChange={(e) => setDonViDuocDanhGia(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 font-bold"
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-input bg-white focus:ring-2 focus:ring-green-500/20 font-bold text-black"
             >
               <option value="">-- Chọn đơn vị --</option>
-              {units.map(u => (
-                <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>
-              ))}
+              {units
+                .filter(u => isAdmin || u.ten_don_vi.toLowerCase().includes(uDept.toLowerCase()) || uDept.toLowerCase().includes(u.ten_don_vi.toLowerCase()))
+                .map(u => (
+                  <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>
+                ))}
             </select>
           </div>
         </div>
@@ -1365,8 +1417,8 @@ const QualityAssessmentView = () => {
                   className={`w-full flex items-center justify-between px-5 py-3.5 text-left font-bold transition-colors ${expandedPhan === phanName ? 'bg-primary-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
                     }`}
                 >
-                  <span className="uppercase text-xs tracking-wide">{phanName}</span>
-                  {expandedPhan === phanName ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  <span className="text-section font-black uppercase tracking-wide">{phanName}</span>
+                  {expandedPhan === phanName ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
 
                 {expandedPhan === phanName && (
@@ -1378,7 +1430,7 @@ const QualityAssessmentView = () => {
                           className={`w-full flex items-center justify-between px-4 py-3 text-left font-bold transition-colors text-sm ${expandedChuong === chuongName ? 'bg-slate-100 text-primary-700' : 'text-slate-600 hover:bg-slate-50/80'
                             }`}
                         >
-                          <span>{chuongName}</span>
+                           <span className="text-label font-black uppercase">{chuongName}</span>
                           {expandedChuong === chuongName ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
 
@@ -1754,13 +1806,13 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
                                     return (
                                       <div key={tcName} className="p-5 space-y-4">
                                         <div className="flex justify-between items-start gap-4">
-                                          <h4 className="text-xs font-black text-slate-800 flex-1 leading-relaxed">
-                                            <span className="text-primary-600 mr-2 font-mono">#{tcName.split(':')[0]}</span>
+                                          <h4 className="text-label font-black text-black flex-1 leading-relaxed uppercase">
+                                            <span className="text-[#009900] mr-2 font-black font-mono">#{tcName.split(':')[0]}</span>
                                             {tcName.split(':').slice(1).join(':')}
                                           </h4>
                                           <div className="flex flex-col items-end gap-1">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Kết quả</span>
-                                            <span className="px-3 py-1 rounded-full text-[10px] font-black bg-green-100 text-green-700 border border-green-200 whitespace-nowrap shadow-sm">
+                                            <span className="text-table font-black text-black/40 uppercase tracking-widest">Kết quả</span>
+                                            <span className="px-3 py-1 rounded-full text-table font-black bg-green-100 text-[#009900] border border-green-200 whitespace-nowrap shadow-sm uppercase">
                                               Đạt: {level}
                                             </span>
                                           </div>

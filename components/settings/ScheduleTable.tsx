@@ -134,7 +134,7 @@ export default function ScheduleTable() {
   return (
     <div className="space-y-4">
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-blue-800 text-sm mb-4">
-        <p>Cấu hình lịch giám sát định kỳ cho các khoa phòng. Hệ thống sẽ tự động gửi thông báo nhắc nhở.</p>
+        <p className="text-table font-bold uppercase tracking-wider">Cấu hình lịch giám sát định kỳ cho các khoa phòng. Hệ thống sẽ tự động gửi thông báo nhắc nhở.</p>
       </div>
 
       {message && (
@@ -146,39 +146,39 @@ export default function ScheduleTable() {
       {showForm && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold text-slate-800">{editingId ? 'Sửa lịch giám sát' : 'Thêm lịch giám sát mới'}</h4>
+            <h4 className="text-label font-black text-black uppercase">{editingId ? 'Sửa lịch giám sát' : 'Thêm lịch giám sát mới'}</h4>
             <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Từ ngày *</label>
-              <input type="date" required value={form.tu_ngay} onChange={e => setForm(f => ({ ...f, tu_ngay: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
+              <label className="block text-label font-bold text-black mb-1 uppercase">Từ ngày *</label>
+              <input type="date" required value={form.tu_ngay} onChange={e => setForm(f => ({ ...f, tu_ngay: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500 bg-white" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Đến ngày *</label>
-              <input type="date" required value={form.den_ngay} onChange={e => setForm(f => ({ ...f, den_ngay: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
+              <label className="block text-label font-bold text-black mb-1 uppercase">Đến ngày *</label>
+              <input type="date" required value={form.den_ngay} onChange={e => setForm(f => ({ ...f, den_ngay: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500 bg-white" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Trạng thái *</label>
-              <select required value={form.trang_thai} onChange={e => setForm(f => ({ ...f, trang_thai: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500">
+              <label className="block text-label font-bold text-black mb-1 uppercase">Trạng thái *</label>
+              <select required value={form.trang_thai} onChange={e => setForm(f => ({ ...f, trang_thai: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500 bg-white">
                 <option value="Chưa thực hiện">Chưa thực hiện</option>
                 <option value="Đang thực hiện">Đang thực hiện</option>
                 <option value="Hoàn thành">Hoàn thành</option>
                 <option value="Quá hạn">Quá hạn</option>
               </select>
               {form.tu_ngay && form.den_ngay && (
-                <p className="text-xs text-slate-500 mt-1">
-                  Trạng thái tự động: <span className="font-medium text-primary-600">{getAutoStatus(form.tu_ngay, form.den_ngay)}</span>
+                <p className="text-table text-black/40 mt-1 font-bold uppercase tracking-tight">
+                  Trạng thái tự động: <span className="font-black text-[#009900]">{getAutoStatus(form.tu_ngay, form.den_ngay)}</span>
                 </p>
               )}
             </div>
             <div className="md:col-span-2 lg:col-span-3">
-              <label className="block text-xs text-slate-500 mb-1">Nội dung giám sát *</label>
-              <input required placeholder="Nội dung giám sát" value={form.nd_giam_sat} onChange={e => setForm(f => ({ ...f, nd_giam_sat: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
+              <label className="block text-label font-bold text-black mb-1 uppercase">Nội dung giám sát *</label>
+              <input required placeholder="Nội dung giám sát" value={form.nd_giam_sat} onChange={e => setForm(f => ({ ...f, nd_giam_sat: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Nhân viên giám sát *</label>
-              <select required value={form.nhan_vien_gs} onChange={e => setForm(f => ({ ...f, nhan_vien_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500">
+              <label className="block text-label font-bold text-black mb-1 uppercase">Nhân viên giám sát *</label>
+              <select required value={form.nhan_vien_gs} onChange={e => setForm(f => ({ ...f, nhan_vien_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500 bg-white">
                 <option value="">-- Chọn nhân viên --</option>
                 {usersList.map(user => (
                   <option key={user.id} value={user.full_name}>{user.full_name}</option>
@@ -186,8 +186,8 @@ export default function ScheduleTable() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Đơn vị được giám sát *</label>
-              <select required value={form.dv_duoc_gs} onChange={e => setForm(f => ({ ...f, dv_duoc_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500">
+              <label className="block text-label font-bold text-black mb-1 uppercase">Đơn vị được giám sát *</label>
+              <select required value={form.dv_duoc_gs} onChange={e => setForm(f => ({ ...f, dv_duoc_gs: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500 bg-white">
                 <option value="">-- Chọn đơn vị --</option>
                 {donViList.map(dv => (
                   <option key={dv.id} value={`${dv.ma_don_vi} - ${dv.ten_don_vi}`}>
@@ -197,24 +197,24 @@ export default function ScheduleTable() {
               </select>
             </div>
             <div className="flex gap-2 items-end">
-              <button type="submit" className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
+              <button type="submit" className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
                 <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
               </button>
-              <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Hủy</button>
+              <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-input font-black text-black hover:bg-slate-50 uppercase shadow-sm">Hủy</button>
             </div>
           </form>
         </div>
       )}
 
       {!showForm && (
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
+        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
           <Plus size={16} /> Thêm lịch giám sát
         </button>
       )}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-primary-600 text-white font-bold uppercase text-xs">
+          <thead className="bg-[#009900] text-white font-black uppercase text-table h-12">
             <tr>
               <th className="px-4 py-3 w-12 text-center">#</th>
               <th className="px-4 py-3">Từ ngày</th>
@@ -235,14 +235,14 @@ export default function ScheduleTable() {
                 return (
                   <tr key={item.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
-                    <td className="px-4 py-3 text-slate-700">{formatDate(item.tu_ngay)}</td>
-                    <td className="px-4 py-3 text-slate-700">{formatDate(item.den_ngay)}</td>
-                    <td className="px-4 py-3 text-slate-700 font-medium">{item.nd_giam_sat}</td>
-                    <td className="px-4 py-3 text-slate-600">{item.nhan_vien_gs}</td>
-                    <td className="px-4 py-3 text-slate-600">{item.dv_duoc_gs}</td>
+                    <td className="px-4 py-3 text-black font-black text-table uppercase">{formatDate(item.tu_ngay)}</td>
+                    <td className="px-4 py-3 text-black font-black text-table uppercase">{formatDate(item.den_ngay)}</td>
+                    <td className="px-4 py-3 text-black font-black text-table uppercase">{item.nd_giam_sat}</td>
+                    <td className="px-4 py-3 text-black/60 font-bold text-table uppercase">{item.nhan_vien_gs}</td>
+                    <td className="px-4 py-3 text-black/60 font-bold text-table uppercase">{item.dv_duoc_gs}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
+                        <span className={`px-2 py-1 rounded text-table font-black uppercase ${item.trang_thai === 'Đang thực hiện' ? 'bg-blue-100 text-blue-700' :
                             item.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' :
                               item.trang_thai === 'Quá hạn' ? 'bg-red-100 text-red-700' :
                                 'bg-slate-100 text-slate-700'

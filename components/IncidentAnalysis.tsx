@@ -96,6 +96,8 @@ const SEVERITY_ORG = ['Tổn hại tài sản', 'Tăng nguồn lực phục vụ
 
 const IncidentAnalysis: React.FC = () => {
     const { user } = useAuth();
+    const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
+    const uDept = user?.department?.trim().toLowerCase() || '';
     const [items, setItems] = useState<AnalysisRecord[]>([]);
     const [incidents, setIncidents] = useState<BaoCaoScyk[]>([]);
     const [loading, setLoading] = useState(true);
@@ -196,7 +198,16 @@ const IncidentAnalysis: React.FC = () => {
     const filteredItems = items.filter(item => {
         const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
         const searchStr = (linkedInc?.so_bc_ma_scyk || '') + (item.a_danh_cho_nv_chuyen_trach || '');
-        return searchStr.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = searchStr.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        if (isAdmin || !uDept) return matchesSearch;
+        
+        if (!linkedInc) return false;
+        const iDept1 = (linkedInc.khoa_phong || '').trim().toLowerCase();
+        const iDept2 = (linkedInc.don_vi_bao_cao || '').trim().toLowerCase();
+        const matchesUnit = (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
+                           (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+        return matchesSearch && matchesUnit;
     });
 
     const toggleSelection = (field: keyof AnalysisRecord, value: string) => {
@@ -249,7 +260,15 @@ const IncidentAnalysis: React.FC = () => {
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-[14pt] font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                             >
                                 <option value="">-- Chọn trong danh sách sự cố --</option>
-                                {incidents.map(inc => (
+                                {incidents
+                                    .filter(inc => {
+                                        if (isAdmin || !uDept) return true;
+                                        const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
+                                        const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
+                                        return (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
+                                               (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                                    })
+                                    .map(inc => (
                                     <option key={inc.id} value={inc.id}>
                                         {inc.so_bc_ma_scyk} - {inc.ho_ten_nb || inc.doi_tuong_xay_ra_sc || 'N/A'} - {inc.khoa_phong || inc.don_vi_bao_cao}
                                     </option>
@@ -1091,6 +1110,9 @@ const IncidentAnalysis: React.FC = () => {
                             <tbody className="divide-y divide-slate-100">
                                 {filteredItems.map(item => {
                                     const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
+                                    const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
+                                    const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
+                                    const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
                                     return (
                                         <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
                                             <td className="px-6 py-4">
@@ -1128,12 +1150,16 @@ const IncidentAnalysis: React.FC = () => {
                                                     <button onClick={() => { setViewingItem(item); setViewMode('VIEW'); }} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all border border-green-200 shadow-sm">
                                                         <Eye size={12} /> Xem
                                                     </button>
-                                                    <button onClick={() => { setEditingItem(item); setFormData(item); setViewMode('FORM'); }} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm">
-                                                        <Edit2 size={12} /> Sửa
-                                                    </button>
-                                                    <button onClick={() => item.id && handleDelete(item.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm col-span-2">
-                                                        <Trash2 size={12} /> Xóa phân tích
-                                                    </button>
+                                                    {isOwnUnit && (
+                                                        <>
+                                                            <button onClick={() => { setEditingItem(item); setFormData(item); setViewMode('FORM'); }} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm">
+                                                                <Edit2 size={12} /> Sửa
+                                                            </button>
+                                                            <button onClick={() => item.id && handleDelete(item.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm col-span-2">
+                                                                <Trash2 size={12} /> Xóa phân tích
+                                                            </button>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -1147,6 +1173,10 @@ const IncidentAnalysis: React.FC = () => {
                     <div className="md:hidden space-y-4">
                         {filteredItems.map(item => {
                             const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
+                            const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
+                            const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
+                            const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+
                             return (
                                 <div key={item.id} className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm flex flex-col gap-4">
                                     <div className="flex justify-between items-center">
@@ -1155,8 +1185,12 @@ const IncidentAnalysis: React.FC = () => {
                                         </span>
                                         <div className="flex gap-2">
                                             <button onClick={() => { setViewingItem(item); setViewMode('VIEW'); }} className="w-8 h-8 flex items-center justify-center bg-primary-50 text-primary-600 rounded-lg"><Eye size={14} /></button>
-                                            <button onClick={() => { setEditingItem(item); setFormData(item); setViewMode('FORM'); }} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg"><Edit2 size={14} /></button>
-                                            <button onClick={() => item.id && handleDelete(item.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 rounded-lg"><Trash2 size={14} /></button>
+                                            {isOwnUnit && (
+                                                <>
+                                                    <button onClick={() => { setEditingItem(item); setFormData(item); setViewMode('FORM'); }} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg"><Edit2 size={14} /></button>
+                                                    <button onClick={() => item.id && handleDelete(item.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 rounded-lg"><Trash2 size={14} /></button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     <div onClick={() => { setViewingItem(item); setViewMode('VIEW'); }}>

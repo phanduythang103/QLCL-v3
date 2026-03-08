@@ -175,7 +175,7 @@ export default function UsersTable() {
       {showForm && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold text-slate-800">{editingId ? 'Sửa người dùng' : 'Thêm người dùng mới'}</h4>
+            <h4 className="text-label font-black text-black uppercase">{editingId ? 'Sửa người dùng' : 'Thêm người dùng mới'}</h4>
             <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -184,7 +184,7 @@ export default function UsersTable() {
               placeholder="Tài khoản *"
               value={form.username}
               onChange={e => setForm(f => ({ ...f, username: e.target.value.toLowerCase() }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
             />
             <input
               type="password"
@@ -192,14 +192,14 @@ export default function UsersTable() {
               placeholder={editingId ? "Mật khẩu (để trống nếu không đổi)" : "Mật khẩu *"}
               value={form.password}
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
             />
             <input
               required
               placeholder="Họ và tên *"
               value={form.full_name}
               onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
             />
             <div className="relative">
               <input
@@ -212,7 +212,7 @@ export default function UsersTable() {
                   setShowDeptDropdown(true);
                 }}
                 onFocus={() => setShowDeptDropdown(true)}
-                className="w-full px-3 py-2 pr-8 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+                className="w-full px-3 py-2 pr-8 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
               />
               <ChevronDown
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
@@ -240,10 +240,10 @@ export default function UsersTable() {
                           setDeptSearchTerm(deptValue);
                           setShowDeptDropdown(false);
                         }}
-                        className="w-full px-3 py-2 text-left text-sm hover:bg-primary-50 transition-colors border-b border-slate-100 last:border-b-0"
+                        className="w-full px-3 py-2 text-left text-table font-bold hover:bg-green-50 transition-colors border-b border-slate-100 last:border-b-0 uppercase"
                       >
-                        <span className="font-semibold text-primary-600">{dept.ma_don_vi}</span>
-                        <span className="text-slate-600"> - {dept.ten_don_vi}</span>
+                        <span className="font-black text-green-700">{dept.ma_don_vi}</span>
+                        <span className="text-black/80"> - {dept.ten_don_vi}</span>
                         {dept.khoi && (
                           <span className="ml-2 text-xs text-slate-400">({dept.khoi})</span>
                         )}
@@ -264,7 +264,7 @@ export default function UsersTable() {
             <select
               value={form.role}
               onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
             >
               <option value="Quản trị viên">Quản trị viên</option>
               <option value="Người dùng">Người dùng</option>
@@ -272,7 +272,7 @@ export default function UsersTable() {
             <select
               value={form.status}
               onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500"
             >
               <option value="Hoạt động">Hoạt động</option>
               <option value="Khóa">Khóa</option>
@@ -280,7 +280,7 @@ export default function UsersTable() {
 
             {/* Avatar Upload */}
             <div className="md:col-span-2 lg:col-span-3">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-label font-bold text-black uppercase mb-2">
                 Ảnh đại diện
               </label>
               <div className="flex items-center gap-4">
@@ -309,7 +309,7 @@ export default function UsersTable() {
                   <button
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-black rounded-lg text-table font-black transition-colors uppercase"
                   >
                     <Upload size={16} />
                     {avatarPreview ? 'Đổi ảnh' : 'Chọn ảnh'}
@@ -325,7 +325,7 @@ export default function UsersTable() {
               <button
                 type="submit"
                 disabled={uploadingAvatar}
-                className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black disabled:opacity-50 disabled:cursor-not-allowed uppercase"
               >
                 {uploadingAvatar ? (
                   <>
@@ -359,7 +359,7 @@ export default function UsersTable() {
       {/* Bảng dữ liệu */}
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-primary-600 text-white font-bold uppercase text-xs">
+          <thead className="bg-[#009900] text-white font-black uppercase text-table h-12">
             <tr>
               <th className="px-4 py-3 w-12 text-center">#</th>
               <th className="px-4 py-3">Tài khoản</th>
@@ -381,9 +381,9 @@ export default function UsersTable() {
               users.map((user, idx) => (
                 <tr key={user.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
-                  <td className="px-4 py-3 text-slate-700 font-medium">{user.username}</td>
-                  <td className="px-4 py-3 text-slate-700">{user.full_name}</td>
-                  <td className="px-4 py-3 text-slate-600">{user.department || '-'}</td>
+                  <td className="px-4 py-3 text-black font-black text-table uppercase">{user.username}</td>
+                  <td className="px-4 py-3 text-black text-table font-bold">{user.full_name}</td>
+                  <td className="px-4 py-3 text-black/60 text-table font-bold">{user.department || '-'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${user.role === 'Quản trị viên' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                       }`}>
@@ -391,7 +391,7 @@ export default function UsersTable() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${user.status === 'Hoạt động' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    <span className={`px-2 py-1 rounded text-table font-black uppercase ${user.status === 'Hoạt động' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}>
                       {user.status}
                     </span>

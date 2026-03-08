@@ -195,8 +195,8 @@ export default function NotificationTable() {
             {/* Header & New Button */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 lg:p-6 rounded-3xl border border-slate-200 shadow-sm gap-4">
                 <div>
-                    <p className="text-xs lg:text-sm text-slate-400 font-bold uppercase tracking-widest">Quản lý hệ thống</p>
-                    <p className="text-lg lg:text-xl font-black text-slate-800">Danh sách thông báo</p>
+                    <p className="text-table font-black text-black/40 uppercase tracking-widest">Quản lý hệ thống</p>
+                    <p className="text-title font-black text-black uppercase">Danh sách thông báo</p>
                 </div>
                 {isAdmin && (
                     <button
@@ -205,7 +205,7 @@ export default function NotificationTable() {
                             setForm({ noi_dung: '', don_vi_thuc_hien: [], ngay_bat_dau: '', ngay_ket_thuc: '', ghi_chu: '', file_dinh_kem: '' });
                             setShowFormModal(true);
                         }}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-2xl hover:bg-primary-700 font-black transition-all shadow-xl shadow-primary-900/20 active:scale-95"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-2xl hover:bg-[#0d6e39] text-input font-black uppercase transition-all shadow-xl shadow-green-900/20 active:scale-95"
                     >
                         <Plus size={20} />
                         Tạo thông báo
@@ -216,7 +216,7 @@ export default function NotificationTable() {
             {/* Content View: Table (Desktop) / Cards (Mobile) */}
             <div className="hidden lg:block bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50/50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+                    <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest h-12">
                         <tr>
                             <th className="px-6 py-4">Ngày tạo</th>
                             <th className="px-6 py-4">Nội dung</th>
@@ -235,12 +235,12 @@ export default function NotificationTable() {
                                 <tr key={noti.id} className="hover:bg-primary-50/30 transition-colors group">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-slate-700">{noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : '---'}</span>
-                                            <span className="text-[10px] text-slate-400">{noti.nguoi_tao_name}</span>
+                                            <span className="text-table font-black text-black uppercase">{noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : '---'}</span>
+                                            <span className="text-table font-bold text-black/40 uppercase tracking-tighter">{noti.nguoi_tao_name}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 max-w-xs">
-                                        <p className="font-medium text-slate-800 line-clamp-2">{noti.noi_dung}</p>
+                                        <p className="text-table font-black text-black uppercase line-clamp-2">{noti.noi_dung}</p>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-wrap gap-1">
@@ -257,9 +257,9 @@ export default function NotificationTable() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500">
+                                        <div className="flex items-center gap-2 text-table font-bold text-black/60 uppercase">
                                             <span>{noti.ngay_bat_dau ? new Date(noti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}</span>
-                                            <ChevronRight size={10} className="text-slate-300" />
+                                            <ChevronRight size={10} className="text-black/20" />
                                             <span>{noti.ngay_ket_thuc ? new Date(noti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}</span>
                                         </div>
                                     </td>
@@ -313,12 +313,12 @@ export default function NotificationTable() {
                                     {noti.nguoi_tao_name?.charAt(0) || 'U'}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-slate-800">{noti.nguoi_tao_name}</p>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase">{noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
+                                    <p className="text-label font-black text-black uppercase">{noti.nguoi_tao_name}</p>
+                                    <p className="text-table text-black/40 font-black uppercase">{noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
                                 </div>
                             </div>
                         </div>
-                        <p className="text-sm font-bold text-slate-700 leading-relaxed line-clamp-3 mb-4">{noti.noi_dung}</p>
+                        <p className="text-table font-black text-black uppercase leading-relaxed line-clamp-3 mb-4">{noti.noi_dung}</p>
                         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
                                 <Calendar size={14} className="text-primary-500" />
@@ -335,8 +335,8 @@ export default function NotificationTable() {
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
                         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
-                            <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                                <div className="p-2 bg-primary-50 text-primary-600 rounded-xl">
+                            <h3 className="text-section font-black text-black uppercase flex items-center gap-3">
+                                <div className="p-2 bg-green-50 text-[#009900] rounded-xl">
                                     <Bell size={24} />
                                 </div>
                                 {editingId ? 'Sửa thông báo' : 'Tạo thông báo mới'}
@@ -349,48 +349,47 @@ export default function NotificationTable() {
                         <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Nội dung thông báo *</label>
+                                    <label className="block text-label font-bold text-black uppercase mb-2">Nội dung thông báo *</label>
                                     <textarea
                                         required
                                         placeholder="Nhập nội dung thông báo chi tiết tại đây..."
                                         value={form.noi_dung}
                                         onChange={e => setForm(f => ({ ...f, noi_dung: e.target.value }))}
-                                        className="w-full px-5 py-4 border-2 border-slate-100 rounded-[20px] text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 min-h-[120px] transition-all"
+                                        className="w-full px-5 py-4 border-2 border-slate-100 rounded-[20px] text-input font-bold text-black focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 min-h-[120px] transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Ngày bắt đầu</label>
+                                    <label className="block text-label font-bold text-black uppercase mb-2">Ngày bắt đầu</label>
                                     <div className="relative">
                                         <input
                                             type="date"
                                             value={form.ngay_bat_dau}
                                             onChange={e => setForm(f => ({ ...f, ngay_bat_dau: e.target.value }))}
-                                            className="w-full pl-12 pr-4 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all"
+                                            className="w-full pl-12 pr-4 py-3 border-2 border-slate-100 rounded-2xl text-input font-bold text-black focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all bg-white"
                                         />
-                                        <Calendar className="absolute left-4 top-3.5 text-slate-400" size={18} />
+                                        <Calendar className="absolute left-4 top-3.5 text-black/40" size={18} />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Ngày kết thúc</label>
+                                    <label className="block text-label font-bold text-black uppercase mb-2">Ngày kết thúc</label>
                                     <div className="relative">
                                         <input
                                             type="date"
                                             value={form.ngay_ket_thuc}
                                             onChange={e => setForm(f => ({ ...f, ngay_ket_thuc: e.target.value }))}
-                                            className="w-full pl-12 pr-4 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all"
+                                            className="w-full pl-12 pr-4 py-3 border-2 border-slate-100 rounded-2xl text-input font-bold text-black focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all bg-white"
                                         />
-                                        <Calendar className="absolute left-4 top-3.5 text-slate-400" size={18} />
+                                        <Calendar className="absolute left-4 top-3.5 text-black/40" size={18} />
                                     </div>
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Chọn đơn vị thực hiện</label>
-
+                                    <label className="block text-label font-bold text-black uppercase mb-2">Chọn đơn vị thực hiện</label>
                                     <div className="flex gap-2 mb-3">
                                         <select
-                                            className="flex-1 px-4 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all bg-white"
+                                            className="flex-1 px-4 py-3 border-2 border-slate-100 rounded-2xl text-input font-bold text-black focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all bg-white"
                                             onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val && !form.don_vi_thuc_hien.includes(val)) {
@@ -408,7 +407,7 @@ export default function NotificationTable() {
                                         <button
                                             type="button"
                                             onClick={() => setShowAddUnitModal(true)}
-                                            className="px-4 py-3 bg-primary-100 text-primary-700 rounded-2xl font-bold hover:bg-primary-200 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
+                                            className="px-4 py-3 bg-green-100 text-[#009900] rounded-2xl text-input font-black uppercase hover:bg-green-200 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <Plus size={20} /> Thêm khác
                                         </button>
@@ -428,17 +427,17 @@ export default function NotificationTable() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Ghi chú</label>
+                                    <label className="block text-label font-bold text-black uppercase mb-2">Ghi chú</label>
                                     <input
                                         placeholder="Ghi chú thêm..."
                                         value={form.ghi_chu}
                                         onChange={e => setForm(f => ({ ...f, ghi_chu: e.target.value }))}
-                                        className="w-full px-5 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500"
+                                        className="w-full px-5 py-3 border-2 border-slate-100 rounded-2xl text-input font-bold text-black focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">File đính kèm</label>
+                                    <label className="block text-label font-bold text-black uppercase mb-2">File đính kèm</label>
                                     <div className="flex gap-2">
                                         <button
                                             type="button"
@@ -455,10 +454,10 @@ export default function NotificationTable() {
                             </div>
 
                             <div className="flex gap-4 pt-4 border-t border-slate-100">
-                                <button type="submit" className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white px-8 py-4 rounded-2xl hover:bg-primary-700 font-black shadow-xl shadow-primary-900/20 active:scale-95 transition-all">
+                                <button type="submit" className="flex-1 flex items-center justify-center gap-2 bg-[#009900] text-white px-8 py-4 rounded-2xl hover:bg-[#0d6e39] text-input font-black uppercase shadow-xl shadow-green-900/20 active:scale-95 transition-all">
                                     <Check size={24} /> {editingId ? 'Lưu thay đổi' : 'Đăng thông báo'}
                                 </button>
-                                <button type="button" onClick={resetForm} className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all">
+                                <button type="button" onClick={resetForm} className="px-8 py-4 bg-slate-100 text-black rounded-2xl text-input font-black uppercase hover:bg-slate-200 transition-all">
                                     Hủy
                                 </button>
                             </div>
@@ -482,33 +481,33 @@ export default function NotificationTable() {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-lg font-black text-slate-800">{selectedNoti.nguoi_tao_name}</p>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
+                                    <p className="text-label font-black text-black uppercase">{selectedNoti.nguoi_tao_name}</p>
+                                    <p className="text-table font-black text-black/40 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="p-8 space-y-6">
                             <div className="space-y-4">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                <label className="flex items-center gap-2 text-table font-black text-black/40 uppercase tracking-[0.2em]">
                                     <FileText size={14} /> Nội dung chi tiết
                                 </label>
-                                <p className="text-base font-bold text-slate-700 leading-relaxed bg-slate-50 p-5 rounded-3xl border border-slate-100 italic">
+                                <p className="text-section font-black text-black uppercase leading-relaxed bg-slate-50 p-5 rounded-3xl border border-slate-100 italic">
                                     "{selectedNoti.noi_dung}"
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày bắt đầu</p>
-                                    <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                                        <Calendar size={14} className="text-primary-600" />
+                                    <p className="text-table font-black text-black/40 uppercase tracking-widest mb-1">Ngày bắt đầu</p>
+                                    <p className="text-table font-black text-black uppercase flex items-center gap-2">
+                                        <Calendar size={14} className="text-[#009900]" />
                                         {selectedNoti.ngay_bat_dau ? new Date(selectedNoti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}
                                     </p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày kết thúc</p>
-                                    <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                    <p className="text-table font-black text-black/40 uppercase tracking-widest mb-1">Ngày kết thúc</p>
+                                    <p className="text-table font-black text-black uppercase flex items-center gap-2">
                                         <Calendar size={14} className="text-orange-500" />
                                         {selectedNoti.ngay_ket_thuc ? new Date(selectedNoti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}
                                     </p>
@@ -516,12 +515,12 @@ export default function NotificationTable() {
                             </div>
 
                             <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                <label className="flex items-center gap-2 text-table font-black text-black/40 uppercase tracking-[0.2em]">
                                     <Users size={14} /> Đơn vị thực hiện
                                 </label>
                                 <div className="flex flex-wrap gap-1.5">
                                     {selectedNoti.don_vi_thuc_hien?.map((u, i) => (
-                                        <span key={i} className="px-3 py-1 bg-primary-50 text-primary-600 text-[11px] font-black rounded-full border border-primary-100">
+                                        <span key={i} className="px-3 py-1 bg-green-50 text-[#009900] text-table font-black uppercase rounded-full border border-green-100">
                                             {u}
                                         </span>
                                     ))}
@@ -537,14 +536,14 @@ export default function NotificationTable() {
                                     <>
                                         <button
                                             onClick={() => handleEdit(selectedNoti)}
-                                            className="flex items-center justify-center gap-3 px-6 py-3.5 bg-slate-800 text-white rounded-2xl font-black hover:bg-slate-950 transition-all shadow-lg active:scale-95"
+                                            className="flex items-center justify-center gap-3 px-6 py-3.5 bg-slate-800 text-white rounded-2xl text-input font-black uppercase hover:bg-slate-950 transition-all shadow-lg active:scale-95"
                                         >
                                             <Edit2 size={18} />
                                             <span>Chỉnh sửa</span>
                                         </button>
                                         <button
                                             onClick={() => handleDelete(selectedNoti.id)}
-                                            className="flex items-center justify-center gap-3 px-6 py-3.5 bg-red-50 text-red-600 rounded-2xl font-black hover:bg-red-100 hover:text-red-700 transition-all active:scale-95 border border-red-100"
+                                            className="flex items-center justify-center gap-3 px-6 py-3.5 bg-red-50 text-red-600 rounded-2xl text-input font-black uppercase hover:bg-red-100 hover:text-red-700 transition-all active:scale-95 border border-red-100"
                                         >
                                             <Trash2 size={18} />
                                             <span>Xóa bỏ</span>
@@ -556,7 +555,7 @@ export default function NotificationTable() {
                                         href={selectedNoti.file_dinh_kem}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="col-span-2 flex items-center justify-center gap-3 px-6 py-3.5 bg-primary-600 text-white rounded-2xl font-black hover:bg-primary-700 transition-all shadow-xl shadow-primary-900/10 active:scale-95"
+                                        className="col-span-2 flex items-center justify-center gap-3 px-6 py-3.5 bg-[#009900] text-white rounded-2xl text-input font-black uppercase hover:bg-[#0d6e39] transition-all shadow-xl shadow-green-900/10 active:scale-95"
                                     >
                                         <Eye size={18} />
                                         <span>Xem công văn đính kèm</span>
@@ -579,7 +578,7 @@ export default function NotificationTable() {
                             </button>
                         </div>
                         <div className="p-6">
-                            <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tên đơn vị *</label>
+                            <label className="block text-label font-bold text-black uppercase mb-2">Tên đơn vị *</label>
                             <input
                                 autoFocus
                                 type="text"
@@ -592,7 +591,7 @@ export default function NotificationTable() {
                                         handleSaveUnit();
                                     }
                                 }}
-                                className="w-full px-4 py-3 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500"
+                                className="w-full px-4 py-3 border-2 border-slate-100 rounded-2xl text-input font-bold text-black focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 bg-white"
                             />
                         </div>
                         <div className="p-6 border-t border-slate-100 flex gap-3">

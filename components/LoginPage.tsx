@@ -105,7 +105,7 @@ export function LoginPage() {
                                 alt="Logo 103"
                                 className="w-24 h-24 object-contain drop-shadow-md mb-4"
                             />
-                            <h2 className="text-xl font-bold text-gray-900 text-center uppercase tracking-tight leading-tight">
+                            <h2 className="text-title font-black text-black text-center uppercase tracking-tight leading-tight">
                                 HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG
                             </h2>
                         </div>
@@ -120,7 +120,7 @@ export function LoginPage() {
                         )}
 
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="username" className="block text-label font-bold text-black mb-2 uppercase">
                                 Tên đăng nhập
                             </label>
                             <input
@@ -128,14 +128,14 @@ export function LoginPage() {
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                                 placeholder="Nhập tên đăng nhập"
                                 disabled={loading}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password" className="block text-label font-bold text-black mb-2 uppercase">
                                 Mật khẩu
                             </label>
                             <div className="relative">
@@ -144,7 +144,7 @@ export function LoginPage() {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition pr-12"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition pr-12"
                                     placeholder="Nhập mật khẩu"
                                     disabled={loading}
                                 />
@@ -161,7 +161,7 @@ export function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-[#009900] text-white py-3 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-green-900/20 active:scale-95"
                         >
                             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                         </button>
@@ -193,14 +193,14 @@ export function LoginPage() {
                         {/* Titles at bottom left (roughly bottom 1/4 area) */}
                         <div className="absolute bottom-[15%] left-10 text-white z-10 max-w-[80%] transition-all duration-500">
                             <h1
-                                className="font-bold mb-4 drop-shadow-2xl uppercase tracking-wider leading-tight"
+                                className="font-black mb-4 drop-shadow-2xl uppercase tracking-wider leading-tight"
                                 style={{ fontSize: `${uiSettings?.co_chu_chinh || 48}px` }}
                             >
                                 {uiSettings?.tieu_de_chinh || 'HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG'}
                             </h1>
                             {uiSettings?.tieu_de_phu && uiSettings?.tieu_de_phu !== 'Test' && (
                                 <p
-                                    className="drop-shadow-xl opacity-95 font-medium italic"
+                                    className="drop-shadow-xl opacity-95 font-black italic uppercase"
                                     style={{ fontSize: `${uiSettings?.co_chu_phu || 24}px` }}
                                 >
                                     {uiSettings.tieu_de_phu}

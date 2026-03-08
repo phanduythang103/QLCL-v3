@@ -6,10 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hệ thống QLCL Bệnh viện Quân y 103</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          fontSize: {
+            'title': ['20px', { lineHeight: '1.2', fontWeight: '900' }],
+            'section': ['16px', { lineHeight: '1.5', fontWeight: '800' }],
+            'label': ['14px', { lineHeight: '1.5', fontWeight: '700' }],
+            'input': ['14px', { lineHeight: '1.5' }],
+            'table': ['13px', { lineHeight: '1.4' }],
+          },
           colors: {
             primary: {
               50: '#f1fdf3',
@@ -18,7 +29,7 @@
               300: '#8df0a6',
               400: '#53e179',
               500: '#2cc955',
-              600: '#149132', // Requested Primary Color
+              600: '#149132',
               700: '#137a2d',
               800: '#146128',
               900: '#125023',
@@ -28,10 +39,9 @@
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: "Be Vietnam Pro", "Inter", system-ui, -apple-system, sans-serif;
     }
 
     /* Custom scrollbar for webkit */

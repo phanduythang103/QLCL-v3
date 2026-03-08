@@ -24,7 +24,7 @@ const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
         <div className="relative w-full">
             <input
                 type="text"
-                className="w-full text-sm font-medium border-b border-slate-200 focus:border-primary-500 outline-none pb-1"
+                className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent"
                 value={value}
                 onChange={(e) => { onChange(e.target.value); setShow(true); }}
                 onFocus={() => setShow(true)}
@@ -39,8 +39,8 @@ const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
                             className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-xs"
                             onClick={() => onSelect(item)}
                         >
-                            <div className="font-bold text-slate-700">{item.ho_ten}</div>
-                            <div className="text-slate-500">{item.chuc_vu} - {item.don_vi}</div>
+                            <div className="font-black text-black uppercase text-table">{item.ho_ten}</div>
+                            <div className="text-black/40 uppercase text-[10px] font-bold">{item.chuc_vu} - {item.don_vi}</div>
                         </div>
                     ))}
                     {list.filter(item => item.ho_ten.toLowerCase().includes(value.toLowerCase())).length === 0 && (
@@ -54,6 +54,8 @@ const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
 
 const VerificationMinutes = () => {
     const { user } = useAuth();
+    const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
+    const uDept = user?.department?.trim().toLowerCase() || '';
     const [items, setItems] = useState<BienBanXacMinh[]>([]);
     const [incidents, setIncidents] = useState<BaoCaoScyk[]>([]);
     const [personnel, setPersonnel] = useState<NhanSuQlcl[]>([]);
@@ -270,14 +272,14 @@ const VerificationMinutes = () => {
 
     // --- TOAST NOTIFICATION ---
     const ExportToast = () => exportResult ? (
-        <div className={`fixed bottom-6 right-6 z-50 max-w-md px-5 py-4 rounded-xl shadow-2xl border flex items-start gap-3 animate-in slide-in-from-bottom-4 duration-300 ${exportResult.success
-            ? 'bg-green-50 border-green-300 text-green-800'
-            : 'bg-red-50 border-red-300 text-red-800'
+        <div className={`fixed bottom-6 right-6 z-50 max-w-md px-5 py-4 rounded-2xl shadow-2xl border flex items-start gap-3 animate-in slide-in-from-bottom-4 duration-300 ${exportResult.success
+            ? 'bg-green-50 border-green-300 text-green-900'
+            : 'bg-red-50 border-red-300 text-red-900'
             }`}>
             <div className="mt-0.5">{exportResult.success ? <CheckCircle size={20} className="text-green-600" /> : <X size={20} className="text-red-600" />}</div>
             <div className="flex-1">
-                <p className="font-bold text-sm">{exportResult.success ? 'Xuất báo cáo thành công' : 'Xuất báo cáo thất bại'}</p>
-                <p className="text-xs mt-1">{exportResult.message}</p>
+                <p className="font-black text-label uppercase">{exportResult.success ? 'Xuất báo cáo thành công' : 'Xuất báo cáo thất bại'}</p>
+                <p className="text-table font-bold uppercase mt-1 opacity-70">{exportResult.message}</p>
                 {exportResult.fileUrl && (
                     <a
                         href={exportResult.fileUrl}
@@ -285,7 +287,7 @@ const VerificationMinutes = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-green-700 hover:underline"
                     >
-                        <Download size={12} /> Đọn file PDF
+                        <Download size={12} /> Tải file PDF
                     </a>
                 )}
             </div>
@@ -302,6 +304,9 @@ const VerificationMinutes = () => {
         const thanhVien = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.filter(m => m.vai_tro !== 'CHU_TRI' && m.vai_tro !== 'THU_KY' && m.vai_tro !== 'NGUOI_CHUNG_KIEN') : [];
         const chungKien = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.filter(m => m.vai_tro === 'NGUOI_CHUNG_KIEN') : [];
         const linkedInc = incidents.find(inc => inc.id === viewingItem.scyk_id);
+        const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
+        const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
+        const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
         return (
             <div className="space-y-4 animate-in fade-in duration-200">
                 <ExportToast />
@@ -312,24 +317,26 @@ const VerificationMinutes = () => {
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h2 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                                <FileText className="text-primary-600" size={20} />
+                            <h2 className="text-section font-black text-black uppercase flex items-center gap-2">
+                                <FileText className="text-[#009900]" size={20} />
                                 Chi tiết Biên bản xác minh
                             </h2>
-                            {linkedInc && <span className="text-xs text-slate-500">Liên kết SCYK: <span className="font-mono font-bold text-blue-700">{linkedInc.so_bc_ma_scyk}</span></span>}
+                            {linkedInc && <span className="text-table font-black text-black/40 uppercase">Liên kết SCYK: <span className="font-mono font-black text-blue-700">{linkedInc.so_bc_ma_scyk}</span></span>}
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button
-                            onClick={() => handleEdit(viewingItem)}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
-                        >
-                            <Edit2 size={16} /> Chỉnh sửa
-                        </button>
+                        {isOwnUnit && (
+                            <button
+                                onClick={() => handleEdit(viewingItem)}
+                                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-input font-black uppercase shadow-xl shadow-indigo-900/20 active:scale-95 transition-all"
+                            >
+                                <Edit2 size={16} /> Chỉnh sửa
+                            </button>
+                        )}
                         <button
                             onClick={() => handleExportPdf(viewingItem)}
                             disabled={exportLoading}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-[#009900] hover:bg-[#0d6e39] disabled:bg-green-400 text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/20 active:scale-95 transition-all"
                         >
                             {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                             {exportLoading ? 'Đang xuất PDF...' : 'Xuất báo cáo PDF'}
@@ -338,20 +345,20 @@ const VerificationMinutes = () => {
                 </div>
 
                 {/* Detail content */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 space-y-8" style={{ fontSize: '14pt', fontFamily: 'Times New Roman, serif' }}>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-8" style={{ fontSize: '14pt', fontFamily: 'Arial, sans-serif' }}>
                     {/* Thời gian và địa điểm */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">Thời gian bắt đầu</p>
-                            <p className="font-bold text-slate-800 flex items-center gap-2">
-                                <Clock size={16} className="text-primary-500" />
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <p className="text-table font-black text-black/40 uppercase mb-1">Thời gian bắt đầu</p>
+                            <p className="text-input font-black text-black flex items-center gap-2">
+                                <Clock size={16} className="text-[#009900]" />
                                 {new Date(viewingItem.thoi_gian_bat_dau).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
                             </p>
                         </div>
-                        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-1">Địa điểm</p>
-                            <p className="font-bold text-slate-800 flex items-center gap-2">
-                                <MapPin size={16} className="text-primary-500" />
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <p className="text-table font-black text-black/40 uppercase mb-1">Địa điểm</p>
+                            <p className="text-input font-black text-black flex items-center gap-2">
+                                <MapPin size={16} className="text-[#009900]" />
                                 {viewingItem.dia_diem || 'Chưa cập nhật'}
                             </p>
                         </div>
@@ -359,30 +366,30 @@ const VerificationMinutes = () => {
 
                     {/* Thành phần đoàn */}
                     <div>
-                        <h3 className="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
-                            <Users size={16} className="text-primary-600" /> Thành phần đoàn xác minh
+                        <h3 className="text-label font-black text-black uppercase mb-3 flex items-center gap-2">
+                            <Users size={16} className="text-[#009900]" /> Thành phần đoàn xác minh
                         </h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
-                                <thead className="bg-[#009900] text-white text-xs font-bold">
+                                <thead className="bg-[#009900] text-white text-table font-black uppercase">
                                     <tr>
-                                        <th className="px-4 py-2 text-left">Họ tên</th>
-                                        <th className="px-4 py-2 text-left">Chức vụ</th>
-                                        <th className="px-4 py-2 text-left">Đơn vị</th>
-                                        <th className="px-4 py-2 text-left">Vai trò</th>
+                                        <th className="px-4 py-3 text-left">Họ tên</th>
+                                        <th className="px-4 py-3 text-left">Chức vụ</th>
+                                        <th className="px-4 py-3 text-left">Đơn vị</th>
+                                        <th className="px-4 py-3 text-left">Vai trò</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-100 text-table font-black text-black uppercase">
                                     {(viewingItem.thanh_phan || []).map((mem, idx) => (
                                         <tr key={idx} className="hover:bg-slate-50">
-                                            <td className="px-4 py-2 font-medium">{mem.ho_ten}</td>
-                                            <td className="px-4 py-2 text-slate-600">{mem.chuc_vu}</td>
-                                            <td className="px-4 py-2 text-slate-600">{mem.don_vi}</td>
-                                            <td className="px-4 py-2">
-                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${mem.vai_tro === 'CHU_TRI' ? 'bg-primary-100 text-primary-700' :
-                                                    mem.vai_tro === 'THU_KY' ? 'bg-amber-100 text-amber-700' :
-                                                        mem.vai_tro === 'NGUOI_CHUNG_KIEN' ? 'bg-slate-100 text-slate-700' :
-                                                            'bg-green-100 text-green-700'
+                                            <td className="px-4 py-3">{mem.ho_ten}</td>
+                                            <td className="px-4 py-3 text-black/40">{mem.chuc_vu}</td>
+                                            <td className="px-4 py-3 text-black/40">{mem.don_vi}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${mem.vai_tro === 'CHU_TRI' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
+                                                    mem.vai_tro === 'THU_KY' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                                                        mem.vai_tro === 'NGUOI_CHUNG_KIEN' ? 'bg-slate-100 text-slate-700 border border-slate-200' :
+                                                            'bg-green-100 text-[#009900] border border-green-200'
                                                     }`}>
                                                     {mem.vai_tro === 'CHU_TRI' ? 'Chủ trì' :
                                                         mem.vai_tro === 'THU_KY' ? 'Thư ký' :
@@ -399,14 +406,14 @@ const VerificationMinutes = () => {
                     {/* Người tham dự */}
                     {viewingItem.nguoi_tham_du && viewingItem.nguoi_tham_du.length > 0 && (
                         <div>
-                            <h3 className="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
-                                <User size={16} className="text-slate-500" /> Với sự tham dự của
-                            </h3>
+                        <h3 className="text-label font-black text-black uppercase mb-3 flex items-center gap-2">
+                            <User size={16} className="text-black/40" /> Với sự tham dự của
+                        </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {viewingItem.nguoi_tham_du.map((mem, idx) => (
-                                    <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
-                                        <div className="font-bold text-slate-800">{mem.ho_ten}</div>
-                                        <div className="text-slate-500 text-xs">{mem.chuc_vu} {mem.don_vi ? `- ${mem.don_vi}` : ''}</div>
+                                    <div key={idx} className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-table uppercase font-black">
+                                        <div className="text-black">{mem.ho_ten}</div>
+                                        <div className="text-black/40 text-[10px] mt-0.5">{mem.chuc_vu} {mem.don_vi ? `- ${mem.don_vi}` : ''}</div>
                                     </div>
                                 ))}
                             </div>
@@ -416,8 +423,8 @@ const VerificationMinutes = () => {
                     {/* Nội dung xác minh */}
                     <div>
                         <h3 className="text-[14pt] font-bold text-slate-700 uppercase mb-2">1. Nội dung xác minh</h3>
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-[14pt] text-slate-700 whitespace-pre-wrap min-h-[60px] leading-relaxed">
-                            {viewingItem.noi_dung_xac_minh || <span className="italic text-slate-400">Không có nội dung</span>}
+                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-[14pt] text-black font-black uppercase whitespace-pre-wrap min-h-[60px] leading-relaxed">
+                            {viewingItem.noi_dung_xac_minh || <span className="italic text-black/20">Không có nội dung</span>}
                         </div>
                     </div>
 
@@ -426,8 +433,8 @@ const VerificationMinutes = () => {
                         <h3 className="text-[14pt] font-bold text-red-600 uppercase mb-2 flex items-center gap-2">
                             <CheckCircle size={20} /> 2. Kết quả xác minh
                         </h3>
-                        <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-[14pt] text-slate-700 whitespace-pre-wrap min-h-[100px] leading-relaxed">
-                            {viewingItem.ket_qua_xac_minh || <span className="italic text-slate-400">Chưa có kết quả</span>}
+                        <div className="bg-red-50 p-6 rounded-2xl border border-red-100 text-[14pt] text-black font-black uppercase whitespace-pre-wrap min-h-[100px] leading-relaxed shadow-lg shadow-red-900/5">
+                            {viewingItem.ket_qua_xac_minh || <span className="italic text-black/20">Chưa có kết quả</span>}
                         </div>
                     </div>
 
@@ -435,7 +442,7 @@ const VerificationMinutes = () => {
                     {viewingItem.y_kien_tham_gia && (
                         <div>
                             <h3 className="text-[14pt] font-bold text-slate-700 uppercase mb-2">3. Ý kiến tham gia</h3>
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-[14pt] text-slate-700 whitespace-pre-wrap leading-relaxed">
+                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-[14pt] text-black font-black uppercase whitespace-pre-wrap leading-relaxed">
                                 {viewingItem.y_kien_tham_gia}
                             </div>
                         </div>
@@ -449,14 +456,14 @@ const VerificationMinutes = () => {
         return (
             <div className="bg-white min-h-screen p-8 text-black font-serif relative" id="print-area">
                 <style>{`
-          @page { size: A4; margin-top: 2cm; margin-bottom: 2cm; margin-left: 2.5cm; margin-right: 1.5cm; }
+          @page { size: A4; margin-top: 2cm; margin-bottom: 2cm; margin-left: 2.5cm; margin-right: 2cm; }
           @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
             #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             .no-print { display: none !important; }
           }
-          #print-area { font-family: 'Times New Roman', Times, serif; }
+          #print-area { font-family: 'Arial', sans-serif; }
         `}</style>
 
                 <div className="absolute top-4 right-4 no-print flex gap-2">
@@ -469,7 +476,7 @@ const VerificationMinutes = () => {
                     <button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center gap-2 text-sm font-bold">
                         <Printer size={16} /> In ngay
                     </button>
-                    <button onClick={() => setViewMode('LIST')} className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded shadow text-sm font-bold">
+                    <button onClick={() => setViewMode('LIST')} className="bg-slate-200 hover:bg-slate-300 text-black px-4 py-2 rounded-xl shadow-xl text-table font-black uppercase transition-all active:scale-95">
                         Đóng
                     </button>
                 </div>
@@ -525,18 +532,18 @@ const VerificationMinutes = () => {
                         <p>Biên bản này được đọc cho những người có tên phía trên nghe, công nhận đúng sự việc và cùng ký tên xác nhận dưới đây.</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-8 text-center mt-12 font-bold uppercase">
+                    <div className="grid grid-cols-2 gap-8 text-center mt-12 font-black uppercase text-[12pt]">
                         <div>
-                            <p className="mb-16">THÀNH VIÊN ĐOÀN</p>
+                            <p className="mb-24">THÀNH VIÊN ĐOÀN</p>
                         </div>
                         <div>
-                            <p className="mb-16">CHỦ TRÌ ĐOÀN</p>
+                            <p className="mb-24">CHỦ TRÌ ĐOÀN</p>
                         </div>
                         <div>
-                            <p className="mb-16">NGƯỜI LÀM CHỨNG</p>
+                            <p className="mb-24">NGƯỜI LÀM CHỨNG</p>
                         </div>
                         <div>
-                            <p className="mb-16">NGƯỜI LẬP BIÊN BẢN</p>
+                            <p className="mb-24">NGƯỜI LẬP BIÊN BẢN</p>
                         </div>
                     </div>
                 </div>
@@ -547,14 +554,14 @@ const VerificationMinutes = () => {
     if (viewMode === 'FORM') {
         return (
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden max-w-5xl mx-auto my-4">
-                <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                    <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                        <FileText className="text-primary-600" />
+                <div className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                    <h2 className="text-section font-black text-black uppercase flex items-center gap-2">
+                        <FileText className="text-[#009900]" />
                         {editingItem ? 'Cập nhật Biên bản' : 'Lập Biên bản xác minh mới'}
                     </h2>
                     <div className="flex gap-2">
-                        <button onClick={() => setViewMode('LIST')} className="px-4 py-2 hover:bg-slate-200 rounded-lg text-slate-600 text-sm font-medium">Hủy bỏ</button>
-                        <button onClick={handleSave} className="px-4 py-2 bg-primary-600 hovered:bg-primary-700 text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2">
+                        <button onClick={() => setViewMode('LIST')} className="px-6 py-2 hover:bg-slate-200 rounded-xl text-black text-table font-black uppercase transition-all active:scale-95">Hủy bỏ</button>
+                        <button onClick={handleSave} className="px-6 py-2 bg-[#009900] hover:bg-[#0d6e39] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center gap-2 active:scale-95 transition-all">
                             <Save size={16} /> Lưu biên bản
                         </button>
                     </div>
@@ -562,8 +569,8 @@ const VerificationMinutes = () => {
 
                 <div className="p-8 space-y-6 overflow-y-auto max-h-[85vh]">
                     {/* Section 0: Incident Code Link */}
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
-                        <label className="text-sm font-bold text-blue-800 mb-2 block">Liên kết với Sự cố Y khoa (Bắt buộc)</label>
+                    <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 mb-4">
+                        <label className="text-label font-black text-blue-900 mb-2 block uppercase">Liên kết với Sự cố Y khoa (Bắt buộc)</label>
                         <div className="relative">
                             <select
                                 value={formData.scyk_id || ''}
@@ -575,10 +582,18 @@ const VerificationMinutes = () => {
                                         ma_baocao_scyk: sc?.so_bc_ma_scyk
                                     });
                                 }}
-                                className="w-full border border-blue-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+                                className="w-full border border-blue-300 rounded-xl p-3 text-input font-black uppercase focus:ring-2 focus:ring-blue-500 bg-white shadow-xl shadow-blue-900/5"
                             >
                                 <option value="">-- Chọn sự cố y khoa để lập biên bản --</option>
-                                {incidents.map(inc => (
+                                {incidents
+                                    .filter(inc => {
+                                        if (isAdmin || !uDept) return true;
+                                        const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
+                                        const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
+                                        return (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
+                                               (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                                    })
+                                    .map(inc => (
                                     <option key={inc.id} value={inc.id}>
                                         {inc.so_bc_ma_scyk} - {inc.don_vi_bao_cao} (Ngày báo cáo: {new Date(inc.ngay_bao_cao || '').toLocaleDateString('vi-VN')})
                                     </option>
@@ -593,38 +608,38 @@ const VerificationMinutes = () => {
                     {/* Section 1: Time & Location */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-slate-700">Thời gian bắt đầu</label>
+                            <label className="text-label font-bold text-black uppercase block ml-1">Thời gian bắt đầu</label>
                             <input
                                 type="datetime-local"
                                 value={formData.thoi_gian_bat_dau}
                                 onChange={(e) => setFormData({ ...formData, thoi_gian_bat_dau: e.target.value })}
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
+                                className="w-full border border-slate-300 rounded-xl p-3 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-slate-700">Tại địa điểm</label>
+                            <label className="text-label font-bold text-black uppercase block ml-1">Tại địa điểm</label>
                             <input
                                 type="text"
                                 placeholder="VD: Phòng họp Khoa Hồi sức tích cực..."
                                 value={formData.dia_diem}
                                 onChange={(e) => setFormData({ ...formData, dia_diem: e.target.value })}
-                                className="w-full border border-slate-300 rounded-lg p-2.5 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
+                                className="w-full border border-slate-300 rounded-xl p-3 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
                             />
                         </div>
                     </div>
 
                     {/* Section 2: Participants */}
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-slate-700 uppercase text-sm">Thành phần đoàn xác minh</h3>
-                            <button onClick={addMember} className="text-primary-600 text-xs font-bold hover:underline flex items-center gap-1"><Plus size={14} /> Thêm thành viên</button>
+                            <h3 className="text-label font-black text-black uppercase">Thành phần đoàn xác minh</h3>
+                            <button onClick={addMember} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center gap-1"><Plus size={14} /> Thêm thành viên</button>
                         </div>
                         <div className="space-y-3">
                             {formData.thanh_phan?.map((mem, idx) => (
-                                <div key={idx} className="flex gap-2 items-start bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative group">
-                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2 flex-1">
+                                <div key={idx} className="flex gap-2 items-start bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group transition-all hover:shadow-md">
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2 flex-1">
                                         <div className="md:col-span-3">
-                                            <label className="text-xs text-slate-500 block">Họ tên</label>
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Họ tên</label>
                                             <SuggestionInput
                                                 value={mem.ho_ten}
                                                 onChange={(val) => updateMember(idx, 'ho_ten', val)}
@@ -638,16 +653,16 @@ const VerificationMinutes = () => {
                                             />
                                         </div>
                                         <div className="md:col-span-3">
-                                            <label className="text-xs text-slate-500 block">Chức vụ</label>
-                                            <input type="text" className="w-full text-sm border-b border-slate-200 focus:border-primary-500 outline-none pb-1" value={mem.chuc_vu} onChange={(e) => updateMember(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Chức vụ</label>
+                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateMember(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
                                         </div>
                                         <div className="md:col-span-3">
-                                            <label className="text-xs text-slate-500 block">Đơn vị</label>
-                                            <input type="text" className="w-full text-sm border-b border-slate-200 focus:border-primary-500 outline-none pb-1" value={mem.don_vi} onChange={(e) => updateMember(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Đơn vị</label>
+                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateMember(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
                                         </div>
                                         <div className="md:col-span-3">
-                                            <label className="text-xs text-slate-500 block">Vai trò</label>
-                                            <select className="w-full text-sm border-b border-slate-200 bg-transparent py-1" value={mem.vai_tro} onChange={(e) => updateMember(idx, 'vai_tro', e.target.value as any)}>
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Vai trò</label>
+                                            <select className="w-full text-table font-black text-black uppercase border-b border-slate-200 bg-transparent py-1 cursor-pointer" value={mem.vai_tro} onChange={(e) => updateMember(idx, 'vai_tro', e.target.value as any)}>
                                                 <option value="CHU_TRI">Chủ trì đoàn</option>
                                                 <option value="THANH_VIEN">Thành viên</option>
                                                 <option value="THU_KY">Thư ký</option>
@@ -655,24 +670,24 @@ const VerificationMinutes = () => {
                                             </select>
                                         </div>
                                     </div>
-                                    <button onClick={() => removeMember(idx)} className="text-slate-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={16} /></button>
+                                    <button onClick={() => removeMember(idx)} className="text-black/20 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-all active:scale-95"><X size={18} /></button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* Section 2b: Attendees */}
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-slate-700 uppercase text-sm">Với sự tham dự của (Khách mời)</h3>
-                            <button onClick={addAttendee} className="text-primary-600 text-xs font-bold hover:underline flex items-center gap-1"><Plus size={14} /> Thêm người tham dự</button>
+                            <h3 className="text-label font-black text-black uppercase">Với sự tham dự của (Khách mời)</h3>
+                            <button onClick={addAttendee} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center gap-1"><Plus size={14} /> Thêm người tham dự</button>
                         </div>
                         <div className="space-y-3">
                             {formData.nguoi_tham_du?.map((mem, idx) => (
-                                <div key={idx} className="flex gap-2 items-start bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative group">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-1">
+                                <div key={idx} className="flex gap-2 items-start bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group transition-all hover:shadow-md">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 flex-1">
                                         <div>
-                                            <label className="text-xs text-slate-500 block">Họ tên</label>
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Họ tên</label>
                                             <SuggestionInput
                                                 value={mem.ho_ten}
                                                 onChange={(val) => updateAttendee(idx, 'ho_ten', val)}
@@ -686,19 +701,19 @@ const VerificationMinutes = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-slate-500 block">Chức vụ</label>
-                                            <input type="text" className="w-full text-sm border-b border-slate-200 focus:border-primary-500 outline-none pb-1" value={mem.chuc_vu} onChange={(e) => updateAttendee(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Chức vụ</label>
+                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateAttendee(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
                                         </div>
                                         <div>
-                                            <label className="text-xs text-slate-500 block">Đơn vị</label>
-                                            <input type="text" className="w-full text-sm border-b border-slate-200 focus:border-primary-500 outline-none pb-1" value={mem.don_vi} onChange={(e) => updateAttendee(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
+                                            <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Đơn vị</label>
+                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateAttendee(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
                                         </div>
                                     </div>
-                                    <button onClick={() => removeAttendee(idx)} className="text-slate-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={16} /></button>
+                                    <button onClick={() => removeAttendee(idx)} className="text-black/20 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-all active:scale-95"><X size={18} /></button>
                                 </div>
                             ))}
                             {(!formData.nguoi_tham_du || formData.nguoi_tham_du.length === 0) && (
-                                <p className="text-center text-xs text-slate-400 italic py-2">Chưa có người tham dự nào.</p>
+                                <p className="text-center text-table font-black text-black/20 uppercase py-2 tracking-widest">Chưa có người tham dự nào.</p>
                             )}
                         </div>
                     </div>
@@ -706,30 +721,30 @@ const VerificationMinutes = () => {
                     {/* Section 3: Content & Result */}
                     <div className="space-y-4">
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-slate-700 uppercase">1. Nội dung xác minh</label>
+                            <label className="text-label font-black text-black uppercase block ml-1">1. Nội dung xác minh</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
+                                className="w-full border border-slate-300 rounded-2xl p-4 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
                                 value={formData.noi_dung_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, noi_dung_xac_minh: e.target.value })}
                                 placeholder="Tiến hành xác minh về việc..."
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-slate-700 uppercase text-red-600">2. Kết quả xác minh (Quan trọng)</label>
+                            <label className="text-label font-black text-red-600 uppercase block ml-1">2. Kết quả xác minh (Quan trọng)</label>
                             <textarea
                                 rows={10}
-                                className="w-full border border-slate-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
+                                className="w-full border border-red-200 rounded-2xl p-4 text-input font-bold text-black focus:ring-2 focus:ring-red-500 bg-white transition-all shadow-lg shadow-red-900/5 leading-relaxed"
                                 value={formData.ket_qua_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, ket_qua_xac_minh: e.target.value })}
                                 placeholder="Ghi chi tiết kết quả xác minh..."
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-slate-700 uppercase">3. Ý kiến tham gia</label>
+                            <label className="text-label font-bold text-black uppercase block ml-1">3. Ý kiến tham gia</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-lg p-3 text-[14pt] focus:ring-2 focus:ring-primary-500 font-medium"
+                                className="w-full border border-slate-300 rounded-2xl p-4 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
                                 value={formData.y_kien_tham_gia}
                                 onChange={(e) => setFormData({ ...formData, y_kien_tham_gia: e.target.value })}
                                 placeholder="Ý kiến của các thành viên khác (nếu có)..."
@@ -746,32 +761,32 @@ const VerificationMinutes = () => {
         <div className="space-y-6">
             <ExportToast />
             {/* Actions Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                 <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
                     <input
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#009900] bg-slate-50/50 transition-all"
                         placeholder="Tìm kiếm biên bản..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-sm flex items-center gap-2 transition-all">
+                <button onClick={handleCreate} className="bg-[#009900] hover:bg-[#0d6e39] text-white px-6 py-2.5 rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center gap-2 transition-all active:scale-95">
                     <Plus size={18} /> Lập biên bản mới
                 </button>
             </div>
 
             {/* List Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 {items.length === 0 && !loading ? (
-                    <div className="p-12 text-center text-slate-500 flex flex-col items-center">
-                        <FileText size={48} className="text-slate-300 mb-4" />
-                        <p>Chưa có biên bản xác minh nào.</p>
-                        <button onClick={handleCreate} className="mt-4 text-primary-600 font-bold hover:underline">Tạo ngay</button>
+                    <div className="p-16 text-center text-black/20 flex flex-col items-center">
+                        <FileText size={64} className="text-slate-100 mb-6" />
+                        <p className="text-section font-black uppercase tracking-widest">Chưa có biên bản xác minh nào.</p>
+                        <button onClick={handleCreate} className="mt-6 px-6 py-2.5 bg-[#009900] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 active:scale-95 transition-all">Tạo ngay</button>
                     </div>
                 ) : (
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-[#009900] text-white font-bold uppercase text-xs">
+                    <table className="w-full text-table text-left uppercase">
+                        <thead className="bg-[#009900] text-white font-black uppercase text-table border-b border-green-700">
                             <tr>
                                 <th className="px-6 py-4">Mã SCYK</th>
                                 <th className="px-6 py-4">Thời gian / Địa điểm</th>
@@ -782,30 +797,47 @@ const VerificationMinutes = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {items.filter(i => i.dia_diem.toLowerCase().includes(searchTerm.toLowerCase())).map((item) => {
+                            {items
+                                .filter(i => {
+                                    const matchesSearch = i.dia_diem.toLowerCase().includes(searchTerm.toLowerCase());
+                                    if (isAdmin || !uDept) return matchesSearch;
+                                    
+                                    const linkedInc = incidents.find(inc => inc.id === i.scyk_id);
+                                    if (!linkedInc) return false; // Or true if orphans should be seen
+                                    
+                                    const iDept1 = (linkedInc.khoa_phong || '').trim().toLowerCase();
+                                    const iDept2 = (linkedInc.don_vi_bao_cao || '').trim().toLowerCase();
+                                    const matchesUnit = (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
+                                                       (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                                    return matchesSearch && matchesUnit;
+                                })
+                                .map((item) => {
                                 const chuTri = Array.isArray(item.thanh_phan) ? item.thanh_phan.find(m => m.vai_tro === 'CHU_TRI') : null;
                                 const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
+                                const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
+                                const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
+                                const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
                                 return (
-                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                    <tr key={item.id} className="hover:bg-slate-50 transition-all font-black text-black">
                                         <td className="px-6 py-4">
-                                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold font-mono">
+                                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-[10px] font-black font-mono border border-blue-200 uppercase">
                                                 {linkedInc?.so_bc_ma_scyk || '---'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-800">{new Date(item.thoi_gian_bat_dau).toLocaleDateString('vi-VN')}</div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1 mt-1"><Clock size={12} /> {new Date(item.thoi_gian_bat_dau).toLocaleTimeString('vi-VN').slice(0, 5)}</div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1 mt-1"><MapPin size={12} /> {item.dia_diem}</div>
+                                            <div className="text-black">{new Date(item.thoi_gian_bat_dau).toLocaleDateString('vi-VN')}</div>
+                                            <div className="text-[10px] text-black/40 flex items-center gap-1 mt-1 font-bold uppercase"><Clock size={12} className="text-[#009900]" /> {new Date(item.thoi_gian_bat_dau).toLocaleTimeString('vi-VN').slice(0, 5)}</div>
+                                            <div className="text-[10px] text-black/40 flex items-center gap-1 mt-1 font-bold uppercase"><MapPin size={12} className="text-[#009900]" /> {item.dia_diem}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             {chuTri ? (
-                                                <div>
-                                                    <div className="font-bold text-slate-800">{chuTri.ho_ten}</div>
-                                                    <div className="text-xs text-slate-500">{chuTri.chuc_vu} - {chuTri.don_vi}</div>
+                                                <div className="uppercase">
+                                                    <div className="text-black">{chuTri.ho_ten}</div>
+                                                    <div className="text-[10px] text-black/40 font-bold">{chuTri.chuc_vu} - {chuTri.don_vi}</div>
                                                 </div>
-                                            ) : <span className="text-slate-400 italic">Chưa cập nhật</span>}
+                                            ) : <span className="text-black/20 italic tracking-widest text-[10px]">Chưa cập nhật</span>}
                                         </td>
-                                        <td className="px-6 py-4 max-w-xs truncate text-slate-600">
+                                        <td className="px-6 py-4 max-w-xs truncate text-[10px] uppercase font-bold text-black/60">
                                             {item.noi_dung_xac_minh || 'Không có nội dung'}
                                         </td>
                                         <td className="px-6 py-4">
@@ -814,7 +846,7 @@ const VerificationMinutes = () => {
                                                     href={item.file_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
+                                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#009900] hover:bg-[#0d6e39] text-white rounded-xl text-[10px] font-black uppercase transition-all shadow-xl shadow-green-900/10 active:scale-95"
                                                     title={item.file_name || 'Mở file PDF'}
                                                 >
                                                     <FileText size={14} /> Xem BC
@@ -823,7 +855,7 @@ const VerificationMinutes = () => {
                                                 <button
                                                     onClick={() => handleExportPdf(item)}
                                                     disabled={exportLoading}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 text-slate-500 rounded-lg text-xs font-medium transition-colors disabled:opacity-40"
+                                                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 text-black/40 rounded-xl text-[10px] font-black uppercase transition-all disabled:opacity-40 active:scale-95 shadow-sm"
                                                     title="Xuất PDF và lưu báo cáo"
                                                 >
                                                     {exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
@@ -832,16 +864,20 @@ const VerificationMinutes = () => {
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-right w-44">
-                                            <div className="grid grid-cols-2 gap-1.5">
-                                                <button onClick={() => handleView(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all border border-green-200 shadow-sm">
+                                            <div className="grid grid-cols-2 gap-1.5 uppercase">
+                                                <button onClick={() => handleView(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-black text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all border border-green-200 shadow-sm active:scale-95">
                                                     <Eye size={12} /> Xem
                                                 </button>
-                                                <button onClick={() => handleEdit(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm">
-                                                    <Edit2 size={12} /> Sửa
-                                                </button>
-                                                <button onClick={() => handleDelete(item.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm col-span-2">
-                                                    <Trash2 size={12} /> Xóa biên bản
-                                                </button>
+                                                {isOwnUnit && (
+                                                    <>
+                                                        <button onClick={() => handleEdit(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-black text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm active:scale-95">
+                                                            <Edit2 size={12} /> Sửa
+                                                        </button>
+                                                        <button onClick={() => handleDelete(item.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-black text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm col-span-2 active:scale-95">
+                                                            <Trash2 size={12} /> Xóa biên bản
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

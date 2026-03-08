@@ -8,6 +8,7 @@ import { fetchDmDonVi, addDmDonVi } from '../readDmDonVi';
 import { fetchDmCapBac, addDmCapBac } from '../readDmCapBac';
 import { fetchDmChucVu, addDmChucVu } from '../readDmChucVu';
 import { fetchUsers } from '../userApi';
+import { usePermissions } from '../contexts/PermissionsContext';
 import { getStoredUser } from '../utils/auth';
 import * as XLSX from 'xlsx';
 
@@ -21,7 +22,16 @@ export const HRModule: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'ALL' | QARoleType>('ALL');
+  const { canView, canCreate, canUpdate, canDelete } = usePermissions();
+
+  const tabs = [
+    { id: 'ALL', label: 'Tất cả nhân sự' },
+    { id: 'COUNCIL', label: 'Hội đồng QLCLBV' },
+    { id: 'BOARD', label: 'Ban QLCLBV (Chuyên trách)' },
+    { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
+  ].filter(tab => canView('HR', tab.id));
+
+  const [activeTab, setActiveTab] = useState<'ALL' | QARoleType>(tabs[0]?.id as any || 'ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<NhanSuQlcl | null>(null);
@@ -98,6 +108,12 @@ export const HRModule: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.find(t => t.id === activeTab)) {
+      setActiveTab(tabs[0].id as any);
+    }
+  }, [tabs]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -403,6 +419,12 @@ export const HRModule: React.FC = () => {
     }
   };
 
+  const CheckIcon = () => (
+    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+  );
+
   return (
     <div className="space-y-6">
       {/* Hidden File Input for Excel Import */}
@@ -416,41 +438,42 @@ export const HRModule: React.FC = () => {
 
       <div className="flex flex-col lg:flex-row justify-end items-start lg:items-center gap-4">
         <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-          <button
-            onClick={handleExportExcel}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
-          >
-            <Download size={16} /> Xuất Excel
-          </button>
-          <button
-            onClick={handleImportClick}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
-          >
-            <Upload size={16} /> Nhập Excel
-          </button>
-          <button
-            onClick={openAddForm}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm"
-          >
-            <Plus size={16} /> Thêm nhân sự
-          </button>
+          {canView('HR', activeTab) && (
+            <button
+              onClick={handleExportExcel}
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
+            >
+              <Download size={16} /> Xuất Excel
+            </button>
+          )}
+          {canCreate('HR', activeTab) && (
+            <button
+              onClick={handleImportClick}
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
+            >
+              <Upload size={16} /> Nhập Excel
+            </button>
+          )}
+          {canCreate('HR', activeTab) && (
+            <button
+              onClick={openAddForm}
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm"
+            >
+              <Plus size={16} /> Thêm nhân sự
+            </button>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2">
-        {[
-          { id: 'ALL', label: 'Tất cả nhân sự' },
-          { id: 'COUNCIL', label: 'Hội đồng QLCLBV' },
-          { id: 'BOARD', label: 'Ban QLCLBV (Chuyên trách)' },
-          { id: 'NETWORK', label: 'Mạng lưới QLCLBV' },
-        ].map(tab => (
+        {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
-              ? 'bg-primary-900 text-white shadow-sm'
-              : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
+              ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
           >
             {tab.label}
@@ -572,12 +595,14 @@ export const HRModule: React.FC = () => {
                   Đã chọn {selectedIds.length} nhân sự
                 </span>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowBulkEditModal(true)}
-                    className="px-3 py-1.5 bg-primary-600 text-white rounded-lg text-xs font-medium flex items-center gap-1"
-                  >
-                    <Edit2 size={12} /> Sửa hàng loạt
-                  </button>
+                  {canUpdate('HR', activeTab) && (
+                    <button
+                      onClick={() => setShowBulkEditModal(true)}
+                      className="px-3 py-1.5 bg-primary-600 text-white rounded-lg text-xs font-medium flex items-center gap-1"
+                    >
+                      <Edit2 size={12} /> Sửa hàng loạt
+                    </button>
+                  )}
                   <button
                     onClick={() => setSelectedIds([])}
                     className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-lg text-xs font-medium"
@@ -650,18 +675,22 @@ export const HRModule: React.FC = () => {
                   >
                     <Eye size={14} /> Xem
                   </button>
-                  <button
-                    onClick={() => openEditForm(item)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg text-xs font-medium transition-colors"
-                  >
-                    <Edit2 size={14} /> Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition-colors"
-                  >
-                    <Trash2 size={14} /> Xóa
-                  </button>
+                  {canUpdate('HR', activeTab) && (
+                    <button
+                      onClick={() => openEditForm(item)}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      <Edit2 size={14} /> Sửa
+                    </button>
+                  )}
+                  {canDelete('HR', activeTab) && (
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      <Trash2 size={14} /> Xóa
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -682,12 +711,14 @@ export const HRModule: React.FC = () => {
                   Đã chọn {selectedIds.length} nhân sự
                 </span>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowBulkEditModal(true)}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
-                  >
-                    <Edit2 size={14} /> Sửa hàng loạt
-                  </button>
+                  {canUpdate('HR', activeTab) && (
+                    <button
+                      onClick={() => setShowBulkEditModal(true)}
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+                    >
+                      <Edit2 size={14} /> Sửa hàng loạt
+                    </button>
+                  )}
                   <button
                     onClick={() => setSelectedIds([])}
                     className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium"
@@ -699,7 +730,7 @@ export const HRModule: React.FC = () => {
             )}
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-slate-600">
-                <thead className="bg-primary-600 text-white font-bold border-b border-primary-700 uppercase text-xs">
+                <thead className="bg-[#009900] text-white font-black text-table border-b border-[#008800] uppercase tracking-wide h-12">
                   <tr>
                     <th className="px-4 py-3 w-12">
                       <input
@@ -742,7 +773,7 @@ export const HRModule: React.FC = () => {
                             )}
                           </div>
                           <div>
-                            <p className="font-bold text-slate-800">{item.ho_ten}</p>
+                            <p className="font-black text-black text-table">{item.ho_ten}</p>
                             {item.cap_bac && (
                               <p className="text-xs font-medium text-primary-600 bg-primary-50 inline-block px-1.5 rounded mt-0.5">{item.cap_bac}</p>
                             )}
@@ -750,8 +781,8 @@ export const HRModule: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-slate-700">{item.chuc_vu || '-'}</p>
-                        <p className="text-xs text-slate-500">{item.don_vi || '-'}</p>
+                        <p className="font-black text-black text-table leading-tight">{item.chuc_vu || '-'}</p>
+                        <p className="text-table text-black/70 italic font-bold">{item.don_vi || '-'}</p>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
@@ -798,20 +829,24 @@ export const HRModule: React.FC = () => {
                           >
                             <Eye size={14} /> <span className="hidden xl:inline">Xem</span>
                           </button>
-                          <button
-                            onClick={() => openEditForm(item)}
-                            className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-100 rounded transition-colors"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit2 size={14} /> <span className="hidden xl:inline">Sửa</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Xóa"
-                          >
-                            <Trash2 size={14} /> <span className="hidden xl:inline">Xóa</span>
-                          </button>
+                          {canUpdate('HR', activeTab) && (
+                            <button
+                              onClick={() => openEditForm(item)}
+                              className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                              title="Sửa"
+                            >
+                              <Edit2 size={14} /> <span className="hidden xl:inline">Sửa</span>
+                            </button>
+                          )}
+                          {canDelete('HR', activeTab) && (
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title="Xóa"
+                            >
+                              <Trash2 size={14} /> <span className="hidden xl:inline">Xóa</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -944,7 +979,7 @@ export const HRModule: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <h3 className="text-title font-black text-black flex items-center gap-2 uppercase">
                 <User className="text-primary-600" size={20} />
                 Thông tin nhân sự
               </h3>
@@ -967,7 +1002,7 @@ export const HRModule: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-slate-800">{viewingItem.ho_ten}</h4>
+                  <h4 className="text-title font-black text-black">{viewingItem.ho_ten}</h4>
                   {viewingItem.cap_bac && (
                     <span className="text-sm font-medium text-primary-600 bg-primary-50 inline-block px-2 py-0.5 rounded mt-1">{viewingItem.cap_bac}</span>
                   )}
@@ -978,26 +1013,26 @@ export const HRModule: React.FC = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Chức vụ</label>
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5">{viewingItem.chuc_vu || '-'}</p>
+                    <label className="text-label text-black/60 uppercase font-bold">Chức vụ</label>
+                    <p className="text-input font-black text-black mt-0.5">{viewingItem.chuc_vu || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Đơn vị</label>
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5">{viewingItem.don_vi || '-'}</p>
+                    <label className="text-label text-black/60 uppercase font-bold">Đơn vị</label>
+                    <p className="text-input font-black text-black mt-0.5">{viewingItem.don_vi || '-'}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Số điện thoại</label>
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <label className="text-label text-black/60 uppercase font-bold">Số điện thoại</label>
+                    <p className="text-input font-black text-black mt-0.5 flex items-center gap-1.5">
                       <Phone size={14} className="text-slate-400" />
                       {viewingItem.so_dien_thoai || '-'}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Email</label>
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5 flex items-center gap-1.5 break-all">
+                    <label className="text-label text-black/60 uppercase font-bold">Email</label>
+                    <p className="text-input font-black text-black mt-0.5 flex items-center gap-1.5 break-all">
                       <Mail size={14} className="text-slate-400 flex-shrink-0" />
                       {viewingItem.email || '-'}
                     </p>
@@ -1005,7 +1040,7 @@ export const HRModule: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-500 uppercase font-medium">Vai trò QLCL</label>
+                   <label className="text-label text-black/60 uppercase font-bold">Vai trò QLCL</label>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {viewingItem.vai_tro_qlcl?.length > 0 ? (
                       viewingItem.vai_tro_qlcl.map(role => getRoleBadge(role))
@@ -1017,7 +1052,7 @@ export const HRModule: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Chứng chỉ QLCL</label>
+                     <label className="text-label text-black/60 uppercase font-bold">Chứng chỉ QLCL</label>
                     <div className="mt-1.5">
                       {viewingItem.co_chung_chi ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
@@ -1031,7 +1066,7 @@ export const HRModule: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Trạng thái</label>
+                     <label className="text-label text-black/60 uppercase font-bold">Trạng thái</label>
                     <p className="mt-1.5">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${viewingItem.trang_thai === 'Hoạt động'
                         ? 'bg-green-100 text-green-700'
@@ -1045,8 +1080,8 @@ export const HRModule: React.FC = () => {
 
                 {viewingItem.ghi_chu && (
                   <div>
-                    <label className="text-xs text-slate-500 uppercase font-medium">Ghi chú</label>
-                    <p className="text-sm text-slate-700 mt-0.5 bg-slate-50 p-3 rounded-lg">{viewingItem.ghi_chu}</p>
+                     <label className="text-label text-black/60 uppercase font-bold">Ghi chú</label>
+                     <p className="text-input text-black mt-0.5 bg-slate-50 p-3 rounded-lg font-bold">{viewingItem.ghi_chu}</p>
                   </div>
                 )}
               </div>
@@ -1281,7 +1316,7 @@ const FormModal: React.FC<FormModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-          <h3 className="text-lg font-bold text-slate-800">
+          <h3 className="text-title font-black text-black uppercase">
             {editingItem ? 'Chỉnh sửa nhân sự' : 'Thêm nhân sự mới'}
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -1291,17 +1326,17 @@ const FormModal: React.FC<FormModalProps> = ({
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Họ và tên *</label>
+              <label className="block text-label font-bold text-black mb-1">Họ và tên *</label>
               <input
                 type="text"
                 value={formData.ho_ten}
                 onChange={(e) => setFormData({ ...formData, ho_ten: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black"
                 placeholder="Nguyễn Văn A"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Cấp bậc</label>
+              <label className="block text-label font-bold text-black mb-1">Cấp bậc</label>
               <div className="flex gap-2">
                 <select
                   value={formData.cap_bac}
@@ -1324,7 +1359,7 @@ const FormModal: React.FC<FormModalProps> = ({
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Chức vụ</label>
+               <label className="block text-label font-bold text-black mb-1">Chức vụ</label>
               <div className="flex gap-2">
                 <select
                   value={formData.chuc_vu}
@@ -1347,7 +1382,7 @@ const FormModal: React.FC<FormModalProps> = ({
               </div>
             </div>
             <div className="relative">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Đơn vị / Khoa phòng</label>
+               <label className="block text-label font-bold text-black mb-1">Đơn vị / Khoa phòng</label>
               <div className="flex gap-2">
                 <div className="flex-1 relative">
                   <input
@@ -1360,7 +1395,7 @@ const FormModal: React.FC<FormModalProps> = ({
                       setShowDeptDropdown(true);
                     }}
                     onFocus={() => setShowDeptDropdown(true)}
-                    className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                     className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black"
                     placeholder="VD: A1 - Nội tiêu hóa"
                   />
                   {showDeptDropdown && departments.length > 0 && (

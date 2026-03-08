@@ -16,6 +16,7 @@ import {
 } from '../readChiaSe';
 
 import { fetchCoQuanBanHanh, addCoQuanBanHanh } from '../readCoQuanBanHanh';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 type MainTab = 'LIBRARY' | 'TRAINING' | 'SHARING';
 
@@ -42,27 +43,27 @@ export const DocsModule: React.FC = () => {
         <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1">
           <button
             onClick={() => setActiveTab('LIBRARY')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'LIBRARY'
-              ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600'
-              : 'text-primary-600 hover:bg-white hover:shadow-sm'
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label font-black transition-all duration-200 ${activeTab === 'LIBRARY'
+              ? 'bg-[#009900] text-white shadow-md shadow-green-200 ring-1 ring-[#009900]'
+              : 'text-[#009900] hover:bg-white hover:shadow-sm'
               }`}
           >
             <FileText size={18} /> Thư viện Văn bản
           </button>
           <button
             onClick={() => setActiveTab('TRAINING')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'TRAINING'
-              ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600'
-              : 'text-primary-600 hover:bg-white hover:shadow-sm'
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label font-black transition-all duration-200 ${activeTab === 'TRAINING'
+              ? 'bg-[#009900] text-white shadow-md shadow-green-200 ring-1 ring-[#009900]'
+              : 'text-[#009900] hover:bg-white hover:shadow-sm'
               }`}
           >
             <GraduationCap size={18} /> Đào tạo
           </button>
           <button
             onClick={() => setActiveTab('SHARING')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'SHARING'
-              ? 'bg-primary-600 text-white shadow-md shadow-primary-200 ring-1 ring-primary-600'
-              : 'text-primary-600 hover:bg-white hover:shadow-sm'
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label font-black transition-all duration-200 ${activeTab === 'SHARING'
+              ? 'bg-[#009900] text-white shadow-md shadow-green-200 ring-1 ring-[#009900]'
+              : 'text-[#009900] hover:bg-white hover:shadow-sm'
               }`}
           >
             <Lightbulb size={18} /> Góc Chia sẻ/Diễn đàn QLCL
@@ -82,6 +83,7 @@ export const DocsModule: React.FC = () => {
 
 // --- SUB-COMPONENT: DOCUMENT LIBRARY ---
 const DocumentLibrary = () => {
+  const { canCreate, canUpdate, canDelete } = usePermissions();
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -257,9 +259,9 @@ const DocumentLibrary = () => {
             <button
               key={cat.id}
               onClick={() => setDocCategory(cat.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${docCategory === cat.id
-                ? 'bg-primary-600 text-white border-primary-600'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-table font-bold border transition-colors whitespace-nowrap ${docCategory === cat.id
+                ? 'bg-[#009900] text-white border-[#009900]'
+                : 'bg-white text-black font-black border-slate-200 hover:border-slate-300'
                 }`}
             >
               {cat.icon} {cat.label}
@@ -268,9 +270,11 @@ const DocumentLibrary = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
           <div className="flex gap-2">
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
-              <Plus size={16} /> <span>Thêm văn bản</span>
-            </button>
+            {canCreate('DOCS') && (
+              <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-[#009900] text-white rounded-lg text-label font-black hover:bg-[#008800] transition-colors shadow-sm">
+                <Plus size={16} /> <span>Thêm văn bản</span>
+              </button>
+            )}
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
               <input
@@ -278,7 +282,7 @@ const DocumentLibrary = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm số hiệu, trích yếu..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#009900]"
               />
             </div>
           </div>
@@ -299,7 +303,7 @@ const DocumentLibrary = () => {
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm text-left min-w-[600px]">
-              <thead className="bg-primary-600 text-white font-bold uppercase text-xs border-b border-primary-700">
+              <thead className="bg-[#009900] text-white font-black text-table uppercase border-b border-[#008800] h-12">
                 <tr>
                   <th className="px-3 py-2 w-1/4">Số hiệu</th>
                   <th className="px-3 py-2 w-1/2">Tên văn bản</th>
@@ -309,15 +313,19 @@ const DocumentLibrary = () => {
               <tbody className="divide-y divide-slate-100">
                 {pagedDocs.map((doc) => (
                   <tr key={doc.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-3 py-2 font-mono text-xs text-slate-700 whitespace-nowrap">{doc.so_hieu_vb}</td>
-                    <td className="px-3 py-2 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
-                      <div className="font-semibold text-slate-800 text-sm line-clamp-2 hover:text-primary-600 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
+                    <td className="px-3 py-3 font-mono text-table text-black font-bold whitespace-nowrap">{doc.so_hieu_vb}</td>
+                    <td className="px-3 py-3 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
+                      <div className="font-bold text-black text-table line-clamp-2 hover:text-green-700 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => handleView(doc)} className="flex items-center gap-1 px-2 py-1 text-primary-600 hover:bg-primary-50 rounded text-xs font-medium border border-primary-100" title="Xem"><Eye size={14} /> <span>Xem</span></button>
-                        <button onClick={() => handleEdit(doc)} className="flex items-center gap-1 px-2 py-1 text-blue-600 hover:bg-blue-50 rounded text-xs font-medium border border-blue-100" title="Sửa"><Edit2 size={14} /> <span>Sửa</span></button>
-                        <button onClick={() => handleDelete(doc.id)} className="flex items-center gap-1 px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs font-medium border border-red-100" title="Xóa"><Trash2 size={14} /> <span>Xóa</span></button>
+                        {canUpdate('DOCS') && (
+                          <button onClick={() => handleEdit(doc)} className="flex items-center gap-1 px-2 py-1 text-blue-600 hover:bg-blue-50 rounded text-xs font-medium border border-blue-100" title="Sửa"><Edit2 size={14} /> <span>Sửa</span></button>
+                        )}
+                        {canDelete('DOCS') && (
+                          <button onClick={() => handleDelete(doc.id)} className="flex items-center gap-1 px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs font-medium border border-red-100" title="Xóa"><Trash2 size={14} /> <span>Xóa</span></button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -353,12 +361,16 @@ const DocumentLibrary = () => {
                   <button onClick={() => handleView(doc)} className="flex items-center justify-center gap-1 px-3 py-2 text-primary-700 bg-primary-50 hover:bg-primary-100 rounded text-xs font-semibold" title="Xem">
                     <Eye size={16} /> Xem
                   </button>
-                  <button onClick={() => handleEdit(doc)} className="flex items-center justify-center gap-1 px-3 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-xs font-semibold" title="Sửa">
-                    <Edit2 size={16} /> Sửa
-                  </button>
-                  <button onClick={() => handleDelete(doc.id)} className="flex items-center justify-center gap-1 px-3 py-2 text-red-700 bg-red-50 hover:bg-red-100 rounded text-xs font-semibold" title="Xóa">
-                    <Trash2 size={16} /> Xóa
-                  </button>
+                  {canUpdate('DOCS') && (
+                    <button onClick={() => handleEdit(doc)} className="flex items-center justify-center gap-1 px-3 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-xs font-semibold" title="Sửa">
+                      <Edit2 size={16} /> Sửa
+                    </button>
+                  )}
+                  {canDelete('DOCS') && (
+                    <button onClick={() => handleDelete(doc.id)} className="flex items-center justify-center gap-1 px-3 py-2 text-red-700 bg-red-50 hover:bg-red-100 rounded text-xs font-semibold" title="Xóa">
+                      <Trash2 size={16} /> Xóa
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -413,6 +425,7 @@ const DocumentLibrary = () => {
 
 // --- SUB-COMPONENT: TRAINING CENTER ---
 const TrainingCenter = () => {
+  const { canCreate } = usePermissions();
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -451,7 +464,7 @@ const TrainingCenter = () => {
         {/* Section: Video Library */}
         <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="font-black text-black text-section flex items-center gap-2 uppercase">
               <Youtube className="text-red-600" size={20} />
               Video Đào tạo & Quy trình mẫu
             </h3>
@@ -470,7 +483,7 @@ const TrainingCenter = () => {
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
                     <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">{video.thoi_luong || '--:--'}</span>
                   </div>
-                  <h4 className="font-bold text-slate-800 text-sm leading-tight group-hover:text-primary-700">{video.tieu_de}</h4>
+                  <h4 className="font-black text-black text-table leading-tight group-hover:text-green-700 transition-colors uppercase">{video.tieu_de}</h4>
                   <p className="text-xs text-slate-500 mt-1">{video.tac_gia || 'N/A'} • {video.luot_xem || 0} lượt xem</p>
                 </div>
               ))}
@@ -481,8 +494,8 @@ const TrainingCenter = () => {
         {/* Section: Self-Study Quizzes */}
         <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <CheckSquare className="text-green-600" size={20} />
+            <h3 className="font-black text-black text-section flex items-center gap-2 uppercase">
+              <CheckSquare className="text-[#009900]" size={20} />
               Ôn tập & Kiểm tra kiến thức
             </h3>
           </div>
@@ -490,7 +503,7 @@ const TrainingCenter = () => {
             {QUIZZES.map(quiz => (
               <div key={quiz.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary-200 hover:bg-slate-50 transition-colors">
                 <div className="mb-2 sm:mb-0">
-                  <h4 className="font-bold text-slate-800 text-sm">{quiz.title}</h4>
+                  <h4 className="font-black text-black text-table">{quiz.title}</h4>
                   <div className="flex gap-3 text-xs text-slate-500 mt-1">
                     <span className="flex items-center gap-1"><HelpCircle size={12} /> {quiz.questions} câu hỏi</span>
                     <span className="flex items-center gap-1"><BookOpen size={12} /> {quiz.time}</span>
@@ -519,7 +532,7 @@ const TrainingCenter = () => {
       <div className="space-y-6">
         <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-800 text-sm uppercase flex items-center gap-2">
+            <h3 className="font-black text-black text-table uppercase flex items-center gap-2">
               <Building size={18} className="text-indigo-600" />
               Hồ sơ đào tạo tại đơn vị
             </h3>
@@ -528,9 +541,11 @@ const TrainingCenter = () => {
             <p>Các khoa/phòng cập nhật hoạt động tự đào tạo (bình bệnh án, sinh hoạt chuyên môn, tập huấn tại chỗ...) tại đây.</p>
           </div>
 
-          <button className="w-full py-2 mb-4 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
-            <Plus size={16} /> Đăng ký buổi đào tạo
-          </button>
+          {canCreate('DOCS') && (
+            <button className="w-full py-2 mb-4 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+              <Plus size={16} /> Đăng ký buổi đào tạo
+            </button>
+          )}
 
           <div className="space-y-4">
             {UNIT_TRAINING.map(item => (
@@ -555,6 +570,7 @@ const TrainingCenter = () => {
 
 // --- SUB-COMPONENT: KNOWLEDGE SHARING ---
 const KnowledgeSharing = () => {
+  const { canCreate, canUpdate, canDelete } = usePermissions();
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -725,21 +741,25 @@ const KnowledgeSharing = () => {
                   <Bookmark size={16} fill={bookmarks.includes(article.id) ? 'currentColor' : 'none'} />
                 </button>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-                  <button onClick={(e) => { e.stopPropagation(); handleEdit(article); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full"><Edit2 size={14} /></button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(article.id); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded-full"><Trash2 size={14} /></button>
+                  {canUpdate('DOCS') && (
+                    <button onClick={(e) => { e.stopPropagation(); handleEdit(article); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full"><Edit2 size={14} /></button>
+                  )}
+                  {canDelete('DOCS') && (
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(article.id); }} className="p-1.5 text-red-600 hover:bg-red-50 rounded-full"><Trash2 size={14} /></button>
+                  )}
                 </div>
               </div>
             </div>
 
-            <h3 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 group-hover:text-primary-700 transition-colors leading-tight">{article.tieu_de}</h3>
-            <p className="text-sm text-slate-600 line-clamp-3 mb-4 leading-relaxed">{article.noi_dung}</p>
+            <h3 className="font-black text-black text-title mb-2 line-clamp-2 group-hover:text-green-700 transition-colors leading-tight uppercase">{article.tieu_de}</h3>
+            <p className="text-input font-bold text-black/80 line-clamp-3 mb-4 leading-relaxed">{article.noi_dung}</p>
 
             <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 uppercase font-bold tracking-wider">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold overflow-hidden">
                   {article.nguoi_dang?.[0]?.toUpperCase()}
                 </div>
-                <span className="text-slate-500">{article.nguoi_dang || 'Anonymous'}</span>
+                <span className="text-black font-black text-table">{article.nguoi_dang || 'Anonymous'}</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
@@ -752,16 +772,18 @@ const KnowledgeSharing = () => {
           </div>
         ))}
 
-        <div
-          onClick={() => { setEditingId(null); setFormData(initialFormData); setShowForm(true); }}
-          className="bg-slate-50 p-5 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors cursor-pointer group h-full"
-        >
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
-            <Plus size={24} className="text-primary-600" />
+        {canCreate('DOCS') && (
+          <div
+            onClick={() => { setEditingId(null); setFormData(initialFormData); setShowForm(true); }}
+            className="bg-slate-50 p-5 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center hover:bg-slate-100 transition-colors cursor-pointer group h-full"
+          >
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
+              <Plus size={24} className="text-primary-600" />
+            </div>
+            <h3 className="font-bold text-slate-700">Đóng góp bài viết</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-[200px]">Chia sẻ kinh nghiệm, mô hình hay của khoa phòng bạn</p>
           </div>
-          <h3 className="font-bold text-slate-700">Đóng góp bài viết</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-[200px]">Chia sẻ kinh nghiệm, mô hình hay của khoa phòng bạn</p>
-        </div>
+        )}
       </div>
 
       {showForm && (
@@ -785,14 +807,14 @@ const KnowledgeSharing = () => {
       )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+        <h3 className="font-black text-black text-title mb-4 flex items-center gap-2 uppercase">
           <HelpCircle className="text-purple-600" /> Câu hỏi thường gặp (Q&A)
         </h3>
         <div className="divide-y divide-slate-100">
           {articles.filter(a => a.phan_loai === 'Hỏi đáp').slice(0, 5).map((qa) => (
             <div key={qa.id} className="py-3">
-              <h4 onClick={() => setSelectedArticle(qa)} className="font-medium text-slate-800 text-sm cursor-pointer hover:text-primary-600 line-clamp-1">{qa.tieu_de}</h4>
-              <p className="text-sm text-slate-500 mt-1 pl-4 border-l-2 border-slate-200 line-clamp-2">{qa.noi_dung}</p>
+              <h4 onClick={() => setSelectedArticle(qa)} className="font-bold text-black text-table cursor-pointer hover:text-green-600 line-clamp-1 uppercase">{qa.tieu_de}</h4>
+              <p className="text-input text-black/70 font-bold mt-1 pl-4 border-l-2 border-slate-200 line-clamp-2">{qa.noi_dung}</p>
             </div>
           ))}
           {articles.filter(a => a.phan_loai === 'Hỏi đáp').length === 0 && (
@@ -836,7 +858,7 @@ const FormModal: React.FC<FormModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white z-10">
-          <h3 className="text-lg font-bold text-slate-800">Thêm văn bản mới</h3>
+          <h3 className="text-title font-black text-black uppercase">Thông tin văn bản</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X size={20} />
           </button>
@@ -844,25 +866,25 @@ const FormModal: React.FC<FormModalProps> = ({
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">File văn bản (PDF, DOC...)</label>
+              <label className="block text-label font-bold text-black mb-1">File văn bản (PDF, DOC...)</label>
               <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.zip,.rar,.jpg,.png" onChange={e => setFileUpload(e.target.files?.[0] || null)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
               {fileUpload && <div className="text-xs text-slate-600 mt-1">Đã chọn: {fileUpload.name}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Số hiệu VB *</label>
+              <label className="block text-label font-bold text-black mb-1">Số hiệu VB *</label>
               <input type="text" value={formData.so_hieu_vb} onChange={e => setFormData({ ...formData, so_hieu_vb: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="15/2023/QH15" />
+                className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black" placeholder="15/2023/QH15" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tên văn bản *</label>
+              <label className="block text-label font-bold text-black mb-1">Tên văn bản *</label>
               <input type="text" value={formData.ten_vb} onChange={e => setFormData({ ...formData, ten_vb: e.target.value })}
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Thông tư hướng dẫn..." />
+                className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black" placeholder="Thông tư hướng dẫn..." />
             </div>
 
             {/* Loại Văn Bản */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-medium text-slate-700">Loại văn bản *</label>
+                 <label className="block text-label font-bold text-black">Loại văn bản *</label>
                 {!isAddingLoai && <button onClick={() => setIsAddingLoai(true)} className="text-xs text-primary-600 hover:text-primary-700 font-medium">+ Thêm mới</button>}
               </div>
               {isAddingLoai ? (
@@ -872,7 +894,7 @@ const FormModal: React.FC<FormModalProps> = ({
                   <button onClick={() => setIsAddingLoai(false)} className="px-3 bg-slate-200 text-slate-600 rounded-lg text-xs">Hủy</button>
                 </div>
               ) : (
-                <select value={formData.loai_vb} onChange={e => setFormData({ ...formData, loai_vb: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                <select value={formData.loai_vb} onChange={e => setFormData({ ...formData, loai_vb: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                   <option value="">-- Chọn loại văn bản --</option>
                   {loaiVbList.map((t, idx) => <option key={idx} value={t}>{t}</option>)}
                 </select>
@@ -882,7 +904,7 @@ const FormModal: React.FC<FormModalProps> = ({
             {/* Cơ Quan Ban Hành */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-medium text-slate-700">Cơ quan ban hành *</label>
+                 <label className="block text-label font-bold text-black">Cơ quan ban hành *</label>
                 {!isAddingCoQuan && <button onClick={() => setIsAddingCoQuan(true)} className="text-xs text-primary-600 hover:text-primary-700 font-medium">+ Thêm mới</button>}
               </div>
               {isAddingCoQuan ? (
@@ -892,7 +914,7 @@ const FormModal: React.FC<FormModalProps> = ({
                   <button onClick={() => setIsAddingCoQuan(false)} className="px-3 bg-slate-200 text-slate-600 rounded-lg text-xs">Hủy</button>
                 </div>
               ) : (
-                <select value={formData.co_quan_ban_hanh} onChange={e => setFormData({ ...formData, co_quan_ban_hanh: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                <select value={formData.co_quan_ban_hanh} onChange={e => setFormData({ ...formData, co_quan_ban_hanh: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                   <option value="">-- Chọn cơ quan --</option>
                   {coQuanList.map((cq: any) => <option key={cq.id} value={cq.ten_co_quan}>{cq.ten_co_quan}</option>)}
                 </select>
@@ -900,15 +922,15 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Hiệu lực *</label>
+               <label className="block text-label font-bold text-black mb-1">Hiệu lực *</label>
               <input type="text" value={formData.hieu_luc} onChange={e => setFormData({ ...formData, hieu_luc: e.target.value })}
                 placeholder="VD: Từ 01/01/2024"
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
+                className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Trạng thái *</label>
-              <select value={formData.trang_thai} onChange={e => setFormData({ ...formData, trang_thai: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-sm">
+               <label className="block text-label font-bold text-black mb-1">Trạng thái *</label>
+              <select value={formData.trang_thai} onChange={e => setFormData({ ...formData, trang_thai: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                 <option value="Còn hiệu lực">Còn hiệu lực</option>
                 <option value="Hết hiệu lực">Hết hiệu lực</option>
                 <option value="Dự thảo">Dự thảo</option>
@@ -917,7 +939,7 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Phân loại (Lọc nhanh) *</label>
+               <label className="block text-label font-bold text-black mb-1">Phân loại (Lọc nhanh) *</label>
               <select
                 value={formData.phan_loai}
                 onChange={e => setFormData({ ...formData, phan_loai: e.target.value })}
@@ -946,6 +968,7 @@ const FormModal: React.FC<FormModalProps> = ({
 };
 
 const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onClose: () => void, onEdit: (d: any) => void, onView: (d: any) => void, onDelete: (id: string) => void }) => {
+  const { canUpdate, canDelete } = usePermissions();
   if (!doc) return null;
 
   return (
@@ -953,7 +976,7 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
           <div>
-            <h3 className="font-bold text-slate-800 text-lg">Chi tiết văn bản</h3>
+            <h3 className="font-black text-black text-title uppercase">Chi tiết văn bản</h3>
             <p className="text-xs text-slate-500 font-mono mt-1">{doc.so_hieu_vb}</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
@@ -963,20 +986,20 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
 
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên văn bản</label>
-            <p className="text-slate-800 font-medium text-sm leading-relaxed">{doc.ten_vb}</p>
+            <label className="text-label font-bold text-black/60 uppercase tracking-wider block mb-1">Tên văn bản</label>
+            <p className="text-black font-black text-input leading-relaxed">{doc.ten_vb}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Loại văn bản</label>
+              <label className="text-label font-bold text-black/60 uppercase tracking-wider block mb-1">Loại văn bản</label>
               <div className="flex items-center gap-2">
                 <FileText size={16} className="text-primary-500" />
-                <span className="text-sm text-slate-700">{doc.loai_vb || '---'}</span>
+                <span className="text-input font-black text-black">{doc.loai_vb || '---'}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Trạng thái</label>
+              <label className="text-label font-bold text-black/60 uppercase tracking-wider block mb-1">Trạng thái</label>
               <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border ${doc.trang_thai === 'Còn hiệu lực' ? 'bg-green-50 text-green-700 border-green-200' :
                 doc.trang_thai === 'Hết hiệu lực' ? 'bg-red-50 text-red-700 border-red-200' :
                   'bg-slate-100 text-slate-600 border-slate-200'
@@ -988,10 +1011,10 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Cơ quan ban hành</label>
+              <label className="text-label font-bold text-black/60 uppercase tracking-wider block mb-1">Cơ quan ban hành</label>
               <div className="flex items-center gap-2">
                 <Building size={16} className="text-slate-400" />
-                <span className="text-sm text-slate-700">{doc.co_quan_ban_hanh || '---'}</span>
+                <span className="text-input font-black text-black">{doc.co_quan_ban_hanh || '---'}</span>
               </div>
             </div>
             <div>
@@ -1019,12 +1042,16 @@ const DetailModal = ({ doc, onClose, onEdit, onView, onDelete }: { doc: any, onC
         </div>
 
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
-          <button onClick={() => { onEdit(doc); onClose(); }} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Edit2 size={16} /> Sửa văn bản
-          </button>
-          <button onClick={() => { if (window.confirm('Xóa?')) { onDelete(doc.id); onClose(); } }} className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors">
-            <Trash2 size={16} /> Xóa
-          </button>
+          {canUpdate('DOCS') && (
+            <button onClick={() => { onEdit(doc); onClose(); }} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <Edit2 size={16} /> Sửa văn bản
+            </button>
+          )}
+          {canDelete('DOCS') && (
+            <button onClick={() => { if (window.confirm('Xóa?')) { onDelete(doc.id); onClose(); } }} className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors">
+              <Trash2 size={16} /> Xóa
+            </button>
+          )}
           <button onClick={() => onView(doc)} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg text-sm font-medium transition-colors shadow-sm">
             <Eye size={16} /> Xem nội dung
           </button>
@@ -1039,14 +1066,14 @@ const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, on
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white z-10">
-          <h3 className="text-lg font-bold text-slate-800">{isEdit ? 'Sửa bài viết' : 'Đóng góp bài viết mới'}</h3>
+          <h3 className="text-title font-black text-black uppercase">{isEdit ? 'Sửa bài viết' : 'Đóng góp bài viết mới'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X size={20} />
           </button>
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Tiêu đề *</label>
+            <label className="block text-label font-bold text-black mb-1 text-label font-bold text-black">Tiêu đề *</label>
             <input
               type="text"
               value={formData.tieu_de}
@@ -1056,7 +1083,7 @@ const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, on
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Phân loại *</label>
+            <label className="block text-label font-bold text-black mb-1">Phân loại *</label>
             <select
               value={formData.phan_loai}
               onChange={e => setFormData({ ...formData, phan_loai: e.target.value })}
@@ -1069,7 +1096,7 @@ const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, on
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Nội dung *</label>
+            <label className="block text-label font-bold text-black mb-1">Nội dung *</label>
             <textarea
               rows={6}
               value={formData.noi_dung}
@@ -1173,7 +1200,7 @@ const SharingDetailModal = ({ article, onClose }: any) => {
         <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-20 flex justify-between items-start">
           <div>
             <span className="px-2 py-0.5 rounded bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest">{article.phan_loai || 'Chia sẻ'}</span>
-            <h3 className="text-2xl font-black text-slate-900 mt-2">{article.tieu_de}</h3>
+            <h3 className="text-title font-black text-black mt-2 uppercase">{article.tieu_de}</h3>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><X size={24} /></button>
         </div>
@@ -1192,7 +1219,7 @@ const SharingDetailModal = ({ article, onClose }: any) => {
               <span>{article.ngay_dang ? new Date(article.ngay_dang).toLocaleDateString('vi-VN') : '-'}</span>
             </div>
 
-            <div className="prose max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap mb-8">
+            <div className="prose max-w-none text-input font-bold text-black/80 leading-relaxed whitespace-pre-wrap mb-8">
               {article.noi_dung}
             </div>
 

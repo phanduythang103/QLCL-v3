@@ -54,18 +54,18 @@ const StatCard = React.memo<{
   <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
     <div className="flex justify-between items-start">
       <div>
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <h4 className="text-2xl font-bold text-slate-800 mt-1">{value}</h4>
-        {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
+        <p className="text-table font-black text-black/40 uppercase tracking-wider">{title}</p>
+        <h4 className="text-title font-black text-black uppercase mt-1">{value}</h4>
+        {subtext && <p className="text-table font-bold text-black/40 mt-1 uppercase">{subtext}</p>}
       </div>
       <div className="p-2 bg-slate-50 rounded-lg">
         {icon}
       </div>
     </div>
     {trend && (
-      <div className={`mt-4 text-xs font-medium flex items-center ${trendDown ? 'text-red-500' : 'text-green-500'}`}>
+      <div className={`mt-4 text-table font-black uppercase flex items-center ${trendDown ? 'text-red-500' : 'text-[#009900]'}`}>
         <span>{trend}</span>
-        <span className="text-slate-400 ml-1">so với tháng trước</span>
+        <span className="text-black/40 ml-1">so với tháng trước</span>
       </div>
     )}
   </div>
@@ -146,7 +146,7 @@ export const Dashboard: React.FC = () => {
           title="Nhân sự QLCL"
           value={stats.loading ? "..." : stats.nhanSu.total.toString()}
           subtext={`Đã cấp chứng chỉ: ${stats.nhanSu.certified}`}
-          icon={<Users className="w-6 h-6 text-primary-600" />}
+          icon={<Users className="w-6 h-6 text-[#009900]" />}
           trend={stats.nhanSu.total > 0 ? `+${stats.nhanSu.total}` : undefined}
         />
         <StatCard
@@ -176,8 +176,8 @@ export const Dashboard: React.FC = () => {
         {/* Charts - 2/3 width on large screens */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <TrendingUp className="w-5 h-5 mr-2 text-primary-500" />
+            <h3 className="text-section font-black text-black uppercase mb-4 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2 text-[#009900]" />
               Xu hướng báo cáo sự cố (6 tháng)
             </h3>
             <div className="h-64">
@@ -187,15 +187,15 @@ export const Dashboard: React.FC = () => {
                   <XAxis dataKey="name" axisLine={false} tickLine={false} />
                   <YAxis axisLine={false} tickLine={false} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="count" stroke="#009900" strokeWidth={3} dot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+            <h3 className="text-section font-black text-black uppercase mb-4 flex items-center">
+              <CheckCircle className="w-5 h-5 mr-2 text-[#009900]" />
               Tỉ lệ tuân thủ quy trình (Tháng 6)
             </h3>
             <div className="h-64">
@@ -205,7 +205,7 @@ export const Dashboard: React.FC = () => {
                   <XAxis type="number" domain={[0, 100]} hide />
                   <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} />
                   <Tooltip />
-                  <Bar dataKey="score" fill="#106627" radius={[0, 4, 4, 0]} barSize={20} />
+                  <Bar dataKey="score" fill="#009900" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -219,9 +219,9 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-          <h3 className="font-semibold text-slate-800">Hoạt động gần đây</h3>
-          <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">Xem tất cả</button>
+        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/30">
+          <h3 className="text-label font-black text-black uppercase">Hoạt động gần đây</h3>
+          <button className="text-table text-[#009900] hover:underline font-black uppercase">Xem tất cả</button>
         </div>
         <div className="divide-y divide-slate-100">
           {[
@@ -230,10 +230,10 @@ export const Dashboard: React.FC = () => {
             { action: "Cập nhật", subject: "Chỉ số kiểm soát nhiễm khuẩn T6/2024", time: "1 ngày trước", user: "Ban QLCL" },
           ].map((item, idx) => (
             <div key={idx} className="p-4 flex items-start space-x-3 hover:bg-slate-50 transition-colors">
-              <div className="w-2 h-2 mt-2 rounded-full bg-primary-500"></div>
+              <div className="w-2 h-2 mt-2 rounded-full bg-[#009900]"></div>
               <div>
-                <p className="text-sm text-slate-800"><span className="font-medium">{item.user}</span> {item.action} <span className="font-medium text-slate-900">"{item.subject}"</span></p>
-                <p className="text-xs text-slate-500 mt-1">{item.time}</p>
+                <p className="text-table text-black uppercase leading-relaxed"><span className="font-black">{item.user}</span> {item.action} <span className="font-black text-black">"{item.subject}"</span></p>
+                <p className="text-table font-bold text-black/40 mt-1 uppercase">{item.time}</p>
               </div>
             </div>
           ))}

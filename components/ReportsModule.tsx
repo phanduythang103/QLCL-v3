@@ -50,8 +50,8 @@ export const ReportsModule: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Báo cáo Tổng hợp</h2>
-          <p className="text-sm text-slate-500">Kết xuất báo cáo hoạt động QLCL định kỳ.</p>
+          <h2 className="text-title font-black text-black uppercase">Báo cáo Tổng hợp</h2>
+          <p className="text-table text-black/60 font-bold uppercase tracking-wider">Kết xuất báo cáo hoạt động QLCL định kỳ.</p>
         </div>
       </div>
 
@@ -62,8 +62,8 @@ export const ReportsModule: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">Chọn loại báo cáo để xuất dữ liệu</h3>
-            <p className="text-slate-500 text-sm">Hệ thống sẽ tự động tổng hợp dữ liệu từ các module (Nhân sự, Sự cố, Chỉ số, Đánh giá tiêu chí) để tạo file Word/PDF theo mẫu quy định.</p>
+            <h3 className="text-section font-black text-black mb-2 uppercase">Chọn loại báo cáo để xuất dữ liệu</h3>
+            <p className="text-black/60 text-table font-bold">Hệ thống sẽ tự động tổng hợp dữ liệu từ các module (Nhân sự, Sự cố, Chỉ số, Đánh giá tiêu chí) để tạo file Word/PDF theo mẫu quy định.</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
@@ -74,8 +74,8 @@ export const ReportsModule: React.FC = () => {
               <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
                 <Calendar size={24} className="text-slate-500 group-hover:text-primary-600" />
               </div>
-              <span className="font-bold text-slate-800">Báo cáo Tháng</span>
-              <span className="text-xs text-slate-500 mt-1">Hoạt động định kỳ</span>
+              <span className="font-black text-black text-label uppercase">Báo cáo Tháng</span>
+              <span className="text-table text-black/40 mt-1 font-bold">Hoạt động định kỳ</span>
             </button>
             
             <button 
@@ -85,8 +85,8 @@ export const ReportsModule: React.FC = () => {
               <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
                 <FileText size={24} className="text-slate-500 group-hover:text-primary-600" />
               </div>
-              <span className="font-bold text-slate-800">Sơ kết Quý</span>
-              <span className="text-xs text-slate-500 mt-1">Tổng hợp 3 tháng</span>
+              <span className="font-black text-black text-label uppercase">Sơ kết Quý</span>
+              <span className="text-table text-black/40 mt-1 font-bold">Tổng hợp 3 tháng</span>
             </button>
             
             <button 
@@ -96,17 +96,17 @@ export const ReportsModule: React.FC = () => {
               <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
                 <Printer size={24} className="text-slate-500 group-hover:text-primary-600" />
               </div>
-              <span className="font-bold text-slate-800">Tổng kết Năm</span>
-              <span className="text-xs text-slate-500 mt-1">Báo cáo toàn diện</span>
+              <span className="font-black text-black text-label uppercase">Tổng kết Năm</span>
+              <span className="text-table text-black/40 mt-1 font-bold">Báo cáo toàn diện</span>
             </button>
           </div>
 
           <div className="pt-6 border-t border-slate-100 w-full">
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors">
+                <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#009900] text-white rounded-lg hover:bg-[#0d6e39] font-black text-input uppercase shadow-md transition-all">
                     <Download size={18} /> Tải xuống bản xem trước (PDF)
                 </button>
-                <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors">
+                <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-slate-300 text-black rounded-lg hover:bg-slate-50 font-black text-input uppercase transition-all shadow-sm">
                     Xuất file Word (.docx)
                 </button>
             </div>
@@ -116,8 +116,8 @@ export const ReportsModule: React.FC = () => {
       
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-slate-800 text-sm uppercase">Lịch sử xuất báo cáo</h3>
-          <button onClick={loadData} className="text-primary-600 hover:underline text-xs font-medium flex items-center gap-1">
+          <h3 className="font-black text-black text-section uppercase tracking-tight">Lịch sử xuất báo cáo</h3>
+          <button onClick={loadData} className="text-[#009900] hover:underline text-table font-black flex items-center gap-1 uppercase">
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Làm mới
           </button>
         </div>
@@ -134,14 +134,14 @@ export const ReportsModule: React.FC = () => {
                             <FileText size={16} />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-800">{report.ten_bao_cao}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-label font-black text-black uppercase">{report.ten_bao_cao}</p>
+                            <p className="text-table text-black/40 font-bold uppercase tracking-tight">
                               Người tạo: {report.nguoi_tao || 'Không rõ'} • 
                               {report.ngay_tao ? new Date(report.ngay_tao).toLocaleDateString('vi-VN') : ''}
                             </p>
                         </div>
                     </div>
-                    <button className="text-primary-600 hover:underline text-xs font-medium">Tải lại</button>
+                    <button className="text-[#009900] hover:underline text-table font-black uppercase">Tải lại</button>
                 </div>
             ))}
         </div>

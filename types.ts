@@ -23,13 +23,18 @@ export type SupervisionCategory = 'SURGERY' | 'HAND_HYGIENE' | '5S' | 'RECORDS' 
 
 export interface Personnel {
   id: string;
-  name: string;
-  rank: string;       // Cấp bậc (VD: Đại tá, Thượng tá...)
-  position: string;   // Chức vụ (VD: Giám đốc, Trưởng khoa...)
-  department: string; // Khoa/Phòng công tác
-  phone: string;      // Số điện thoại
-  hasCertificate: boolean; // Chứng chỉ đào tạo QLCL
-  qaRoles: QARoleType[]; // Thành viên: Hội đồng, Ban, hoặc Mạng lưới (Có thể nhiều vai trò)
+  username: string;
+  full_name: string;
+  role: string;
+  status: string;
+  avatar?: string;
+  name?: string;
+  rank?: string;       // Cấp bậc (VD: Đại tá, Thượng tá...)
+  position?: string;   // Chức vụ (VD: Giám đốc, Trưởng khoa...)
+  department?: string; // Khoa/Phòng công tác
+  phone?: string;      // Số điện thoại
+  hasCertificate?: boolean; // Chứng chỉ đào tạo QLCL
+  qaRoles?: QARoleType[]; // Thành viên: Hội đồng, Ban, hoặc Mạng lưới (Có thể nhiều vai trò)
 }
 
 export interface Document {

@@ -10,6 +10,7 @@ export interface ThuVienVb {
   trang_thai: string;
   file_van_ban?: string;
   phan_loai?: string;
+  ngay_ban_hanh?: string;
   created_at?: string;
 }
 

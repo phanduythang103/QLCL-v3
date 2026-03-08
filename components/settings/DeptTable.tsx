@@ -123,9 +123,9 @@ export default function DeptTable() {
           <button
             key={opt.id}
             onClick={() => { setFilterKhoi(opt.id); setCurrentPage(1); }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${filterKhoi === opt.id
-                ? 'bg-primary-600 text-white border-primary-600 shadow-md'
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+            className={`px-4 py-2 rounded-xl text-label font-black transition-all border uppercase ${filterKhoi === opt.id
+                ? 'bg-[#009900] text-white border-[#009900] shadow-md'
+                : 'bg-white text-black border-slate-200 hover:bg-green-50'
               }`}
           >
             {opt.label}
@@ -136,17 +136,17 @@ export default function DeptTable() {
       {showForm && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold text-slate-800">{editingId ? 'Sửa đơn vị' : 'Thêm đơn vị mới'}</h4>
+             <h4 className="text-label font-black text-black uppercase">{editingId ? 'Sửa đơn vị' : 'Thêm đơn vị mới'}</h4>
             <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input required placeholder="Mã đơn vị *" value={form.ma_don_vi} onChange={e => setForm(f => ({ ...f, ma_don_vi: e.target.value }))} className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
-            <input required placeholder="Tên đơn vị *" value={form.ten_don_vi} onChange={e => setForm(f => ({ ...f, ten_don_vi: e.target.value }))} className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500" />
+            <input required placeholder="Mã đơn vị *" value={form.ma_don_vi} onChange={e => setForm(f => ({ ...f, ma_don_vi: e.target.value }))} className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500" />
+            <input required placeholder="Tên đơn vị *" value={form.ten_don_vi} onChange={e => setForm(f => ({ ...f, ten_don_vi: e.target.value }))} className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500" />
             <select
               required
               value={form.khoi}
               onChange={e => setForm(f => ({ ...f, khoi: e.target.value }))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary-500 bg-white"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500 bg-white"
             >
               <option value="">-- Chọn khối *--</option>
               <option value="Nội">Nội</option>
@@ -155,10 +155,10 @@ export default function DeptTable() {
               <option value="Cơ quan">Cơ quan</option>
             </select>
             <div className="flex gap-2 col-span-full">
-              <button type="submit" className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
+              <button type="submit" className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase">
                 <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
               </button>
-              <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Hủy</button>
+              <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-input font-black text-black hover:bg-slate-50 uppercase">Hủy</button>
             </div>
           </form>
         </div>
@@ -166,10 +166,10 @@ export default function DeptTable() {
 
       {!showForm && (
         <div className="flex justify-between items-center">
-          <div className="text-sm font-bold text-slate-500">
+          <div className="text-table font-black text-black/40 uppercase tracking-widest">
             Tổng số: {filteredItems.length} đơn vị
           </div>
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
             <Plus size={16} /> Thêm đơn vị
           </button>
         </div>
@@ -177,7 +177,7 @@ export default function DeptTable() {
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-primary-600 text-white font-bold uppercase text-xs">
+          <thead className="bg-[#009900] text-white font-black uppercase text-table h-12">
             <tr>
               <th className="px-4 py-3 w-12 text-center">#</th>
               <th className="px-4 py-3">Mã ĐV</th>
@@ -193,9 +193,9 @@ export default function DeptTable() {
               paginatedItems.map((item, idx) => (
                 <tr key={item.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-center text-slate-500">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                  <td className="px-4 py-3 text-slate-700 font-medium">{item.ma_don_vi}</td>
-                  <td className="px-4 py-3 text-slate-700">{item.ten_don_vi}</td>
-                  <td className="px-4 py-3 text-slate-600">{item.khoi || '-'}</td>
+                  <td className="px-4 py-3 text-black font-black text-table uppercase">{item.ma_don_vi}</td>
+                  <td className="px-4 py-3 text-black text-table font-bold uppercase">{item.ten_don_vi}</td>
+                  <td className="px-4 py-3 text-black/60 text-table font-bold uppercase">{item.khoi || '-'}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-1">
                       <button onClick={() => handleEdit(item)} className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded"><Edit2 size={16} /></button>
@@ -213,11 +213,11 @@ export default function DeptTable() {
       {totalPages > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 uppercase">Hiển thị</span>
+            <span className="text-table font-black text-black/40 uppercase tracking-widest">Hiển thị</span>
             <select
               value={itemsPerPage}
               onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              className="px-2 py-1 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:border-primary-500"
+              className="px-2 py-1 border border-slate-200 rounded-lg text-table font-black text-black focus:outline-none focus:border-green-500 bg-white"
             >
               <option value={10}>10</option>
               <option value={15}>15</option>
@@ -225,7 +225,7 @@ export default function DeptTable() {
               <option value={50}>50</option>
               <option value={100}>100</option>
             </select>
-            <span className="text-xs font-bold text-slate-500 uppercase">dòng / trang</span>
+            <span className="text-table font-black text-black/40 uppercase tracking-widest">dòng / trang</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export default function DeptTable() {
             >
               <ChevronLeft size={16} className="text-slate-600" />
             </button>
-            <span className="text-xs font-bold text-slate-600">
+            <span className="text-table font-black text-black uppercase">
               Trang {currentPage} / {totalPages}
             </span>
             <button
