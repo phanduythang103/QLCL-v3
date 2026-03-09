@@ -21,6 +21,21 @@ export type QARoleType = 'COUNCIL' | 'BOARD' | 'NETWORK';
 
 export type SupervisionCategory = 'SURGERY' | 'HAND_HYGIENE' | '5S' | 'RECORDS' | 'DRUGS' | 'PROFESSIONAL' | 'GENERAL' | null;
 
+export type IndicatorCategory = 
+  | 'KTCM' 
+  | 'SURGERY_II' 
+  | 'SSI' 
+  | 'VAP' 
+  | 'SEVERE_INCIDENT' 
+  | 'SEVERE_NON_MEDICAL' 
+  | 'AVG_EXAM_TIME' 
+  | 'AVG_STAY_TIME' 
+  | 'BED_USAGE' 
+  | 'OR_USAGE' 
+  | 'NURSE_PATIENT_RATIO' 
+  | 'HAND_HYGIENE' 
+  | null;
+
 export interface Personnel {
   id: string;
   username: string;

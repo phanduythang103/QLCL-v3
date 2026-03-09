@@ -4,13 +4,15 @@ export interface ThuVienVb {
   id: string;
   so_hieu_vb: string;
   ten_vb: string;
-  loai_vb: string;
-  co_quan_ban_hanh: string;
-  hieu_luc: string;
-  trang_thai: string;
-  file_van_ban?: string;
+  loai_vb?: string;
+  linh_vuc?: string;
   phan_loai?: string;
-  ngay_ban_hanh?: string;
+  co_quan_ban_hanh?: string;
+  ngay_hieu_luc?: string;
+  tieu_chi_lien_quan?: string;
+  trang_thai?: string;
+  file_dinh_kem?: string;
+  ghi_chu?: string;
   created_at?: string;
 }
 

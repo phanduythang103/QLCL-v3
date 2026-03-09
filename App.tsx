@@ -17,6 +17,8 @@ import { HeaderUserMenu } from './components/HeaderUserMenu';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { fetchUnreadNotifications, markNotificationAsRead, subscribeToNotifications, Notification } from './notificationApi';
 import { PermissionsProvider, usePermissions } from './contexts/PermissionsContext';
+import { IndicatorsProvider, useIndicators } from './components/IndicatorsContext';
+import { IndicatorCategory } from './types';
 
 // --- Reusable Nav Item ---
 const NavItem = ({ icon, label, active, onClick, collapsed }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; collapsed: boolean; }) => (
@@ -81,6 +83,64 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
   );
 };
 
+// --- Indicators Dropdown ---
+const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boolean; active: boolean; onSelectModule: () => void; }) => {
+  const { category, setCategory, isExpanded, setIsExpanded } = useIndicators();
+
+  const toggleExpansion = () => {
+    if (!active) {
+      onSelectModule();
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
+  const handleSubNavClick = (cat: IndicatorCategory) => {
+    onSelectModule();
+    setCategory(cat);
+  }
+
+  const { canView } = usePermissions();
+
+  const subNavItems = [
+    { label: "KTCM theo tuyến", cat: 'KTCM' as IndicatorCategory },
+    { label: "PT loại II+", cat: 'SURGERY_II' as IndicatorCategory },
+    { label: "Nhiễm khuẩn vết mổ", cat: 'SSI' as IndicatorCategory },
+    { label: "Viêm phổi NKBV", cat: 'VAP' as IndicatorCategory },
+    { label: "Sự cố Y khoa NT", cat: 'SEVERE_INCIDENT' as IndicatorCategory },
+    { label: "Sự cố ngoài YK NT", cat: 'SEVERE_NON_MEDICAL' as IndicatorCategory },
+    { label: "Thời gian khám bệnh", cat: 'AVG_EXAM_TIME' as IndicatorCategory },
+    { label: "Thời gian nằm viện", cat: 'AVG_STAY_TIME' as IndicatorCategory },
+    { label: "Sử dụng giường", cat: 'BED_USAGE' as IndicatorCategory },
+    { label: "Sử dụng phòng mổ", cat: 'OR_USAGE' as IndicatorCategory },
+    { label: "Tỷ lệ ĐD/NB", cat: 'NURSE_PATIENT_RATIO' as IndicatorCategory },
+    { label: "Vệ sinh tay", cat: 'HAND_HYGIENE' as IndicatorCategory },
+  ];
+
+  return (
+    <div className="space-y-1">
+      <button onClick={toggleExpansion} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${active ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/40' : 'text-primary-100 hover:bg-primary-800 hover:text-white'}`} title={collapsed ? "Chỉ số QLCL" : ''}>
+        <div className="flex items-center overflow-hidden">
+          <div className={`transition-transform duration-200 flex-shrink-0 ${active ? 'scale-110' : 'group-hover:scale-110'}`}><BarChart2 size={20} /></div>
+          {!collapsed && <span className="ml-3 text-label truncate">Chỉ số QLCL</span>}
+        </div>
+        {!collapsed && <ChevronDown size={16} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />}
+      </button>
+
+      {!collapsed && isExpanded && (
+        <div className="space-y-1 animate-in slide-in-from-top-2 duration-200 lg:max-h-64 overflow-y-auto custom-scrollbar-light">
+          {subNavItems.map(item => (
+            <button key={item.label} onClick={() => handleSubNavClick(item.cat)} className={`w-full text-left pl-11 pr-4 py-2 text-xs transition-colors relative ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Main Sidebar Component ---
 const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, mobileSidebarOpen, setMobileOpen, canAccessSettings }: { currentModule: ModuleType; handleModuleChange: (module: ModuleType) => void; collapsed: boolean; setCollapsed: (collapsed: boolean) => void; mobileSidebarOpen: boolean; setMobileOpen: (open: boolean) => void; canAccessSettings: boolean; }) => {
   const { canView } = usePermissions();
@@ -106,7 +166,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         {canView(ModuleType.ASSESSMENT) && <NavItem icon={<ClipboardCheck size={20} />} label="Đánh giá Chất lượng" active={currentModule === ModuleType.ASSESSMENT} onClick={() => handleModuleChange(ModuleType.ASSESSMENT)} collapsed={collapsed} />}
         {canView(ModuleType.INCIDENTS) && <NavItem icon={<AlertTriangle size={20} />} label="Sự cố Y khoa" active={currentModule === ModuleType.INCIDENTS} onClick={() => handleModuleChange(ModuleType.INCIDENTS)} collapsed={collapsed} />}
         {canView(ModuleType.IMPROVEMENT) && <NavItem icon={<TrendingUp size={20} />} label="Cải tiến Chất lượng" active={currentModule === ModuleType.IMPROVEMENT} onClick={() => handleModuleChange(ModuleType.IMPROVEMENT)} collapsed={collapsed} />}
-        {canView(ModuleType.INDICATORS) && <NavItem icon={<BarChart2 size={20} />} label="Chỉ số QLCL" active={currentModule === ModuleType.INDICATORS} onClick={() => handleModuleChange(ModuleType.INDICATORS)} collapsed={collapsed} />}
+        {canView(ModuleType.INDICATORS) && <IndicatorsNav collapsed={collapsed} active={currentModule === ModuleType.INDICATORS} onSelectModule={() => handleModuleChange(ModuleType.INDICATORS)} />}
         {canView(ModuleType.SUPERVISION) && <SupervisionNav collapsed={collapsed} active={currentModule === ModuleType.SUPERVISION} onSelectModule={() => handleModuleChange(ModuleType.SUPERVISION)} />}
         {canView(ModuleType.REPORTS) && <NavItem icon={<FileText size={20} />} label="Báo cáo Tổng hợp" active={currentModule === ModuleType.REPORTS} onClick={() => handleModuleChange(ModuleType.REPORTS)} collapsed={collapsed} />}
         <div className="pt-4 mt-4 border-t border-primary-800/50">
@@ -432,9 +492,11 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => (
   <NavigationProvider>
     <SupervisionProvider>
-      <PermissionsProvider>
-        <AppContent />
-      </PermissionsProvider>
+      <IndicatorsProvider>
+        <PermissionsProvider>
+          <AppContent />
+        </PermissionsProvider>
+      </IndicatorsProvider>
     </SupervisionProvider>
   </NavigationProvider>
 );

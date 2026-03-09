@@ -22,9 +22,10 @@ CREATE TABLE chi_so_qlcl (
 -- Enable RLS
 ALTER TABLE chi_so_qlcl ENABLE ROW LEVEL SECURITY;
 
--- Allow all operations for authenticated users
-CREATE POLICY "Allow all for authenticated users" ON chi_so_qlcl
+-- Allow all operations for all users (anon and authenticated)
+CREATE POLICY "Allow all operations" ON chi_so_qlcl
     FOR ALL
+    TO public
     USING (true)
     WITH CHECK (true);
 

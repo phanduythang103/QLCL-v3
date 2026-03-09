@@ -106,7 +106,7 @@ export const Dashboard: React.FC = () => {
         // Calculate document stats
         const vbTotal = vanBanData?.length || 0;
         const vbMonthly = vanBanData?.filter(i => {
-          const createdAt = new Date(i.created_at || i.ngay_ban_hanh || '');
+          const createdAt = new Date(i.created_at || i.ngay_hieu_luc || '');
           return createdAt >= firstDayOfMonth;
         }).length || 0;
 

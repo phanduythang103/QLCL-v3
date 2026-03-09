@@ -376,7 +376,7 @@ export const Supervision: React.FC = () => {
                 onClick={() => setCategory(item.id)}
                 className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-300 cursor-pointer transition-all group h-full flex flex-col"
               >
-                <div className="flex items-start gap-4 mb-3">
+                <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-xl ${item.bgIcon} group-hover:scale-110 transition-transform shrink-0`}>
                     {item.icon}
                   </div>
@@ -384,7 +384,6 @@ export const Supervision: React.FC = () => {
                     <h3 className="text-label font-black text-black uppercase group-hover:text-[#009900] border-b-2 border-transparent group-hover:border-[#009900] transition-all pb-1">{item.title}</h3>
                   </div>
                 </div>
-                <p className="text-table font-bold text-black/40 mt-auto pl-1 border-l-2 border-slate-100 uppercase uppercase-tracking-widest">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -435,7 +434,7 @@ export const Supervision: React.FC = () => {
                         <p className="text-table font-black text-black uppercase leading-relaxed">
                           Đã thêm lịch giám sát mới: <span className="text-[#009900]">{schedule.nd_giam_sat || 'Giám sát chung'}</span>
                         </p>
-                        <p className="text-table font-black text-black/40 uppercase mb-1">
+                        <p className="text-table font-black text-black/40 mb-1">
                           Người thực hiện: <span className="text-black">{schedule.nhan_vien_gs || 'Chưa phân công'}</span> tại <span className="text-black">{schedule.dv_duoc_gs || 'Chưa xác định'}</span>
                         </p>
                         <div className="flex items-center gap-2 text-table font-bold text-black/40 uppercase">
@@ -480,7 +479,7 @@ export const Supervision: React.FC = () => {
                         {formatDate(schedule.tu_ngay || '')} - {formatDate(schedule.den_ngay || '')}
                       </time>
                       <h3 className="text-table font-black text-black uppercase">{schedule.nd_giam_sat || 'Giám sát chung'}</h3>
-                      <p className="text-table font-bold text-black/40 uppercase">
+                      <p className="text-table font-bold text-black/40">
                         {schedule.dv_duoc_gs || 'Chưa xác định'} | {schedule.nhan_vien_gs || 'Chưa phân công'}
                       </p>
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${schedule.trang_thai === 'Đã hoàn thành' || schedule.trang_thai === 'Hoàn thành' ? 'bg-green-100 text-green-700' :

@@ -97,9 +97,9 @@ const DocumentLibrary = () => {
     ten_vb: '',
     loai_vb: '',
     co_quan_ban_hanh: '',
-    hieu_luc: '',
+    ngay_hieu_luc: '',
     trang_thai: 'Còn hiệu lực',
-    file_van_ban: '',
+    file_dinh_kem: '',
     phan_loai: 'BYT'
   };
   const [formData, setFormData] = useState(initialFormData);
@@ -154,7 +154,7 @@ const DocumentLibrary = () => {
     }
     setSaving(true);
     try {
-      let filePath = formData.file_van_ban; // Keep existing path by default
+      let filePath = formData.file_dinh_kem; // Keep existing path by default
       if (fileUpload) {
         // Tạo tên file duy nhất
         const ext = fileUpload.name.split('.').pop();
@@ -164,7 +164,7 @@ const DocumentLibrary = () => {
         filePath = uniqueName;
       }
 
-      const saveData = { ...formData, file_van_ban: filePath };
+      const saveData = { ...formData, file_dinh_kem: filePath };
 
       if (editingId) {
         await updateThuVienVb(editingId, saveData);
@@ -190,9 +190,9 @@ const DocumentLibrary = () => {
       ten_vb: doc.ten_vb || '',
       loai_vb: doc.loai_vb || '',
       co_quan_ban_hanh: doc.co_quan_ban_hanh || '',
-      hieu_luc: doc.hieu_luc || '',
+      ngay_hieu_luc: doc.ngay_hieu_luc || '',
       trang_thai: doc.trang_thai || 'Còn hiệu lực',
-      file_van_ban: doc.file_van_ban || '',
+      file_dinh_kem: doc.file_dinh_kem || '',
       phan_loai: doc.phan_loai || 'BYT'
     });
     // Store ID for update logic if needed, currently addThuVienVb handles insert. 
@@ -203,10 +203,10 @@ const DocumentLibrary = () => {
   };
 
   const handleView = async (doc: any) => {
-    if (doc.file_van_ban) {
+    if (doc.file_dinh_kem) {
       // Get signed URL from Supabase
       try {
-        const { data, error } = await supabase.storage.from('vanban').createSignedUrl(doc.file_van_ban, 3600);
+        const { data, error } = await supabase.storage.from('vanban').createSignedUrl(doc.file_dinh_kem, 3600);
         if (error) throw error;
         if (data?.signedUrl) {
           window.open(data.signedUrl, '_blank');
@@ -352,7 +352,7 @@ const DocumentLibrary = () => {
                   <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
                     <span className="truncate max-w-[150px]">{doc.co_quan_ban_hanh || 'N/A'}</span>
                     <span>•</span>
-                    <span>{doc.ngay_ban_hanh || 'N/A'}</span>
+                    <span>{doc.ngay_hieu_luc || 'N/A'}</span>
                   </div>
                 </div>
 
