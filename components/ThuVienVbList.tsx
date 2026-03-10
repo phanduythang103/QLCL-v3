@@ -34,11 +34,11 @@ export default function ThuVienVbList() {
               <td>{item.ten_vb}</td>
               <td>{item.loai_vb || ''}</td>
               <td>{item.co_quan_ban_hanh || ''}</td>
-              <td>{item.ngay_hieu_luc || ''}</td>
+              <td>{item.hieu_luc || ''}</td>
               <td>{item.trang_thai || ''}</td>
               <td>
-                {item.file_dinh_kem ? (
-                  <a href={item.file_dinh_kem} target="_blank" rel="noopener noreferrer">Tải file</a>
+                {item.file_van_ban ? (
+                  <a href={item.file_van_ban} target="_blank" rel="noopener noreferrer">Tải file</a>
                 ) : 'Chưa có'}
               </td>
             </tr>

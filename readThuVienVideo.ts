@@ -5,7 +5,7 @@ export async function fetchThuVienVideo() {
   return data;
 }
 
-export async function addThuVienVideo(record) {
+export async function addThuVienVideo(record: any) {
   const { data, error } = await supabase
     .from('thu_vien_video')
     .insert([record])
@@ -14,7 +14,7 @@ export async function addThuVienVideo(record) {
   return data?.[0];
 }
 
-export async function updateThuVienVideo(id, updates) {
+export async function updateThuVienVideo(id: string, updates: any) {
   const { data, error } = await supabase
     .from('thu_vien_video')
     .update(updates)
@@ -24,7 +24,7 @@ export async function updateThuVienVideo(id, updates) {
   return data?.[0];
 }
 
-export async function deleteThuVienVideo(id) {
+export async function deleteThuVienVideo(id: string) {
   const { error } = await supabase
     .from('thu_vien_video')
     .delete()

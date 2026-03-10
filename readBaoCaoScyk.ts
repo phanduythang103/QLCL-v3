@@ -55,8 +55,14 @@ export async function updateBaoCaoScyk(id: string, updates: Partial<BaoCaoScyk>)
   return data?.[0];
 }
 
-// Xóa bản ghi
+// Xóa bản ghi (và các bảng liên kết)
 export async function deleteBaoCaoScyk(id: string): Promise<boolean> {
+  // 1. Xóa các liên kết (tránh lỗi foreign key constraint nếu không có ON DELETE CASCADE)
+  await supabase.from('scyk_tien_do_logs').delete().eq('bao_cao_id', id);
+  await supabase.from('tim_hieu_phan_tich_scyk').delete().eq('scyk_id', id);
+  await supabase.from('bien_ban_xac_minh_su_co').delete().eq('scyk_id', id);
+
+  // 2. Xóa bản ghi cha
   const { error } = await supabase
     .from('bao_cao_scyk')
     .delete()

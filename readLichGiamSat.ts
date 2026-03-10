@@ -28,7 +28,7 @@ export async function fetchLichGiamSat(): Promise<LichGiamSat[]> {
     .order('tu_ngay', { ascending: false });
   if (error) throw error;
   // Map fields for component compatibility
-  return (data || []).map(item => ({
+  return (data || []).map((item: any) => ({
     ...item,
     ngay_giam_sat: item.tu_ngay,
     noi_dung: item.nd_giam_sat,

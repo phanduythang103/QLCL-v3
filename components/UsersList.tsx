@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { fetchUsers, addUser, updateUser, deleteUser } from '../readUsers';
 
 export default function UsersList() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ username: '', full_name: '', department: '', role: 'Người dùng', status: 'Hoạt động' });
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
 
 
@@ -51,7 +51,7 @@ export default function UsersList() {
             setForm({ username: '', full_name: '', department: '', role: 'Người dùng', status: 'Hoạt động' });
             setEditingId(null);
             loadUsers();
-          } catch (err) {
+          } catch (err: any) {
             setMessage('Lỗi: ' + err.message);
           }
         }}
@@ -109,7 +109,7 @@ export default function UsersList() {
                   await deleteUser(user.id);
                   setMessage('Đã xóa thành công!');
                   loadUsers();
-                } catch (err) {
+                } catch (err: any) {
                   setMessage('Lỗi: ' + err.message);
                 }
               }

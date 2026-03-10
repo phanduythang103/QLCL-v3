@@ -303,8 +303,12 @@ export const Incidents: React.FC = () => {
                         onEdit={(item) => { setEditingItem(item); setViewMode('FORM'); }}
                         onDelete={async (id) => {
                           if (window.confirm('Bạn có chắc muốn xóa?')) {
-                            await deleteBaoCaoScyk(id);
-                            loadData();
+                            try {
+                              await deleteBaoCaoScyk(id);
+                              loadData();
+                            } catch (err: any) {
+                              alert('Không thể xóa sự cố: ' + err.message);
+                            }
                           }
                         }}
                         onView={(item) => { setViewingItem(item); setViewMode('VIEW'); }}

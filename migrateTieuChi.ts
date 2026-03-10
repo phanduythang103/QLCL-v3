@@ -24,7 +24,7 @@ async function migrate() {
     }
 
     const mapping: Record<string, string> = {};
-    data83.forEach(d => {
+    data83.forEach((d: any) => {
         if (d.ma_tieu_muc && d.tieu_chi) {
             mapping[d.ma_tieu_muc] = d.tieu_chi;
         }

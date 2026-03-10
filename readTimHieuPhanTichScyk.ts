@@ -5,7 +5,7 @@ export async function fetchTimHieuPhanTichScyk() {
   return data;
 }
 
-export async function addTimHieuPhanTichScyk(record) {
+export async function addTimHieuPhanTichScyk(record: any) {
   const { data, error } = await supabase
     .from('tim_hieu_phan_tich_scyk')
     .insert([record])
@@ -14,7 +14,7 @@ export async function addTimHieuPhanTichScyk(record) {
   return data?.[0];
 }
 
-export async function updateTimHieuPhanTichScyk(id, updates) {
+export async function updateTimHieuPhanTichScyk(id: string, updates: any) {
   const { data, error } = await supabase
     .from('tim_hieu_phan_tich_scyk')
     .update(updates)
@@ -24,7 +24,7 @@ export async function updateTimHieuPhanTichScyk(id, updates) {
   return data?.[0];
 }
 
-export async function deleteTimHieuPhanTichScyk(id) {
+export async function deleteTimHieuPhanTichScyk(id: string) {
   const { error } = await supabase
     .from('tim_hieu_phan_tich_scyk')
     .delete()
@@ -32,3 +32,4 @@ export async function deleteTimHieuPhanTichScyk(id) {
   if (error) throw error;
   return true;
 }
+

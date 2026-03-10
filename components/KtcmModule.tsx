@@ -241,64 +241,44 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
       </div>
 
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
-                <FileText size={20} />
-              </div>
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Tổng kỹ thuật</span>
-            </div>
-            <div className="flex items-end gap-2">
-              <span className="text-4xl font-black text-slate-800">{stats.tongKyThuat}</span>
-            </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+            <FileText size={24} />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng kỹ thuật</div>
+            <div className="text-2xl font-black text-slate-800">{stats.tongKyThuat}</div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
-                <CheckCircle2 size={20} />
-              </div>
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Đã thực hiện</span>
-            </div>
-            <div className="flex items-end gap-2">
-              <span className="text-4xl font-black text-emerald-600">{stats.daThucHien}</span>
-            </div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+            <CheckCircle2 size={24} />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đã thực hiện</div>
+            <div className="text-2xl font-black text-emerald-600">{stats.daThucHien}</div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center">
-                <AlertTriangle size={20} />
-              </div>
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Chưa thực hiện</span>
-            </div>
-            <div className="flex items-end gap-2">
-              <span className="text-4xl font-black text-rose-600">{stats.chuaThucHien}</span>
-            </div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center shrink-0">
+            <AlertTriangle size={24} />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Chưa thực hiện</div>
+            <div className="text-2xl font-black text-rose-600">{stats.chuaThucHien}</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-2xl shadow-lg relative overflow-hidden group text-white">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-white/20 text-white rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <Target size={20} />
-              </div>
-              <span className="text-sm font-bold text-indigo-100 uppercase tracking-wider">Tỷ lệ chung</span>
-            </div>
-            <div className="flex items-end gap-2">
-              <span className="text-4xl font-black">{stats.tyLeChung}%</span>
-            </div>
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-2xl shadow-lg relative overflow-hidden flex items-center gap-4 text-white">
+          <div className="w-12 h-12 bg-white/20 text-white rounded-full flex items-center justify-center shrink-0 backdrop-blur-sm">
+            <Target size={24} />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-indigo-100 uppercase tracking-wider mb-1">Tỷ lệ chung</div>
+            <div className="text-2xl font-black text-white">{stats.tyLeChung}%</div>
           </div>
         </div>
       </div>

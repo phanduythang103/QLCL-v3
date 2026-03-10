@@ -8,10 +8,10 @@ export interface ThuVienVb {
   linh_vuc?: string;
   phan_loai?: string;
   co_quan_ban_hanh?: string;
-  ngay_hieu_luc?: string;
+  hieu_luc?: string;
   tieu_chi_lien_quan?: string;
   trang_thai?: string;
-  file_dinh_kem?: string;
+  file_van_ban?: string;
   ghi_chu?: string;
   created_at?: string;
 }

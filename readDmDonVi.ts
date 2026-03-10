@@ -18,7 +18,7 @@ export async function fetchDmDonVi(): Promise<DmDonVi[]> {
     if (error) throw error;
 
     // Sort using natural/numeric sorting for codes like A1, A2, A10
-    const sorted = (data || []).sort((a, b) => {
+    const sorted = (data || []).sort((a: any, b: any) => {
       return a.ma_don_vi.localeCompare(b.ma_don_vi, undefined, {
         numeric: true,
         sensitivity: 'base'

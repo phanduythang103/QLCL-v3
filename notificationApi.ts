@@ -36,8 +36,8 @@ export async function fetchUnreadNotifications(): Promise<Notification[]> {
     if (readError) throw readError;
 
     // Filter ra những notification chưa đọc
-    const readIds = new Set(readNotifications?.map(r => r.notification_id) || []);
-    const unreadNotifications = allNotifications?.filter(n => !readIds.has(n.id)) || [];
+    const readIds = new Set(readNotifications?.map((r: any) => r.notification_id) || []);
+    const unreadNotifications = allNotifications?.filter((n: any) => !readIds.has(n.id)) || [];
 
     return unreadNotifications as Notification[];
 }
@@ -86,7 +86,7 @@ export function subscribeToNotifications(callback: (notification: Notification) 
                 schema: 'public',
                 table: 'notifications'
             },
-            (payload) => {
+            (payload: any) => {
                 callback(payload.new as Notification);
             }
         )
