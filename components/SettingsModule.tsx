@@ -160,6 +160,7 @@ const PermissionManager = () => {
     INCIDENTS: 'Sự cố Y khoa',
     IMPROVEMENT: 'Cải tiến Chất lượng',
     INDICATORS: 'Chỉ số QLCL',
+    KTCM: 'KTCM theo tuyến',
     SUPERVISION: 'Kiểm tra Giám sát',
     REPORTS: 'Báo cáo Tổng hợp',
     SETTINGS: 'Cấu hình Hệ thống',

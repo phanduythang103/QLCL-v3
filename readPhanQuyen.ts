@@ -22,6 +22,8 @@ export enum ModuleType {
     IMPROVEMENT = 'IMPROVEMENT',
     INDICATORS = 'INDICATORS',
     SUPERVISION = 'SUPERVISION',
+    KTCM = 'KTCM',
+    PT_LOAI_2 = 'PT_LOAI_2',
     REPORTS = 'REPORTS',
     SETTINGS = 'SETTINGS'
 }

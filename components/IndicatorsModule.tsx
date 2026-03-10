@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BarChart2, TrendingDown, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { fetchChiSoQlcl, ChiSoQlcl } from '../readChiSoQlcl';
 import { VAPModule } from './VAPModule';
+import { KtcmModule } from './KtcmModule';
+import { PtLoai2Module } from './PtLoai2Module';
 
 const ChartBar = ({ label, value, max, color, target, donVi }: { label: string, value: number, max: number, color: string, target?: number, donVi?: string }) => (
   <div className="mb-4 group">
@@ -112,6 +114,10 @@ export const IndicatorsModule: React.FC = () => {
 
       {category === 'VAP' ? (
         <VAPModule />
+      ) : category === 'KTCM' ? (
+        <KtcmModule />
+      ) : category === 'SURGERY_II' ? (
+        <PtLoai2Module />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

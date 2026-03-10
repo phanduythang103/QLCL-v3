@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut, Activity } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';

@@ -677,7 +677,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                     </td>
                     <td className="border border-slate-300 px-3 py-4 max-w-md">
                       <div className="flex flex-col gap-2">
-                        <p className="line-clamp-3 text-black leading-relaxed font-black text-table uppercase">{inc.mo_ta_su_co || '---'}</p>
+                        <p className="line-clamp-3 text-black leading-relaxed font-medium text-sm">{inc.mo_ta_su_co || '---'}</p>
                         <div className="flex items-center gap-3">
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded flex items-center gap-1 ${getStatusColor(inc.trang_thai)} bg-white border border-current uppercase`}>
                             {getStatusLabel(inc.trang_thai)}
@@ -1548,7 +1548,7 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
 
               <div>
                 <h3 className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-3 ml-1">Mô tả chi tiết</h3>
-                <div className="p-5 bg-yellow-50/50 border border-yellow-200 rounded-xl text-black leading-relaxed text-table font-bold uppercase italic">
+                <div className="p-5 bg-yellow-50/50 border border-yellow-200 rounded-xl text-black leading-relaxed text-sm font-medium italic">
                   {item.mo_ta_su_co || 'Không có mô tả chi tiết.'}
                 </div>
               </div>
@@ -1590,8 +1590,8 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
                   <h3 className="text-label font-black text-green-700 uppercase tracking-wide">Xử trí ban đầu</h3>
                 </div>
                 <div className="p-4 bg-green-50/50 border border-green-100 rounded-xl space-y-4">
-                  <p className="text-table uppercase"><span className="font-black text-green-800 text-[10px] block opacity-60 mb-1">Giải pháp khắc phục</span> <span className="text-black font-bold italic">{item.de_xuat_giai_phap_ban_dau || '---'}</span></p>
-                  <p className="text-table uppercase"><span className="font-black text-green-800 text-[10px] block opacity-60 mb-1">Điều trị bổ sung</span> <span className="text-black font-bold italic">{item.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '---'}</span></p>
+                  <p className="text-table"><span className="font-black text-green-800 text-[10px] block opacity-60 mb-1 uppercase">Giải pháp khắc phục</span> <span className="text-black font-medium text-sm italic">{item.de_xuat_giai_phap_ban_dau || '---'}</span></p>
+                  <p className="text-table"><span className="font-black text-green-800 text-[10px] block opacity-60 mb-1 uppercase">Điều trị bổ sung</span> <span className="text-black font-medium text-sm italic">{item.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '---'}</span></p>
                 </div>
               </div>
             </div>
@@ -2074,7 +2074,7 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
                 </div>
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Mô tả sự cố</label>
-                  <textarea rows={4} value={formData.mo_ta_su_co} onChange={e => handleChange('mo_ta_su_co', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none" placeholder="Mô tả chi tiết diễn biến..." />
+                  <textarea rows={4} value={formData.mo_ta_su_co} onChange={e => handleChange('mo_ta_su_co', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-medium outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none" placeholder="Mô tả chi tiết diễn biến..." />
                 </div>
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
                   <ToggleGroup label="Phân loại ban đầu" field="phan_loai_ban_dau" options={['Nhẹ', 'Trung bình', 'Nặng']} value={formData.phan_loai_ban_dau} />
@@ -2100,11 +2100,11 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
               <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 animate-in slide-in-from-top-2 duration-200">
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Xử lý ban đầu đã thực hiện</label>
-                  <textarea rows={2} value={formData.dieu_tri_xy_ly_ban_dau_da_thuc_hien} onChange={e => handleChange('dieu_tri_xy_ly_ban_dau_da_thuc_hien', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none italic" />
+                  <textarea rows={2} value={formData.dieu_tri_xy_ly_ban_dau_da_thuc_hien} onChange={e => handleChange('dieu_tri_xy_ly_ban_dau_da_thuc_hien', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-medium outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none italic" />
                 </div>
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Đề xuất giải pháp phòng ngừa</label>
-                  <textarea rows={2} value={formData.de_xuat_giai_phap_ban_dau} onChange={e => handleChange('de_xuat_giai_phap_ban_dau', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none italic" />
+                  <textarea rows={2} value={formData.de_xuat_giai_phap_ban_dau} onChange={e => handleChange('de_xuat_giai_phap_ban_dau', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-medium outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none italic" />
                 </div>
 
                 <div className="md:col-span-2 border-t border-slate-100 my-2 pt-4"></div>

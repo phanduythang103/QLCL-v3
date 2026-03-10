@@ -12,6 +12,8 @@ export enum ModuleType {
   INCIDENTS = 'INCIDENTS', // Sự cố y khoa
   IMPROVEMENT = 'IMPROVEMENT', // Cải tiến chất lượng
   INDICATORS = 'INDICATORS', // Chỉ số QLCL
+  KTCM = 'KTCM', // KTCM theo tuyến
+  PT_LOAI_2 = 'PT_LOAI_2', // Phẫu thuật loại II trở lên
   SUPERVISION = 'SUPERVISION', // Kiểm tra giám sát
   REPORTS = 'REPORTS', // Báo cáo tổng hợp
   SETTINGS = 'SETTINGS' // Cấu hình hệ thống
@@ -22,18 +24,18 @@ export type QARoleType = 'COUNCIL' | 'BOARD' | 'NETWORK';
 export type SupervisionCategory = 'SURGERY' | 'HAND_HYGIENE' | '5S' | 'RECORDS' | 'DRUGS' | 'PROFESSIONAL' | 'GENERAL' | null;
 
 export type IndicatorCategory = 
-  | 'KTCM' 
-  | 'SURGERY_II' 
-  | 'SSI' 
   | 'VAP' 
+  | 'SSI' 
   | 'SEVERE_INCIDENT' 
-  | 'SEVERE_NON_MEDICAL' 
-  | 'AVG_EXAM_TIME' 
-  | 'AVG_STAY_TIME' 
-  | 'BED_USAGE' 
-  | 'OR_USAGE' 
-  | 'NURSE_PATIENT_RATIO' 
-  | 'HAND_HYGIENE' 
+  | 'SEVERE_NON_MEDICAL'
+  | 'AVG_EXAM_TIME'
+  | 'AVG_STAY_TIME'
+  | 'BED_USAGE'
+  | 'OR_USAGE'
+  | 'NURSE_PATIENT_RATIO'
+  | 'HAND_HYGIENE'
+  | 'KTCM'
+  | 'SURGERY_II'
   | null;
 
 export interface Personnel {
@@ -98,4 +100,34 @@ export interface BcCqy {
   thoi_gian_xay_ra: string;
   noi_dung_ket_luan: string;
   created_at?: string;
+}
+
+export interface KtcmTheoTuyen {
+  id: string;
+  created_at: string;
+  ngay_bao_cao: string | null;
+  nguoi_bao_cao: string | null;
+  chuyen_khoa_linh_vuc: string | null;
+  tong_so_ky_thuat: number | null;
+  so_ky_thuat_da_thuc_hien: number | null;
+  so_ky_thuat_chua_thuc_hien: number | null;
+  ty_le: number | null;
+  nguyen_nhan_chua_trien_khai: string | null;
+  ghi_chu: string | null;
+}
+
+export interface PtLoai2 {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  ngay_bao_cao: string | null;
+  nguoi_bao_cao: string | null;
+  khoa: string | null;
+  tong_so_pt: number | null;
+  pt_loai_db: number | null;
+  pt_loai_1: number | null;
+  pt_loai_2: number | null;
+  tong_pt_loai_2_tro_len: number | null;
+  ty_le: number | null;
+  ghi_chu: string | null;
 }
