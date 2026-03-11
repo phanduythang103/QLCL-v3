@@ -4,6 +4,7 @@ import { fetchChiSoQlcl, ChiSoQlcl } from '../readChiSoQlcl';
 import { VAPModule } from './VAPModule';
 import { KtcmModule } from './KtcmModule';
 import { PtLoai2Module } from './PtLoai2Module';
+import { NKVMModule } from './NKVMModule';
 
 const ChartBar = ({ label, value, max, color, target, donVi }: { label: string, value: number, max: number, color: string, target?: number, donVi?: string }) => (
   <div className="mb-4 group">
@@ -118,6 +119,8 @@ export const IndicatorsModule: React.FC = () => {
         <KtcmModule />
       ) : category === 'SURGERY_II' ? (
         <PtLoai2Module />
+      ) : category === 'SSI' ? (
+        <NKVMModule />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

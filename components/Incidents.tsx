@@ -549,14 +549,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
   const uDept = user?.department?.trim().toLowerCase() || '';
 
   const filteredData = data.filter(inc => {
-    // 0. Unit filtering for normal users
-    if (!isAdmin && uDept) {
-      const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
-      const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
-      const matchesUnit = (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
-                         (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
-      if (!matchesUnit) return false;
-    }
+// Removed Unit filtering to allow users to see the list of incidents.Edit/Delete is still restricted by isOwnUnit.
 
     // 1. Text Search
     const matchesSearch = (inc.so_bc_ma_scyk || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
