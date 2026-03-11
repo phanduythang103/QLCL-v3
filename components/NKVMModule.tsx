@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend, ComposedChart, Line } from 'recharts';
 import { BarChart2, CheckSquare, ClipboardList, Plus, Search, Filter, TrendingUp, AlertCircle, RefreshCw, X, Check } from 'lucide-react';
 import { fetchNkvm, NkvmRecord, addNkvm, updateNkvm, deleteNkvm } from '../readNkvm';
 import { fetchDsnKvm, DsnKvmRecord, addDsnKvm, updateDsnKvm, deleteDsnKvm } from '../readDsnKvm';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
+import DateRangeFilter from './DateRangeFilter';
 
 type NKVMTab = 'OVERVIEW' | 'SUPERVISION' | 'LIST';
 
@@ -23,6 +25,15 @@ export const NKVMModule: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [viewOnly, setViewOnly] = useState(false);
   const unitRef = useRef<HTMLDivElement>(null);
+  
+  // Overview Filters
+  const [overviewDateFilter, setOverviewDateFilter] = useState({
+    type: 'thisMonth',
+    startDate: '',
+    endDate: ''
+  });
+  const [overviewKhoaFilter, setOverviewKhoaFilter] = useState('');
+  const [overviewTrendMonths, setOverviewTrendMonths] = useState<number>(6);
 
   // Initialize newRecord for individual surveillance
   useEffect(() => {
@@ -122,9 +133,11 @@ export const NKVMModule: React.FC = () => {
 
     setLoading(true);
     try {
-      const recordToSave = { ...newDsRecord };
-      if (isEditMode && recordToSave.id) {
-        await updateDsnKvm(recordToSave.id, recordToSave);
+      const { id, created_at, tong_so_ca_nkvm, ty_le_nkvm, ...rest } = newDsRecord;
+      const recordToSave = { ...rest };
+      
+      if (isEditMode && id) {
+        await updateDsnKvm(id, recordToSave);
       } else {
         await addDsnKvm(recordToSave);
       }
@@ -156,60 +169,352 @@ export const NKVMModule: React.FC = () => {
     }
   };
 
-  const positiveCases = records.filter(r => r.phan_loai_nkvm && r.phan_loai_nkvm.trim() !== '');
+  const getFilteredOverviewRecords = () => {
+    let filtered = records;
+    if (overviewKhoaFilter) {
+      filtered = filtered.filter(r => r.khoa_duoc_giam_sat === overviewKhoaFilter);
+    }
+    if (overviewDateFilter.type !== 'all') {
+      filtered = filtered.filter(r => {
+        if (!r.ngay_giam_sat) return false;
+        const d = new Date(r.ngay_giam_sat);
+        
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        switch (overviewDateFilter.type) {
+          case 'thisWeek': {
+            const day = startOfToday.getDay() || 7; 
+            if (day !== 1) startOfToday.setHours(-24 * (day - 1)); 
+            return d >= startOfToday;
+          }
+          case 'lastWeek': {
+            const day = startOfToday.getDay() || 7; 
+            const startOfLastWeek = new Date(startOfToday);
+            startOfLastWeek.setDate(startOfLastWeek.getDate() - day - 6);
+            const endOfLastWeek = new Date(startOfLastWeek);
+            endOfLastWeek.setDate(endOfLastWeek.getDate() + 6);
+            endOfLastWeek.setHours(23, 59, 59, 999);
+            return d >= startOfLastWeek && d <= endOfLastWeek;
+          }
+          case 'thisMonth': {
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            return d >= startOfMonth;
+          }
+          case 'lastMonth': {
+            const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            endOfLastMonth.setHours(23, 59, 59, 999);
+            return d >= startOfLastMonth && d <= endOfLastMonth;
+          }
+          case 'thisQuarter': {
+            const currentQuarter = Math.floor(now.getMonth() / 3);
+            const startOfQuarter = new Date(now.getFullYear(), currentQuarter * 3, 1);
+            return d >= startOfQuarter;
+          }
+          case 'lastQuarter': {
+            const currentQuarter = Math.floor(now.getMonth() / 3);
+            const lastQuarter = currentQuarter === 0 ? 3 : currentQuarter - 1;
+            const year = currentQuarter === 0 ? now.getFullYear() - 1 : now.getFullYear();
+            const startOfLastQuarter = new Date(year, lastQuarter * 3, 1);
+            const endOfLastQuarter = new Date(year, lastQuarter * 3 + 3, 0);
+            endOfLastQuarter.setHours(23, 59, 59, 999);
+            return d >= startOfLastQuarter && d <= endOfLastQuarter;
+          }
+          case 'thisYear': {
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            return d >= startOfYear;
+          }
+          case 'lastYear': {
+            const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+            const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
+            endOfLastYear.setHours(23, 59, 59, 999);
+            return d >= startOfLastYear && d <= endOfLastYear;
+          }
+          case 'custom': {
+            if (overviewDateFilter.startDate && overviewDateFilter.endDate) {
+              const start = new Date(overviewDateFilter.startDate);
+              const end = new Date(overviewDateFilter.endDate);
+              end.setHours(23, 59, 59, 999);
+              return d >= start && d <= end;
+            }
+            return true;
+          }
+          default:
+            return true;
+        }
+      });
+    }
+    return filtered;
+  };
+
+  const overviewFilteredRecords = useMemo(() => getFilteredOverviewRecords(), [records, overviewKhoaFilter, overviewDateFilter]);
+  const overviewPositiveCases = useMemo(() => overviewFilteredRecords.filter(r => r.phan_loai_nkvm && r.phan_loai_nkvm.trim() !== ''), [overviewFilteredRecords]);
+
+  const COLORS = ['#009900', '#2563eb', '#ea580c', '#eab308', '#8b5cf6'];
+  const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
   const renderOverview = () => {
-    const totalSupervisions = records.length;
-    const totalCasesInMonth = positiveCases.length;
-    const totalSurgeries = totalSupervisions; // Giả định mỗi lượt giám sát là 1 ca PT được giám sát
+    const totalSupervisions = overviewFilteredRecords.length;
+    const totalCasesInMonth = overviewPositiveCases.length;
+    const totalSurgeries = totalSupervisions;
     const ssiRate = totalSurgeries > 0 ? ((totalCasesInMonth / totalSurgeries) * 100).toFixed(1) : '0';
+
+    // Biểu đồ hình tròn Phân loại NKVM
+    const _phanLoaiMap: Record<string, number> = {};
+    overviewPositiveCases.forEach(r => {
+      const parts = (r.phan_loai_nkvm || '').split(',').map(s=>s.trim()).filter(Boolean);
+      parts.forEach(p => {
+        _phanLoaiMap[p] = (_phanLoaiMap[p] || 0) + 1;
+      });
+    });
+    const phanLoaiData = Object.entries(_phanLoaiMap).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+
+    // Biểu đồ hình cột Loại phẫu thuật (từ tổng số lượt giám sát)
+    const _loaiPtMap: Record<string, number> = {};
+    overviewFilteredRecords.forEach(r => {
+      if (r.loai_phau_thuat) {
+        _loaiPtMap[r.loai_phau_thuat] = (_loaiPtMap[r.loai_phau_thuat] || 0) + 1;
+      }
+    });
+    const loaiPtData = Object.entries(_loaiPtMap).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+
+    // Biểu đồ biểu diễn Dấu hiệu lâm sàng (từ số ca mắc mới NKVM) - Đã gộp nhóm chính xác
+    const _dauHieuMap: Record<string, number> = {
+      'Sưng, nóng, đỏ, đau': 0,
+      'Chảy mủ từ vết mổ': 0,
+      'Vết mổ hở tự nhiên': 0
+    };
+    overviewPositiveCases.forEach(r => {
+      const dh = r.dau_hieu_lam_sang || '';
+      if (dh.includes('Sưng, nóng, đỏ, đau')) _dauHieuMap['Sưng, nóng, đỏ, đau']++;
+      if (dh.includes('Chảy mủ từ vết mổ')) _dauHieuMap['Chảy mủ từ vết mổ']++;
+      if (dh.includes('Vết mổ hở tự nhiên')) _dauHieuMap['Vết mổ hở tự nhiên']++;
+    });
+    const dauHieuData = Object.entries(_dauHieuMap).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+
+    // Tính toán dữ liệu Xu hướng nhiễm khuẩn gần đây (Sử dụng dữ liệu Danh sách NKVM - dsnkvm)
+    const trendData: any[] = [];
+    const nowTrend = new Date();
+    for (let i = overviewTrendMonths - 1; i >= 0; i--) {
+        const d = new Date(nowTrend.getFullYear(), nowTrend.getMonth() - i, 1);
+        const monthStr = `T${d.getMonth() + 1}/${d.getFullYear().toString().slice(-2)}`;
+        
+        let baseDsRecords = dsRecords;
+        if (overviewKhoaFilter) {
+            baseDsRecords = baseDsRecords.filter(r => r.khoa === overviewKhoaFilter);
+        }
+        
+        const monthDsRecords = baseDsRecords.filter(r => {
+            if (!r.ngay_bao_cao) return false;
+            const rd = new Date(r.ngay_bao_cao);
+            return rd.getMonth() === d.getMonth() && rd.getFullYear() === d.getFullYear();
+        });
+        
+        const nk = monthDsRecords.reduce((sum, r) => sum + (r.tong_so_ca_nkvm || 0), 0);
+        const avgRate = monthDsRecords.length > 0 ? (monthDsRecords.reduce((s, r) => s + (Number(r.ty_le_nkvm) || 0), 0) / monthDsRecords.length).toFixed(1) : 0;
+        
+        trendData.push({
+            name: monthStr,
+            nk: nk,
+            rate: parseFloat(avgRate as string),
+            half_nk: nk / 2
+        });
+    }
 
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
+            <div className="flex gap-4 items-center">
+                <DateRangeFilter
+                    filter={overviewDateFilter}
+                    onChange={setOverviewDateFilter}
+                    className="w-full sm:w-auto"
+                />
+            </div>
+            <div className="relative">
+                <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select 
+                    value={overviewKhoaFilter}
+                    onChange={(e) => setOverviewKhoaFilter(e.target.value)}
+                    className="pl-10 pr-8 py-2 w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] appearance-none"
+                >
+                    <option value="">Tất cả khoa/phòng</option>
+                    {units.map(u => (
+                        <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>
+                    ))}
+                </select>
+            </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tỷ lệ Nhiễm khuẩn vết mổ</h4>
-            <div className="flex items-end gap-2">
-              <span className="text-title font-black text-blue-600">{ssiRate}%</span>
-            </div>
-            <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
-              <TrendingUp size={14} className="rotate-180" /> Thống kê từ {totalSurgeries} ca phẫu thuật
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-xl border border-green-100 shadow-sm">
             <h4 className="text-table font-black text-black/40 uppercase mb-2">Tổng số lượt Giám sát</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-green-600">{totalSupervisions}</span>
-              <span className="text-table font-bold text-black/40 mb-1">lượt</span>
+              <span className="text-title font-black text-blue-600">{totalSupervisions}</span>
+              <span className="text-table font-bold text-black/40 mb-1">ca</span>
             </div>
-            <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
-              <CheckSquare size={14} /> Dữ liệu ghi nhận
+            <div className="mt-4 flex items-center gap-2 text-xs text-blue-600 font-bold bg-blue-50 py-1 px-3 rounded-full w-fit">
+              <CheckSquare size={14} /> Tổng số báo cáo từ các Khoa
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl border border-red-100 shadow-sm relative overflow-hidden">
+            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tổng số NKVM</h4>
+            <div className="flex items-end gap-2">
+              <span className="text-title font-black text-red-600">{totalCasesInMonth}</span>
+              <span className="text-table font-bold text-black/40 mb-1">ca nhiễm</span>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs text-red-600 font-bold bg-red-50 py-1 px-3 rounded-full w-fit">
+              <AlertCircle size={14} /> Ghi nhận mắc mới
+            </div>
+            <div className="absolute top-0 right-0 p-4 opacity-10 text-red-600 pointer-events-none">
+                <AlertCircle size={64} />
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Ca mắc mới (NKVM)</h4>
+            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tỷ lệ NKVM</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-amber-600">{totalCasesInMonth < 10 ? `0${totalCasesInMonth}` : totalCasesInMonth}</span>
-              <span className="text-table font-bold text-black/40 mb-1">Ca ghi nhận</span>
+              <span className="text-title font-black text-amber-600">{ssiRate}%</span>
             </div>
-            <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 font-bold">
-              <AlertCircle size={14} /> Có dấu hiệu lâm sàng
+            <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 font-bold bg-amber-50 py-1 px-3 rounded-full w-fit">
+              <TrendingUp size={14} /> Chiếm % trên tổng ca giám sát
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h4 className="text-label font-black text-black uppercase mb-4 border-b border-slate-100 pb-2">Biểu đồ xu hướng tỷ lệ NKVM (6 tháng gần đây)</h4>
-          <div className="h-48 flex items-end gap-4 px-4 overflow-hidden">
-            {[1.2, 1.1, 0.9, 1.0, 0.8, parseFloat(ssiRate)].map((val, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                <div 
-                  className="w-full bg-[#009900] rounded-t-lg transition-all duration-1000 opacity-80" 
-                  style={{ height: `${(val / 2) * 100}%`, minHeight: '10%' }}
-                ></div>
-                <span className="text-[10px] font-bold text-black/40 uppercase">T.{idx + 1}</span>
+        {/* --- Dòng biểu đồ Desktop (3 biểu đồ chung 1 hàng) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Biểu đồ Tròn: Phân loại NKVM */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <h4 className="text-label font-black text-black uppercase mb-4 border-b border-slate-100 pb-2">Phân loại nhiễm khuẩn</h4>
+            <div className="flex-1 min-h-[250px] flex items-center justify-center">
+              {phanLoaiData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={phanLoaiData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={40}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, percent }) => `${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                    >
+                      {phanLoaiData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip formatter={(value: number | undefined) => [`${value || 0} ca`, 'Số lượng']} />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-slate-400 italic text-sm">Chưa có dữ liệu phân loại</div>
+              )}
+            </div>
+          </div>
+
+          {/* Biểu đồ Cột: Dấu hiệu lâm sàng */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <h4 className="text-label font-black text-black uppercase mb-4 border-b border-slate-100 pb-2">Các dấu hiệu lâm sàng</h4>
+            <div className="flex-1 min-h-[250px] flex items-center justify-center">
+               {dauHieuData.length > 0 ? (
+                 <ResponsiveContainer width="100%" height={250} className="text-xs font-bold">
+                    <BarChart data={dauHieuData} margin={{ top: 20, right: 10, left: -20, bottom: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="name" angle={-25} textAnchor="end" interval={0} tick={{fill: '#64748B', fontSize: 10}} height={50} />
+                      <YAxis allowDecimals={false} tick={{fill: '#64748B'}} />
+                      <RechartsTooltip cursor={{fill: '#F1F5F9'}} formatter={(value: number | undefined) => [`${value || 0} ca`, 'Số lượng']} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                        {dauHieuData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                 </ResponsiveContainer>
+               ) : (
+                 <div className="text-center text-slate-400 italic text-sm">Chưa có dữ liệu dấu hiệu từ ca mắc mới</div>
+               )}
+            </div>
+          </div>
+          
+          {/* Biểu đồ Cột: Loại phẫu thuật */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <h4 className="text-label font-black text-black uppercase mb-4 border-b border-slate-100 pb-2">Đặc điểm loại phẫu thuật</h4>
+            <div className="flex-1 min-h-[250px] flex items-center justify-center">
+              {loaiPtData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250} className="text-xs font-bold">
+                  <BarChart data={loaiPtData} margin={{ top: 20, right: 10, left: -20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="name" tick={{fill: '#64748B', fontSize: 10}} />
+                    <YAxis allowDecimals={false} tick={{fill: '#64748B'}}/>
+                    <RechartsTooltip cursor={{fill: '#F1F5F9'}} formatter={(value: number | undefined) => [`${value || 0} lượt`, 'Giám sát']} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                      {loaiPtData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-slate-400 italic text-sm">Chưa có dữ liệu phân loại phẫu thuật</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* --- Dòng biểu đồ Xu hướng (1 cột) --- */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+              <h4 className="text-label font-black text-black uppercase">Xu hướng NKVM theo thời gian gần đây</h4>
+              <div className="flex gap-2">
+                  {[3, 6, 9, 12].map(m => (
+                      <button 
+                        key={m}
+                        onClick={() => setOverviewTrendMonths(m)}
+                        className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-colors ${overviewTrendMonths === m ? 'bg-[#009900] text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                      >
+                          {m} Tháng
+                      </button>
+                  ))}
               </div>
-            ))}
+          </div>
+          <div className="h-64 mt-4 text-xs font-bold w-full">
+            {trendData.some(d => d.nk > 0 || d.rate > 0) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={trendData} margin={{ top: 20, right: 20, bottom: 20, left: -10 }}>
+                    <CartesianGrid stroke="#f5f5f5" vertical={false} />
+                    <XAxis dataKey="name" scale="band" tick={{fill: '#64748B', fontSize: 10}} />
+                    <YAxis yAxisId="left" tick={{fill: '#64748B'}} />
+                    <YAxis yAxisId="right" orientation="right" tick={{fill: '#006600'}} unit="%" />
+                    <RechartsTooltip 
+                      cursor={{ fill: '#f1f5f9' }}
+                      content={({ active, payload, label }: any) => {
+                          if (active && payload && payload.length) {
+                             const data = payload[0]?.payload || {};
+                             const nk = data.nk || 0;
+                             const rate = data.rate || 0;
+                             return (
+                               <div className="bg-white border border-slate-200 p-3 rounded-lg shadow-lg text-sm font-bold">
+                                 <p className="text-slate-500 mb-2 border-b border-slate-100 pb-1">{label}</p>
+                                 <p className="text-[#003399]">Số ca NKVM: {nk} ca</p>
+                                 <p className="text-[#006600]">Tỷ lệ NKVM trung bình: {rate}%</p>
+                               </div>
+                             );
+                          }
+                          return null;
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                    <Bar yAxisId="left" dataKey="nk" name="Số ca NKVM" barSize={30} fill="#ef4444" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }} />
+                    <Line yAxisId="left" type="linear" dataKey="nk" name="Đường xu hướng (Số ca)" stroke="#003399" strokeWidth={2} dot={true} />
+                    <Line yAxisId="right" type="linear" dataKey="rate" name="Tỷ lệ %" stroke="#006600" strokeWidth={3} strokeDasharray="5 5" dot={true} />
+                  </ComposedChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">Chưa có dữ liệu xu hướng trong {overviewTrendMonths} tháng qua</div>
+            )}
           </div>
         </div>
       </div>
@@ -257,13 +562,13 @@ export const NKVMModule: React.FC = () => {
               <th className="p-3 text-right">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 font-bold uppercase">
+          <tbody className="divide-y divide-slate-100 font-bold uppercase text-center">
             {records.map((r, idx) => (
               <tr key={r.id || idx} className="hover:bg-slate-50 transition-colors">
-                <td className="p-3 text-black/40">{r.ngay_giam_sat ? new Date(r.ngay_giam_sat).toLocaleDateString('vi-VN') : '-'}</td>
-                <td className="p-3 text-black/40">{r.nguoi_giam_sat}</td>
-                <td className="p-3">{r.khoa_duoc_giam_sat}</td>
-                <td className="p-3">
+                <td className="p-3 text-black/40 text-left">{r.ngay_giam_sat ? new Date(r.ngay_giam_sat).toLocaleDateString('vi-VN') : '-'}</td>
+                <td className="p-3 text-black/40 text-left">{r.nguoi_giam_sat}</td>
+                <td className="p-3 text-left">{r.khoa_duoc_giam_sat}</td>
+                <td className="p-3 text-left">
                   <div className="flex flex-col">
                     <span>{r.ten_nguoi_benh}</span>
                     <span className="text-[10px] text-black/30 font-medium normal-case">HSBA: {r.ma_hsba}</span>
@@ -354,13 +659,14 @@ export const NKVMModule: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-xs text-left">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm mt-4">
+        {/* Desktop View */}
+        <table className="w-full text-xs text-left hidden md:table">
           <thead className="bg-[#009900] text-white font-black uppercase text-center">
             <tr>
               <th className="p-3 text-left">Ngày tháng</th>
               <th className="p-3 text-left">Khoa</th>
-              <th className="p-3">Tổng số PT</th>
+              <th className="p-3">Tổng PT</th>
               <th className="p-3">Nông</th>
               <th className="p-3">Sâu</th>
               <th className="p-3">Cơ quan</th>
@@ -369,9 +675,9 @@ export const NKVMModule: React.FC = () => {
               <th className="p-3 text-right">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 font-bold uppercase text-center">
+          <tbody className="divide-y divide-slate-100 font-bold text-center">
             {dsRecords.map((item, idx) => (
-              <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors">
+              <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors uppercase">
                 <td className="p-3 text-left text-black/60">{item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : '-'}</td>
                 <td className="p-3 text-left text-[#009900]">{item.khoa}</td>
                 <td className="p-3 font-mono">{item.tong_so_ca_pt}</td>
@@ -405,10 +711,82 @@ export const NKVMModule: React.FC = () => {
               </tr>
             ))}
             {dsRecords.length === 0 && !loading && (
-              <tr><td colSpan={9} className="p-8 text-center text-black/40 italic">Chưa có dữ liệu danh sách Nhiễm khuẩn</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-black/40 italic">Chưa có dữ liệu báo cáo Nhiễm khuẩn</td></tr>
             )}
           </tbody>
         </table>
+
+        {/* Mobile View */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {dsRecords.length > 0 ? (
+            dsRecords.map((item, idx) => (
+              <div key={item.id || idx} className="p-4 bg-white space-y-3">
+                <div className="flex justify-between items-start border-b border-slate-100 pb-2">
+                  <div className="flex flex-col">
+                    <span className="text-table font-black text-[#009900] uppercase truncate">
+                      {item.khoa}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500">
+                      {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : '-'}
+                    </span>
+                  </div>
+                  <div className="flex bg-slate-100/50 rounded-lg p-1 border border-slate-200">
+                     <button 
+                        onClick={() => {
+                          setNewDsRecord(item);
+                          setIsEditMode(true);
+                          setShowDsModal(true);
+                        }}
+                        className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                      >
+                        <ClipboardList size={14} />
+                      </button>
+                      <button 
+                        onClick={() => item.id && handleDelete(item.id, true)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-bold pt-1">
+                   <div className="flex items-center justify-between col-span-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                      <span className="text-black/60 uppercase text-[10px]">Tổng số ca PT:</span>
+                      <span className="font-mono text-[13px]">{item.tong_so_ca_pt}</span>
+                   </div>
+                   
+                   <div className="col-span-2 flex items-center gap-2 mt-1 px-1">
+                      <div className="flex-1 flex justify-between items-center text-[10px]">
+                         <span className="text-slate-500">Nông:</span>
+                         <span className="bg-slate-100 px-2 py-0.5 rounded font-mono">{item.so_ca_nkvm_nong}</span>
+                      </div>
+                      <div className="flex-1 flex justify-between items-center text-[10px]">
+                         <span className="text-slate-500">Sâu:</span>
+                         <span className="bg-slate-100 px-2 py-0.5 rounded font-mono">{item.so_ca_nkvm_sau}</span>
+                      </div>
+                      <div className="flex-1 flex justify-between items-center text-[10px]">
+                         <span className="text-slate-500">CQ:</span>
+                         <span className="bg-slate-100 px-2 py-0.5 rounded font-mono">{item.so_ca_nkvm_co_quan}</span>
+                      </div>
+                   </div>
+
+                   <div className="flex justify-between items-center border-t border-red-100 pt-2 col-span-2 mt-1">
+                      <span className="text-[10px] text-red-600/80 font-black uppercase">Tổng số ca Nhiễm Khuẩn:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-600 font-black font-mono text-[13px]">{item.tong_so_ca_nkvm || 0}</span>
+                        <span className="bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded-full font-black text-[10px]">
+                           {item.ty_le_nkvm || 0}%
+                        </span>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            !loading && <div className="p-8 text-center text-black/40 italic text-xs">Chưa có dữ liệu báo cáo Nhiễm khuẩn</div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -814,7 +1192,7 @@ export const NKVMModule: React.FC = () => {
                   <label className="text-[10px] font-black uppercase text-black/40">Ngày báo cáo *</label>
                   <input 
                     type="date" 
-                    value={newDsRecord.ngay_bao_cao}
+                    value={newDsRecord.ngay_bao_cao || ''}
                     onChange={e => setNewDsRecord({...newDsRecord, ngay_bao_cao: e.target.value})}
                     className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
                   />
@@ -824,7 +1202,7 @@ export const NKVMModule: React.FC = () => {
                   <input 
                     type="text" 
                     placeholder="Chọn khoa/phòng..."
-                    value={newDsRecord.khoa}
+                    value={newDsRecord.khoa || ''}
                     onChange={e => {
                       const val = e.target.value;
                       setNewDsRecord({...newDsRecord, khoa: val});
@@ -864,53 +1242,57 @@ export const NKVMModule: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-1 md:col-span-4 bg-[#009900]/5 p-3 rounded-lg border border-[#009900]/20 mb-2">
-                  <label className="text-[11px] font-black uppercase text-[#009900]">1. Nhập Tổng số ca phẫu thuật *</label>
+              <div className="space-y-4">
+                {/* 1. Tổng số ca phẫu thuật */}
+                <div className="bg-[#009900]/5 p-4 rounded-xl border border-[#009900]/20 space-y-2">
+                  <label className="text-[12px] font-black uppercase text-[#009900]">1. Tổng số ca phẫu thuật *</label>
                   <input 
                     type="number" min="0"
-                    value={newDsRecord.tong_so_ca_pt}
+                    value={newDsRecord.tong_so_ca_pt !== undefined ? newDsRecord.tong_so_ca_pt : 0}
                     onChange={e => setNewDsRecord({...newDsRecord, tong_so_ca_pt: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-2 mt-1 bg-white border border-slate-200 rounded-lg text-table font-black focus:ring-2 focus:ring-[#009900] outline-none text-center text-lg"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-table font-black focus:ring-2 focus:ring-[#009900] outline-none text-center text-xl shadow-inner transition-all"
                   />
                 </div>
                 
-                <div className="md:col-span-4 mt-2">
-                   <label className="text-[11px] font-black uppercase text-black/60">2. Số ca Nhiễm khuẩn (Theo loại)</label>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-black/40 text-center block">Nông</label>
-                  <input 
-                    type="number" min="0"
-                    value={newDsRecord.so_ca_nkvm_nong}
-                    onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_nong: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-black/40 text-center block">Sâu</label>
-                  <input 
-                    type="number" min="0"
-                    value={newDsRecord.so_ca_nkvm_sau}
-                    onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_sau: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-black/40 text-center block">Cơ quan</label>
-                  <input 
-                    type="number" min="0"
-                    value={newDsRecord.so_ca_nkvm_co_quan}
-                    onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_co_quan: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center"
-                  />
-                </div>
-                
-                <div className="space-y-1 pt-1 md:pt-0">
-                  <label className="text-[10px] font-black uppercase text-red-600/80 text-center block">Tổng (Tự tính)</label>
-                  <div className="w-full px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-table font-black text-red-700 text-center">
-                    {(newDsRecord.so_ca_nkvm_nong || 0) + (newDsRecord.so_ca_nkvm_sau || 0) + (newDsRecord.so_ca_nkvm_co_quan || 0)}
+                {/* 2. Số ca Nhiễm khuẩn */}
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <label className="text-[12px] font-black uppercase text-black/60 mb-3 block">2. Số ca Nhiễm khuẩn (Theo loại)</label>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-black/50 text-center block">Nông</label>
+                      <input 
+                        type="number" min="0"
+                        value={newDsRecord.so_ca_nkvm_nong !== undefined ? newDsRecord.so_ca_nkvm_nong : 0}
+                        onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_nong: parseInt(e.target.value) || 0})}
+                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-black/50 text-center block">Sâu</label>
+                      <input 
+                        type="number" min="0"
+                        value={newDsRecord.so_ca_nkvm_sau !== undefined ? newDsRecord.so_ca_nkvm_sau : 0}
+                        onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_sau: parseInt(e.target.value) || 0})}
+                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-black/50 text-center block">Cơ quan</label>
+                      <input 
+                        type="number" min="0"
+                        value={newDsRecord.so_ca_nkvm_co_quan !== undefined ? newDsRecord.so_ca_nkvm_co_quan : 0}
+                        onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_co_quan: parseInt(e.target.value) || 0})}
+                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center transition-all"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1 pt-1 md:pt-0">
+                      <label className="text-[10px] font-black uppercase text-red-600/80 text-center block">Tổng (Tự tính)</label>
+                      <div className="w-full px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-table font-black text-red-700 text-center shadow-inner">
+                        {(newDsRecord.so_ca_nkvm_nong || 0) + (newDsRecord.so_ca_nkvm_sau || 0) + (newDsRecord.so_ca_nkvm_co_quan || 0)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
