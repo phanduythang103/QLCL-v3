@@ -91,6 +91,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
     if (!active) {
       onSelectModule();
       setIsExpanded(true);
+      setCategory('OVERVIEW');
     } else {
       setIsExpanded(!isExpanded);
     }

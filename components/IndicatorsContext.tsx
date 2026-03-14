@@ -11,7 +11,7 @@ interface IndicatorsContextType {
 const IndicatorsContext = createContext<IndicatorsContextType | undefined>(undefined);
 
 export const IndicatorsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [category, setCategory] = useState<IndicatorCategory>(null);
+  const [category, setCategory] = useState<IndicatorCategory>('OVERVIEW');
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
