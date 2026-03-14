@@ -19,6 +19,7 @@ export interface BaoCaoScyk {
   phan_loai_ban_dau?: string;
   dieu_tri_xy_ly_ban_dau_da_thuc_hien?: string;
   de_xuat_giai_phap_ban_dau?: string;
+  hinh_anh_minh_chung?: string[];
   created_at?: string;
 }
 

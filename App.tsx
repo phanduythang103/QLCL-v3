@@ -104,6 +104,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
   const { canView } = usePermissions();
 
   const subNavItems = [
+    { label: "Tổng quan", cat: 'OVERVIEW' as IndicatorCategory },
     { label: "KTCM theo tuyến", cat: 'KTCM' as IndicatorCategory },
     { label: "PT loại II+", cat: 'SURGERY_II' as IndicatorCategory },
     { label: "Nhiễm khuẩn vết mổ", cat: 'SSI' as IndicatorCategory },
@@ -116,6 +117,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
     { label: "Sử dụng phòng mổ", cat: 'OR_USAGE' as IndicatorCategory },
     { label: "Tỷ lệ ĐD/NB", cat: 'NURSE_PATIENT_RATIO' as IndicatorCategory },
     { label: "Vệ sinh tay", cat: 'HAND_HYGIENE' as IndicatorCategory },
+    { label: "Cấu hình chỉ số", cat: 'INDICATOR_CONFIG' as IndicatorCategory },
   ];
 
   return (

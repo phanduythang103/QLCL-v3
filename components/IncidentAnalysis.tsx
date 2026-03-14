@@ -3,7 +3,7 @@ import {
     Plus, Search, Edit2, Trash2, Eye, ArrowLeft, Save, X,
     BrainCircuit, FileText, User, ClipboardList, CheckCircle2,
     Calendar, Clock, LayoutGrid, ChevronRight, AlertCircle, Loader2,
-    CheckCircle, ShieldCheck, AlertTriangle, Printer, Download
+    CheckCircle, ShieldCheck, AlertTriangle, Printer, Download, Sparkles
 } from 'lucide-react';
 import {
     fetchTimHieuPhanTichScyk,
@@ -13,6 +13,7 @@ import {
 } from '../readTimHieuPhanTichScyk';
 import { fetchBaoCaoScyk, BaoCaoScyk } from '../readBaoCaoScyk';
 import { useAuth } from '../contexts/AuthContext';
+import { analyzeWithGemini } from '../geminiClient';
 
 export interface AnalysisRecord {
     id?: string;
@@ -22,7 +23,7 @@ export interface AnalysisRecord {
     ii_phan_loai_theo_nhom?: string;
     iii_dieu_tri_da_thuc_hien?: string;
     iiii_phan_loai_theo_nhom_nguyen_nhan?: string;
-    iiiii_hanh_dong_khac_phuc?: string;
+    iiiii_han_dong_khac_phuc?: string;
     iiiiii_de_xuat_khuyen_cao?: string;
     b_danh_cho_cap_quan_ly?: string;
     chuc_danh?: string;
@@ -106,6 +107,9 @@ const IncidentAnalysis: React.FC = () => {
     const [viewingItem, setViewingItem] = useState<AnalysisRecord | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiResult, setAiResult] = useState<string | null>(null);
+    const [showAiModal, setShowAiModal] = useState(false);
 
     const initialForm: AnalysisRecord = {
         scyk_id: '',
@@ -114,7 +118,7 @@ const IncidentAnalysis: React.FC = () => {
         ii_phan_loai_theo_nhom: '',
         iii_dieu_tri_da_thuc_hien: '',
         iiii_phan_loai_theo_nhom_nguyen_nhan: '',
-        iiiii_hanh_dong_khac_phuc: '',
+        iiiii_han_dong_khac_phuc: '',
         iiiiii_de_xuat_khuyen_cao: '',
         b_danh_cho_cap_quan_ly: '',
         chuc_danh: '',
@@ -220,6 +224,86 @@ const IncidentAnalysis: React.FC = () => {
         }
     };
 
+    const handleAiAnalysis = async () => {
+        if (!formData.scyk_id) {
+            alert('Vui lòng chọn sự cố y khoa để phân tích');
+            return;
+        }
+
+        const incident = incidents.find(inc => inc.id === formData.scyk_id);
+        if (!incident) return;
+
+        setIsAnalyzing(true);
+        try {
+            const prompt = `Đóng vai: Bạn là một chuyên gia Quản lý Chất lượng Bệnh viện, An toàn Người bệnh và Quản lý Rủi ro Y khoa với nhiều năm kinh nghiệm thực hiện Phân tích Nguyên nhân Gốc rễ (RCA).
+
+Nhiệm vụ: Hãy giúp tôi phân tích sự cố y khoa dưới đây bằng phương pháp RCA. Vui lòng áp dụng mô hình "Biểu đồ xương cá (Ishikawa)" để phân loại các yếu tố góp phần và kỹ thuật "5 Whys" để đào sâu tìm ra nguyên nhân gốc rễ thực sự, không chỉ dừng lại ở lỗi cá nhân mà tập trung vào lỗi hệ thống.
+
+Thông tin sự cố y khoa:
+- Mã sự cố: ${incident.so_bc_ma_scyk || 'N/A'}
+- Đơn vị báo cáo: ${incident.don_vi_bao_cao || incident.khoa_phong || 'N/A'}
+- Đối tượng: ${incident.doi_tuong_xay_ra_sc || 'N/A'}
+- Mô tả ngắn gọn sự việc: ${incident.mo_ta_su_co || 'N/A'}
+- Hậu quả đối với người bệnh: ${incident.phan_loai_ban_dau || 'N/A'}
+- Nhân sự liên quan: ${incident.ho_ten_nguoi_bc || 'N/A'}
+- Ngày xảy ra: ${incident.ngay_xay_ra_sc || 'N/A'}
+
+Định dạng kết quả đầu ra yêu cầu:
+Dựa trên thông tin trên, hãy lập một báo cáo phân tích RCA bao gồm các phần sau:
+
+1. Tóm tắt sự cố (Problem Statement): Phát biểu ngắn gọn, rõ ràng về vấn đề cốt lõi.
+
+2. Phân tích yếu tố góp phần (Dựa trên mô hình Ishikawa): Phân tích chi tiết theo các nhóm yếu tố:
+- Con người (Nhân viên y tế, người bệnh).
+- Hệ thống / Quy trình / Chính sách (Quy trình chuẩn kỹ thuật, giao tiếp, bàn giao ca).
+- Trang thiết bị / Vật tư (Máy móc, thuốc men, hồ sơ bệnh án).
+- Môi trường (Tiếng ồn, ánh sáng, khối lượng công việc, áp lực thời gian).
+
+3. Truy tìm nguyên nhân gốc rễ (Phân tích 5 Whys): Chọn ra 1-2 vấn đề then chốt nhất từ phần trên và thực hiện chuỗi 5 câu hỏi "Tại sao?" để tìm ra lỗ hổng cuối cùng của hệ thống.
+
+4. Đề xuất Kế hoạch Hành động Khắc phục & Phòng ngừa (CAPA): Đề xuất các giải pháp cụ thể, mang tính khả thi cao để ngăn chặn sự cố lặp lại. Phân chia rõ ràng thành: Hành động tức thời và Hành động dài hạn (cải tiến quy trình, đào tạo, nâng cấp thiết bị).`;
+
+            const result = await analyzeWithGemini(prompt);
+            setAiResult(result);
+            setShowAiModal(true);
+        } catch (error: any) {
+            alert('Lỗi khi phân tích AI: ' + error.message);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const applyAiToForm = () => {
+        if (!aiResult) return;
+
+        // Simple parsing logic: trying to extract sections based on numbers/keywords
+        const sections = aiResult.split('\n\n');
+        
+        let problemStatement = "";
+        let ishikawa = "";
+        let fiveWhys = "";
+        let capa = "";
+
+        sections.forEach(s => {
+            const lower = s.toLowerCase();
+            if (lower.includes("tóm tắt sự cố") || s.startsWith("1.")) problemStatement = s;
+            else if (lower.includes("ishikawa") || s.startsWith("2.")) ishikawa = s;
+            else if (lower.includes("5 whys") || s.startsWith("3.")) fiveWhys = s;
+            else if (lower.includes("capa") || s.startsWith("4.")) capa = s;
+        });
+
+        // Set form data
+        setFormData({
+            ...formData,
+            i_mo_ta_chi_tiet: `${problemStatement}\n\n${ishikawa}`.trim(),
+            iiii_phan_loai_theo_nhom_nguyen_nhan: fiveWhys.trim(),
+            iiiii_han_dong_khac_phuc: "Hành động tức thời:\n" + capa.split('\n').filter(l => l.toLowerCase().includes('tức thời')).join('\n'),
+            iiiiii_de_xuat_khuyen_cao: "Hành động dài hạn:\n" + capa.split('\n').filter(l => l.toLowerCase().includes('dài hạn') || l.toLowerCase().includes('cải tiến')).join('\n')
+        });
+
+        setShowAiModal(false);
+    };
+
     if (viewMode === 'FORM') {
         return (
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -254,28 +338,72 @@ const IncidentAnalysis: React.FC = () => {
                         </div>
                         <div className="flex-1">
                             <label className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-1.5 block">Chọn Sự cố Y khoa cần phân tích *</label>
-                            <select
-                                value={formData.scyk_id}
-                                onChange={e => setFormData({ ...formData, scyk_id: e.target.value })}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-[14pt] font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-                            >
-                                <option value="">-- Chọn trong danh sách sự cố --</option>
-                                {incidents
-                                    .filter(inc => {
-                                        if (isAdmin || !uDept) return true;
-                                        const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
-                                        const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
-                                        return (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
-                                               (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
-                                    })
-                                    .map(inc => (
-                                    <option key={inc.id} value={inc.id}>
-                                        {inc.so_bc_ma_scyk} - {inc.ho_ten_nb || inc.doi_tuong_xay_ra_sc || 'N/A'} - {inc.khoa_phong || inc.don_vi_bao_cao}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="flex gap-2">
+                                <select
+                                    value={formData.scyk_id}
+                                    onChange={e => setFormData({ ...formData, scyk_id: e.target.value })}
+                                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[14pt] font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                >
+                                    <option value="">-- Chọn trong danh sách sự cố --</option>
+                                    {incidents
+                                        .filter(inc => {
+                                            if (isAdmin || !uDept) return true;
+                                            const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
+                                            const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
+                                            return (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
+                                                   (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                                        })
+                                        .map(inc => (
+                                        <option key={inc.id} value={inc.id}>
+                                            {inc.so_bc_ma_scyk} - {inc.ho_ten_nb || inc.doi_tuong_xay_ra_sc || 'N/A'} - {inc.khoa_phong || inc.don_vi_bao_cao}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={handleAiAnalysis}
+                                    disabled={!formData.scyk_id || isAnalyzing}
+                                    className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {isAnalyzing ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                                    {isAnalyzing ? 'Đang phân tích...' : 'Phân tích với AI'}
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    {/* AI Result Modal */}
+                    {showAiModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+                                            <Sparkles size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-slate-800 uppercase tracking-tight">Kết quả phân tích từ AI RCA Expert</h3>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sử dụng mô hình Ishikawa & 5 Whys</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setShowAiModal(false)} className="p-2 hover:bg-white rounded-full transition-colors text-slate-400"><X size={20} /></button>
+                                </div>
+                                <div className="flex-1 p-8 overflow-y-auto bg-white prose prose-slate max-w-none">
+                                    <div className="whitespace-pre-wrap font-medium text-slate-700 leading-relaxed text-sm md:text-base">
+                                        {aiResult}
+                                    </div>
+                                </div>
+                                <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
+                                    <button onClick={() => setShowAiModal(false)} className="px-6 py-3 text-slate-500 font-bold text-sm hover:bg-white rounded-xl transition-all">Đóng</button>
+                                    <button 
+                                        onClick={applyAiToForm}
+                                        className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-indigo-900/10 active:scale-95 transition-all"
+                                    >
+                                        <CheckCircle2 size={18} /> Áp dụng nội dung này vào Form
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="space-y-12">
                         {/* SECTION A */}
@@ -386,8 +514,8 @@ const IncidentAnalysis: React.FC = () => {
                                     </div>
                                     <textarea
                                         rows={4}
-                                        value={formData.iiiii_hanh_dong_khac_phuc}
-                                        onChange={e => setFormData({ ...formData, iiiii_hanh_dong_khac_phuc: e.target.value })}
+                                        value={formData.iiiii_han_dong_khac_phuc}
+                                        onChange={e => setFormData({ ...formData, iiiii_han_dong_khac_phuc: e.target.value })}
                                         placeholder="Mô tả hành động xử lý..."
                                         className="w-full border border-slate-200 rounded-xl p-4 text-[14pt] focus:ring-2 focus:ring-primary-500 outline-none shadow-sm font-medium"
                                     />
@@ -709,7 +837,7 @@ const IncidentAnalysis: React.FC = () => {
                         <tr>
                             <td style="height: 120pt;">
                                 <div style="font-weight: bold; font-size: 11pt;">Mô tả hành động xử lý sự cố</div>
-                                <div>${viewingItem.iiiii_hanh_dong_khac_phuc || ''}</div>
+                                <div>${viewingItem.iiiii_han_dong_khac_phuc || ''}</div>
                                 ${Array(4).fill('<div style="border-bottom: 1pt dotted #ccc; margin-top: 15pt;"></div>').join('')}
                             </td>
                             <td style="height: 120pt;">
@@ -932,7 +1060,7 @@ const IncidentAnalysis: React.FC = () => {
                             <h3 className="font-bold underline mb-2">V. Hành động khắc phục sự cố</h3>
                             <div className="min-h-[100px] leading-relaxed border-l-2 border-slate-100 pl-4">
                                 <p className="font-bold mb-1 text-[10pt] uppercase text-slate-400 tracking-wider">Mô tả hành động xử lý sự cố</p>
-                                {viewingItem.iiiii_hanh_dong_khac_phuc || '.........................................................'}
+                                {viewingItem.iiiii_han_dong_khac_phuc || '.........................................................'}
                             </div>
                         </div>
                         <div className="p-2">

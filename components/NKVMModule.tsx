@@ -792,26 +792,40 @@ export const NKVMModule: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex border-b border-slate-200">
-        {[
-          { id: 'OVERVIEW', label: 'Tổng quan', icon: <BarChart2 size={16} /> },
-          { id: 'SUPERVISION', label: 'Giám sát NKVM', icon: <CheckSquare size={16} /> },
-          { id: 'LIST', label: 'Danh sách NKVM', icon: <ClipboardList size={16} /> },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as NKVMTab)}
-            className={`flex items-center gap-2 px-6 py-3 text-table font-black uppercase transition-all relative outline-none ${
-              activeTab === tab.id 
-                ? 'text-[#009900] border-b-2 border-[#009900]' 
-                : 'text-black/40 hover:text-black hover:bg-slate-50'
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+    <div className="min-h-full flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 shadow-sm shrink-0 border border-red-100">
+              <TrendingUp size={28} />
+            </div>
+            <div>
+              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tỷ lệ Nhiễm khuẩn vết mổ</h2>
+              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Kiểm soát NKVM sau phẫu thuật sạch/sạch-nhiễm</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex border-b border-slate-200">
+          {[
+            { id: 'OVERVIEW', label: 'Tổng quan', icon: <BarChart2 size={16} /> },
+            { id: 'SUPERVISION', label: 'Giám sát NKVM', icon: <CheckSquare size={16} /> },
+            { id: 'LIST', label: 'Danh sách NKVM', icon: <ClipboardList size={16} /> },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as NKVMTab)}
+              className={`flex items-center gap-2 px-6 py-3 text-table font-black uppercase transition-all relative outline-none ${
+                activeTab === tab.id 
+                  ? 'text-[#009900] border-b-2 border-[#009900]' 
+                  : 'text-black/40 hover:text-black hover:bg-slate-50'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-4">

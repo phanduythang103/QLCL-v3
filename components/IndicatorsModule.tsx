@@ -5,6 +5,16 @@ import { VAPModule } from './VAPModule';
 import { KtcmModule } from './KtcmModule';
 import { PtLoai2Module } from './PtLoai2Module';
 import { NKVMModule } from './NKVMModule';
+import { SeriousIncidentModule } from './SeriousIncidentModule';
+import { FacilitySecurityModule } from './FacilitySecurityModule';
+import { ExamTimeModule } from './ExamTimeModule';
+import { LengthOfStayModule } from './LengthOfStayModule';
+import { BedUsageModule } from './BedUsageModule';
+import { ORUsageModule } from './ORUsageModule';
+import { NurseRatioModule } from './NurseRatioModule';
+import { HandHygieneModule } from './HandHygieneModule';
+import IndicatorConfigModule from './IndicatorConfigModule';
+import IndicatorOverviewModule from './IndicatorOverviewModule';
 
 const ChartBar = ({ label, value, max, color, target, donVi }: { label: string, value: number, max: number, color: string, target?: number, donVi?: string }) => (
   <div className="mb-4 group">
@@ -42,10 +52,12 @@ export const IndicatorsModule: React.FC = () => {
       case 'SEVERE_NON_MEDICAL': return 'Sự cố ngoài y khoa nghiêm trọng';
       case 'AVG_EXAM_TIME': return 'Thời gian khám bệnh trung bình';
       case 'AVG_STAY_TIME': return 'Thời gian nằm viện trung bình';
-      case 'BED_USAGE': return 'Tỷ lệử dụng giường';
+      case 'BED_USAGE': return 'Tỷ lệ sử dụng giường';
       case 'OR_USAGE': return 'Tỷ lệ sử dụng phòng mổ';
-      case 'NURSE_PATIENT_RATIO': return 'Tỷ lệ Điều dưỡngtrên người bệnh';
+      case 'NURSE_PATIENT_RATIO': return 'Tỷ lệ Điều dưỡng trên người bệnh';
       case 'HAND_HYGIENE': return 'Tỷ lệ tuân thủ vệ sinh tay';
+      case 'INDICATOR_CONFIG': return 'Cấu hình chỉ số chất lượng';
+      case 'OVERVIEW': return 'Tổng quan Chỉ số QLCL';
       default: return null;
     }
   };
@@ -81,7 +93,7 @@ export const IndicatorsModule: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          {category && (
+          {category && category !== 'KTCM' && category !== 'AVG_EXAM_TIME' && category !== 'AVG_STAY_TIME' && category !== 'BED_USAGE' && category !== 'OR_USAGE' && category !== 'NURSE_PATIENT_RATIO' && category !== 'HAND_HYGIENE' && category !== 'INDICATOR_CONFIG' && (
             <h2 className="text-title font-black text-[#009900] uppercase animate-in fade-in slide-in-from-left-4 duration-300">
               {getCategoryTitle(category)}
             </h2>
@@ -121,6 +133,26 @@ export const IndicatorsModule: React.FC = () => {
         <PtLoai2Module />
       ) : category === 'SSI' ? (
         <NKVMModule />
+      ) : category === 'SEVERE_INCIDENT' ? (
+        <SeriousIncidentModule />
+      ) : category === 'SEVERE_NON_MEDICAL' ? (
+        <FacilitySecurityModule />
+      ) : category === 'AVG_EXAM_TIME' ? (
+        <ExamTimeModule />
+      ) : category === 'AVG_STAY_TIME' ? (
+        <LengthOfStayModule />
+      ) : category === 'BED_USAGE' ? (
+        <BedUsageModule />
+      ) : category === 'OR_USAGE' ? (
+        <ORUsageModule />
+      ) : category === 'NURSE_PATIENT_RATIO' ? (
+        <NurseRatioModule />
+      ) : category === 'HAND_HYGIENE' ? (
+        <HandHygieneModule />
+      ) : category === 'INDICATOR_CONFIG' ? (
+        <IndicatorConfigModule />
+      ) : category === 'OVERVIEW' ? (
+        <IndicatorOverviewModule />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

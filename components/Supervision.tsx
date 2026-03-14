@@ -12,6 +12,7 @@ import { fetchUsers } from '../userApi';
 import { useSupervision } from './SupervisionContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabaseClient';
+import { HandHygieneModule } from './HandHygieneModule';
 
 // Hàm tính trạng thái tự động dựa trên ngày
 const getAutoStatus = (tuNgay: string, denNgay: string): string => {
@@ -294,6 +295,8 @@ export const Supervision: React.FC = () => {
             </div>
           </div>
         );
+      case 'HAND_HYGIENE':
+        return <HandHygieneModule />;
       default:
         return (
           <div className="space-y-4">

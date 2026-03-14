@@ -32,11 +32,40 @@ export type IndicatorCategory =
   | 'AVG_STAY_TIME'
   | 'BED_USAGE'
   | 'OR_USAGE'
+  | 'OR_DOWNTIME'
   | 'NURSE_PATIENT_RATIO'
+  | 'SHIFT_MANPOWER'
   | 'HAND_HYGIENE'
   | 'KTCM'
   | 'SURGERY_II'
+  | 'INDICATOR_CONFIG'
+  | 'OVERVIEW'
   | null;
+
+export interface IndicatorConfig {
+  id: string;
+  created_at: string;
+  ten_chi_so: string;
+  muc_tieu: number | null;
+  don_vi_tinh: string | null;
+  tu_ngay: string | null;
+  den_ngay: string | null;
+  linh_vuc_ap_dung: string | null;
+  thong_tin: string | null;
+  dinh_nghia?: string | null;
+  khia_canh_cl?: string | null;
+  thanh_to_cl?: string | null;
+  ly_do_lua_chon?: string | null;
+  cong_thuc?: string | null;
+  tu_so?: string | null;
+  mau_so?: string | null;
+  tieu_chuan_lua_chon?: string | null;
+  tieu_chuan_loai_tru?: string | null;
+  nguon_so_lieu?: string | null;
+  phuong_phap_thu_thap?: string | null;
+  tan_suat_bao_cao?: string | null;
+  trach_nhiem?: string | null;
+}
 
 export interface Personnel {
   id: string;
@@ -130,4 +159,48 @@ export interface PtLoai2 {
   tong_pt_loai_2_tro_len: number | null;
   ty_le: number | null;
   ghi_chu: string | null;
+}
+
+export interface BcNhanLucCa {
+  id?: string;
+  created_at?: string;
+  ngay_bao_cao: string;
+  nguoi_bao_cao: string;
+  khoa_bao_cao: string;
+  sang_dd: number;
+  sang_nb: number;
+  sang_ty_le: number;
+  sang_an_toan: string;
+  chieu_dd: number;
+  chieu_nb: number;
+  chieu_ty_le: number;
+  chieu_an_toan: string;
+  dem_dd: number;
+  dem_nb: number;
+  dem_ty_le: number;
+  dem_an_toan: string;
+}
+
+export interface GsVst {
+  id?: string;
+  created_at?: string;
+  ngay_giam_sat: string;
+  nguoi_giam_sat: string;
+  khoa_duoc_giam_sat: string;
+  doi_tuong: string;
+  nguoi_duoc_giam_sat: string;
+  checklist_data: {
+    moments: {
+      id: number;
+      name: string;
+      compliance: boolean;
+      correct_technique: boolean;
+      note: string;
+    }[];
+  };
+  tong_co_hoi: number;
+  so_lan_tuan_thu: number;
+  so_lan_dung_ky_thuat: number;
+  hinh_anh_minh_chung: string[];
+  ghi_chu_chung: string;
 }

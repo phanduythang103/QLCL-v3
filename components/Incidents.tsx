@@ -5,12 +5,13 @@ import {
   ChevronDown, ChevronUp, CheckCircle2, AlertOctagon,
   BarChart2, PieChart as PieChartIcon, Calendar, Download, Printer,
   History, Edit2, Trash2, Eye, ArrowLeft, Target, Users, LayoutGrid, User, CheckSquare,
-  LayoutDashboard, List, FileCheck, Files, Menu, RefreshCw, Clock
+  LayoutDashboard, List, FileCheck, Files, Menu, RefreshCw, Clock, Upload, Image as ImageIcon
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
+import { supabase } from '../supabaseClient';
 import { fetchBaoCaoScyk, addBaoCaoScyk, updateBaoCaoScyk, deleteBaoCaoScyk, fetchLatestBaoCaoScykByYear } from '../readBaoCaoScyk';
 import { addScykTienDoLog, fetchScykTienDoLogs, fetchLatestLogPerIncident, ScykTienDoLog } from '../readScykTienDoLogs';
 import { useAuth } from '../contexts/AuthContext';
@@ -412,7 +413,7 @@ const UpdateStatusModal = ({ item, onClose, onSaved }: { item: any, onClose: () 
   const formatTime = (iso: string) => {
     if (!iso) return '';
     const d = new Date(iso);
-    return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
   return (
@@ -1098,7 +1099,8 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
     const timeStr = now.toLocaleString('vi-VN', {
       hour: '2-digit', minute: '2-digit', second: '2-digit',
       day: '2-digit', month: '2-digit', year: 'numeric',
-      timeZone: 'Asia/Ho_Chi_Minh'
+      timeZone: 'Asia/Ho_Chi_Minh',
+      hour12: false
     });
 
     try {
@@ -1537,7 +1539,7 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl space-y-3">
                   <p className="text-table"><span className="font-black text-black uppercase text-[10px] block opacity-40">Khoa phòng</span> <span className="text-black font-black uppercase">{item.don_vi_bao_cao}</span></p>
-                  <p className="text-table"><span className="font-black text-black uppercase text-[10px] block opacity-40">Vị trí</span> <span className="text-black font-black uppercase">{item.noi_xay_ra_sc} - {item.vi_tri_cu_the}</span></p>
+                  <p className="text-table"><span className="font-black text-black uppercase text-[10px] block opacity-40">Vị trí</span> <span className="text-black font-black">{item.noi_xay_ra_sc} - {item.vi_tri_cu_the}</span></p>
                   <p className="text-table"><span className="font-black text-black uppercase text-[10px] block opacity-40">Thời gian xảy ra</span> <span className="text-black font-black uppercase">{item.ngay_xay_ra_sc ? new Date(item.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : ''} {item.thoi_gian}</span></p>
                   <p className="text-table"><span className="font-black text-black uppercase text-[10px] block opacity-40">Đối tượng</span> <span className="text-black font-black uppercase">{item.doi_tuong_xay_ra_sc}</span></p>
                 </div>
@@ -1577,7 +1579,7 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
                   <h3 className="text-sm font-bold text-orange-700 uppercase tracking-wide">Mô tả chi tiết</h3>
                 </div>
                 <div className="p-4 bg-orange-50/40 border border-orange-100 rounded-xl space-y-3">
-                  <p className="text-sm leading-relaxed">{item.mo_ta_su_co || '---'}</p>
+                  <p className="text-sm leading-relaxed italic">{item.mo_ta_su_co || '---'}</p>
                 </div>
               </div>
 
@@ -1592,6 +1594,24 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
                 </div>
               </div>
             </div>
+
+            {/* Evidence Images */}
+            {item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0 && (
+              <div className="md:col-span-2 pt-6 border-t border-slate-100">
+                <div className="flex items-center gap-2 mb-4 px-4 py-2 bg-violet-50 border border-violet-100 rounded-xl w-fit">
+                  <div className="w-2 h-2 rounded-full bg-violet-500"></div>
+                  <h3 className="text-label font-black text-violet-700 uppercase tracking-wide">Hình ảnh minh chứng</h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {item.hinh_anh_minh_chung.map((imgUrl: string, idx: number) => (
+                    <a key={idx} href={imgUrl} target="_blank" rel="noopener noreferrer" className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 shadow-sm block hover:ring-2 hover:ring-violet-400 transition-all">
+                      <img src={imgUrl} alt={`Minh chứng ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1627,7 +1647,7 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
                   };
                   const badgeClass = statusColors[log.trang_thai || ''] || 'bg-slate-100 text-slate-600';
                   const timeStr = log.thoi_gian_cap_nhat
-                    ? new Date(log.thoi_gian_cap_nhat).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    ? new Date(log.thoi_gian_cap_nhat).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
                     : '';
                   return (
                     <div key={log.id || idx} className="flex gap-4">
@@ -1817,11 +1837,118 @@ interface IncidentFormProps {
   editingItem?: any;
 }
 
+const MaskedDateInput = ({ label, value, onChange, placeholder = "DD/MM/YYYY", required = false }: any) => {
+  const [displayValue, setDisplayValue] = useState('');
+
+  useEffect(() => {
+    if (value && value.includes('-')) {
+      const parts = value.split('-');
+      if (parts.length === 3) {
+        setDisplayValue(`${parts[2]}/${parts[1]}/${parts[0]}`);
+      } else {
+        setDisplayValue(value);
+      }
+    } else {
+      setDisplayValue(value || '');
+    }
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value;
+    let numbers = input.replace(/\D/g, ''); // Remove non-digits
+    if (numbers.length > 8) numbers = numbers.slice(0, 8); // Max 8 digits
+
+    let formatted = numbers;
+    if (numbers.length >= 3 && numbers.length <= 4) {
+      formatted = `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+    } else if (numbers.length >= 5) {
+      formatted = `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4)}`;
+    }
+    setDisplayValue(formatted);
+
+    if (numbers.length === 8) {
+      const dd = numbers.slice(0, 2);
+      const mm = numbers.slice(2, 4);
+      const yyyy = numbers.slice(4);
+      onChange(`${yyyy}-${mm}-${dd}`);
+    } else if (numbers.length === 0) {
+      onChange('');
+    } else {
+      onChange(value || ''); // Preserve existing value if incomplete, or maybe rely on backend validation
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type="text"
+        value={displayValue}
+        onChange={handleInputChange}
+        placeholder={placeholder}
+        className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all tracking-widest"
+        maxLength={10}
+      />
+    </div>
+  );
+};
+
+const MaskedTimeInput = ({ label, value, onChange, placeholder = "HH:MM", required = false }: any) => {
+  const [displayValue, setDisplayValue] = useState(value || '');
+
+  useEffect(() => {
+    setDisplayValue(value || '');
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value;
+    let numbers = input.replace(/\D/g, ''); // Remove non-digits
+    if (numbers.length > 4) numbers = numbers.slice(0, 4);
+
+    let formatted = numbers;
+    if (numbers.length >= 3) {
+      formatted = `${numbers.slice(0, 2)}:${numbers.slice(2)}`;
+    }
+    setDisplayValue(formatted);
+
+    if (numbers.length === 4) {
+      const hh = parseInt(numbers.slice(0, 2));
+      const mm = parseInt(numbers.slice(2));
+      if (hh < 24 && mm < 60) {
+        onChange(`${numbers.slice(0, 2)}:${numbers.slice(2)}`);
+      }
+    } else if (numbers.length === 0) {
+      onChange('');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1 font-black">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type="text"
+        value={displayValue}
+        onChange={handleInputChange}
+        placeholder={placeholder}
+        className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all tracking-widest"
+        maxLength={5}
+      />
+    </div>
+  );
+};
+
 const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingItem }) => {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [dmDonVi, setDmDonVi] = useState<any[]>([]);
   const [openSections, setOpenSections] = useState<string[]>(['general']);
+  const [uploadedImages, setUploadedImages] = useState<string[]>(editingItem?.hinh_anh_minh_chung || []);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev =>
@@ -1916,10 +2043,11 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
     }
     setSaving(true);
     try {
+      const payload = { ...formData, hinh_anh_minh_chung: uploadedImages };
       if (editingItem?.id) {
-        await updateBaoCaoScyk(editingItem.id, formData);
+        await updateBaoCaoScyk(editingItem.id, payload);
       } else {
-        await addBaoCaoScyk({ ...formData, trang_thai: 'Mới' });
+        await addBaoCaoScyk({ ...payload, trang_thai: 'Mới' });
       }
       onSaved();
     } catch (err: any) {
@@ -1928,6 +2056,73 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
       setSaving(false);
     }
   };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImages(true);
+    setUploadError(null);
+
+    const newUrls: string[] = [];
+    const uploadId = formData.so_bc_ma_scyk || `temp_${Date.now()}`;
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) {
+          setUploadError(`File ${file.name} không phải là hình ảnh hợp lệ.`);
+          continue;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          setUploadError(`File ${file.name} vượt quá 5MB.`);
+          continue;
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${uploadId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from('scyk')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('scyk')
+          .getPublicUrl(fileName);
+
+        newUrls.push(publicUrl);
+      }
+      setUploadedImages(prev => [...prev, ...newUrls]);
+    } catch (err: any) {
+      console.error('Lỗi upload ảnh:', err);
+      setUploadError('Tải ảnh tải lên thất bại: ' + err.message);
+    } finally {
+      setUploadingImages(false);
+      // reset input
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = (urlToRemove: string) => {
+    if (!window.confirm('Bạn có chắc muốn xóa ảnh này?')) return;
+    
+    // Attempt to delete from bucket if possible (extract path from URL)
+    try {
+      const urlObj = new URL(urlToRemove);
+      const pathParts = urlObj.pathname.split('/scyk/');
+      if (pathParts.length > 1) {
+        const filePath = pathParts[1];
+        supabase.storage.from('scyk').remove([filePath]).catch(console.error);
+      }
+    } catch (e) {
+      console.error('Cannot parse URL to remove from storage', e);
+    }
+
+    setUploadedImages(prev => prev.filter(url => url !== urlToRemove));
+  };
+
 
   const ToggleGroup = ({ label, field, options, value }: { label: string, field: string, options: string[], value: string }) => (
     <div className="flex flex-col gap-2">
@@ -1986,15 +2181,24 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
                   <ToggleGroup label="Hình thức báo cáo" field="hinh_thuc_bao_cao" options={['Tự nguyện', 'Bắt buộc']} value={formData.hinh_thuc_bao_cao} />
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Đơn vị báo cáo <span className="text-red-500">*</span></label>
-                    <select value={formData.don_vi_bao_cao} onChange={(e) => { handleChange('don_vi_bao_cao', e.target.value); const u = dmDonVi.find(d => d.ten_don_vi === e.target.value); if (u) generateNextCode(u.ma_don_vi); }} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 cursor-pointer bg-white transition-all">
-                      <option value="">-- Chọn đơn vị --</option>
+                    <input 
+                      type="text"
+                      list="don-vi-list"
+                      value={formData.don_vi_bao_cao}
+                      onChange={(e) => { 
+                        handleChange('don_vi_bao_cao', e.target.value); 
+                        const u = dmDonVi.find(d => d.ten_don_vi === e.target.value); 
+                        if (u) generateNextCode(u.ma_don_vi); 
+                      }}
+                      className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 bg-white transition-all placeholder:normal-case"
+                      placeholder="Nhập hoặc lọc tên khoa phòng..."
+                      autoComplete="off"
+                    />
+                    <datalist id="don-vi-list">
                       {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>)}
-                    </select>
+                    </datalist>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Ngày báo cáo</label>
-                    <input type="date" value={formData.ngay_bao_cao} onChange={(e) => handleChange('ngay_bao_cao', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" />
-                  </div>
+                  <MaskedDateInput label="Ngày báo cáo" value={formData.ngay_bao_cao} onChange={(val: string) => handleChange('ngay_bao_cao', val)} />
                 </div>
 
                 <div className="md:col-span-2 border-t border-slate-100 my-2 pt-4"></div>
@@ -2016,10 +2220,7 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
                     </select>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Ngày sinh</label>
-                  <input type="date" value={formData.ngay_sinh} onChange={e => handleChange('ngay_sinh', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" />
-                </div>
+                <MaskedDateInput label="Ngày sinh" value={formData.ngay_sinh} onChange={(val: string) => handleChange('ngay_sinh', val)} />
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Đối tượng xảy ra</label>
                   <select value={formData.doi_tuong_xay_ra_sc} onChange={e => handleChange('doi_tuong_xay_ra_sc', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white cursor-pointer transition-all">
@@ -2049,7 +2250,7 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
               <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 animate-in slide-in-from-top-2 duration-200 uppercase font-black">
                 <div className="space-y-2">
                   <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Nơi xảy ra sự cố</label>
-                  <input type="text" value={formData.noi_xay_ra_sc} onChange={e => handleChange('noi_xay_ra_sc', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" placeholder="VD: Hành lang, Phòng mổ..." />
+                  <input type="text" value={formData.noi_xay_ra_sc} onChange={e => handleChange('noi_xay_ra_sc', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" placeholder="VD: Hành lang, Phòng mổ..." />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Vị trí cụ thể</label>
@@ -2057,21 +2258,15 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Khoa / Phòng</label>
-                  <input type="text" value={formData.khoa_phong} onChange={e => handleChange('khoa_phong', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" />
+                  <input type="text" value={formData.khoa_phong} onChange={e => handleChange('khoa_phong', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Ngày xảy ra</label>
-                    <input type="date" value={formData.ngay_xay_ra_sc} onChange={e => handleChange('ngay_xay_ra_sc', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Giờ xảy ra</label>
-                    <input type="time" value={formData.thoi_gian} onChange={e => handleChange('thoi_gian', e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all" />
-                  </div>
+                  <MaskedDateInput label="Ngày xảy ra" value={formData.ngay_xay_ra_sc} onChange={(val: string) => handleChange('ngay_xay_ra_sc', val)} />
+                  <MaskedTimeInput label="Giờ xảy ra" value={formData.thoi_gian} onChange={(val: string) => handleChange('thoi_gian', val)} />
                 </div>
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Mô tả sự cố</label>
-                  <textarea rows={4} value={formData.mo_ta_su_co} onChange={e => handleChange('mo_ta_su_co', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-medium outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none" placeholder="Mô tả chi tiết diễn biến..." />
+                  <textarea rows={4} value={formData.mo_ta_su_co} onChange={e => handleChange('mo_ta_su_co', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-medium italic outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none" placeholder="Mô tả chi tiết diễn biến..." />
                 </div>
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
                   <ToggleGroup label="Phân loại ban đầu" field="phan_loai_ban_dau" options={['Nhẹ', 'Trung bình', 'Nặng']} value={formData.phan_loai_ban_dau} />
@@ -2126,6 +2321,78 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
                     <option value="KTV">Kỹ thuật viên</option>
                     <option value="Khác">Khác</option>
                   </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section 4: Hình ảnh minh chứng */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+            <button
+              onClick={() => toggleSection('images')}
+              className="w-full flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-100"
+            >
+              <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-3">
+                <span className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center text-sm font-black shadow-sm shadow-violet-900/10">4</span>
+                Hình ảnh minh chứng
+              </h3>
+              {openSections.includes('images') ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+            </button>
+            {openSections.includes('images') && (
+              <div className="p-4 md:p-6 animate-in slide-in-from-top-2 duration-200">
+                <div className="space-y-4">
+                  {/* Upload area */}
+                  <div className="relative border-2 border-dashed border-slate-300 rounded-xl p-6 md:p-10 flex flex-col items-center justify-center text-center hover:bg-slate-50 hover:border-violet-400 transition-colors group cursor-pointer bg-slate-50/50">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImages}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-200 text-slate-400 group-hover:text-violet-500 group-hover:scale-110 transition-all mb-4">
+                      {uploadingImages ? (
+                        <div className="w-8 h-8 border-4 border-slate-200 border-t-violet-500 rounded-full animate-spin" />
+                      ) : (
+                        <Upload size={32} />
+                      )}
+                    </div>
+                    <h4 className="text-label font-black text-black uppercase mb-1">
+                      {uploadingImages ? 'Đang tải lên...' : 'Bấm hoặc kéo thả ảnh vào đây'}
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium">Hỗ trợ JPG, PNG, GIF (Tối đa 5MB/ảnh)</p>
+                  </div>
+                  {uploadError && (
+                    <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200 flex items-center gap-2">
+                      <AlertTriangle size={16} /> {uploadError}
+                    </div>
+                  )}
+
+                  {/* Image Grid */}
+                  {uploadedImages.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-[10px] font-black text-black/40 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <ImageIcon size={14} /> Ảnh đã tải lên ({uploadedImages.length})
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+                        {uploadedImages.map((url, idx) => (
+                          <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
+                            <img src={url} alt={`Minh chứng ${idx + 1}`} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <button
+                                onClick={(e) => { e.preventDefault(); handleRemoveImage(url); }}
+                                className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 hover:scale-110 transition-all transform shrink-0 shadow-lg"
+                                title="Xóa ảnh"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

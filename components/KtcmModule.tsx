@@ -48,14 +48,14 @@ export const KtcmModule: React.FC = () => {
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       {/* Module Header & Tabs */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:px-6 gap-4">
+        <div className="flex flex-row items-center justify-between p-4 md:px-6 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
               <Activity size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800 tracking-tight">Kỹ thuật chuyên môn theo tuyến</h1>
-              <p className="text-sm text-slate-500 font-medium">Quản lý và theo dõi chỉ đạo tuyến</p>
+              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tỷ lệ kỹ thuật chuyên môn thực hiện theo tuyến</h2>
+              {/* <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Giám sát & Đánh giá năng lực thực hiện kỹ thuật chuyên môn</p> */}
             </div>
           </div>
           
