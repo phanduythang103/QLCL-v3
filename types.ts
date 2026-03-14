@@ -65,6 +65,7 @@ export interface IndicatorConfig {
   phuong_phap_thu_thap?: string | null;
   tan_suat_bao_cao?: string | null;
   trach_nhiem?: string | null;
+  danh_gia?: string | null;
 }
 
 export interface Personnel {

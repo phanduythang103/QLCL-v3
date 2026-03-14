@@ -50,7 +50,8 @@ const IndicatorConfigModule: React.FC = () => {
     tu_ngay: '',
     den_ngay: '',
     linh_vuc_ap_dung: '',
-    thong_tin: ''
+    thong_tin: '',
+    danh_gia: ''
   });
 
   const loadData = async () => {
@@ -95,7 +96,8 @@ const IndicatorConfigModule: React.FC = () => {
       tu_ngay: '',
       den_ngay: '',
       linh_vuc_ap_dung: '',
-      thong_tin: ''
+      thong_tin: '',
+      danh_gia: ''
     });
     setShowModal(true);
   };
@@ -109,7 +111,8 @@ const IndicatorConfigModule: React.FC = () => {
       tu_ngay: c.tu_ngay || '',
       den_ngay: c.den_ngay || '',
       linh_vuc_ap_dung: c.linh_vuc_ap_dung || '',
-      thong_tin: c.thong_tin || ''
+      thong_tin: c.thong_tin || '',
+      danh_gia: c.danh_gia || ''
     });
     setShowModal(true);
   };
@@ -232,9 +235,10 @@ const IndicatorConfigModule: React.FC = () => {
                 </th>
                 <th className="px-6 py-4 font-black text-white w-[26%]">Tên chỉ số</th>
                 <th className="px-6 py-4 font-black text-white w-[10%]">Mục tiêu</th>
-                <th className="px-6 py-4 font-black text-white w-[8%]">Đơn vị</th>
+                <th className="px-6 py-4 font-black text-white w-[10%]">Đơn vị</th>
+                <th className="px-6 py-4 font-black text-white w-[12%]">Đánh giá</th>
                 <th className="px-6 py-4 font-black text-white w-[15%]">Thời gian áp dụng</th>
-                <th className="px-6 py-4 font-black text-white w-[25%] text-right">Thao tác</th>
+                <th className="px-6 py-4 font-black text-white w-[18%] text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -261,6 +265,11 @@ const IndicatorConfigModule: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-xs font-bold text-slate-500">{c.don_vi_tinh || '---'}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg line-clamp-1 border border-slate-200" title={c.danh_gia || ''}>
+                      {c.danh_gia || '---'}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
@@ -436,6 +445,16 @@ const IndicatorConfigModule: React.FC = () => {
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><CheckCircle2 size={12} /> Đánh giá</label>
+                <textarea 
+                  value={form.danh_gia} 
+                  onChange={e => setForm({ ...form, danh_gia: e.target.value })} 
+                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[60px]" 
+                  placeholder="Tiêu chí đánh giá hoặc kết quả đánh giá mốc..."
+                />
+              </div>
+
               <div className="flex gap-4 pt-4">
                 <button 
                   type="button"
@@ -592,6 +611,14 @@ const IndicatorConfigModule: React.FC = () => {
 
                         <div className="flex items-start gap-4">
                             <span className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-xs font-black shrink-0">5</span>
+                            <div className="space-y-2">
+                                <strong className="text-slate-900">Đánh giá:</strong>
+                                <p className="text-slate-600 whitespace-pre-wrap leading-relaxed">{viewingConfig.danh_gia || 'Chưa có thông tin đánh giá'}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <span className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-xs font-black shrink-0">6</span>
                             <div className="space-y-2">
                                 <strong className="text-slate-900">Thông tin chi tiết:</strong>
                                 <p className="text-slate-600 whitespace-pre-wrap leading-relaxed">{viewingConfig.thong_tin || 'Chưa có thông tin bổ sung'}</p>

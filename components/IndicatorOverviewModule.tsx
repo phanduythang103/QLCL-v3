@@ -29,7 +29,22 @@ import {
 } from 'lucide-react';
 import { fetchIndicatorConfigs } from '../readCauHinhCscl';
 import { fetchChiSoQlcl, ChiSoQlcl } from '../readChiSoQlcl';
-import { IndicatorConfig } from '../types';
+import { IndicatorConfig, IndicatorCategory } from '../types';
+import { useIndicators } from './IndicatorsContext';
+
+// Import all specific data fetching services
+import { fetchCongSuatGiuong } from '../readCongSuatGiuong';
+import { fetchHieuSuatPhongMo } from '../readHieuSuatPhongMo';
+import { fetchBcScnyknt } from '../readBcScnyknt';
+import { fetchScykNghiemTrong } from '../readScykNghiemTrong';
+import { fetchGsKhamBenh } from '../readGsKhamBenh';
+import { fetchThoiGianNamVien } from '../readThoiGianNamVien';
+import { fetchDsnKvm } from '../readDsnKvm';
+import { fetchPtLoai2 } from '../readPtLoai2';
+import { fetchKtcmTheoTuyen } from '../readKtcm';
+import { fetchGsVst } from '../readGsVst';
+import { fetchVpbv } from '../readVpbv';
+import { fetchTyLeDD } from '../readTyLeDD';
 
 // ─── Progress bar row (matching the reference image style) ───────────────────
 const BAR_COLORS = [
@@ -70,14 +85,41 @@ function getRowIcon(index: number) {
   return ROW_ICONS[index % ROW_ICONS.length];
 }
 
+type EvalStatus = 'SUCCESS' | 'EXCEEDED' | 'WARNING' | 'FAILED' | 'NONE';
+
+function getEvaluationStatus(value: number | undefined, target: number | null | undefined, evaluationRule: string | null | undefined, unit: string | null | undefined): EvalStatus {
+  if (value === undefined || value === null || target === undefined || target === null) return 'NONE';
+  
+  const rule = (evaluationRule || '').toLowerCase();
+  const isPercent = unit === '%';
+  
+  // Detect direction: default is higher-is-better (>=)
+  // Symbols meaning lower-is-better: <=, <, "thấp hơn", "tối đa", "không quá"
+  const isLowerIsBetter = rule.includes('≤') || rule.includes('<') || rule.includes('thấp hơn') || rule.includes('tối đa') || rule.includes('không quá');
+  
+  if (isLowerIsBetter) {
+    if (isPercent && value < target * 0.9) return 'EXCEEDED'; // Significantly lower (better) - only for %
+    if (value <= target) return 'SUCCESS';
+    if (value <= target * 1.1) return 'WARNING'; // Slightly higher (up to 10% over)
+    return 'FAILED';
+  } else {
+    // Higher is better (>=)
+    if (isPercent && value > target * 1.1) return 'EXCEEDED'; // Significantly higher (better) - only for %
+    if (value >= target) return 'SUCCESS';
+    if (value >= target * 0.9) return 'WARNING'; // Slightly lower (up to 10% under)
+    return 'FAILED';
+  }
+}
+
+function isAchieved(value: number | undefined, target: number | null | undefined, evaluationRule?: string | null | undefined, unit?: string | null | undefined): boolean | null {
+  const status = getEvaluationStatus(value, target, evaluationRule, unit);
+  if (status === 'NONE') return null;
+  return status === 'SUCCESS' || status === 'EXCEEDED' || status === 'WARNING';
+}
+
 function calcPct(value: number | undefined, target: number | null | undefined): number {
   if (!value || !target || target === 0) return 0;
   return Math.min((value / target) * 100, 100);
-}
-
-function isAchieved(value: number | undefined, target: number | null | undefined): boolean | null {
-  if (value === undefined || value === null || !target) return null;
-  return value >= target;
 }
 
 const ChartRow = ({
@@ -87,6 +129,7 @@ const ChartRow = ({
   donVi,
   color,
   iconIndex,
+  danhGia,
 }: {
   label: string;
   value: number | undefined;
@@ -94,9 +137,11 @@ const ChartRow = ({
   donVi?: string;
   color: string;
   iconIndex: number;
+  danhGia?: string | null;
 }) => {
   const pct = calcPct(value, target);
-  const achieved = isAchieved(value, target);
+  const status = getEvaluationStatus(value, target, danhGia, donVi);
+  const achieved = isAchieved(value, target, danhGia, donVi);
   const unit = donVi || '%';
   const hasData = value !== undefined && value !== null;
   const RowIcon = getRowIcon(iconIndex);
@@ -115,19 +160,22 @@ const ChartRow = ({
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2 min-w-0">
           <RowIcon size={15} className={`${iconColor} shrink-0`} />
-          <span className="text-sm font-black text-slate-800 group-hover:text-[#009900] transition-colors tracking-tight truncate">
+          <span className="text-sm font-black text-slate-800 group-hover:text-[#009900] transition-colors tracking-tight truncate lowercase first-letter:uppercase">
             {label}
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-4">
           {target !== null && target !== undefined && (
-            <span className="text-xs text-slate-400 font-bold whitespace-nowrap">
+            <span className="text-sm text-[#009900] font-black whitespace-nowrap">
               Mục tiêu: {target}{unit}
             </span>
           )}
           {hasData ? (
             <span className={`text-sm font-black whitespace-nowrap ${
-              achieved === true ? 'text-[#009900]' : achieved === false ? 'text-red-600' : 'text-slate-700'
+              status === 'EXCEEDED' ? 'text-indigo-600' :
+              status === 'SUCCESS' ? 'text-[#009900]' : 
+              status === 'WARNING' ? 'text-amber-600' : 
+              status === 'FAILED' ? 'text-red-600' : 'text-slate-700'
             }`}>
               {value}{unit}
             </span>
@@ -148,15 +196,17 @@ const ChartRow = ({
 };
 
 // ─── Individual indicator card ────────────────────────────────────────────────
-const IndicatorCard = ({ cfg, giaTri, colorIdx }: {
+const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
   cfg: IndicatorConfig;
   giaTri: number | undefined;
   colorIdx: number;
+  onClick?: () => void;
 }) => {
-  const pct = calcPct(giaTri, cfg.muc_tieu);
-  const achieved = isAchieved(giaTri, cfg.muc_tieu);
-  const hasData = giaTri !== undefined && giaTri !== null;
   const unit = cfg.don_vi_tinh || '%';
+  const pct = calcPct(giaTri, cfg.muc_tieu);
+  const status = getEvaluationStatus(giaTri, cfg.muc_tieu, cfg.danh_gia, unit);
+  const achieved = isAchieved(giaTri, cfg.muc_tieu, cfg.danh_gia, unit);
+  const hasData = giaTri !== undefined && giaTri !== null;
   const color = getBarColor(colorIdx);
   const RowIcon = getRowIcon(colorIdx);
   const iconColor = color
@@ -171,21 +221,26 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx }: {
 
   const statusBadge = !hasData
     ? { label: 'Chờ dữ liệu', cls: 'bg-slate-100 text-slate-400 border-slate-200' }
-    : achieved === true
-    ? { label: 'Đạt', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' }
-    : pct >= 80
+    : status === 'EXCEEDED'
+    ? { label: 'Vượt chỉ tiêu', cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' }
+    : status === 'SUCCESS'
+    ? { label: 'Đạt', cls: 'bg-emerald-100 text-[#009900] border-emerald-200' }
+    : status === 'WARNING'
     ? { label: 'Cảnh báo', cls: 'bg-amber-100 text-amber-700 border-amber-200' }
-    : { label: 'Chưa đạt', cls: 'bg-red-100 text-red-700 border-red-200' };
+    : { label: 'Không đạt', cls: 'bg-red-100 text-red-700 border-red-200' };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow group">
+    <div 
+      onClick={onClick}
+      className={`bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-all group ${onClick ? 'cursor-pointer hover:border-[#009900]/30 active:scale-[0.98]' : ''}`}
+    >
       {/* Header: icon + name + badge */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-start gap-2.5 min-w-0">
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-slate-50`}>
             <RowIcon size={16} className={iconColor} />
           </div>
-          <span className="text-sm font-black text-slate-800 group-hover:text-[#009900] transition-colors leading-snug">
+          <span className="text-sm font-black text-slate-800 group-hover:text-[#009900] transition-colors leading-snug lowercase first-letter:uppercase">
             {cfg.ten_chi_so}
           </span>
         </div>
@@ -196,14 +251,16 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx }: {
 
       {/* Mục tiêu + kết quả */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] text-slate-400 font-bold">
+        <span className="text-base text-[#009900] font-black">
           {cfg.muc_tieu !== null && cfg.muc_tieu !== undefined
-            ? `Mục tiêu: ${cfg.muc_tieu}${unit}`
+            ? `MT: ${cfg.muc_tieu}${unit}`
             : 'Chưa đặt mục tiêu'}
         </span>
         {hasData ? (
           <span className={`text-base font-black ${
-            achieved === true ? 'text-[#009900]' : pct >= 80 ? 'text-amber-600' : 'text-red-600'
+            status === 'EXCEEDED' ? 'text-indigo-600' :
+            status === 'SUCCESS' ? 'text-[#009900]' : 
+            status === 'WARNING' ? 'text-amber-600' : 'text-red-600'
           }`}>
             {giaTri}{unit}
           </span>
@@ -215,21 +272,42 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx }: {
       {/* Progress bar — always visible */}
       <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
         <div
-          className={`h-2 rounded-full ${color} transition-all duration-700 ease-out`}
+          className={`h-2 rounded-full ${
+            status === 'EXCEEDED' ? 'bg-indigo-600' : 
+            status === 'SUCCESS' ? 'bg-[#009900]' : 
+            'bg-red-500'
+          } transition-all duration-700 ease-out`}
           style={{ width: hasData ? `${Math.max(pct, 3)}%` : '3%', opacity: hasData ? 1 : 0.2 }}
         />
       </div>
       {hasData && cfg.muc_tieu && (
-        <p className="text-[9px] text-slate-400 font-bold mt-1.5 text-right">{Math.round(pct)}% mục tiêu</p>
+        <p className="text-[9px] text-[#009900] font-black mt-1.5 text-right">{Math.round(pct)}% mục tiêu</p>
       )}
     </div>
   );
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+const INDICATOR_MAPPING: Record<string, { category: IndicatorCategory }> = {
+  'công suất sử dụng giường': { category: 'BED_USAGE' },
+  'hiệu suất sử dụng phòng mổ': { category: 'OR_USAGE' },
+  'sự cố ngoài y khoa nghiêm trọng': { category: 'SEVERE_NON_MEDICAL' },
+  'sự cố y khoa nghiêm trọng': { category: 'SEVERE_INCIDENT' },
+  'thời gian khám bệnh trung bình': { category: 'AVG_EXAM_TIME' },
+  'thời gian nằm viện trung bình': { category: 'AVG_STAY_TIME' },
+  'tỷ lệ nhiễm khuẩn vết mổ': { category: 'SSI' },
+  'tỷ lệ phẫu thuật loại ii trở lên': { category: 'SURGERY_II' },
+  'tỷ lệ thực hiện kỹ thuật chuyên môn theo phân tuyến': { category: 'KTCM' },
+  'tỷ lệ tuân thủ vệ sinh tay': { category: 'HAND_HYGIENE' },
+  'tỷ lệ viêm phổi do nhiễm khuẩn bệnh viện': { category: 'VAP' },
+  'tỷ số điều dưỡng/người bệnh': { category: 'NURSE_PATIENT_RATIO' },
+};
+
 const IndicatorOverviewModule: React.FC = () => {
+  const { setCategory } = useIndicators();
   const [configs, setConfigs] = useState<IndicatorConfig[]>([]);
   const [chiSoList, setChiSoList] = useState<ChiSoQlcl[]>([]);
+  const [liveResults, setLiveResults] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [timePeriod, setTimePeriod] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [customFrom, setCustomFrom] = useState('');
@@ -281,9 +359,85 @@ const IndicatorOverviewModule: React.FC = () => {
   const loadAll = async () => {
     setLoading(true);
     try {
+      // 1. Fetch Configs and Basic Results (fallback)
       const [cfgs, cs] = await Promise.all([fetchIndicatorConfigs(), fetchChiSoQlcl()]);
       setConfigs(cfgs);
       setChiSoList(cs);
+
+      // 2. Fetch all specific source data for live calculation
+      const [
+        bedUsage, orUsage, nonMedical, medical, examTime, los, 
+        ssi, surgery2, ktcm, handHygiene, vap, nurseRatio
+      ] = await Promise.all([
+        fetchCongSuatGiuong(), fetchHieuSuatPhongMo(), fetchBcScnyknt(), fetchScykNghiemTrong(),
+        fetchGsKhamBenh(), fetchThoiGianNamVien(), fetchDsnKvm(), fetchPtLoai2(),
+        fetchKtcmTheoTuyen(), fetchGsVst(), fetchVpbv(), fetchTyLeDD()
+      ]);
+
+      const live: Record<string, number> = {};
+
+      if (selectedRange) {
+        const { start, end } = selectedRange;
+        const inRange = (dStr: string | null | undefined) => {
+          if (!dStr) return false;
+          const d = new Date(dStr);
+          return d >= start && d <= end;
+        };
+        const khoaMatch = (khoa: string | null | undefined) => !filterKhoa || khoa === filterKhoa;
+
+        // ── Aggregation Logic ──
+        
+        // 1. BED_USAGE
+        const filteredBed = bedUsage.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi));
+        if (filteredBed.length) live['BED_USAGE'] = Math.round(filteredBed.reduce((s, r) => s + (r.cong_suat || 0), 0) / filteredBed.length * 10) / 10;
+        
+        // 2. OR_USAGE
+        const filteredOR = orUsage.filter(r => inRange(r.ngay_bao_cao)); // Usually clinic wide
+        if (filteredOR.length) live['OR_USAGE'] = Math.round(filteredOR.reduce((s, r) => s + (r.hieu_suat || 0), 0) / filteredOR.length * 10) / 10;
+        
+        // 3. SEVERE_NON_MEDICAL
+        live['SEVERE_NON_MEDICAL'] = nonMedical.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi)).length;
+        
+        // 4. SEVERE_INCIDENT
+        live['SEVERE_INCIDENT'] = medical.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi)).length;
+        
+        // 5. AVG_EXAM_TIME
+        const filteredExam = examTime.filter(r => inRange(r.ngay_giam_sat));
+        if (filteredExam.length) live['AVG_EXAM_TIME'] = Math.round(filteredExam.reduce((s, r) => s + (r.tong_thoi_gian || 0), 0) / filteredExam.length);
+        
+        // 6. AVG_STAY_TIME
+        const filteredLOS = los.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi));
+        if (filteredLOS.length) live['AVG_STAY_TIME'] = Math.round(filteredLOS.reduce((s, r) => s + (r.ngay_tb || 0), 0) / filteredLOS.length * 10) / 10;
+        
+        // 7. SSI (NKVM)
+        const filteredSSI = ssi.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa));
+        if (filteredSSI.length) live['SSI'] = Math.round(filteredSSI.reduce((s, r) => s + (r.ty_le_nkvm || 0), 0) / filteredSSI.length * 10) / 10;
+        
+        // 8. SURGERY_II
+        const filteredSurg = surgery2.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa));
+        if (filteredSurg.length) live['SURGERY_II'] = Math.round(filteredSurg.reduce((s, r) => s + (r.ty_le || 0), 0) / filteredSurg.length * 10) / 10;
+        
+        // 9. KTCM
+        const filteredKtcm = ktcm.filter(r => inRange(r.ngay_bao_cao));
+        if (filteredKtcm.length) live['KTCM'] = Math.round(filteredKtcm.reduce((s, r) => s + (r.ty_le || 0), 0) / filteredKtcm.length * 10) / 10;
+        
+        // 10. HAND_HYGIENE
+        const filteredVst = handHygiene.filter(r => inRange(r.ngay_giam_sat) && khoaMatch(r.khoa_duoc_giam_sat));
+        if (filteredVst.length) {
+          const totalCoHoi = filteredVst.reduce((s, r) => s + (r.tong_co_hoi || 0), 0);
+          const totalTuanThu = filteredVst.reduce((s, r) => s + (r.so_lan_tuan_thu || 0), 0);
+          live['HAND_HYGIENE'] = totalCoHoi > 0 ? Math.round((totalTuanThu / totalCoHoi) * 100 * 10) / 10 : 0;
+        }
+        
+        // 11. VAP
+        live['VAP'] = vap.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa)).length;
+        
+        // 12. NURSE_PATIENT_RATIO
+        const filteredNurse = nurseRatio.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa));
+        if (filteredNurse.length) live['NURSE_PATIENT_RATIO'] = Math.round(filteredNurse.reduce((s, r) => s + (r.ty_so_dd_nb || 0), 0) / filteredNurse.length * 100) / 100;
+      }
+
+      setLiveResults(live);
     } catch (e) {
       console.error(e);
     } finally {
@@ -291,7 +445,7 @@ const IndicatorOverviewModule: React.FC = () => {
     }
   };
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadAll(); }, [selectedRange, filterKhoa]);
 
   const khoaOptions = useMemo(() =>
     [...new Set(chiSoList.map(c => c.khoa_phong).filter(Boolean) as string[])].sort(),
@@ -318,26 +472,42 @@ const IndicatorOverviewModule: React.FC = () => {
         return true;
       })
       .map(cfg => {
-        const matches = chiSoList.filter(cs => {
-          const nameMatch =
-            cs.ten_chi_so?.toLowerCase().includes(cfg.ten_chi_so.toLowerCase()) ||
-            cfg.ten_chi_so.toLowerCase().includes(cs.ten_chi_so?.toLowerCase() || '');
-          const khoaMatch = filterKhoa ? cs.khoa_phong === filterKhoa : true;
-          // Match actual result within the selected period via thang_nam
-          let timeMatch = true;
-          if (selectedRange && cs.thang_nam) {
-            const [mm, yyyy] = cs.thang_nam.split('/');
-            if (mm && yyyy) {
-              const resultDate = new Date(parseInt(yyyy), parseInt(mm) - 1, 1);
-              timeMatch = resultDate >= selectedRange.start && resultDate <= selectedRange.end;
+        const lowerName = cfg.ten_chi_so.toLowerCase();
+        // 1. Try to find mapping to specific module
+        const mapped = Object.entries(INDICATOR_MAPPING).find(([key]) => lowerName.includes(key));
+        
+        let giaTri: number | undefined = undefined;
+        let category: IndicatorCategory | undefined = undefined;
+
+        if (mapped) {
+          category = mapped[1].category;
+          giaTri = liveResults[category as string];
+        }
+
+        // 2. If not mapped or no live data, fallback to generic chi_so_qlcl
+        if (giaTri === undefined) {
+          const matches = chiSoList.filter(cs => {
+            const nameMatch =
+              cs.ten_chi_so?.toLowerCase().includes(cfg.ten_chi_so.toLowerCase()) ||
+              cfg.ten_chi_so.toLowerCase().includes(cs.ten_chi_so?.toLowerCase() || '');
+            const khoaMatch = filterKhoa ? cs.khoa_phong === filterKhoa : true;
+            // Match actual result within the selected period via thang_nam
+            let timeMatch = true;
+            if (selectedRange && cs.thang_nam) {
+              const [mm, yyyy] = cs.thang_nam.split('/');
+              if (mm && yyyy) {
+                const resultDate = new Date(parseInt(yyyy), parseInt(mm) - 1, 1);
+                timeMatch = resultDate >= selectedRange.start && resultDate <= selectedRange.end;
+              }
             }
-          }
-          return nameMatch && khoaMatch && timeMatch;
-        });
-        const result = matches.length > 0 ? matches[matches.length - 1] : undefined;
-        return { cfg, giaTri: result?.gia_tri };
+            return nameMatch && khoaMatch && timeMatch;
+          });
+          giaTri = matches.length > 0 ? matches[matches.length - 1].gia_tri : undefined;
+        }
+
+        return { cfg, giaTri, category };
       });
-  }, [configs, chiSoList, selectedRange, filterKhoa, searchTerm]);
+  }, [configs, chiSoList, liveResults, selectedRange, filterKhoa, searchTerm]);
 
   // Group by linh_vuc_ap_dung
   const groupedRows = useMemo(() => {
@@ -353,10 +523,21 @@ const IndicatorOverviewModule: React.FC = () => {
   // KPI summary
   const total = enrichedRows.length;
   const withData = enrichedRows.filter(r => r.giaTri !== undefined && r.giaTri !== null);
-  const datCount = withData.filter(r => isAchieved(r.giaTri, r.cfg.muc_tieu) === true).length;
-  const chuaDatCount = withData.filter(r => isAchieved(r.giaTri, r.cfg.muc_tieu) === false).length;
+  const statusCounts = withData.reduce((acc, r) => {
+    const s = getEvaluationStatus(r.giaTri, r.cfg.muc_tieu, r.cfg.danh_gia, r.cfg.don_vi_tinh);
+    acc[s] = (acc[s] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const datCount = (statusCounts['SUCCESS'] || 0);
+  const vuotCount = (statusCounts['EXCEEDED'] || 0);
+  const canhBaoCount = (statusCounts['WARNING'] || 0);
+  const chuaDatCount = (statusCounts['FAILED'] || 0);
   const noDataCount = total - withData.length;
-  const overallRate = withData.length > 0 ? Math.round((datCount / withData.length) * 100) : 0;
+  
+  const overallRate = withData.length > 0 
+    ? Math.round(((datCount + vuotCount + canhBaoCount) / withData.length) * 100) 
+    : 0;
 
   // Assign color index globally across all indicators
   let colorCounter = 0;
@@ -465,11 +646,12 @@ const IndicatorOverviewModule: React.FC = () => {
       </div>
 
       {/* ── Summary strip ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           { label: 'Tổng chỉ số', val: total, Icon: Target, color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200' },
-          { label: 'Đạt mục tiêu', val: `${datCount} (${overallRate}%)`, Icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
-          { label: 'Chưa đạt', val: chuaDatCount, Icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
+          { label: 'Vượt chỉ tiêu', val: vuotCount, Icon: Star, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-200' },
+          { label: 'Đạt mục tiêu', val: `${datCount} (${overallRate}%)`, Icon: CheckCircle2, color: 'text-[#009900]', bg: 'bg-emerald-50 border-emerald-200' },
+          { label: 'Không đạt', val: chuaDatCount, Icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
           { label: 'Chờ dữ liệu', val: noDataCount, Icon: Minus, color: 'text-slate-400', bg: 'bg-slate-50 border-slate-200' },
         ].map(({ label, val, Icon, color, bg }) => (
           <div key={label} className={`${bg} border rounded-xl px-4 py-3 flex items-center gap-3`}>
@@ -501,6 +683,7 @@ const IndicatorOverviewModule: React.FC = () => {
               cfg={r.cfg}
               giaTri={r.giaTri}
               colorIdx={idx}
+              onClick={r.category ? () => setCategory(r.category!) : undefined}
             />
           ))}
         </div>
@@ -513,7 +696,7 @@ const IndicatorOverviewModule: React.FC = () => {
           <div>
             <p className="text-xs font-black text-red-800 uppercase tracking-wider mb-1">Chỉ số cần cải thiện</p>
             <p className="text-xs text-red-600 font-bold">
-              Có <strong>{chuaDatCount}</strong> chỉ số chưa đạt mục tiêu. Cần có biện pháp cải thiện kịp thời.
+              Có <strong>{chuaDatCount}</strong> chỉ số không đạt mục tiêu. Cần có biện pháp cải thiện kịp thời.
             </p>
           </div>
         </div>
