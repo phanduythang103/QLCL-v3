@@ -51,23 +51,25 @@ const StatCard = React.memo<{
   trend?: string;
   trendDown?: boolean;
 }>(({ title, value, subtext, icon, trend, trendDown }) => (
-  <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start">
-      <div>
-        <p className="text-table font-black text-black/40 uppercase tracking-wider">{title}</p>
-        <h4 className="text-title font-black text-black uppercase mt-1">{value}</h4>
-        {subtext && <p className="text-table font-bold text-black/40 mt-1 uppercase">{subtext}</p>}
+  <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300 flex items-center justify-between group">
+    <div className="flex flex-col gap-2">
+      <div className="p-1.5 bg-slate-50 rounded-lg w-fit group-hover:bg-primary-50 transition-colors">
+        {React.cloneElement(icon as any, { size: 18 })}
       </div>
-      <div className="p-2 bg-slate-50 rounded-lg">
-        {icon}
+      <div>
+        <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">{title}</p>
+        {subtext && <p className="text-[9px] font-bold text-black/40 uppercase leading-none truncate max-w-[120px]">{subtext}</p>}
       </div>
     </div>
-    {trend && (
-      <div className={`mt-4 text-table font-black uppercase flex items-center ${trendDown ? 'text-red-500' : 'text-[#009900]'}`}>
-        <span>{trend}</span>
-        <span className="text-black/40 ml-1">so với tháng trước</span>
-      </div>
-    )}
+    <div className="flex flex-col items-end justify-center">
+      <h4 className="text-3xl font-black text-black leading-none">{value}</h4>
+      {trend && (
+        <div className={`mt-1 text-[10px] font-black uppercase flex items-center gap-1 ${trendDown ? 'text-red-500' : 'text-[#009900]'}`}>
+          <span>{trend}</span>
+          {!trendDown && <TrendingUp size={10} />}
+        </div>
+      )}
+    </div>
   </div>
 ));
 
@@ -141,19 +143,19 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Nhân sự QLCL"
           value={stats.loading ? "..." : stats.nhanSu.total.toString()}
           subtext={`Đã cấp chứng chỉ: ${stats.nhanSu.certified}`}
-          icon={<Users className="w-6 h-6 text-[#009900]" />}
+          icon={<Users className="text-[#009900]" />}
           trend={stats.nhanSu.total > 0 ? `+${stats.nhanSu.total}` : undefined}
         />
         <StatCard
           title="Sự cố Y khoa (T6)"
           value="14"
           subtext="Đã xử lý: 10"
-          icon={<AlertTriangle className="w-6 h-6 text-amber-600" />}
+          icon={<AlertTriangle className="text-amber-600" />}
           trend="-8%"
           trendDown
         />
@@ -161,14 +163,8 @@ export const Dashboard: React.FC = () => {
           title="Tỉ lệ hài lòng"
           value="94.5%"
           subtext="Nội trú & Ngoại trú"
-          icon={<Activity className="w-6 h-6 text-green-600" />}
+          icon={<Activity className="text-green-600" />}
           trend="+1.2%"
-        />
-        <StatCard
-          title="Văn bản & Tài liệu"
-          value={stats.loading ? "..." : stats.vanBan.total.toString()}
-          subtext={`Mới trong tháng: ${stats.vanBan.monthly}`}
-          icon={<FileText className="w-6 h-6 text-purple-600" />}
         />
       </div>
 

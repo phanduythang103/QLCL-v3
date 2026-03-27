@@ -586,6 +586,7 @@ const KnowledgeSharing = () => {
     phan_loai: 'Thực hành tốt',
     hinh_anh: '',
     video: '',
+    video_url: '',
     file_tai_lieu: '',
     nguoi_dang: user?.full_name || 'Anonymous'
   };
@@ -688,6 +689,7 @@ const KnowledgeSharing = () => {
       phan_loai: article.phan_loai || 'Thực hành tốt',
       hinh_anh: article.hinh_anh || '',
       video: article.video || '',
+      video_url: article.video_url || '',
       file_tai_lieu: article.file_tai_lieu || '',
       nguoi_dang: article.nguoi_dang || user?.full_name || ''
     });
@@ -1116,6 +1118,17 @@ const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, on
             />
             {fileUpload && <p className="text-xs text-slate-500 mt-1">Đã chọn: {fileUpload.name}</p>}
           </div>
+          <div>
+            <label className="block text-label font-bold text-black mb-1">Link video (YouTube, Google Drive)</label>
+            <input
+              type="text"
+              value={formData.video_url}
+              onChange={e => setFormData({ ...formData, video_url: e.target.value })}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+              placeholder="Dán link YouTube hoặc Google Drive vào đây..."
+            />
+            <p className="text-[10px] text-slate-500 mt-1 italic">* Hệ thống sẽ tự động chuyển sang chế độ xem trực tiếp.</p>
+          </div>
         </div>
         <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
           <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Hủy</button>
@@ -1195,6 +1208,28 @@ const SharingDetailModal = ({ article, onClose }: any) => {
   const likeCount = reactions.filter(r => r.type === 'like').length;
   const dislikeCount = reactions.filter(r => r.type === 'dislike').length;
   const userReaction = reactions.find(r => r.user_id === user?.id)?.type;
+  
+  const getEmbedUrl = (url: string) => {
+    if (!url) return null;
+    
+    // YouTube
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const youtubeMatch = url.match(youtubeRegex);
+    if (youtubeMatch && youtubeMatch[1]) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+
+    // Google Drive
+    const driveRegex = /drive\.google\.com\/file\/d\/([^\/\s?]+)/;
+    const driveMatch = url.match(driveRegex);
+    if (driveMatch && driveMatch[1]) {
+      return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+    }
+
+    return null;
+  };
+
+  const embedUrl = getEmbedUrl(article.video_url);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1238,6 +1273,18 @@ const SharingDetailModal = ({ article, onClose }: any) => {
                     </div>
                   </a>
                 )}
+              </div>
+            )}
+
+            {embedUrl && (
+              <div className="my-8 aspect-video rounded-xl overflow-hidden shadow-lg border border-slate-200 bg-black">
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Embedded video"
+                ></iframe>
               </div>
             )}
 

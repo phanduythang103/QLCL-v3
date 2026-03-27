@@ -7,6 +7,7 @@ export interface ChiaSe {
   phan_loai?: string;
   hinh_anh?: string;
   video?: string;
+  video_url?: string;
   file_tai_lieu?: string;
   luot_thich?: number;
   ngay_dang?: string;

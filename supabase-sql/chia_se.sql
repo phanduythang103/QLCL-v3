@@ -7,6 +7,7 @@ CREATE TABLE chia_se (
   hinh_anh text,                  -- Hình ảnh (đường dẫn hoặc URL)
   video text,                     -- Video (đường dẫn hoặc URL)
   file_tai_lieu text,             -- File tài liệu (đường dẫn hoặc URL)
+  video_url text,                 -- URL video từ YouTube hoặc Google Drive
   luot_thich integer DEFAULT 0,   -- Số lượt thích
   ngay_dang date DEFAULT CURRENT_DATE, -- Ngày đăng
   nguoi_dang text NOT NULL,       -- Người đăng
