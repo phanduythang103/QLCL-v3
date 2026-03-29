@@ -13,6 +13,8 @@ import { useSupervision } from './SupervisionContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabaseClient';
 import { HandHygieneModule } from './HandHygieneModule';
+import { SurgerySafetyModule } from './SurgerySafetyModule';
+import { DrugMonitoringModule } from './DrugMonitoringModule';
 
 // Hàm tính trạng thái tự động dựa trên ngày
 const getAutoStatus = (tuNgay: string, denNgay: string): string => {
@@ -191,110 +193,9 @@ export const Supervision: React.FC = () => {
   const renderDetailContent = (cat: SupervisionCategory) => {
     switch (cat) {
       case 'DRUGS':
-        return (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex gap-3 items-start">
-              <Syringe className="text-blue-600 mt-1" size={20} />
-              <div>
-                <h4 className="text-label font-black text-black uppercase">Ghi nhận sự kiện công khai thuốc</h4>
-                <p className="text-table font-black text-black/40 mt-1 uppercase">Hệ thống yêu cầu nhập liệu ngay tại thời điểm thực hiện công khai thuốc cho người bệnh/người nhà.</p>
-              </div>
-            </div>
-            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
-              <span className="text-label font-black text-black uppercase line-clamp-1">Lịch sử nhập liệu gần đây</span>
-              <button className="bg-[#009900] text-white px-4 py-2 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all">
-                <Plus size={16} /> Nhập liệu Ca mới
-              </button>
-            </div>
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-primary-600 text-white font-bold uppercase text-xs border-b border-primary-700">
-                  <tr>
-                    <th className="p-3">Thời gian</th>
-                    <th className="p-3">Mã BN</th>
-                    <th className="p-3">Loại thuốc/Dịch truyền</th>
-                    <th className="p-3 text-center">Xác nhận của NB</th>
-                    <th className="p-3">Điều dưỡng thực hiện</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-black text-black uppercase">
-                  <tr>
-                    <td className="p-3 text-black/40">12/06 08:30</td>
-                    <td className="p-3 font-mono">BN-10293</td>
-                    <td className="p-3">Kháng sinh Ceftriaxon 1g</td>
-                    <td className="p-3 text-center"><CheckSquare className="inline text-[#009900]" size={16} /></td>
-                    <td className="p-3">Nguyễn Thị C</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 text-black/40">12/06 09:15</td>
-                    <td className="p-3 font-mono">BN-10294</td>
-                    <td className="p-3">Paracetamol Kabi</td>
-                    <td className="p-3 text-center"><CheckSquare className="inline text-[#009900]" size={16} /></td>
-                    <td className="p-3">Nguyễn Thị C</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
+        return <DrugMonitoringModule />;
       case 'SURGERY':
-        return (
-          <div className="space-y-4">
-            <div className="flex gap-4 mb-4">
-              <div className="flex-1 bg-green-50 p-3 rounded border border-green-100 text-center">
-                <div className="text-table text-black/40 uppercase font-black">Sign In</div>
-                <div className="font-black text-[#009900] text-section">100%</div>
-              </div>
-              <div className="flex-1 bg-amber-50 p-3 rounded border border-amber-100 text-center">
-                <div className="text-table text-black/40 uppercase font-black">Time Out</div>
-                <div className="font-black text-amber-600 text-section">98%</div>
-              </div>
-              <div className="flex-1 bg-blue-50 p-3 rounded border border-blue-100 text-center">
-                <div className="text-table text-black/40 uppercase font-black">Sign Out</div>
-                <div className="font-black text-blue-600 text-section">100%</div>
-              </div>
-            </div>
-            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-lg">
-              <span className="text-label font-black text-black uppercase">Danh sách các ca phẫu thuật cần giám sát</span>
-              <button className="bg-[#009900] text-white px-4 py-2 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all">
-                <Stethoscope size={16} /> Checklist An toàn PT
-              </button>
-            </div>
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-primary-600 text-white font-bold uppercase text-xs border-b border-primary-700">
-                  <tr>
-                    <th className="p-3">Phòng mổ</th>
-                    <th className="p-3">Kíp mổ</th>
-                    <th className="p-3">Bệnh nhân</th>
-                    <th className="p-3 text-center">Trạng thái Checklist</th>
-                    <th className="p-3 text-right">Kết quả</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr>
-                    <td className="p-3">PM số 1</td>
-                    <td className="p-3">BS. Bình, ĐD. An</td>
-                    <td className="p-3">Lê Văn Tám</td>
-                    <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold border border-green-200">Đủ 3 bước</span>
-                    </td>
-                    <td className="p-3 text-right text-green-600 font-bold">Đạt</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3">PM số 3</td>
-                    <td className="p-3">BS. Hùng, BS. Tú</td>
-                    <td className="p-3">Trần Văn Ba</td>
-                    <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-bold border border-amber-200">Thiếu Sign Out</span>
-                    </td>
-                    <td className="p-3 text-right text-amber-600 font-bold">Chưa đạt</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
+        return <SurgerySafetyModule />;
       case 'HAND_HYGIENE':
         return <HandHygieneModule />;
       default:

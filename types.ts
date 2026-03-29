@@ -205,3 +205,70 @@ export interface GsVst {
   hinh_anh_minh_chung: string[];
   ghi_chu_chung: string;
 }
+
+export interface SurgerySafety {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  ngay_giam_sat: string;
+  nguoi_giam_sat: string;
+  ban_mo_so: string;
+  khoa_phau_thuat: string;
+  ho_ten_nguoi_benh: string;
+  kip_phau_thuat: string;
+  tc1_xac_nhan_danh_tinh: boolean;
+  tc2_xac_nhan_vi_tri: boolean;
+  tc3_cam_ket_phau_thuat: boolean;
+  tc4_kiem_tra_thiet_bi: boolean;
+  tc5_danh_gia_nguy_co: boolean;
+  tc6_gioi_thieu_nhan_su: boolean;
+  tc7_xac_nhan_lan_cuoi: boolean;
+  tc8_du_phong_nhiem_khuan: boolean;
+  tc9_cac_van_de_phat_sinh: boolean;
+  tc10_kiem_dem_dung_cu: boolean;
+  tc11_mau_benh_pham: boolean;
+  tc12_ghi_chep_ho_so: boolean;
+  tc13_ban_giao_hoi_tinh: boolean;
+  tong_dat: number;
+  ty_le_tuan_thu: number;
+}
+
+export interface DrugMonitoring {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  ngay_giam_sat: string;
+  nguoi_giam_sat: string;
+  don_vi_duoc_giam_sat: string;
+  ho_ten_nb: string;
+  nam_sinh?: number;
+  ma_nb?: string;
+  
+  tc1_phi_cong_khai_dau_giuong: boolean;
+  tc2_mau_phieu_dung_quy_dinh: boolean;
+  tc3_khop_y_lenh_benh_an: boolean;
+  tc4_ghi_cong_khai_hang_ngay: boolean;
+  tc5_vat_tu_tieu_hao: boolean;
+  tc6_giai_thich_tien_su_di_ung: boolean;
+  tc7_ky_xac_nhan_hang_ngay: boolean;
+  tc8_phong_van_nb_loai_thuoc: boolean;
+  tc9_nb_xac_nhan_so_thuoc: boolean;
+  tc10_nb_khong_tu_mua_thuoc: boolean;
+  
+  tc1_ghi_chu?: string;
+  tc2_ghi_chu?: string;
+  tc3_ghi_chu?: string;
+  tc4_ghi_chu?: string;
+  tc5_ghi_chu?: string;
+  tc6_ghi_chu?: string;
+  tc7_ghi_chu?: string;
+  tc8_ghi_chu?: string;
+  tc9_ghi_chu?: string;
+  tc10_ghi_chu?: string;
+  
+  ghi_chu?: string;
+  tong_dat: number;
+  ty_le_tuan_thu: number;
+  hinh_anh?: string[];
+  [key: string]: any;
+}
