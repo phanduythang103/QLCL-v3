@@ -31,6 +31,7 @@ const NavItem = ({ icon, label, active, onClick, collapsed }: { icon: React.Reac
 // --- Supervision Dropdown (now with Context) ---
 const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: boolean; active: boolean; onSelectModule: () => void; }) => {
   const { category, setCategory, isExpanded, setIsExpanded } = useSupervision();
+  const [profExpanded, setProfExpanded] = useState(false);
 
   const toggleExpansion = () => {
     if (!active) {
@@ -53,11 +54,21 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
     { label: "An toàn phẫu thuật", cat: 'SURGERY' as SupervisionCategory, subId: 'SURGERY' },
     { label: "Vệ sinh tay", cat: 'HAND_HYGIENE' as SupervisionCategory, subId: 'HAND_HYGIENE' },
     { label: "Giám sát 5S", cat: '5S' as SupervisionCategory, subId: '5S' },
+    { label: "Nhận diện người bệnh", cat: 'NDNB' as SupervisionCategory, subId: 'NDNB' },
     { label: "Hồ sơ bệnh án", cat: 'RECORDS' as SupervisionCategory, subId: 'RECORDS' },
     { label: "Sử dụng thuốc", cat: 'DRUGS' as SupervisionCategory, subId: 'DRUGS' },
-    { label: "Chế độ chuyên môn", cat: 'PROFESSIONAL' as SupervisionCategory, subId: 'PROFESSIONAL' },
+    { 
+      label: "Chế độ chuyên môn", 
+      cat: 'PROFESSIONAL' as SupervisionCategory, 
+      subId: 'PROFESSIONAL' ,
+      children: [
+        { label: "Công tác thường trực", cat: 'PROF_DUTY' as SupervisionCategory },
+        { label: "Công tác cấp cứu", cat: 'PROF_EMERGENCY' as SupervisionCategory },
+        { label: "Vào viện/CK/CV/RV", cat: 'PROF_ADMISSION' as SupervisionCategory },
+      ]
+    },
     { label: "Giám sát chung", cat: 'GENERAL' as SupervisionCategory, subId: 'GENERAL' },
-  ]).filter(item => canView('SUPERVISION', item.subId));
+  ]).filter(item => item.subId === 'OVERVIEW' || canView('SUPERVISION', item.subId));
 
 
   return (
@@ -72,11 +83,43 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
 
       {!collapsed && isExpanded && (
         <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
-          {subNavItems.map(item => (
-            <button key={item.label} onClick={() => handleSubNavClick(item.cat)} className={`w-full text-left pl-11 pr-4 py-2 text-label transition-colors relative ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}>
-              {item.label}
-            </button>
-          ))}
+          {subNavItems.map(item => {
+            const hasChildren = 'children' in item && item.children;
+            const isProf = item.subId === 'PROFESSIONAL';
+            
+            return (
+              <div key={item.label} className="space-y-1">
+                <button 
+                  onClick={() => {
+                    if (isProf) {
+                      setProfExpanded(!profExpanded);
+                      handleSubNavClick(item.cat);
+                    } else {
+                      handleSubNavClick(item.cat);
+                    }
+                  }} 
+                  className={`w-full text-left pl-11 pr-4 py-2 text-label transition-colors relative flex items-center justify-between ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}
+                >
+                  <span className="truncate">{item.label}</span>
+                  {isProf && <ChevronDown size={14} className={`transition-transform duration-200 ${profExpanded ? 'rotate-180' : ''}`} />}
+                </button>
+                
+                {isProf && profExpanded && hasChildren && (
+                  <div className="space-y-1 animate-in slide-in-from-top-1 duration-200">
+                    {item.children.map(child => (
+                      <button 
+                        key={child.label} 
+                        onClick={() => handleSubNavClick(child.cat)} 
+                        className={`w-full text-left pl-16 pr-4 py-1.5 text-[11px] transition-colors relative ${active && category === child.cat ? 'text-white font-black before:absolute before:left-12 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-1 before:bg-primary-400 before:rounded-full' : 'text-primary-300/60 hover:text-white hover:bg-primary-800/30'}`}
+                      >
+                        {child.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -150,17 +193,27 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
 
   return (
     <aside className={`fixed md:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-900 shadow-xl transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-      <div className="h-20 flex items-center justify-center px-4 border-b border-primary-800/50 bg-primary-900 relative">
-        {collapsed ? <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md" /> : (
-          <div className="flex items-center gap-3 w-full justify-center">
-            <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
+      <div className="h-20 flex items-center justify-between px-4 border-b border-primary-800/50 bg-primary-900 relative">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
+          {!collapsed && (
             <div className="flex flex-col overflow-hidden py-1">
               <h1 className="text-white font-bold text-sm uppercase leading-relaxed whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
               <span className="text-primary-200 text-[10px] font-bold uppercase tracking-normal leading-normal whitespace-nowrap truncate">HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG</span>
             </div>
-          </div>
-        )}
-        <button onClick={() => setMobileOpen(false)} className="absolute top-1/2 -translate-y-1/2 right-2 md:hidden text-primary-200 hover:text-white"><X size={24} /></button>
+          )}
+        </div>
+        
+        <button 
+          onClick={() => setCollapsed(!collapsed)} 
+          className="hidden md:flex p-1.5 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors shrink-0"
+        >
+          <Menu size={20} />
+        </button>
+
+        <button onClick={() => setMobileOpen(false)} className="absolute top-1/2 -translate-y-1/2 right-2 md:hidden text-primary-200 hover:text-white">
+          <X size={24} />
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
         {canView(ModuleType.DASHBOARD) && <NavItem icon={<LayoutDashboard size={20} />} label="Trang chủ" active={currentModule === ModuleType.DASHBOARD} onClick={() => handleModuleChange(ModuleType.DASHBOARD)} collapsed={collapsed} />}
@@ -178,10 +231,8 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
           )}
         </div>
       </div>
-      <div className="p-4 border-t border-primary-800/50 bg-primary-900">
-        <button onClick={() => setCollapsed(!collapsed)} className="hidden md:flex w-full items-center justify-center p-2 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors">
-          <Menu size={20} />
-        </button>
+      <div className="p-4 border-t border-primary-800/50 bg-primary-900 flex justify-center text-[10px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden">
+        {!collapsed && <span>Phiên bản v3.2.0</span>}
       </div>
     </aside>
   );

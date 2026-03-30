@@ -3,7 +3,7 @@ import {
   ClipboardCheck, CheckSquare, PlayCircle, FolderClock,
   ShieldCheck, HandMetal, LayoutGrid, FileText, Pill, Users, ArrowLeft,
   Calendar, LayoutList, Plus, AlertCircle, Syringe, Stethoscope, RefreshCw,
-  X, Edit2, Trash2, Eye
+  X, Edit2, Trash2, Eye, Activity
 } from 'lucide-react';
 import { SupervisionCategory } from '../types';
 import { fetchLichGiamSat, LichGiamSat, addLichGiamSat, updateLichGiamSat, deleteLichGiamSat } from '../readLichGiamSat';
@@ -15,6 +15,11 @@ import { supabase } from '../supabaseClient';
 import { HandHygieneModule } from './HandHygieneModule';
 import { SurgerySafetyModule } from './SurgerySafetyModule';
 import { DrugMonitoringModule } from './DrugMonitoringModule';
+import { FiveSMonitoringModule } from './FiveSMonitoringModule';
+import { NdnbMonitoringModule } from './NdnbMonitoringModule';
+import { HsbaMonitoringModule } from './HsbaMonitoringModule';
+import { DutyMonitoringModule } from './DutyMonitoringModule';
+import { EmergencyMonitoringModule } from './EmergencyMonitoringModule';
 
 // Hàm tính trạng thái tự động dựa trên ngày
 const getAutoStatus = (tuNgay: string, denNgay: string): string => {
@@ -175,10 +180,38 @@ export const Supervision: React.FC = () => {
       bgIcon: 'bg-purple-50'
     },
     {
+      id: 'PROF_DUTY' as SupervisionCategory,
+      title: 'Công tác thường trực',
+      desc: 'Giám sát chế độ trực và bàn giao ca',
+      icon: <Activity size={28} className="text-rose-600" />,
+      bgIcon: 'bg-rose-50'
+    },
+    {
+      id: 'PROF_EMERGENCY' as SupervisionCategory,
+      title: 'Công tác cấp cứu',
+      desc: 'Giám sát quy trình cấp cứu và sẵn sàng chiến đấu',
+      icon: <AlertCircle size={28} className="text-red-500" />,
+      bgIcon: 'bg-red-50'
+    },
+    {
+      id: 'PROF_ADMISSION' as SupervisionCategory,
+      title: 'Vào viện / Chuyển khoa / Chuyển viện / Ra viện',
+      desc: 'Giám sát quy trình tiếp nhận và bàn giao người bệnh',
+      icon: <Stethoscope size={28} className="text-indigo-600" />,
+      bgIcon: 'bg-indigo-50'
+    },
+    {
       id: 'RECORDS' as SupervisionCategory,
       title: 'Giám sát Hồ sơ bệnh án',
       desc: 'Kiểm tra quy chế ghi chép HSBA',
       icon: <FileText size={28} className="text-blue-600" />,
+      bgIcon: 'bg-blue-50'
+    },
+    {
+      id: 'NDNB' as SupervisionCategory,
+      title: 'Giám sát Nhận diện NB',
+      desc: 'Định danh đúng NB · An toàn NB mục tiêu số 1',
+      icon: <Users size={28} className="text-blue-700" />,
       bgIcon: 'bg-blue-50'
     },
     {
@@ -192,12 +225,22 @@ export const Supervision: React.FC = () => {
 
   const renderDetailContent = (cat: SupervisionCategory) => {
     switch (cat) {
+      case 'RECORDS':
+        return <HsbaMonitoringModule />;
       case 'DRUGS':
         return <DrugMonitoringModule />;
       case 'SURGERY':
         return <SurgerySafetyModule />;
       case 'HAND_HYGIENE':
         return <HandHygieneModule />;
+      case '5S':
+        return <FiveSMonitoringModule />;
+      case 'NDNB':
+        return <NdnbMonitoringModule />;
+      case 'PROF_DUTY':
+        return <DutyMonitoringModule />;
+      case 'PROF_EMERGENCY':
+        return <EmergencyMonitoringModule />;
       default:
         return (
           <div className="space-y-4">

@@ -17,6 +17,8 @@ import { fetchGsDrug, addGsDrug, updateGsDrug, deleteGsDrug, uploadDrugImage } f
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import DateRangeFilter from './DateRangeFilter';
+import { getDateRange, isDateInRange } from '../utils/dateUtils';
 
 const CRITERIA = [
   { id: 'tc1_phi_cong_khai_dau_giuong', section: 'I', label: 'Có Phiếu công khai thuốc đặt tại đầu giường hoặc vị trí thuận tiện.', role: 'Điều dưỡng' },
@@ -42,9 +44,9 @@ export const DrugMonitoringModule: React.FC = () => {
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DANH_SACH' | 'REPORT'>('OVERVIEW');
   const [filterConfig, setFilterConfig] = useState({
-    timeRange: 'Tháng này',
-    fromDate: '',
-    toDate: '',
+    type: 'thisMonth',
+    startDate: '',
+    endDate: '',
     department: 'Tất cả'
   });
 
@@ -74,35 +76,9 @@ export const DrugMonitoringModule: React.FC = () => {
 
   const filteredData = useMemo(() => {
     return data.filter((item: DrugMonitoring) => {
+      const range = getDateRange(filterConfig.type, filterConfig.startDate, filterConfig.endDate);
+      const matchTime = isDateInRange(item.ngay_giam_sat, range);
       const matchDept = filterConfig.department === 'Tất cả' || item.don_vi_duoc_giam_sat === filterConfig.department;
-      
-      let matchTime = true;
-      const itemDate = new Date(item.ngay_giam_sat);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (filterConfig.timeRange === 'Hôm nay') {
-        matchTime = itemDate >= today;
-      } else if (filterConfig.timeRange === 'Tuần này') {
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        matchTime = itemDate >= startOfWeek;
-      } else if (filterConfig.timeRange === 'Tháng này') {
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        matchTime = itemDate >= startOfMonth;
-      } else if (filterConfig.timeRange === 'Quý này') {
-        const quarter = Math.floor(today.getMonth() / 3);
-        const startOfQuarter = new Date(today.getFullYear(), quarter * 3, 1);
-        matchTime = itemDate >= startOfQuarter;
-      } else if (filterConfig.timeRange === 'Năm này') {
-        const startOfYear = new Date(today.getFullYear(), 0, 1);
-        matchTime = itemDate >= startOfYear;
-      } else if (filterConfig.timeRange === 'Tùy chọn') {
-        const matchFromDate = !filterConfig.fromDate || item.ngay_giam_sat >= filterConfig.fromDate;
-        const matchToDate = !filterConfig.toDate || item.ngay_giam_sat <= filterConfig.toDate;
-        matchTime = matchFromDate && matchToDate;
-      }
-
       return matchDept && matchTime;
     });
   }, [data, filterConfig]);
@@ -137,9 +113,9 @@ export const DrugMonitoringModule: React.FC = () => {
         ]);
 
         const title = "TỔNG HỢP GIÁM SÁT SỬ DỤNG THUỐC";
-        const dateStr = filterConfig.timeRange === 'Tùy chọn' 
-          ? `Từ ngày ${filterConfig.fromDate || '...'} đến ngày ${filterConfig.toDate || '...'}`
-          : `Kỳ báo cáo: ${filterConfig.timeRange}`;
+        const dateStr = filterConfig.type === 'custom' 
+          ? `Từ ngày ${filterConfig.startDate || '...'} đến ngày ${filterConfig.endDate || '...'}`
+          : `Kỳ báo cáo: ${filterConfig.type}`;
 
         const wsData = [
           [title],
@@ -216,40 +192,9 @@ export const DrugMonitoringModule: React.FC = () => {
         <div className="p-4 lg:p-4 pt-0 lg:pt-0 border-t lg:border-t-0 border-slate-100">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Thời gian</label>
-              <select 
-                value={filterConfig.timeRange}
-                onChange={e => setFilterConfig({ ...filterConfig, timeRange: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
-              >
-                {['Hôm nay', 'Tuần này', 'Tháng này', 'Quý này', 'Năm này', 'Tùy chọn'].map(time => (
-                  <option key={time} value={time}>{time}</option>
-                ))}
-              </select>
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Thời gian</label>
+               <DateRangeFilter filter={filterConfig} onChange={(f) => setFilterConfig({...filterConfig, ...f})} />
             </div>
-
-            {filterConfig.timeRange === 'Tùy chọn' && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Từ ngày</label>
-                  <input 
-                    type="date" 
-                    value={filterConfig.fromDate}
-                    onChange={e => setFilterConfig({ ...filterConfig, fromDate: e.target.value })}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Đến ngày</label>
-                  <input 
-                    type="date" 
-                    value={filterConfig.toDate}
-                    onChange={e => setFilterConfig({ ...filterConfig, toDate: e.target.value })}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
-                  />
-                </div>
-              </>
-            )}
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Đơn vị giám sát</label>
@@ -267,7 +212,7 @@ export const DrugMonitoringModule: React.FC = () => {
             
             <div className="flex items-end">
               <button 
-                onClick={() => setFilterConfig({ timeRange: 'Tháng này', fromDate: '', toDate: '', department: 'Tất cả' })}
+                onClick={() => setFilterConfig({ type: 'thisMonth', startDate: '', endDate: '', department: 'Tất cả' })}
                 className="w-full p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl border border-dashed border-slate-300 transition-all text-[10px] font-black uppercase tracking-widest"
               >
                 <RotateCcw size={14} className="inline mr-2" /> Xóa lọc
@@ -286,41 +231,44 @@ export const DrugMonitoringModule: React.FC = () => {
           <DrugOverview data={filteredData} />
         ) : activeTab === 'REPORT' ? (
           <DrugReport data={filteredData} />
-        ) : viewMode === 'LIST' ? (
-          <DrugList 
-            data={filteredData} 
-            onView={(item: DrugMonitoring) => { setEditingItem(item); setViewMode('DETAIL'); }}
-            onEdit={(item: DrugMonitoring) => { setEditingItem(item); setViewMode('FORM'); }}
-            onDelete={async (id: string) => {
-              if (window.confirm('Xóa bản ghi này?')) {
-                await deleteGsDrug(id);
-                loadData();
-              }
-            }}
-          />
-        ) : viewMode === 'DETAIL' && editingItem ? (
-          <DrugDetailView 
-            item={editingItem} 
-            currentUser={user}
-            onClose={() => setViewMode('LIST')}
-            onEdit={() => setViewMode('FORM')}
-            onDelete={async () => {
-              if (window.confirm('Xóa bản ghi này?')) {
-                await deleteGsDrug(editingItem.id!);
-                setViewMode('LIST');
-                loadData();
-              }
-            }}
-          />
-        ) : (
-          <DrugFormView 
-            item={editingItem}
-            onClose={() => setViewMode('LIST')}
-            onSaved={() => { setViewMode('LIST'); loadData(); }}
-            currentUser={user}
-            departmentList={departmentList}
-          />
-        )}
+        ) : activeTab === 'DANH_SACH' ? (
+          viewMode === 'LIST' ? (
+            <DrugList 
+              data={filteredData} 
+              onAdd={() => { setEditingItem(null); setViewMode('FORM'); }}
+              onView={(item: DrugMonitoring) => { setEditingItem(item); setViewMode('DETAIL'); }}
+              onEdit={(item: DrugMonitoring) => { setEditingItem(item); setViewMode('FORM'); }}
+              onDelete={async (id: string) => {
+                if (window.confirm('Xóa bản ghi này?')) {
+                  await deleteGsDrug(id);
+                  loadData();
+                }
+              }}
+            />
+          ) : viewMode === 'DETAIL' && editingItem ? (
+            <DrugDetailView 
+              item={editingItem} 
+              currentUser={user}
+              onClose={() => setViewMode('LIST')}
+              onEdit={() => setViewMode('FORM')}
+              onDelete={async () => {
+                if (window.confirm('Xóa bản ghi này?')) {
+                  await deleteGsDrug(editingItem.id!);
+                  setViewMode('LIST');
+                  loadData();
+                }
+              }}
+            />
+          ) : (
+            <DrugFormView 
+              item={editingItem}
+              onClose={() => setViewMode('LIST')}
+              onSaved={() => { setViewMode('LIST'); loadData(); }}
+              currentUser={user}
+              departmentList={departmentList}
+            />
+          )
+        ) : null}
       </div>
     </div>
   );
@@ -426,7 +374,7 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
   );
 };
 
-const DrugList = ({ data, onView, onEdit, onDelete }: { data: DrugMonitoring[], onView: (item: DrugMonitoring) => void, onEdit: (item: DrugMonitoring) => void, onDelete: (id: string) => void }) => {
+const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitoring[], onView: (item: DrugMonitoring) => void, onEdit: (item: DrugMonitoring) => void, onDelete: (id: string) => void, onAdd: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const filtered = data.filter((item: DrugMonitoring) => 
     item.ho_ten_nb.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -435,8 +383,8 @@ const DrugList = ({ data, onView, onEdit, onDelete }: { data: DrugMonitoring[], 
 
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-slate-100 flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             placeholder="Tìm kiếm NB, Đơn vị..." 
@@ -829,9 +777,9 @@ const DrugDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) =
           </div>
 
           <div className="overflow-x-auto">
-             <table className="w-full border-2 border-slate-800 border-collapse">
+             <table className="w-full border-2 border-slate-800 border-collapse text-[12pt]">
                 <thead>
-                   <tr className="bg-slate-100 text-[10px] md:text-xs font-black uppercase text-slate-800 text-center">
+                   <tr className="bg-slate-100 text-[12pt] font-black uppercase text-slate-800 text-center">
                       <th className="p-3 border-2 border-slate-800 w-10">STT</th>
                       <th className="p-3 border-2 border-slate-800 text-left">Nội dung/Bước trọng yếu giám sát</th>
                       <th className="p-3 border-2 border-slate-800 w-16">Đạt</th>
@@ -842,12 +790,12 @@ const DrugDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) =
                 <tbody>
                    {sections.map(section => (
                       <React.Fragment key={section.id}>
-                         <tr className="bg-slate-50 font-black text-slate-900 text-sm">
+                         <tr className="bg-slate-50 font-black text-slate-900 text-[12pt]">
                             <td className="p-3 border-2 border-slate-800 text-center uppercase">{section.id}</td>
                             <td colSpan={4} className="p-3 border-2 border-slate-800 uppercase bg-slate-100/50">{section.title}</td>
                          </tr>
                          {CRITERIA.filter(c => c.section === section.id).map((c, idx) => (
-                            <tr key={c.id} className="text-[11px] md:text-sm group hover:bg-slate-50/50">
+                            <tr key={c.id} className="text-[12pt] group hover:bg-slate-50/50">
                                <td className="p-3 border-2 border-slate-800 text-center font-bold text-slate-600">{idx + 1}</td>
                                <td className="p-3 border-2 border-slate-800 font-bold text-slate-700 leading-snug">{c.label}</td>
                                <td className="p-3 border-2 border-slate-800 text-center">
@@ -869,7 +817,7 @@ const DrugDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) =
 
           <div className="flex justify-between pt-4 gap-8">
              <div className="text-center flex-1 space-y-16">
-                <p className="text-sm font-bold text-slate-800">NGƯỜI BỆNH/NGƯỜI NHÀ</p>
+                <p className="text-sm font-bold text-slate-800">ĐẠI DIỆN KHOA ĐƯỢC GIÁM SÁT</p>
                 <p className="text-xs text-slate-400 italic">(Ký và ghi rõ họ tên)</p>
              </div>
              <div className="text-center flex-1 space-y-16">

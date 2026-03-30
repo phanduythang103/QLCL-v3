@@ -4,6 +4,8 @@ import {
   Users, CheckCircle2, AlertTriangle, XCircle, FileText, Image, 
   Upload, X, Camera, LayoutDashboard, List, Filter, RotateCcw
 } from 'lucide-react';
+import DateRangeFilter from './DateRangeFilter';
+import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { useAuth } from '../contexts/AuthContext';
 import { GsVst } from '../types';
 import { fetchGsVst, addGsVst, updateGsVst, deleteGsVst, uploadVstImage } from '../readGsVst';
@@ -30,66 +32,12 @@ export const HandHygieneModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DANH_SACH'>('OVERVIEW');
   const [showFilters, setShowFilters] = useState(false);
   const [filterConfig, setFilterConfig] = useState({
-    preset: 'THANG_NAY',
-    fromDate: '',
-    toDate: '',
+    type: 'thisMonth',
+    startDate: '',
+    endDate: '',
     department: 'Tất cả'
   });
 
-  const getTimePresetDates = (preset: string) => {
-    const now = new Date();
-    const start = new Date(now);
-    const end = new Date(now);
-    
-    switch (preset) {
-      case 'HOM_NAY':
-        return { 
-          from: now.toISOString().split('T')[0], 
-          to: now.toISOString().split('T')[0] 
-        };
-      case 'TUAN_NAY': {
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
-        start.setDate(diff);
-        return { 
-          from: start.toISOString().split('T')[0], 
-          to: end.toISOString().split('T')[0] 
-        };
-      }
-      case 'THANG_NAY':
-        start.setDate(1);
-        return { 
-          from: start.toISOString().split('T')[0], 
-          to: end.toISOString().split('T')[0] 
-        };
-      case 'QUY_NAY': {
-        const quarter = Math.floor(now.getMonth() / 3);
-        start.setMonth(quarter * 3);
-        start.setDate(1);
-        return { 
-          from: start.toISOString().split('T')[0], 
-          to: end.toISOString().split('T')[0] 
-        };
-      }
-      case 'NAM_NAY':
-        start.setMonth(0);
-        start.setDate(1);
-        return { 
-          from: start.toISOString().split('T')[0], 
-          to: end.toISOString().split('T')[0] 
-        };
-      default:
-        return { from: '', to: '' };
-    }
-  };
-
-  // Update dates when preset changes
-  useEffect(() => {
-    if (filterConfig.preset !== 'TUY_CHON') {
-      const dates = getTimePresetDates(filterConfig.preset);
-      setFilterConfig(prev => ({ ...prev, fromDate: dates.from, toDate: dates.to }));
-    }
-  }, [filterConfig.preset]);
 
   const loadData = async () => {
     try {
@@ -115,10 +63,10 @@ export const HandHygieneModule: React.FC = () => {
 
   const filteredData = useMemo(() => {
     return data.filter(item => {
+      const range = getDateRange(filterConfig.type, filterConfig.startDate, filterConfig.endDate);
+      const matchTime = isDateInRange(item.ngay_giam_sat, range);
       const matchDept = filterConfig.department === 'Tất cả' || item.khoa_duoc_giam_sat === filterConfig.department;
-      const matchFromDate = !filterConfig.fromDate || item.ngay_giam_sat >= filterConfig.fromDate;
-      const matchToDate = !filterConfig.toDate || item.ngay_giam_sat <= filterConfig.toDate;
-      return matchDept && matchFromDate && matchToDate;
+      return matchDept && matchTime;
     });
   }, [data, filterConfig]);
 
@@ -144,58 +92,14 @@ export const HandHygieneModule: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            {activeTab === 'DANH_SACH' && (
-              <button 
-                onClick={() => { setEditingItem(null); setIsReadOnly(false); setIsFormOpen(true); }}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-200 active:scale-95 shadow-indigo-200"
-              >
-                <Plus size={18} /> Thêm
-              </button>
-            )}
-          </div>
         </div>
 
         <div className="p-4 lg:p-4 pt-0 lg:pt-0 border-t lg:border-t-0 border-slate-100">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Thời gian</label>
-              <select 
-                value={filterConfig.preset}
-                onChange={e => setFilterConfig({...filterConfig, preset: e.target.value})}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-indigo-500/10 focus:ring-4 transition-all"
-              >
-                <option value="HOM_NAY">Hôm nay</option>
-                <option value="TUAN_NAY">Tuần này</option>
-                <option value="THANG_NAY">Tháng này</option>
-                <option value="QUY_NAY">Quý này</option>
-                <option value="NAM_NAY">Năm này</option>
-                <option value="TUY_CHON">Tùy chọn</option>
-              </select>
+              <DateRangeFilter filter={filterConfig} onChange={(f) => setFilterConfig({...filterConfig, ...f})} />
             </div>
-
-            {filterConfig.preset === 'TUY_CHON' && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Từ ngày</label>
-                  <input 
-                    type="date" 
-                    value={filterConfig.fromDate}
-                    onChange={e => setFilterConfig({...filterConfig, fromDate: e.target.value})}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-indigo-500/10 focus:ring-4 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Đến ngày</label>
-                  <input 
-                    type="date" 
-                    value={filterConfig.toDate}
-                    onChange={e => setFilterConfig({...filterConfig, toDate: e.target.value})}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-indigo-500/10 focus:ring-4 transition-all"
-                  />
-                </div>
-              </>
-            )}
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Khoa giám sát</label>
@@ -212,7 +116,7 @@ export const HandHygieneModule: React.FC = () => {
             </div>
             <div className="flex items-end">
               <button 
-                onClick={() => setFilterConfig({ preset: 'THANG_NAY', fromDate: '', toDate: '', department: 'Tất cả' })}
+                onClick={() => setFilterConfig({ type: 'thisMonth', startDate: '', endDate: '', department: 'Tất cả' })}
                 className="w-full p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl border border-dashed border-slate-300 transition-all text-[10px] font-black uppercase tracking-widest"
               >
                 <RotateCcw size={14} className="inline mr-2" /> Xóa lọc
@@ -232,6 +136,7 @@ export const HandHygieneModule: React.FC = () => {
         ) : (
           <VstList 
             data={filteredData} 
+            onAdd={() => { setEditingItem(null); setIsReadOnly(false); setIsFormOpen(true); }}
             onView={(item) => { setEditingItem(item); setIsReadOnly(true); setIsFormOpen(true); }}
             onEdit={(item) => { setEditingItem(item); setIsReadOnly(false); setIsFormOpen(true); }}
             onDelete={async (id) => {
@@ -392,7 +297,7 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
   );
 };
 
-const VstList = ({ data, onView, onEdit, onDelete }: { data: GsVst[], onView: (item: GsVst) => void, onEdit: (item: GsVst) => void, onDelete: (id: string) => void }) => {
+const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onView: (item: GsVst) => void, onEdit: (item: GsVst) => void, onDelete: (id: string) => void, onAdd: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const searchedData = useMemo(() => {
@@ -405,14 +310,20 @@ const VstList = ({ data, onView, onEdit, onDelete }: { data: GsVst[], onView: (i
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/30">
-        <div className="relative w-full md:w-96 group">
+        <button 
+          onClick={onAdd}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100 active:scale-95 whitespace-nowrap"
+        >
+          <Plus size={18} /> Thêm phiếu giám sát
+        </button>
+        <div className="relative flex-1 max-w-sm group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
           <input 
             type="text"
             placeholder="Tìm theo khoa, người được giám sát..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+            className="w-full pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
           />
         </div>
       </div>
@@ -735,9 +646,9 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
               
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto rounded-[32px] border border-slate-100 shadow-sm">
-                <table className="w-full text-sm border-collapse">
+                <table className="w-full text-[12pt] border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-100 text-[10px] uppercase font-black text-slate-400 tracking-[0.2em]">
+                    <tr className="bg-slate-50/80 border-b border-slate-100 text-[12pt] uppercase font-black text-slate-400 tracking-[0.2em]">
                       <th className="p-5 text-center w-16">STT</th>
                       <th className="p-5 text-left">Thời điểm (Cơ hội)</th>
                       <th className="p-5 text-center w-36">Tuân thủ</th>

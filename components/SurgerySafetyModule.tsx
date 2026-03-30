@@ -621,7 +621,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-[#009900] text-white text-[10px] uppercase font-black tracking-widest border-b border-green-700">
+            <tr className="bg-[#009900] text-white text-[12pt] uppercase font-black tracking-widest border-b border-green-700">
               <th className="p-6">Khoa lâm sàng</th>
               <th className="p-6 text-center">Số ca giám sát (A)</th>
               <th className="p-6 text-center">Số ca đạt 100% (B)</th>
@@ -640,13 +640,13 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
                     {row.rate.toFixed(1)}%
                   </span>
                 </td>
-                <td className="p-6 text-xs text-slate-500">
+                <td className="p-6 text-[12pt] text-slate-900 border-l border-slate-100">
                   {row.errors.length > 0 ? (
                     <ul className="space-y-1">
                       {row.errors.map((err, i) => (
-                        <li key={i} className="text-[11px] text-rose-500 font-medium italic leading-tight flex items-start gap-1">
-                          <span className="shrink-0 mt-1.5 w-1 h-1 rounded-full bg-rose-400" />
-                          {err.label} {err.count > 1 && <span className="text-[10px] bg-rose-100 px-1 rounded not-italic font-black">x{err.count}</span>}
+                        <li key={i} className="text-[12pt] text-slate-900 font-bold italic leading-tight flex items-start gap-1">
+                          <span className="shrink-0 mt-1.5 w-1 h-1 rounded-full bg-slate-900" />
+                          {err.label} {err.count > 1 && <span className="text-[11pt] bg-slate-100 px-1 rounded not-italic font-black">x{err.count}</span>}
                         </li>
                       ))}
                     </ul>
@@ -1079,9 +1079,9 @@ const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete 
         </div>
 
         <div className="overflow-hidden border border-slate-200 rounded-2xl shadow-sm">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse text-[12pt]">
             <thead>
-              <tr className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200">
+              <tr className="bg-slate-50 text-[12pt] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200">
                 <th className="p-4 w-16 text-center border-r border-slate-200">STT</th>
                 <th className="p-4 border-r border-slate-200">Tiêu chí giám sát</th>
                 <th className="p-4 w-24 text-center border-r border-slate-200">Đạt</th>
@@ -1094,14 +1094,14 @@ const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete 
                 <React.Fragment key={section}>
                   <tr className="bg-slate-50/50">
                     <td className="p-4 text-center border-r border-slate-200 font-black text-slate-800">{section}</td>
-                    <td colSpan={4} className="p-4 font-black text-slate-800 text-xs uppercase tracking-wide">
+                    <td colSpan={4} className="p-4 font-black text-slate-800 uppercase tracking-wide">
                       GIAI ĐOẠN {section === 'I' ? '1: TRƯỚC GÂY MÊ (SIGN IN)' : section === 'II' ? '2: TRƯỚC RẠCH DA (TIME OUT)' : '3: TRƯỚC KHI RỜI PHÒNG MỔ (SIGN OUT)'}
                     </td>
                   </tr>
                   {CRITERIA.filter(c => c.section === section).map((c, idx) => {
                     const isDat = item[c.id as keyof SurgerySafety] === true;
                     return (
-                      <tr key={c.id} className="text-sm">
+                      <tr key={c.id}>
                         <td className="p-4 text-center border-r border-slate-200 text-slate-400 font-bold">{idx + 1}</td>
                         <td className="p-4 border-r border-slate-200 font-bold text-slate-700 leading-tight">{c.label}</td>
                         <td className="p-4 text-center border-r border-slate-200">

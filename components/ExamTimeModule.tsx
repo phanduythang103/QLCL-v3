@@ -8,6 +8,8 @@ import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as Recha
 import { fetchGsKhamBenh, GsKhamBenh, GsKhamBenhInput, addGsKhamBenh, updateGsKhamBenh, deleteGsKhamBenh, calcTongThoiGian } from '../readGsKhamBenh';
 import { fetchPhanTichKb, PhanTichKb, PhanTichKbInput, PhanTichRow, addPhanTichKb, updatePhanTichKb, deletePhanTichKb } from '../readPhanTichKb';
 import { useAuth } from '../contexts/AuthContext';
+import DateRangeFilter from './DateRangeFilter';
+import { getDateRange, isDateInRange } from '../utils/dateUtils';
 
 const fmtMin = (min: number | null | undefined) => min != null ? `${Math.round(Number(min))} phút` : '—';
 
@@ -60,14 +62,7 @@ export const ExamTimeModule: React.FC = () => {
   const [analyses, setAnalyses] = useState<PhanTichKb[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter State
-  const [filterPreset, setFilterPreset] = useState<string>('THIS_MONTH');
-  const [startDate, setStartDate] = useState<string>(() => {
-    const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
-  });
-  const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState({ type: 'thisMonth', startDate: '', endDate: '' });
 
   // Supervision Modal
   const [showGsModal, setShowGsModal] = useState(false);
@@ -121,61 +116,15 @@ export const ExamTimeModule: React.FC = () => {
 
   useEffect(() => { loadData(); }, []);
 
-  // ── Date Filtering Logic ──
-  const applyPreset = (preset: string) => {
-    const now = new Date();
-    let start = new Date();
-    let end = new Date();
-
-    switch (preset) {
-      case 'TODAY':
-        break;
-      case 'YESTERDAY':
-        start.setDate(now.getDate() - 1);
-        end.setDate(now.getDate() - 1);
-        break;
-      case 'THIS_WEEK':
-        start.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-        break;
-      case 'LAST_WEEK':
-        start.setDate(now.getDate() - now.getDay() - 6);
-        end.setDate(now.getDate() - now.getDay());
-        break;
-      case 'THIS_MONTH':
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'LAST_MONTH':
-        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        end = new Date(now.getFullYear(), now.getMonth(), 0);
-        break;
-      case 'THIS_QUARTER': {
-        const q = Math.floor(now.getMonth() / 3);
-        start = new Date(now.getFullYear(), q * 3, 1);
-        break;
-      }
-      case 'LAST_QUARTER': {
-        const q = Math.floor(now.getMonth() / 3) - 1;
-        start = new Date(now.getFullYear(), q * 3, 1);
-        end = new Date(now.getFullYear(), (q + 1) * 3, 0);
-        break;
-      }
-      case 'THIS_YEAR':
-        start = new Date(now.getFullYear(), 0, 1);
-        break;
-      case 'LAST_YEAR':
-        start = new Date(now.getFullYear() - 1, 0, 1);
-        end = new Date(now.getFullYear() - 1, 11, 31);
-        break;
-      default: return;
-    }
-
-    setFilterPreset(preset);
-    setStartDate(start.toISOString().split('T')[0]);
-    setEndDate(end.toISOString().split('T')[0]);
-  };
-
-  const filteredRecords = records.filter(r => r.ngay_giam_sat >= startDate && r.ngay_giam_sat <= endDate);
-  const filteredAnalyses = analyses.filter(a => a.ngay_phan_tich >= startDate && a.ngay_phan_tich <= endDate);
+  const filteredRecords = records.filter(r => {
+    const range = getDateRange(dateFilter.type, dateFilter.startDate, dateFilter.endDate);
+    return isDateInRange(r.ngay_giam_sat, range);
+  });
+  
+  const filteredAnalyses = analyses.filter(a => {
+    const range = getDateRange(dateFilter.type, dateFilter.startDate, dateFilter.endDate);
+    return isDateInRange(a.ngay_phan_tich, range);
+  });
 
   // ── Stats Calculation ──
   const recordsWithTime = filteredRecords.filter(r => r.tong_thoi_gian != null);
@@ -416,13 +365,14 @@ export const ExamTimeModule: React.FC = () => {
   const renderGiamSat = () => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-4">
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-wrap items-center gap-3">
+        <button onClick={handleAddGs} className="bg-[#009900] text-white px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all">
+          <Plus size={15} /> Thêm phiếu giám sát
+        </button>
+        <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
         <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input placeholder="Tìm mã BN, người giám sát..." className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-500/20" />
         </div>
-        <button onClick={handleAddGs} className="bg-[#009900] text-white px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all">
-          <Plus size={15} /> Thêm phiếu giám sát
-        </button>
       </div>
 
       {/* Desktop Table */}
@@ -574,67 +524,11 @@ export const ExamTimeModule: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-wider transition-all border ${
-                isFilterOpen ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
-              }`}
-            >
-              <Calendar size={14} />
-              {filterPreset === 'CUSTOM' ? `${startDate.split('-').reverse().join('/')} - ${endDate.split('-').reverse().join('/')}` : 'Bộ lọc thời gian'}
-              <ChevronDown size={14} className={`transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
-            </button>
+          <div className="flex bg-slate-50 p-1 rounded-xl self-start">
+            <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
+            <TabButton active={activeTab === 'GIAM_SAT'} onClick={() => setActiveTab('GIAM_SAT')} icon={ShieldCheck} label="Giám sát" />
+            <TabButton active={activeTab === 'PHAN_TICH'} onClick={() => setActiveTab('PHAN_TICH')} icon={TrendingUp} label="Phân tích" />
           </div>
-        </div>
-
-        {isFilterOpen && (
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-wrap gap-2">
-              {[
-                { id: 'TODAY', label: 'Hôm nay' },
-                { id: 'YESTERDAY', label: 'Hôm qua' },
-                { id: 'THIS_WEEK', label: 'Tuần này' },
-                { id: 'LAST_WEEK', label: 'Tuần trước' },
-                { id: 'THIS_MONTH', label: 'Tháng này' },
-                { id: 'LAST_MONTH', label: 'Tháng trước' },
-                { id: 'THIS_QUARTER', label: 'Quý này' },
-                { id: 'LAST_QUARTER', label: 'Quý trước' },
-                { id: 'THIS_YEAR', label: 'Năm này' },
-                { id: 'LAST_YEAR', label: 'Năm trước' },
-                { id: 'CUSTOM', label: 'Tùy chọn' },
-              ].map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => applyPreset(p.id)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                    filterPreset === p.id ? 'bg-[#009900] text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            {filterPreset === 'CUSTOM' && (
-              <div className="flex items-center gap-3 pt-2 border-t border-slate-50">
-                <div className="flex-1 space-y-1">
-                  <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Từ ngày</label>
-                  <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setFilterPreset('CUSTOM'); }} className="w-full px-3 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-2 focus:ring-green-500/20" />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Đến ngày</label>
-                  <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setFilterPreset('CUSTOM'); }} className="w-full px-3 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-2 focus:ring-green-500/20" />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex flex-nowrap overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide items-center gap-3 bg-white/50 p-2 rounded-2xl border border-white/50 backdrop-blur-sm self-start">
-          <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
-          <TabButton active={activeTab === 'GIAM_SAT'} onClick={() => setActiveTab('GIAM_SAT')} icon={ShieldCheck} label="Giám sát" />
-          <TabButton active={activeTab === 'PHAN_TICH'} onClick={() => setActiveTab('PHAN_TICH')} icon={TrendingUp} label="Phân tích" />
         </div>
       </div>
 
