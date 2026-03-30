@@ -1,6 +1,12 @@
 /* Base styles */
+@import "./design/tokens.css";
+@import "./design/responsive.css";
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-family-base);
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-900);
 }

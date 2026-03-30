@@ -444,7 +444,7 @@ const AppContent: React.FC = () => {
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 w-full">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shadow-sm z-10 flex-shrink-0">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm z-10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileSidebarOpen(true)} className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg"><Menu size={24} /></button>
             <h2 className="text-title text-black truncate">{getModuleTitle()}</h2>
@@ -508,12 +508,6 @@ const AppContent: React.FC = () => {
                     <button
                       onClick={() => {
                         setSettingsTab('NOTI');
-                        // We need to bypass the navigateLogic check or rely on state update
-                        // Since state update is async, we might be blocked if we call navigateLogic immediately
-                        // But navigateLogic reads activeSettingsTab from hook, which might not be updated yet?
-                        // Actually, let's look at navigateLogic above. It reads 'activeSettingsTab' from 'useNavigation()'.
-                        // 'setSettingsTab' updates the context.
-                        // To be safe, we'll manually call navigateToModule here, bypassing the alert check since we KNOW we are setting it to NOTI.
                         navigateToModule(ModuleType.SETTINGS);
                         setShowNotifications(false);
                       }}
@@ -532,8 +526,10 @@ const AppContent: React.FC = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
-          <div className="max-w-7xl mx-auto pb-10">{renderContent()}</div>
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+          <div className="max-w-7xl mx-auto pb-10">
+            {renderContent()}
+          </div>
           <div className="text-center text-xs text-slate-400 pb-4">
             <p>© 2026 Bệnh viện Quân y 103. Hệ thống Hỗ trợ Quản lý Chất lượng.</p>
           </div>

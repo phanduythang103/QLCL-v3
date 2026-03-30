@@ -143,7 +143,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           title="Nhân sự QLCL"
           value={stats.loading ? "..." : stats.nhanSu.total.toString()}
@@ -170,7 +170,7 @@ export const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Charts - 2/3 width on large screens */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <h3 className="text-section font-black text-black uppercase mb-4 flex items-center">
               <TrendingUp className="w-5 h-5 mr-2 text-[#009900]" />

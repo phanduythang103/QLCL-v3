@@ -1,0 +1,36 @@
+/* Responsive utility classes */
+/* Grid responsive */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-4);
+}
+
+/* Flex direction helpers */
+.flex-col-sm {
+  flex-direction: column;
+}
+@media (min-width: var(--bp-sm)) {
+  .flex-col-sm { flex-direction: row; }
+}
+
+.flex-col-md {
+  flex-direction: column;
+}
+@media (min-width: var(--bp-md)) {
+  .flex-col-md { flex-direction: row; }
+}
+
+/* Text size helpers */
+.text-sm-sm { font-size: var(--font-size-sm); }
+@media (min-width: var(--bp-sm)) { .text-sm-sm { font-size: var(--font-size-base); } }
+
+.text-base-md { font-size: var(--font-size-base); }
+@media (min-width: var(--bp-md)) { .text-base-md { font-size: var(--font-size-lg); } }
+
+/* Padding helpers */
+.p-2-sm { padding: var(--spacing-2); }
+@media (min-width: var(--bp-sm)) { .p-2-sm { padding: var(--spacing-4); } }
+
+.p-4-md { padding: var(--spacing-4); }
+@media (min-width: var(--bp-md)) { .p-4-md { padding: var(--spacing-6); } }
