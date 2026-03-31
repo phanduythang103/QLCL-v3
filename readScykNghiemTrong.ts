@@ -10,7 +10,7 @@ export interface ScykNghiemTrong {
   tom_tat_noi_dung_su_co: string;
   phan_loai_nc3: string;
   hau_qua_doi_voi_nguoi_benh: string;
-  trang_thai_xu_ly: 'Đang RCA' | 'Đã kết luận';
+  trang_thai_xu_ly: 'Đang xử lý' | 'Đã kết luận';
   created_at?: string;
 }
 

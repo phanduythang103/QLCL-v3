@@ -108,3 +108,20 @@ export async function deleteBienBanXacMinh(id: string): Promise<boolean> {
     if (error) throw error;
     return true;
 }
+
+// Lấy biên bản theo scyk_id
+export async function fetchBienBanXacMinhByScykId(scykId: string): Promise<BienBanXacMinh | null> {
+    const { data, error } = await supabase
+        .from('bien_ban_xac_minh_su_co')
+        .select(BBM_SELECT_FIELDS)
+        .eq('scyk_id', scykId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching bien_ban by scyk_id:', error);
+        return null;
+    }
+    return data;
+}

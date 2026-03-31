@@ -18,10 +18,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
-import { analyzeWithGemini } from '../geminiClient';
+import { analyzeWithAi } from '../aiClient';
 import VerificationMinutes from './VerificationMinutes';
-import IncidentAnalysis from './IncidentAnalysis';
 import BcCqyList from './BcCqyList';
+import IncidentAnalysis from './IncidentAnalysis';
 
 type MenuItem = 'OVERVIEW' | 'LIST' | 'VERIFICATION' | 'REPORTS' | 'ANALYSIS';
 type ViewMode = 'LIST' | 'STATS' | 'FORM' | 'VIEW';
@@ -34,7 +34,7 @@ const getStatusLabel = (status: string) => {
     case 'Đã tiếp nhận': return 'Đã tiếp nhận';
     case 'Đang xác minh': return 'Đang xác minh';
     case 'Đang tiếp nhận': return 'Đang xác minh';
-    case 'Đang phân tích': return 'Đang phân tích (RCA)';
+    case 'Đang phân tích': return 'Đang phân tích';
     case 'Đã kết luận': return 'Đã kết luận';
     default: return status || 'Chưa tiếp nhận';
   }
@@ -334,7 +334,7 @@ export const Incidents: React.FC = () => {
                     </div>
                   )}
 
-                  {/* 5. Analysis (RCA) */}
+                  {/* 5. Analysis RCA */}
                   {activeMenu === 'ANALYSIS' && (
                     <div className="animate-in fade-in zoom-in-95 duration-200 h-full">
                       <IncidentAnalysis />
@@ -589,7 +589,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
           <button onClick={() => setActiveStatusFilter('CHUA_TIEP_NHAN')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'CHUA_TIEP_NHAN' ? 'bg-red-600 text-white shadow-lg shadow-red-900/10' : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'}`}>Chưa tiếp nhận</button>
           <button onClick={() => setActiveStatusFilter('DA_TIEP_NHAN')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'DA_TIEP_NHAN' ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/10' : 'bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50'}`}>Đã tiếp nhận</button>
           <button onClick={() => setActiveStatusFilter('DANG_XAC_MINH')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'DANG_XAC_MINH' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/10' : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'}`}>Đang xác minh</button>
-          <button onClick={() => setActiveStatusFilter('DANG_PHAN_TICH')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'DANG_PHAN_TICH' ? 'bg-amber-500 text-white shadow-lg shadow-amber-900/10' : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'}`}>Đang phân tích (RCA)</button>
+          <button onClick={() => setActiveStatusFilter('DANG_PHAN_TICH')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'DANG_PHAN_TICH' ? 'bg-amber-500 text-white shadow-lg shadow-amber-900/10' : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'}`}>Đang phân tích</button>
           <button onClick={() => setActiveStatusFilter('DA_KET_LUAN')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'DA_KET_LUAN' ? 'bg-green-600 text-white shadow-lg shadow-green-900/10' : 'bg-white text-green-600 border border-green-200 hover:bg-green-50'}`}>Đã kết luận</button>
         </div>
       )}
@@ -1078,10 +1078,6 @@ interface IncidentDetailViewProps {
 const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, onEdit, onDelete, onStatusUpdate }) => {
   const { user } = useAuth();
   const { canUpdate, canDelete } = usePermissions();
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [activeAnalysisTab, setActiveAnalysisTab] = useState<'FISHBONE' | '5WHYS'>('FISHBONE');
-  const [useOfflineMode, setUseOfflineMode] = useState(false);
   const [showPrintView, setShowPrintView] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -1128,234 +1124,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
     }, 100);
   };
 
-  // Template-based offline analysis (no API required)
-  const handleAnalyzeOffline = () => {
-    onStatusUpdate('Đang phân tích');
-    setAnalyzing(true);
-    setAnalysisResult(null);
 
-    const desc = item.mo_ta_su_co || 'Chưa có mô tả chi tiết';
-    const sub = item.doi_tuong_xay_ra_sc || item.ho_ten_nb || 'người bệnh';
-    const loc = item.noi_xay_ra_sc || item.don_vi_bao_cao || 'khoa phòng';
-    const unit = item.don_vi_bao_cao || 'đơn vị';
-    const description = desc.toLowerCase();
-
-    let template = {
-      rootCause: `Chưa xác định được nguyên nhân gốc rễ rõ ràng cho sự cố: "${desc}". Cần yêu cầu ${unit} tổ chức họp hội đồng phân tích chuyên sâu.`,
-      fishbone: {
-        man: [`Thông tin về ${sub} chưa đầy đủ`, `Nhân viên tại ${loc} cần tường trình thêm`],
-        machine: [`Trang thiết bị tại ${loc} cần kiểm tra`, "Chưa có dữ liệu bảo trì"],
-        method: ["Quy trình hiện tại có thể chưa bao quát hết tình huống này", `Việc giám sát tại ${unit} cần tăng cường`],
-        material: ["Vật tư y tế liên quan cần được rà soát", "Thuốc/Hóa chất cần kiểm tra"],
-        environment: [`Điều kiện môi trường tại ${loc} cần khảo sát`, "Yếu tố khách quan khác"]
-      },
-      fiveWhys: [
-        { q: `Tại sao xảy ra sự việc: "${desc}"?`, a: "Sự cố xảy ra ngoài ý muốn và quy trình kiểm soát chưa hiệu quả." },
-        { q: "Tại sao quy trình kiểm soát chưa hiệu quả?", a: `Do chưa bao quát hết tình huống thực tế xảy ra với ${sub}.` },
-        { q: "Tại sao chưa bao quát hết?", a: "Đánh giá rủi ro định kỳ còn bỏ sót các nguy cơ tiềm ẩn." },
-        { q: "Tại sao bỏ sót nguy cơ?", a: "Thiếu dữ liệu báo cáo và phân tích xu hướng từ các sự cố tương tự." },
-        { q: "Tại sao thiếu dữ liệu?", a: "Hệ thống báo cáo và chia sẻ bài học kinh nghiệm chưa được chú trọng." }
-      ],
-      solutions: [
-        `Yêu cầu ${unit} rà soát lại toàn bộ quy trình liên quan đến ${sub}.`,
-        "Tổ chức bình sự cố để rút kinh nghiệm.",
-        "Tăng cường giám sát tuân thủ quy trình."
-      ]
-    };
-
-    // PATIENT FALL
-    if (description.includes('ngã') || description.includes('trượt') || description.includes('té') || description.includes('giường') || description.includes('rơi')) {
-      template = {
-        rootCause: `Đánh giá nguy cơ ngã chưa chính xác cho ${sub} và thiếu giám sát tại ${loc}.`,
-        fishbone: {
-          man: [`${sub} không tuân thủ hướng dẫn`, "Người nhà lơ là giám sát", "NVYT chưa đánh giá lại nguy cơ ngã"],
-          machine: ["Thanh chắn giường bị hỏng/không nâng", "Xe lăn không khóa bánh", "Chuông gọi y tá hỏng"],
-          method: ["Quy trình đánh giá ngã (Morse) chưa thực hiện đúng", `Thiếu bàn giao ${sub} có nguy cơ cao`],
-          material: ["Dép người bệnh trơn trượt", "Thiếu biển báo sàn ướt"],
-          environment: [`Sàn nhà tại ${loc} ướt/trơn`, "Ánh sáng phòng bệnh tối", "Đồ đạc cản trở lối đi"]
-        },
-        fiveWhys: [
-          { q: `Tại sao xảy ra sự việc: "${desc}"?`, a: `Do ${sub} bị mất thăng bằng/trượt chân và không có sự hỗ trợ kịp thời tại ${loc}.` },
-          { q: `Tại sao ${sub} không được hỗ trợ?`, a: `${sub} tự ý di chuyển hoặc người nhà/NVYT không giám sát liên tục.` },
-          { q: "Tại sao không giám sát liên tục?", a: `Chưa đánh giá đúng mức độ nguy cơ ngã của ${sub} hoặc thiếu nhân lực trực.` },
-          { q: "Tại sao đánh giá nguy cơ chưa đúng?", a: "Quy trình đánh giá ngã (thang điểm Morse) chưa được thực hiện đúng tần suất/phương pháp." },
-          { q: "Tại sao quy trình chưa được tuân thủ?", a: "Thiếu giám sát nội bộ, nhân viên chưa được đào tạo lại hoặc áp lực công việc cao." }
-        ],
-        solutions: [
-          `Tăng cường tư vấn giáo dục phòng ngừa ngã cho ${sub} và người nhà ngay khi nhập viện.`,
-          "Kiểm tra định kỳ thanh chắn giường, chuông gọi y tá và điều kiện sàn nhà.",
-          `Thực hiện nghiêm ngặt đánh giá nguy cơ ngã theo thang điểm Morse cho ${sub}.`
-        ]
-      };
-    }
-    // MEDICATION ERROR
-    else if (description.includes('thuốc') || description.includes('nhầm') || description.includes('tiêm') || description.includes('uống') || description.includes('liều')) {
-      template = {
-        rootCause: `Thiếu quy trình kiểm tra đối chiếu 3 bước (3 check) tại thời điểm cấp phát/dùng thuốc cho ${sub} tại ${loc}.`,
-        fishbone: {
-          man: ["Nhân viên thiếu tập trung", "Giao tiếp y lệnh miệng chưa rõ", "Quên thực hiện 5 đúng"],
-          machine: ["Phần mềm kê đơn cảnh báo chưa rõ", "Máy in nhãn thuốc mờ"],
-          method: ["Quy trình 3 tra 5 đối chưa tuân thủ", "Thiếu bước kiểm tra chéo (double check)"],
-          material: ["Nhãn thuốc giống nhau (LASA)", "Vị trí đặt thuốc lộn xộn", "Bao bì thuốc dễ nhầm"],
-          environment: [`Ánh sáng tại ${loc} yếu`, "Tiếng ồn lớn gây mất tập trung", "Giờ cao điểm"]
-        },
-        fiveWhys: [
-          { q: `Tại sao xảy ra sự việc: "${desc}"?`, a: `Do ${sub} dùng sai loại thuốc/liều lượng/đường dùng so với y lệnh.` },
-          { q: "Tại sao dùng sai?", a: "Điều dưỡng thực hiện cấp phát/cho uống/tiêm không đúng y lệnh." },
-          { q: "Tại sao cấp phát không đúng?", a: "Do nhầm lẫn với thuốc của người bệnh khác hoặc thuốc có tên/bao bì tương tự." },
-          { q: "Tại sao lại nhầm lẫn?", a: "Không thực hiện đối chiếu công khai (3 tra 5 đối) tại giường bệnh." },
-          { q: "Tại sao không đối chiếu?", a: "Do quá tải công việc, thói quen làm tắt quy trình hoặc thiếu giám sát." }
-        ],
-        solutions: [
-          `Tập huấn lại quy trình an toàn sử dụng thuốc (5 đúng - 3 tra) cho nhân viên tại ${unit}.`,
-          "Dán nhãn cảnh báo các thuốc nhìn giống nhau, đọc giống nhau (LASA).",
-          "Sắp xếp lại tủ thuốc khoa học, tách riêng các thuốc nguy cơ cao."
-        ]
-      };
-    }
-    // SURGICAL ERROR
-    else if (description.includes('mổ') || description.includes('phẫu thuật') || description.includes('sót') || description.includes('gạc')) {
-      template = {
-        rootCause: `Bảng kiểm an toàn phẫu thuật (Surgical Safety Checklist) thực hiện chưa nghiêm túc trong ca phẫu thuật cho ${sub} tại ${loc}.`,
-        fishbone: {
-          man: ["Kíp mổ giao tiếp kém", "Phẫu thuật viên gây áp lực", "Mệt mỏi/Căng thẳng"],
-          machine: ["Dụng cụ phẫu thuật không đồng bộ", "Máy móc hỏng hóc bất ngờ"],
-          method: ["Bảng kiểm an toàn PT chỉ làm đối phó", "Quy trình đếm gạc chưa chuẩn"],
-          material: ["Gạc/Dụng cụ không chuẩn hóa", "Thiếu chỉ thị màu an toàn"],
-          environment: [`Phòng mổ tại ${loc} ồn ào`, "Nhiệt độ/Độ ẩm không phù hợp", "Sắp xếp lịch mổ quá dày"]
-        },
-        fiveWhys: [
-          { q: `Tại sao xảy ra sự việc: "${desc}"?`, a: `Xảy ra sai sót trong quá trình phẫu thuật/thủ thuật cho ${sub}.` },
-          { q: "Tại sao lại sai sót?", a: "Kết quả đếm gạc/dụng cụ trước và sau đóng cơ không khớp nhưng không phát hiện." },
-          { q: "Tại sao không phát hiện?", a: "Việc đếm thực hiện vội vàng, thiếu người xác nhận (double check)." },
-          { q: "Tại sao vội vàng?", a: "Áp lực thời gian ca mổ kế tiếp hoặc tình trạng bệnh nhân diễn biến." },
-          { q: "Tại sao quy trình kiểm soát lỏng lẻo?", a: "Thiếu văn hóa an toàn, ngại nhắc nhở phẫu thuật viên chính." }
-        ],
-        solutions: [
-          `Tuyệt đối tuân thủ Bảng kiểm an toàn phẫu thuật (Time-out) tại ${unit}.`,
-          "Quy định rõ vai trò đếm gạc và xác nhận to tiếng.",
-          "Xây dựng văn hóa Speak-up trong phòng mổ."
-        ]
-      };
-    }
-
-    setTimeout(() => {
-      setAnalysisResult(template);
-      setAnalyzing(false);
-    }, 1000);
-  };
-
-  const handleAnalyze = async () => {
-    onStatusUpdate('Đang phân tích');
-    setAnalyzing(true);
-    setAnalysisResult(null);
-
-    // Extract context from incident data
-    const desc = item.mo_ta_su_co || 'Chưa có mô tả chi tiết';
-    const sub = item.doi_tuong_xay_ra_sc || item.ho_ten_nb || 'người bệnh';
-    const loc = item.noi_xay_ra_sc || item.don_vi_bao_cao || 'khoa phòng';
-    const viTri = item.vi_tri_cu_the || '';
-    const unit = item.don_vi_bao_cao || 'đơn vị';
-    const phanLoai = item.phan_loai_ban_dau || 'Chưa phân loại';
-
-    // Build the RCA prompt
-    const prompt = `Bạn đóng vai Hội đồng Quản lý chất lượng bệnh viện.
-Hãy phân tích sự cố y khoa sau theo phương pháp Root Cause Analysis (RCA).
-
-YÊU CẦU BẮT BUỘNG:
-- Không quy trách nhiệm cá nhân
-- Không suy đoán nếu dữ liệu chưa có
-- Phân tích theo góc độ hệ thống
-- Sử dụng ngôn ngữ chuyên môn y khoa
-
-THÔNG TIN SỰ CỐ:
-- Mô tả chi tiết: ${desc}
-- Đối tượng: ${sub}
-- Vị trí: ${loc}${viTri ? ` (${viTri})` : ''}
-- Đơn vị báo cáo: ${unit}
-- Phân loại ban đầu: ${phanLoai}
-
-TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, chỉ JSON thuần) với cấu trúc CHÍNH XÁC sau:
-{
-  "summary": "Tóm tắt ngắn gọn sự cố",
-  "timeline": "Chuỗi sự kiện theo thời gian",
-  "safetyIssues": "Các vấn đề an toàn người bệnh được xác định",
-  "rootCause": "Nguyên nhân gốc cốt lõi (1-2 câu)",
-  "fishbone": {
-    "man": ["Yếu tố con người 1", "Yếu tố con người 2"],
-    "machine": ["Yếu tố thiết bị 1", "Yếu tố thiết bị 2"],
-    "method": ["Yếu tố quy trình 1", "Yếu tố quy trình 2"],
-    "material": ["Yếu tố vật tư 1", "Yếu tố vật tư 2"],
-    "environment": ["Yếu tố môi trường 1", "Yếu tố môi trường 2"]
-  },
-  "fiveWhys": [
-    { "q": "Tại sao xảy ra sự việc [tóm tắt]?", "a": "Câu trả lời cụ thể" },
-    { "q": "Tại sao [nguyên nhân 1]?", "a": "Câu trả lời cụ thể" },
-    { "q": "Tại sao [nguyên nhân 2]?", "a": "Câu trả lời cụ thể" },
-    { "q": "Tại sao [nguyên nhân 3]?", "a": "Câu trả lời cụ thể" },
-    { "q": "Tại sao [nguyên nhân 4]?", "a": "Câu trả lời cụ thể" }
-  ],
-  "solutions": ["Biện pháp khắc phục 1 (SMART)", "Biện pháp phòng ngừa 2 (SMART)", "Biện pháp hệ thống 3"]
-}`;
-
-    try {
-      const response = await analyzeWithGemini(prompt);
-
-      // Try to parse JSON from response
-      let parsed;
-      try {
-        // Remove markdown code blocks if present
-        let cleanResponse = response.trim();
-        if (cleanResponse.startsWith('```json')) {
-          cleanResponse = cleanResponse.slice(7);
-        } else if (cleanResponse.startsWith('```')) {
-          cleanResponse = cleanResponse.slice(3);
-        }
-        if (cleanResponse.endsWith('```')) {
-          cleanResponse = cleanResponse.slice(0, -3);
-        }
-        parsed = JSON.parse(cleanResponse.trim());
-      } catch (parseError) {
-        console.error('Failed to parse Gemini response as JSON:', parseError);
-        // Use the raw response as rootCause if parsing fails
-        parsed = {
-          rootCause: response,
-          fishbone: {
-            man: ["Xem chi tiết phân tích ở trên"],
-            machine: ["Xem chi tiết phân tích ở trên"],
-            method: ["Xem chi tiết phân tích ở trên"],
-            material: ["Xem chi tiết phân tích ở trên"],
-            environment: ["Xem chi tiết phân tích ở trên"]
-          },
-          fiveWhys: [
-            { q: `Tại sao xảy ra: "${desc}"?`, a: "Xem phân tích chi tiết ở nguyên nhân gốc." }
-          ],
-          solutions: ["Xem chi tiết phân tích ở trên"]
-        };
-      }
-
-      setAnalysisResult(parsed);
-    } catch (error) {
-      console.error('Gemini API Error:', error);
-      // Fallback to basic template
-      setAnalysisResult({
-        rootCause: `Không thể kết nối API Gemini. Lỗi: ${error instanceof Error ? error.message : 'Unknown'}. Vui lòng thử lại sau.`,
-        fishbone: {
-          man: [`Thông tin về ${sub} chưa đầy đủ`],
-          machine: [`Trang thiết bị tại ${loc} cần kiểm tra`],
-          method: ["Quy trình hiện tại cần rà soát"],
-          material: ["Vật tư y tế liên quan cần được kiểm tra"],
-          environment: [`Điều kiện môi trường tại ${loc} cần khảo sát`]
-        },
-        fiveWhys: [
-          { q: `Tại sao xảy ra sự việc: "${desc}"?`, a: "API lỗi - không thể phân tích tự động." }
-        ],
-        solutions: [`Vui lòng thử lại hoặc liên hệ quản trị viên.`]
-      });
-    } finally {
-      setAnalyzing(false);
-    }
-  };
   // Checkbox helper for print view
   const Chk = ({ c }: { c: boolean }) => <span>{c ? '☑' : '☐'}</span>;
 
@@ -1499,12 +1268,6 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
             <ArrowLeft size={20} className="mr-2" /> Quay lại danh sách
           </button>
           <div className="flex flex-wrap gap-2 uppercase">
-            <button
-              onClick={() => document.getElementById('ai-rca-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black transition-all flex items-center gap-2 shadow-xl shadow-indigo-900/20 active:scale-95"
-            >
-              <BrainCircuit size={18} /> Phân tích sự cố
-            </button>
             <button onClick={handlePrint} className="bg-blue-50 text-blue-700 px-5 py-2.5 rounded-xl text-[10px] font-black hover:bg-blue-100 transition-all flex items-center gap-2 border border-blue-200 shadow-sm active:scale-95">
               <Download size={16} /> Tải PDF
             </button>
@@ -1677,158 +1440,11 @@ TRẢ VỀ DƯỚNG DẠNG JSON HỢP LỆ (không có markdown code block, ch�
           </div>
         </div>
 
-        {/* AI RCA Analysis Section */}
-        <div id="ai-rca-section" className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl shadow-xl overflow-hidden text-white mb-10">
-          <div className="p-6 border-b border-indigo-700/50 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center border border-indigo-400/30">
-                <BrainCircuit size={24} className="text-indigo-300" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Phân tích Nguyên nhân Gốc rễ (AI RCA)</h2>
-                <p className="text-indigo-300 text-sm">Sử dụng trí tuệ nhân tạo để phân tích biểu đồ xương cá & 5 Whys</p>
-              </div>
-            </div>
-
-            {!analysisResult && !analyzing && (
-              <div className="flex gap-3">
-                <button
-                  onClick={handleAnalyze}
-                  className="px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold shadow-lg shadow-indigo-900/50 flex items-center gap-2 transition-all transform hover:scale-105"
-                >
-                  <Sparkles size={18} /> Phân tích AI
-                </button>
-                <button
-                  onClick={handleAnalyzeOffline}
-                  className="px-6 py-3 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-bold shadow-lg shadow-slate-900/50 flex items-center gap-2 transition-all transform hover:scale-105"
-                  title="Phân tích nhanh bằng template, không cần kết nối API"
-                >
-                  <BrainCircuit size={18} /> Phân tích Offline
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Loading State */}
-          {analyzing && (
-            <div className="p-12 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 border-4 border-indigo-500 border-t-white rounded-full animate-spin mb-4"></div>
-              <p className="text-indigo-200 font-medium animate-pulse">Đang phân tích dữ liệu sự cố...</p>
-              <p className="text-indigo-400 text-sm mt-2">Đang xây dựng biểu đồ xương cá & chuỗi 5 câu hỏi...</p>
-            </div>
-          )}
-
-          {/* Analysis Result */}
-          {analysisResult && (
-            <div className="p-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Tabs */}
-              <div className="flex bg-indigo-950/50 border-b border-indigo-800/50">
-                <button
-                  onClick={() => setActiveAnalysisTab('FISHBONE')}
-                  className={`flex-1 py-4 text-center text-sm font-bold uppercase tracking-wider transition-colors ${activeAnalysisTab === 'FISHBONE' ? 'bg-indigo-800/50 text-white border-b-2 border-indigo-400' : 'text-indigo-400 hover:text-white hover:bg-indigo-800/30'}`}
-                >
-                  Biểu đồ Xương cá (Ishikawa)
-                </button>
-                <button
-                  onClick={() => setActiveAnalysisTab('5WHYS')}
-                  className={`flex-1 py-4 text-center text-sm font-bold uppercase tracking-wider transition-colors ${activeAnalysisTab === '5WHYS' ? 'bg-indigo-800/50 text-white border-b-2 border-indigo-400' : 'text-indigo-400 hover:text-white hover:bg-indigo-800/30'}`}
-                >
-                  Phân tích 5 Whys
-                </button>
-              </div>
-
-              <div className="p-6 md:p-8">
-                {activeAnalysisTab === 'FISHBONE' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FishboneCard title="Con người (Man)" items={analysisResult.fishbone.man} icon={<Users size={18} />} color="text-blue-300" bg="bg-blue-900/20" border="border-blue-700/30" />
-                    <FishboneCard title="Quy trình (Method)" items={analysisResult.fishbone.method} icon={<FileText size={18} />} color="text-green-300" bg="bg-green-900/20" border="border-green-700/30" />
-                    <FishboneCard title="Thiết bị (Machine)" items={analysisResult.fishbone.machine} icon={<Printer size={18} />} color="text-amber-300" bg="bg-amber-900/20" border="border-amber-700/30" />
-                    <FishboneCard title="Vật liệu (Material)" items={analysisResult.fishbone.material} icon={<Filter size={18} />} color="text-purple-300" bg="bg-purple-900/20" border="border-purple-700/30" />
-                    <FishboneCard title="Môi trường (Environment)" items={analysisResult.fishbone.environment} icon={<LayoutGrid size={18} />} color="text-pink-300" bg="bg-pink-900/20" border="border-pink-700/30" />
-                  </div>
-                )}
-
-                {activeAnalysisTab === '5WHYS' && (
-                  <div className="max-w-3xl mx-auto space-y-0 relative">
-                    {/* Timeline Line */}
-                    <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-indigo-700/50 z-0"></div>
-
-                    {analysisResult.fiveWhys.map((step: any, idx: number) => (
-                      <div key={idx} className="relative z-10 flex gap-6 pb-6 last:pb-0">
-                        <div className="w-12 h-12 rounded-full bg-indigo-900 border-2 border-indigo-500 flex items-center justify-center font-bold text-white shrink-0 shadow-lg shadow-indigo-900/50">
-                          {idx + 1}
-                        </div>
-                        <div className="flex-1 bg-indigo-800/30 border border-indigo-700/30 rounded-xl p-4 hover:bg-indigo-800/50 transition-colors">
-                          <p className="text-indigo-300 text-xs uppercase font-bold tracking-widest mb-1">Q: {step.q}</p>
-                          <p className="text-white font-medium">A: {step.a}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Conclusion */}
-                <div className="mt-8 pt-6 border-t border-indigo-700/50">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                      <Target size={20} className="text-red-400" /> Kết luận & Đề xuất
-                    </h3>
-                    {(() => {
-                      const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
-                      const uDept = user?.department?.trim().toLowerCase() || '';
-                      const iDept1 = (item.khoa_phong || '').trim().toLowerCase();
-                      const iDept2 = (item.don_vi_bao_cao || '').trim().toLowerCase();
-                      const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
-
-                      return item.trang_thai !== 'Đã kết luận' && canUpdate('INCIDENTS', 'ANALYSIS') && isOwnUnit && (
-                        <button
-                          onClick={() => onStatusUpdate('Đã kết luận')}
-                          className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105"
-                        >
-                          <CheckCircle2 size={18} /> Xác nhận hoàn thành & Kết luận
-                        </button>
-                      );
-                    })()}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-red-900/20 border border-red-700/30 p-5 rounded-xl">
-                      <h4 className="text-red-300 font-bold text-sm uppercase mb-2">Nguyên nhân gốc rễ (Root Cause)</h4>
-                      <p className="text-white">{analysisResult.rootCause}</p>
-                    </div>
-                    <div className="bg-green-900/20 border border-green-700/30 p-5 rounded-xl">
-                      <h4 className="text-green-300 font-bold text-sm uppercase mb-2">Giải pháp đề xuất</h4>
-                      <ul className="list-disc list-inside space-y-1 text-white text-sm">
-                        {analysisResult.solutions.map((sol: string, i: number) => (
-                          <li key={i}>{sol}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
     </>
   );
 };
 
-const FishboneCard = ({ title, items, icon, color, bg, border }: any) => (
-  <div className={`${bg} border ${border} p-4 rounded-xl`}>
-    <h4 className={`${color} font-bold text-sm uppercase mb-3 flex items-center gap-2`}>
-      {icon} {title}
-    </h4>
-    <ul className="space-y-2">
-      {items.map((item: string, idx: number) => (
-        <li key={idx} className="text-slate-300 text-sm flex items-start gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${color.replace('text', 'bg')}`}></span>
-          {item}
-        </li>
-      ))}
-    </ul>
-  </div>
-);
 
 // --- Component: Incident Form (Keep existing logic but wrap in same file) ---
 interface IncidentFormProps {

@@ -272,3 +272,22 @@ export interface DrugMonitoring {
   hinh_anh?: string[];
   [key: string]: any;
 }
+
+export interface AiConfig {
+  id: string;
+  created_at: string;
+  provider: string;
+  model_name: string;
+  api_key: string;
+  is_active: boolean;
+  description?: string;
+}
+
+export interface PromptConfig {
+  id: string;
+  created_at: string;
+  module_key: string;
+  prompt_name: string;
+  prompt_text: string;
+  is_active: boolean;
+}

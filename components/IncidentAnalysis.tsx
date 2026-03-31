@@ -13,7 +13,8 @@ import {
 } from '../readTimHieuPhanTichScyk';
 import { fetchBaoCaoScyk, BaoCaoScyk } from '../readBaoCaoScyk';
 import { useAuth } from '../contexts/AuthContext';
-import { analyzeWithGemini } from '../geminiClient';
+import { analyzeWithAi } from '../aiClient';
+import { fetchBienBanXacMinhByScykId, BienBanXacMinh } from '../readBienBanXacMinh';
 
 export interface AnalysisRecord {
     id?: string;
@@ -110,6 +111,13 @@ const IncidentAnalysis: React.FC = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [aiResult, setAiResult] = useState<string | null>(null);
     const [showAiModal, setShowAiModal] = useState(false);
+    const [aiRole, setAiRole] = useState<'SPECIALIST' | 'MANAGEMENT' | null>(null);
+    const [currentVerification, setCurrentVerification] = useState<BienBanXacMinh | null>(null);
+
+    // New Dashboard states
+    const [showDashboard, setShowDashboard] = useState(false);
+    const [activeAnalysisTab, setActiveAnalysisTab] = useState<'ishikawa' | 'whys'>('ishikawa');
+    const [structuredData, setStructuredData] = useState<any>(null);
 
     const initialForm: AnalysisRecord = {
         scyk_id: '',
@@ -214,6 +222,38 @@ const IncidentAnalysis: React.FC = () => {
         return matchesSearch && matchesUnit;
     });
 
+    const handleIncidentSelect = async (scyk_id: string) => {
+        setFormData(prev => ({ ...prev, scyk_id }));
+        if (!scyk_id) {
+            setCurrentVerification(null);
+            return;
+        }
+
+        const incident = incidents.find(inc => inc.id === scyk_id);
+        setLoading(true);
+        try {
+            const verification = await fetchBienBanXacMinhByScykId(scyk_id);
+            setCurrentVerification(verification);
+
+            // Populate initial fields from report and verification
+            let description = `1. Báo cáo ban đầu: ${incident?.mo_ta_su_co || 'N/A'}`;
+            if (verification) {
+                description += `\n\n2. Kết quả xác minh: ${verification.ket_qua_xac_minh || 'N/A'}`;
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                i_mo_ta_chi_tiet: description,
+                iii_dieu_tri_da_thuc_hien: incident?.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '',
+                a_danh_cho_nv_chuyen_trach: incident?.ho_ten_nguoi_bc || user?.full_name || ''
+            }));
+        } catch (err) {
+            console.error('Error fetching verification:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const toggleSelection = (field: keyof AnalysisRecord, value: string) => {
         const current = formData[field] || '';
         const items = current.split('\n').filter(i => i.trim() !== '');
@@ -224,7 +264,7 @@ const IncidentAnalysis: React.FC = () => {
         }
     };
 
-    const handleAiAnalysis = async () => {
+    const handleAiAnalysis = async (role: 'SPECIALIST' | 'MANAGEMENT') => {
         if (!formData.scyk_id) {
             alert('Vui lòng chọn sự cố y khoa để phân tích');
             return;
@@ -234,38 +274,91 @@ const IncidentAnalysis: React.FC = () => {
         if (!incident) return;
 
         setIsAnalyzing(true);
+        setAiRole(role);
         try {
-            const prompt = `Đóng vai: Bạn là một chuyên gia Quản lý Chất lượng Bệnh viện, An toàn Người bệnh và Quản lý Rủi ro Y khoa với nhiều năm kinh nghiệm thực hiện Phân tích Nguyên nhân Gốc rễ (RCA).
+            const prompt = `LỆNH: Phân tích RCA Hệ thống cho [${incident.so_bc_ma_scyk}].
+DỮ LIỆU: ${incident.mo_ta_su_co}. ${currentVerification?.ket_qua_xac_minh || ''}.
+QUY TẮC BẮT BUỘC:
+1. KHÔNG đổ lỗi cá nhân (thiếu chú ý, cẩu thả).
+2. 5-WHYS LOGIC: Mỗi WHY sau phải là nguyên nhân trực tiếp của WHY trước (W1 -> W2 -> W3 -> W4 -> W5).
+3. ĐÀO SÂU: Phải tìm ra lỗ hổng trong QUY TRÌNH / GIÁM SÁT / ĐÀO TẠO.
+VÍ DỤ CHUẨN: W1: Không tuân thủ -> W2: Thiếu checklist -> W3: Chưa chuẩn hóa quy trình -> W4: Thiếu giám sát/audit định kỳ.
+YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, environment, whys, root, solution, incidentTypes, causeGroups).`;
 
-Nhiệm vụ: Hãy giúp tôi phân tích sự cố y khoa dưới đây bằng phương pháp RCA. Vui lòng áp dụng mô hình "Biểu đồ xương cá (Ishikawa)" để phân loại các yếu tố góp phần và kỹ thuật "5 Whys" để đào sâu tìm ra nguyên nhân gốc rễ thực sự, không chỉ dừng lại ở lỗi cá nhân mà tập trung vào lỗi hệ thống.
-
-Thông tin sự cố y khoa:
-- Mã sự cố: ${incident.so_bc_ma_scyk || 'N/A'}
-- Đơn vị báo cáo: ${incident.don_vi_bao_cao || incident.khoa_phong || 'N/A'}
-- Đối tượng: ${incident.doi_tuong_xay_ra_sc || 'N/A'}
-- Mô tả ngắn gọn sự việc: ${incident.mo_ta_su_co || 'N/A'}
-- Hậu quả đối với người bệnh: ${incident.phan_loai_ban_dau || 'N/A'}
-- Nhân sự liên quan: ${incident.ho_ten_nguoi_bc || 'N/A'}
-- Ngày xảy ra: ${incident.ngay_xay_ra_sc || 'N/A'}
-
-Định dạng kết quả đầu ra yêu cầu:
-Dựa trên thông tin trên, hãy lập một báo cáo phân tích RCA bao gồm các phần sau:
-
-1. Tóm tắt sự cố (Problem Statement): Phát biểu ngắn gọn, rõ ràng về vấn đề cốt lõi.
-
-2. Phân tích yếu tố góp phần (Dựa trên mô hình Ishikawa): Phân tích chi tiết theo các nhóm yếu tố:
-- Con người (Nhân viên y tế, người bệnh).
-- Hệ thống / Quy trình / Chính sách (Quy trình chuẩn kỹ thuật, giao tiếp, bàn giao ca).
-- Trang thiết bị / Vật tư (Máy móc, thuốc men, hồ sơ bệnh án).
-- Môi trường (Tiếng ồn, ánh sáng, khối lượng công việc, áp lực thời gian).
-
-3. Truy tìm nguyên nhân gốc rễ (Phân tích 5 Whys): Chọn ra 1-2 vấn đề then chốt nhất từ phần trên và thực hiện chuỗi 5 câu hỏi "Tại sao?" để tìm ra lỗ hổng cuối cùng của hệ thống.
-
-4. Đề xuất Kế hoạch Hành động Khắc phục & Phòng ngừa (CAPA): Đề xuất các giải pháp cụ thể, mang tính khả thi cao để ngăn chặn sự cố lặp lại. Phân chia rõ ràng thành: Hành động tức thời và Hành động dài hạn (cải tiến quy trình, đào tạo, nâng cấp thiết bị).`;
-
-            const result = await analyzeWithGemini(prompt);
+            const result = await analyzeWithAi(prompt, { 
+                moduleKey: role === 'SPECIALIST' ? 'RCA_SPECIALIST' : 'RCA_MANAGEMENT' 
+            });
+            
+            console.log('AI Result Raw:', result);
             setAiResult(result);
-            setShowAiModal(true);
+            
+            let data: any = null;
+            
+            // Helper to ensure we don't pass objects to React children
+            const ensureString = (val: any): string => {
+                if (!val) return '';
+                if (typeof val === 'string') return val;
+                if (typeof val === 'object') {
+                    // Try to find a logical string property
+                    return val.description || val.content || val.text || JSON.stringify(val);
+                }
+                return String(val);
+            };
+
+            // Attempt JSON parsing
+            try {
+                const cleanJson = result.replace(/```json/g, '').replace(/```/g, '').trim();
+                const json = JSON.parse(cleanJson);
+                data = {
+                    ishikawa: {
+                        man: ensureString(json.man),
+                        method: ensureString(json.method),
+                        machine: ensureString(json.machine),
+                        management: ensureString(json.management),
+                        environment: ensureString(json.environment),
+                    },
+                    whys: Array.isArray(json.whys) ? json.whys.map((w: any) => ensureString(w)) : [],
+                    rootCause: ensureString(json.root),
+                    solution: ensureString(json.solution),
+                    incidentTypes: Array.isArray(json.incidentTypes) ? json.incidentTypes.map((t: any) => ensureString(t)).join(', ') : ensureString(json.incidentTypes),
+                    causeGroups: Array.isArray(json.causeGroups) ? json.causeGroups.map((c: any) => ensureString(c)).join(', ') : ensureString(json.causeGroups)
+                };
+            } catch (jsonErr) {
+                console.warn('JSON Parse failed, falling back to Regex:', jsonErr);
+                const parse = (tag: string) => {
+                    const regex = new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, 'i');
+                    const match = result.match(regex);
+                    if (match && match[1].trim()) return match[1].trim();
+
+                    const fallbackRegex = new RegExp(`<${tag}>:?\\s*([\\s\\S]*?)(?=<|$)`, 'i');
+                    const fallbackMatch = result.match(fallbackRegex);
+                    return (fallbackMatch?.[1] || '').trim();
+                };
+
+                data = {
+                    ishikawa: {
+                        man: parse('MAN'),
+                        method: parse('METHOD'),
+                        machine: parse('MACHINE'),
+                        management: parse('MANAGEMENT'),
+                        environment: parse('ENVIRONMENT'),
+                    },
+                    whys: parse('WHYS').split(/W\d:/i).filter(l => l.trim() !== '').map(l => l.trim()),
+                    rootCause: parse('ROOT'),
+                    solution: parse('SOLUTION'),
+                    incidentTypes: parse('TYPES'),
+                    causeGroups: parse('CAUSES')
+                };
+            }
+
+            setStructuredData(data);
+            setShowDashboard(true);
+            // Scroll to dashboard
+            setTimeout(() => {
+                const el = document.getElementById('ai-dashboard');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
         } catch (error: any) {
             alert('Lỗi khi phân tích AI: ' + error.message);
         } finally {
@@ -273,35 +366,52 @@ Dựa trên thông tin trên, hãy lập một báo cáo phân tích RCA bao g�
         }
     };
 
-    const applyAiToForm = () => {
-        if (!aiResult) return;
+    const applyDashboardToForm = () => {
+        if (!structuredData || !aiRole) return;
 
-        // Simple parsing logic: trying to extract sections based on numbers/keywords
-        const sections = aiResult.split('\n\n');
-        
-        let problemStatement = "";
-        let ishikawa = "";
-        let fiveWhys = "";
-        let capa = "";
+        if (aiRole === 'SPECIALIST') {
+            // Map checkboxes for Incident Type
+            const incidentTypeStr = structuredData.incidentTypes || '';
+            const selectedTypes: string[] = [];
+            INCIDENT_TYPES.forEach(cat => {
+                cat.options.forEach(opt => {
+                    if (incidentTypeStr.toLowerCase().includes(opt.toLowerCase())) {
+                        selectedTypes.push(opt);
+                    }
+                });
+            });
 
-        sections.forEach(s => {
-            const lower = s.toLowerCase();
-            if (lower.includes("tóm tắt sự cố") || s.startsWith("1.")) problemStatement = s;
-            else if (lower.includes("ishikawa") || s.startsWith("2.")) ishikawa = s;
-            else if (lower.includes("5 whys") || s.startsWith("3.")) fiveWhys = s;
-            else if (lower.includes("capa") || s.startsWith("4.")) capa = s;
-        });
+            // Map checkboxes for Root Causes
+            const rootCauseStr = structuredData.causeGroups || '';
+            const selectedCauses: string[] = [];
+            ROOT_CAUSE_GROUPS.forEach(cat => {
+                cat.options.forEach(opt => {
+                    if (rootCauseStr.toLowerCase().includes(opt.toLowerCase())) {
+                        selectedCauses.push(opt);
+                    }
+                });
+            });
 
-        // Set form data
-        setFormData({
-            ...formData,
-            i_mo_ta_chi_tiet: `${problemStatement}\n\n${ishikawa}`.trim(),
-            iiii_phan_loai_theo_nhom_nguyen_nhan: fiveWhys.trim(),
-            iiiii_han_dong_khac_phuc: "Hành động tức thời:\n" + capa.split('\n').filter(l => l.toLowerCase().includes('tức thời')).join('\n'),
-            iiiiii_de_xuat_khuyen_cao: "Hành động dài hạn:\n" + capa.split('\n').filter(l => l.toLowerCase().includes('dài hạn') || l.toLowerCase().includes('cải tiến')).join('\n')
-        });
+            const ishikawaText = `PHÂN TÍCH XƯƠNG CÁ:\n- Con người (Đào tạo): ${structuredData.ishikawa.man}\n- Quy trình (Method): ${structuredData.ishikawa.method}\n- Thiết bị (Machine): ${structuredData.ishikawa.machine}\n- Môi trường: ${structuredData.ishikawa.environment}\n- Quản lý (Management): ${structuredData.ishikawa.management}`;
 
-        setShowAiModal(false);
+            setFormData(prev => ({
+                ...prev,
+                i_mo_ta_chi_tiet: `${prev.i_mo_ta_chi_tiet}\n\n${ishikawaText}`,
+                ii_phan_loai_theo_nhom: selectedTypes.join('\n'),
+                iiii_phan_loai_theo_nhom_nguyen_nhan: `NGUYÊN NHÂN GỐC TƯ DUY HỆ THỐNG: ${structuredData.rootCause}\n\n5 WHYS (Câu hỏi -> Trả lời):\n${structuredData.whys.join('\n')}\n\n${selectedCauses.join('\n')}`,
+                iiiii_han_dong_khac_phuc: structuredData.solution,
+                iiiiii_de_xuat_khuyen_cao: "Khuyến nghị quản lý hệ thống:\n" + structuredData.solution
+            }));
+        } else {
+            // Section B Mapping handled similarly
+            setMgmtData(prev => ({
+                ...prev,
+                findings: structuredData.rootCause || structuredData.ishikawa.man,
+                severityPatient: structuredData.rootCause?.includes('NC2') ? 'E' : (structuredData.rootCause?.includes('NC3') ? 'G' : 'C'),
+            }));
+        }
+
+        setShowDashboard(false);
     };
 
     if (viewMode === 'FORM') {
@@ -341,7 +451,7 @@ Dựa trên thông tin trên, hãy lập một báo cáo phân tích RCA bao g�
                             <div className="flex gap-2">
                                 <select
                                     value={formData.scyk_id}
-                                    onChange={e => setFormData({ ...formData, scyk_id: e.target.value })}
+                                    onChange={e => handleIncidentSelect(e.target.value)}
                                     className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[14pt] font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 >
                                     <option value="">-- Chọn trong danh sách sự cố --</option>
@@ -360,46 +470,126 @@ Dựa trên thông tin trên, hãy lập một báo cáo phân tích RCA bao g�
                                     ))}
                                 </select>
                                 <button
-                                    onClick={handleAiAnalysis}
+                                    onClick={() => handleAiAnalysis('SPECIALIST')}
                                     disabled={!formData.scyk_id || isAnalyzing}
-                                    className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-95 disabled:opacity-50"
+                                    className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 shadow-lg shadow-primary-200 hover:shadow-primary-300 transition-all active:scale-95 disabled:opacity-50"
                                 >
-                                    {isAnalyzing ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                                    {isAnalyzing ? 'Đang phân tích...' : 'Phân tích với AI'}
+                                    {isAnalyzing && aiRole === 'SPECIALIST' ? <Loader2 size={18} className="animate-spin" /> : <BrainCircuit size={18} />}
+                                    {isAnalyzing && aiRole === 'SPECIALIST' ? 'Đang phân tích...' : 'AI Phân tích RCA (Phần A)'}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* AI Result Modal */}
-                    {showAiModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
-                                            <Sparkles size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-black text-slate-800 uppercase tracking-tight">Kết quả phân tích từ AI RCA Expert</h3>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sử dụng mô hình Ishikawa & 5 Whys</p>
-                                        </div>
+                    {/* AI Result Dashboard */}
+                    {showDashboard && structuredData && (
+                        <div id="ai-dashboard" className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-top-4 duration-500 max-w-5xl mx-auto border border-slate-700">
+                            <div className="p-6 bg-gradient-to-r from-slate-900 to-indigo-950 border-b border-slate-800 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/30">
+                                        <BrainCircuit size={28} />
                                     </div>
-                                    <button onClick={() => setShowAiModal(false)} className="p-2 hover:bg-white rounded-full transition-colors text-slate-400"><X size={20} /></button>
-                                </div>
-                                <div className="flex-1 p-8 overflow-y-auto bg-white prose prose-slate max-w-none">
-                                    <div className="whitespace-pre-wrap font-medium text-slate-700 leading-relaxed text-sm md:text-base">
-                                        {aiResult}
+                                    <div>
+                                        <h3 className="text-xl font-black text-white tracking-tight uppercase">Phân tích Nguyên nhân Gốc rễ (AI RCA)</h3>
+                                        <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest">Sử dụng trí tuệ nhân tạo để phân tích biểu đồ xương cá & 5 Whys</p>
                                     </div>
                                 </div>
-                                <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-                                    <button onClick={() => setShowAiModal(false)} className="px-6 py-3 text-slate-500 font-bold text-sm hover:bg-white rounded-xl transition-all">Đóng</button>
-                                    <button 
-                                        onClick={applyAiToForm}
-                                        className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-indigo-900/10 active:scale-95 transition-all"
-                                    >
-                                        <CheckCircle2 size={18} /> Áp dụng nội dung này vào Form
-                                    </button>
+                                <button onClick={() => setShowDashboard(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400"><X size={20} /></button>
+                            </div>
+
+                            {/* Tabs Header */}
+                            <div className="flex border-b border-slate-800 bg-slate-900/50">
+                                <button
+                                    onClick={() => setActiveAnalysisTab('ishikawa')}
+                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeAnalysisTab === 'ishikawa' ? 'text-white border-b-2 border-indigo-500 bg-indigo-500/10' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    Biểu đồ xương cá (Ishikawa)
+                                </button>
+                                <button
+                                    onClick={() => setActiveAnalysisTab('whys')}
+                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeAnalysisTab === 'whys' ? 'text-white border-b-2 border-indigo-500 bg-indigo-500/10' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    Phân tích 5 Whys
+                                </button>
+                            </div>
+
+                            <div className="p-8 space-y-8">
+                                {/* Error/Raw Result Alert if all fields are empty */}
+                                {(!structuredData.rootCause && !structuredData.ishikawa.man && aiResult) && (
+                                    <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl flex items-start gap-3">
+                                        <AlertTriangle className="text-rose-500 shrink-0" size={20} />
+                                        <div className="space-y-1">
+                                            <p className="text-rose-400 text-xs font-black uppercase">Phân tích gặp lỗi định dạng hoặc lỗi API</p>
+                                            <p className="text-slate-300 text-sm">{aiResult}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeAnalysisTab === 'ishikawa' ? (
+                                    /* Ishikawa Fishbone Boxes */
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {[
+                                            { label: 'CON NGƯỜI (MAN)', icon: <User size={16} />, color: 'blue', content: structuredData.ishikawa.man },
+                                            { label: 'QUY TRÌNH (METHOD)', icon: <ClipboardList size={16} />, color: 'emerald', content: structuredData.ishikawa.method },
+                                            { label: 'THIẾT BỊ (MACHINE)', icon: <Printer size={16} />, color: 'amber', content: structuredData.ishikawa.machine },
+                                            { label: 'QUẢN LÝ (MANAGEMENT)', icon: <ShieldCheck size={16} />, color: 'purple', content: structuredData.ishikawa.management },
+                                            { label: 'MÔI TRƯỜNG (ENVIRONMENT)', icon: <LayoutGrid size={16} />, color: 'rose', content: structuredData.ishikawa.environment },
+                                        ].map((box) => (
+                                            <div key={box.label} className={`p-5 rounded-2xl bg-${box.color}-500/5 border border-${box.color}-500/20 space-y-3`}>
+                                                <div className={`flex items-center gap-2 text-${box.color}-400 font-black text-[10px] uppercase tracking-wider`}>
+                                                    {box.icon} {box.label}
+                                                </div>
+                                                <div className="text-slate-300 text-sm font-medium leading-relaxed">
+                                                    {box.content || 'Không có dữ liệu'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    /* 5 Whys Chain */
+                                    <div className="space-y-4">
+                                        {structuredData.whys.map((step: string, i: number) => (
+                                            <div key={i} className="flex gap-4 group">
+                                                <div className="flex flex-col items-center">
+                                                    <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-xs">
+                                                        {i + 1}
+                                                    </div>
+                                                    {i < structuredData.whys.length - 1 && <div className="w-0.5 h-full bg-slate-800" />}
+                                                </div>
+                                                <div className="pb-6">
+                                                   <p className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-[0.2em]">SỰ CỐ TẠI SAO ({i + 1})</p>
+                                                   <p className="text-white text-lg font-bold group-hover:text-indigo-400 transition-colors uppercase leading-snug">{step}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="h-px bg-slate-800 mx-auto" />
+
+                                {/* Summary Section */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-widest">
+                                            <AlertCircle size={18} /> Kết luận & Đề xuất
+                                        </div>
+                                        <div className="bg-rose-500/5 border border-rose-500/20 p-6 rounded-2xl space-y-3">
+                                            <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest">NGUYÊN NHÂN GỐC RỄ (ROOT CAUSE)</p>
+                                            <p className="text-white text-base font-bold italic leading-relaxed">{structuredData.rootCause}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-2xl space-y-3">
+                                            <p className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">GIẢI PHÁP ĐỀ XUẤT</p>
+                                            <p className="text-white text-sm font-medium leading-relaxed">{structuredData.solution}</p>
+                                        </div>
+                                        <button 
+                                            onClick={applyDashboardToForm}
+                                            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                        >
+                                            <CheckCircle2 size={20} /> Xác nhận hoàn thành & Kết luận
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -564,6 +754,15 @@ Dựa trên thông tin trên, hãy lập một báo cáo phân tích RCA bao g�
                             {/* I. Specialist Evaluation */}
                             <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 space-y-6">
                                 <h3 className="font-black text-amber-800 text-xs md:text-sm uppercase tracking-tight flex items-center gap-2"><ShieldCheck size={18} /> I. Đánh giá của trưởng nhóm chuyên gia</h3>
+                                
+                                <button
+                                    onClick={() => handleAiAnalysis('MANAGEMENT')}
+                                    disabled={!formData.scyk_id || isAnalyzing}
+                                    className="w-full mb-4 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-200 hover:shadow-amber-300 transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {isAnalyzing && aiRole === 'MANAGEMENT' ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                                    {isAnalyzing && aiRole === 'MANAGEMENT' ? 'AI Đánh giá Quản lý (Phần B)' : 'AI Đánh giá Quản lý (Phần B)'}
+                                </button>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-amber-900 block ml-1 uppercase opacity-60">Mô tả kết quả phát hiện được (không lặp lại các mô tả sự cố)</label>

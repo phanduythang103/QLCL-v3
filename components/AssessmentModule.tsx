@@ -6,7 +6,7 @@ import {
   MoreHorizontal, CheckCircle2, AlertCircle, Paperclip,
   UserPlus, FileText, Printer, Save, Eye, Edit2, Trash2, RefreshCw,
   LayoutGrid, ListFilter, XCircle, ChevronDown, ChevronUp, AlertTriangle,
-  Camera, Image as ImageIcon, Type, Minus, Plus as PlusIcon
+  Camera, Image as ImageIcon, Type, Minus
 } from 'lucide-react';
 import {
   fetchBoTieuChuan, BoTieuChuan, deleteBoTieuChuan,
@@ -931,7 +931,7 @@ const QualityAssessmentView = () => {
            <span className="text-xs font-bold text-slate-400 uppercase mr-2">Cỡ chữ:</span>
            <button onClick={() => setFontSize(f => Math.max(10, f - 1))} className="p-1.5 border rounded hover:bg-slate-50"><Minus size={14}/></button>
            <span className="text-xs font-bold w-6 text-center">{fontSize}</span>
-           <button onClick={() => setFontSize(f => Math.min(20, f + 1))} className="p-1.5 border rounded hover:bg-slate-50"><PlusIcon size={14}/></button>
+           <button onClick={() => setFontSize(f => Math.min(20, f + 1))} className="p-1.5 border rounded hover:bg-slate-50"><Plus size={14}/></button>
         </div>
       </div>
 
