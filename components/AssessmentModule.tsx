@@ -12,7 +12,7 @@ import {
   fetchBoTieuChuan, BoTieuChuan, deleteBoTieuChuan,
   fetchKetQuaDanhGia, KetQuaDanhGia
 } from '../readDanhGiaChatLuong';
-import { fetchData83, addData83Bulk, updateData83, deleteData83, Data83 } from '../readData83';
+import { fetchData83tc, Data83tc, addData83tcBulk } from '../readData83tc';
 import { fetchDonVi, saveKqDanhGia83Bulk, uploadEvidenceImage, KqDanhGia83, DonVi, fetchAssessmentSheets, fetchKqByPhieuId, deletePhieuDanhGia, AssessmentSheet } from '../readKqDanhGia83';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -95,7 +95,7 @@ export const AssessmentModule: React.FC = () => {
                 nhom: item.nhom || item.Nhom
               }));
 
-              await addData83Bulk(cleanedData);
+              await addData83tcBulk(cleanedData);
               alert("Đã nhập dữ liệu danh mục 83 tiêu chí thành công!");
               window.location.reload();
             }
@@ -185,9 +185,9 @@ export const AssessmentModule: React.FC = () => {
   );
 };
 
-// --- View 1: Bộ 83 Tiêu chí (Sử dụng trực tiếp bảng data83) ---
+// --- View 1: Bộ 83 Tiêu chí (Kết nối với bảng data83tc) ---
 const Criteria83Data83View = () => {
-  const [dataList, setDataList] = useState<Data83[]>([]);
+  const [dataList, setDataList] = useState<Data83tc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -197,14 +197,23 @@ const Criteria83Data83View = () => {
   const [filterChuong, setFilterChuong] = useState("");
   const [filterNhom, setFilterNhom] = useState("");
 
+  // Expansion States
+  const [expandedPhan, setExpandedPhan] = useState<Record<string, boolean>>({});
+  const [expandedChuong, setExpandedChuong] = useState<Record<string, boolean>>({});
+  const [expandedTieuChi, setExpandedTieuChi] = useState<Record<string, boolean>>({});
+
+  const togglePhan = (p: string) => setExpandedPhan(prev => ({ ...prev, [p]: !prev[p] }));
+  const toggleChuong = (c: string) => setExpandedChuong(prev => ({ ...prev, [c]: !prev[c] }));
+  const toggleTieuChi = (tc: string) => setExpandedTieuChi(prev => ({ ...prev, [tc]: !prev[tc] }));
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const items = await fetchData83();
+      const items = await fetchData83tc();
       setDataList(items);
     } catch (err: any) {
-      setError(err.message || 'Không thể tải dữ liệu từ bảng data83.');
+      setError(err.message || 'Không thể tải dữ liệu từ bảng data83tc.');
     } finally {
       setLoading(false);
     }
@@ -214,66 +223,44 @@ const Criteria83Data83View = () => {
     loadData();
   }, []);
 
-  // Filter Logic
   const filteredData = useMemo(() => {
     const list = dataList.filter(item => {
-      // 1. Search filter
       const matchesSearch = !searchTerm ||
         item.tieu_muc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.ma_tieu_muc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.tieu_chi?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      // 2. Phan filter
       const matchesPhan = !filterPhan || item.phan === filterPhan;
-
-      // 3. Chuong filter
       const matchesChuong = !filterChuong || item.chuong === filterChuong;
-
-      // 4. Nhom filter (Partial match requested: TMHC should match "TMHC, QLCL")
-      const matchesNhom = !filterNhom || (item.nhom && item.nhom.toLowerCase().includes(filterNhom.toLowerCase()));
-
+      const matchesNhom = !filterNhom || (item.phu_trach && item.phu_trach.includes(filterNhom));
       return matchesSearch && matchesPhan && matchesChuong && matchesNhom;
     });
-
-    // Natural sort by ma_tieu_muc
     return list.sort((a, b) => naturalSort(a.ma_tieu_muc || "", b.ma_tieu_muc || ""));
   }, [dataList, searchTerm, filterPhan, filterChuong, filterNhom]);
 
-  // Unique values for filters
-  const uniquePhan = useMemo(() => [...new Set(dataList.map(d => d.phan).filter(Boolean))], [dataList]);
+  // Hierarchical Grouping
+  const groupedList = useMemo(() => {
+    const hierarchy: any = {};
+    filteredData.forEach(item => {
+      const p = item.phan || "Khác";
+      const c = item.chuong || "Khác";
+      const tc = item.tieu_chi || "Khác";
+      if (!hierarchy[p]) hierarchy[p] = { chuongs: {} };
+      if (!hierarchy[p].chuongs[c]) hierarchy[p].chuongs[c] = { tieuChis: {} };
+      if (!hierarchy[p].chuongs[c].tieuChis[tc]) hierarchy[p].chuongs[c].tieuChis[tc] = [];
+      hierarchy[p].chuongs[c].tieuChis[tc].push(item);
+    });
+    return hierarchy;
+  }, [filteredData]);
 
-  // Dependent unique values for Chương
+  const uniquePhan = useMemo(() => [...new Set(dataList.map(d => d.phan).filter((p): p is string => !!p))].sort(naturalSort), [dataList]);
   const uniqueChuong = useMemo(() => {
-    const listForChuong = filterPhan
-      ? dataList.filter(d => d.phan === filterPhan)
-      : dataList;
-    return [...new Set(listForChuong.map(d => d.chuong).filter(Boolean))];
+    const listForChuong = filterPhan ? dataList.filter(d => d.phan === filterPhan) : dataList;
+    return [...new Set(listForChuong.map(d => d.chuong).filter((c): c is string => !!c))].sort(naturalSort);
   }, [dataList, filterPhan]);
-
-  // Reset filterChuong if it's not in the new uniqueChuong list when filterPhan changes
-  useEffect(() => {
-    if (filterChuong && !uniqueChuong.includes(filterChuong)) {
-      setFilterChuong("");
-    }
-  }, [filterPhan, uniqueChuong, filterChuong]);
-
-  // Unique Nhoms (Handling combined values like "TMHC, QLCL")
-  const uniqueNhom = useMemo(() => {
-    const rawNhoms = dataList.map(d => d.nhom).filter(Boolean) as string[];
-    const splitNhoms = rawNhoms.flatMap(n => n.split(',').map(s => s.trim()));
-    return [...new Set(splitNhoms)].sort();
+  const uniqueUnits = useMemo(() => {
+    const raw = dataList.flatMap(d => (d.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean));
+    return [...new Set(raw)].sort();
   }, [dataList]);
-
-  const handleDeleteItem = async (id: number) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa mục này không?")) {
-      try {
-        await deleteData83(id);
-        setDataList(prev => prev.filter(item => item.id !== id));
-      } catch (err) {
-        alert("Lỗi khi xóa dữ liệu.");
-      }
-    }
-  };
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -284,7 +271,6 @@ const Criteria83Data83View = () => {
 
   return (
     <div className="space-y-6">
-      {/* Filter Bar */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold">
           <LayoutGrid size={18} className="text-[#009900]" />
@@ -298,155 +284,133 @@ const Criteria83Data83View = () => {
             </button>
           )}
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Search */}
           <div className="space-y-1.5 font-bold">
-            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><Search size={12} />Tìm kiếm nhanh</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Nhập mã, tên tiểu mục..."
-                className="w-full pl-3 pr-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20"
-              />
-            </div>
+            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><Search size={12} />Tìm kiếm</label>
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Nhập mã, tên tiểu mục..." className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20" />
           </div>
-
-          {/* Filter Phần */}
           <div className="space-y-1.5 font-bold">
             <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><ListFilter size={12} />Lọc theo Phần</label>
-            <select
-              value={filterPhan}
-              onChange={(e) => setFilterPhan(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20 bg-white"
-            >
+            <select value={filterPhan} onChange={(e) => setFilterPhan(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black bg-white">
               <option value="">Tất cả các Phần</option>
               {uniquePhan.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
-
-          {/* Filter Chương */}
           <div className="space-y-1.5 font-bold">
             <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><ListFilter size={12} />Lọc theo Chương</label>
-            <select
-              value={filterChuong}
-              onChange={(e) => setFilterChuong(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20 bg-white"
-            >
+            <select value={filterChuong} onChange={(e) => setFilterChuong(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black bg-white">
               <option value="">Tất cả các Chương</option>
               {uniqueChuong.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-
-          {/* Filter Nhóm */}
           <div className="space-y-1.5 font-bold">
-            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><Filter size={12} />Lọc theo Nhóm</label>
-            <select
-              value={filterNhom}
-              onChange={(e) => setFilterNhom(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500/20 bg-white"
-            >
+            <label className="text-label text-black font-bold uppercase flex items-center gap-1.5"><Filter size={12} />Lọc theo Đơn vị phụ trách</label>
+            <select value={filterNhom} onChange={(e) => setFilterNhom(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black bg-white">
               <option value="">Tất cả các Nhóm</option>
-              {uniqueNhom.map(n => <option key={n} value={n}>{n}</option>)}
+              {uniqueUnits.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <FileSpreadsheet className="text-primary-600" size={20} />
-            <h3 className="text-section font-black text-black uppercase">Bộ 83 Tiêu chí CLBV</h3>
-          </div>
+      <div className="space-y-4">
+        {loading ? (
+          <div className="py-20 text-center text-slate-400 italic">Đang tải dữ liệu...</div>
+        ) : Object.keys(groupedList).length === 0 ? (
+          <div className="py-20 text-center text-slate-400 italic">Không tìm thấy dữ liệu phù hợp.</div>
+        ) : (
+          Object.keys(groupedList).sort(naturalSort).map(phan => (
+            <div key={phan} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm shadow-green-900/5">
+              <button 
+                onClick={() => togglePhan(phan)}
+                className={`w-full px-6 py-4 flex items-center justify-between font-black text-left uppercase text-sm tracking-wide transition-all ${expandedPhan[phan] ? 'bg-slate-50 text-[#009900]' : 'text-slate-700 hover:bg-slate-50'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`transition-transform duration-300 ${expandedPhan[phan] ? 'rotate-0' : '-rotate-90'}`}>
+                    <ChevronDown size={22} className={expandedPhan[phan] ? 'text-[#009900]' : 'text-slate-400'} />
+                  </div>
+                  <span className="leading-tight">{phan}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                   <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-lg border border-slate-200">
+                    {Object.keys(groupedList[phan].chuongs).length} Chương
+                   </span>
+                </div>
+              </button>
 
-          <div className="text-xs text-slate-500 font-medium">
-            Hiển thị <span className="text-primary-700 font-bold">{filteredData.length}</span> / {dataList.length} kết quả
-          </div>
-        </div>
+              {expandedPhan[phan] && (
+                <div className="p-4 pt-0 space-y-4 border-t border-slate-100 bg-slate-50/20">
+                  {Object.keys(groupedList[phan].chuongs).sort(naturalSort).map(chuong => (
+                    <div key={chuong} className="bg-white/40 rounded-xl overflow-hidden pt-2">
+                       <button 
+                        onClick={() => toggleChuong(chuong)}
+                        className={`w-full px-6 py-3 flex items-center justify-between font-bold text-left italic uppercase text-xs transition-colors ${expandedChuong[chuong] ? 'text-[#009900]' : 'text-slate-500 hover:text-slate-800'}`}
+                      >
+                        <div className="flex items-center gap-3 pl-4 border-l-2 border-[#009900]/20 ml-2">
+                           <ChevronDown size={18} className={`transition-transform ${expandedChuong[chuong] ? '' : '-rotate-90'}`} />
+                           <span>{chuong}</span>
+                        </div>
+                      </button>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-wider whitespace-nowrap hidden md:table-header-group h-12">
-              <tr>
-                <th className="px-4 py-4">Phần</th>
-                <th className="px-4 py-4">Chương</th>
-                <th className="px-4 py-4 min-w-[200px]">Tiêu chí</th>
-                <th className="px-4 py-4 text-center">Mức</th>
-                <th className="px-4 py-4">Mã TM</th>
-                <th className="px-4 py-4 min-w-[300px]">Nội dung tiểu mục</th>
-                <th className="px-4 py-4 text-center">Nhóm</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-400">Đang tải dữ liệu từ bảng data83...</td></tr>
-              ) : error ? (
-                <tr><td colSpan={8} className="px-6 py-12 text-center text-red-500 font-medium">Lỗi: {error}</td></tr>
-              ) : filteredData.length === 0 ? (
-                <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-400 italic">Không tìm thấy dữ liệu nào khớp với bộ lọc.</td></tr>
-              ) : filteredData.map((item, index) => (
-                <tr key={item.id || index} className="hover:bg-slate-50 transition-colors group flex flex-col md:table-row border-b md:border-b-0 border-slate-100 last:border-0 p-4 md:p-0">
-                  <td className="px-4 py-2 md:py-4 align-top text-table text-black/60 font-bold leading-relaxed max-w-full md:max-w-[120px] order-1 hidden md:table-cell italic">{item.phan}</td>
-                  <td className="px-4 py-2 md:py-4 align-top text-table text-black/50 leading-relaxed max-w-full md:max-w-[150px] order-2 hidden md:table-cell italic">{item.chuong}</td>
+                      {expandedChuong[chuong] && (
+                        <div className="px-6 pb-4 space-y-3 pl-14">
+                          {Object.keys(groupedList[phan].chuongs[chuong].tieuChis).sort(naturalSort).map(tc => (
+                            <div key={tc} className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md group">
+                               <button 
+                                onClick={() => toggleTieuChi(tc)}
+                                className={`w-full px-5 py-4 flex items-center justify-between font-black text-left text-[13px] uppercase tracking-tight transition-colors ${expandedTieuChi[tc] ? 'bg-green-50/50 text-[#009900]' : 'text-slate-700 hover:bg-green-50/30'}`}
+                              >
+                                <div className="flex items-center gap-4">
+                                   <div className={`transition-transform duration-200 ${expandedTieuChi[tc] ? '' : '-rotate-90'}`}>
+                                      <ChevronDown size={16} className={expandedTieuChi[tc] ? 'text-[#009900]' : 'text-slate-400'} />
+                                   </div>
+                                   <span className="leading-snug">{tc}</span>
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-400 bg-white px-2 py-1 rounded border border-slate-100 group-hover:border-[#009900]/20 transition-all">
+                                  {groupedList[phan].chuongs[chuong].tieuChis[tc].length} tiểu mục
+                                </span>
+                              </button>
 
-                  {/* Mobile Row 1: Tieu Chi + Muc */}
-                  <td className="px-4 py-2 md:py-4 align-top order-3 flex justify-between items-center md:table-cell">
-                    <span className="text-[#009900] font-black text-table">{item.tieu_chi}</span>
-                    <span className="md:hidden inline-block px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-[9px] font-bold border border-amber-200 uppercase">
-                      {item.muc}
-                    </span>
-                  </td>
-
-                  {/* Desktop Muc Column */}
-                  <td className="hidden md:table-cell px-4 py-4 text-center align-top">
-                    <span className="inline-block px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-[10px] font-bold border border-amber-200 uppercase">
-                      {item.muc}
-                    </span>
-                  </td>
-
-                  {/* Mobile Row 2: Ma TM + Content */}
-                  <td className="px-4 py-1 md:py-4 align-top order-4 border-t border-slate-50 md:border-t-0 md:table-cell" colSpan={2}>
-                    <div className="flex flex-col md:flex-none">
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        <span className="text-table font-mono text-black/70 font-black whitespace-nowrap">
-                          {item.ma_tieu_muc}
-                        </span>
-                        <span className="text-black font-bold leading-relaxed text-table">
-                          {item.tieu_muc}
-                        </span>
-                      </div>
+                              {expandedTieuChi[tc] && (
+                                <div className="p-4 border-t border-slate-100/50 bg-slate-50/10">
+                                   <table className="w-full text-xs text-left border-collapse">
+                                      <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                        <tr>
+                                          <th className="px-4 py-2 w-24">Mã TM</th>
+                                          <th className="px-4 py-2">Nội dung tiểu mục</th>
+                                          <th className="px-4 py-2 w-20 text-center">Mức</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-50">
+                                        {groupedList[phan].chuongs[chuong].tieuChis[tc].map((item: Data83tc, idx: number) => (
+                                          <tr key={item.id || idx} className="hover:bg-green-50/10 transition-colors group/row">
+                                            <td className="px-4 py-3 font-mono font-black text-[#009900] align-top">{item.ma_tieu_muc}</td>
+                                            <td className="px-4 py-3 font-bold text-slate-600 leading-relaxed max-w-[400px]">{item.tieu_muc}</td>
+                                            <td className="px-4 py-3 text-center align-top">
+                                               <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-black border border-amber-200 uppercase">{item.muc}</span>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                   </table>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </td>
-
-                  {/* Nhóm & Thao tác */}
-                  <td className="px-4 py-2 md:py-4 text-left md:text-center align-top font-bold text-slate-500 md:text-slate-600 text-[10px] md:text-xs order-7">
-                    <span className="md:hidden text-slate-400 font-normal mr-2">Nhóm:</span>{item.nhom}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="p-4 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <span>Tổng số: <span className="font-bold text-slate-700">{filteredData.length}</span> / {dataList.length} mục</span>
-            {filteredData.length < dataList.length && (
-              <span className="text-primary-600 font-bold underline cursor-pointer" onClick={clearFilters}>Bỏ lọc</span>
-            )}
-          </div>
-          <button onClick={loadData} className="flex items-center gap-1.5 text-primary-600 hover:text-primary-800 font-bold">
-            <RefreshCw size={14} /> Làm mới dữ liệu
-          </button>
-        </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
 };
+
 
 // --- View 2: Bộ Tiêu chuẩn Cơ bản ---
 const BasicStandardsView = () => {
@@ -650,221 +614,175 @@ const BasicStandardsView = () => {
 // --- View 3: Chấm điểm Tiêu chí CLBV ---
 const QualityAssessmentView = () => {
   const { user } = useAuth();
-  const { canCreate, canUpdate, canDelete } = usePermissions();
   const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
-  const uDept = user?.department || "";
+  const uDept = user?.department || ""; 
+  const uDeptCode = uDept.split('-')[0].trim(); // Extract 'aaa' from 'aaa - bbbb'
 
-  const [criteriaList, setCriteriaList] = useState<Data83[]>([]);
-  const [units, setUnits] = useState<DonVi[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  
-  // Mode: LIST or FORM
+  // State: List vs Create mode
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Creation/Form State
+  const [criteria, setCriteria] = useState<Data83tc[]>([]);
+  const [ngayDanhGia, setNgayDanhGia] = useState(new Date().toISOString().split('T')[0]);
+  const [nguoiDanhGia, setNguoiDanhGia] = useState(user?.full_name || "");
+  const [donViDuocDanhGia, setDonViDuocDanhGia] = useState(uDept);
+  const [results, setResults] = useState<Record<string, Partial<KqDanhGia83>>>({});
+  const [saving, setSaving] = useState(false);
+  const [fontSize, setFontSize] = useState(12);
+
   const [editingPhieuId, setEditingPhieuId] = useState<string | null>(null);
   const [viewingPhieuId, setViewingPhieuId] = useState<string | null>(null);
   const [viewingData, setViewingData] = useState<KqDanhGia83[]>([]);
 
-  // Assessment Form Header
-  const [ngayDanhGia, setNgayDanhGia] = useState(new Date().toISOString().split('T')[0]);
-  const [nguoiDanhGia, setNguoiDanhGia] = useState(user?.full_name || "");
-  const [donViDuocDanhGia, setDonViDuocDanhGia] = useState("");
-
-  // Filters
-  const [filterNhom, setFilterNhom] = useState<string[]>([]);
-  const [nhomDropdownOpen, setNhomDropdownOpen] = useState(false);
-  const nhomDropdownRef = React.useRef<HTMLDivElement>(null);
-
-  // Exanded Groups
-  const [expandedPhan, setExpandedPhan] = useState<string | null>(null);
+  // Expanded groups
   const [expandedChuong, setExpandedChuong] = useState<string | null>(null);
+  const [expandedPhan, setExpandedPhan] = useState<string | null>(null);
   const [expandedTieuChi, setExpandedTieuChi] = useState<string | null>(null);
 
-  // Appearance
-  const [fontSize, setFontSize] = useState(13);
+  // Grouping criteria for the form (Chương > Phần > Tiêu chí)
+  const groupedCriteria = useMemo(() => {
+    const hierarchy: any = {};
+    criteria.forEach(item => {
+      const chuong = item.chuong || "Khác";
+      const phan = item.phan || "Khác";
+      const tieuChi = item.tieu_chi || "Khác";
+      if (!hierarchy[chuong]) hierarchy[chuong] = {};
+      if (!hierarchy[chuong][phan]) hierarchy[chuong][phan] = {};
+      if (!hierarchy[chuong][phan][tieuChi]) hierarchy[chuong][phan][tieuChi] = [];
+      hierarchy[chuong][phan][tieuChi].push(item);
+    });
+    return hierarchy;
+  }, [criteria]);
 
-  // Results State: Record<ma_tieu_muc, ScoreData>
-  const [results, setResults] = useState<Record<string, {
-    dat: boolean,
-    khong_dat: boolean,
-    khong_danh_gia: boolean,
-    dat_muc: string,
-    ghi_chu: string,
-    hinh_anh_minh_chung: string[]
-  }>>({});
+  const naturalSort = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 
-  const loadSheetList = async () => {
+  const loadSheets = async () => {
+    setLoading(true);
     try {
-      const sheets = await fetchAssessmentSheets();
+      const data = await fetchAssessmentSheets();
       if (isAdmin) {
-        setSheetList(sheets);
+        setSheetList(data);
       } else {
-        const filtered = sheets.filter(s =>
-          s.don_vi_duoc_danh_gia?.toLowerCase().includes(uDept.toLowerCase()) ||
-          uDept.toLowerCase().includes(s.don_vi_duoc_danh_gia?.toLowerCase() || "") ||
-          s.nguoi_tao_id === user?.id
-        );
-        setSheetList(filtered);
+        // Filter by matching department code
+        setSheetList(data.filter(s => {
+          const sheetDeptCode = (s.don_vi_duoc_danh_gia || "").split('-')[0].trim();
+          return sheetDeptCode === uDeptCode;
+        }));
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCriteriaForAssessment = async (phieuIdToEdit?: string) => {
+    setLoading(true);
+    try {
+      const all = await fetchData83tc();
+      const filtered = isAdmin ? all : all.filter(c => {
+        if (!c.phu_trach) return false;
+        const assignmentCodes = c.phu_trach.split(',').map(s => s.trim()).filter(Boolean);
+        return assignmentCodes.includes(uDeptCode);
+      });
+      setCriteria(filtered);
+
+      if (phieuIdToEdit) {
+        const savedKq = await fetchKqByPhieuId(phieuIdToEdit);
+        const initialResults: any = {};
+        savedKq.forEach(r => {
+          initialResults[r.ma_tieu_muc] = r;
+        });
+        setResults(initialResults);
+      } else {
+        const initialResults: any = {};
+        filtered.forEach(c => {
+          initialResults[c.ma_tieu_muc!] = {
+            ma_tieu_muc: c.ma_tieu_muc!,
+            dat_muc: "Chưa đạt",
+            ghi_chu: "",
+            hinh_anh_minh_chung: []
+          };
+        });
+        setResults(initialResults);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      try {
-        const [data83, du] = await Promise.all([fetchData83(), fetchDonVi()]);
-        setCriteriaList(data83);
-        setUnits(du);
-        await loadSheetList();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
+    if (viewMode === 'LIST') loadSheets();
+    else if (!editingPhieuId) loadCriteriaForAssessment();
+  }, [viewMode]);
 
-  const uniqueNhom = useMemo(() => {
-    const rawNhoms = criteriaList.map(d => d.nhom).filter(Boolean) as string[];
-    const splitNhoms = rawNhoms.flatMap(n => n.split(',').map(s => s.trim()));
-    return [...new Set(splitNhoms)].sort();
-  }, [criteriaList]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (nhomDropdownRef.current && !nhomDropdownRef.current.contains(e.target as Node)) {
-        setNhomDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const toggleNhom = (nhom: string) => {
-    setFilterNhom(prev =>
-      prev.includes(nhom) ? prev.filter(n => n !== nhom) : [...prev, nhom]
-    );
-    // Reset expanded when filter changes
-    setExpandedPhan(null);
-    setExpandedChuong(null);
-    setExpandedTieuChi(null);
+  const handleAddNew = () => {
+    setEditingPhieuId(null);
+    setResults({});
+    setDonViDuocDanhGia(uDept);
+    setNguoiDanhGia(user?.full_name || "");
+    setViewMode('FORM');
   };
 
-  // Hierarchical Data Structure
-  const groupedData = useMemo(() => {
-    if (filterNhom.length === 0) return {};
+  const handleEditSheet = async (sheet: AssessmentSheet) => {
+    setEditingPhieuId(sheet.phieu_id);
+    setNgayDanhGia(sheet.ngay_danh_gia);
+    setNguoiDanhGia(sheet.nguoi_danh_gia);
+    setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
+    await loadCriteriaForAssessment(sheet.phieu_id);
+    setViewMode('FORM');
+  };
 
-    // 1. Filter by nhom (match any selected nhom)
-    const filtered = criteriaList.filter(item =>
-      item.nhom && filterNhom.some(fn => item.nhom!.split(',').map(s => s.trim()).includes(fn))
-    );
+  const handleViewSheet = async (sheet: AssessmentSheet) => {
+    setLoading(true);
+    try {
+      const data = await fetchKqByPhieuId(sheet.phieu_id);
+      setViewingData(data);
+      setViewingPhieuId(sheet.phieu_id);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // 2. Build Hierarchy
-    const hierarchy: any = {};
-    filtered.forEach(item => {
-      const p = item.phan || "Khác";
-      const c = item.chuong || "Khác";
-      const tc = item.tieu_chi || "Khác";
-
-      if (!hierarchy[p]) hierarchy[p] = {};
-      if (!hierarchy[p][c]) hierarchy[p][c] = {};
-      if (!hierarchy[p][c][tc]) hierarchy[p][c][tc] = [];
-
-      hierarchy[p][c][tc].push(item);
-    });
-
-    // 3. Sort ma_tieu_muc within each criterion
-    Object.keys(hierarchy).forEach(p => {
-      Object.keys(hierarchy[p]).forEach(c => {
-        Object.keys(hierarchy[p][c]).forEach(tc => {
-          hierarchy[p][c][tc].sort((a: Data83, b: Data83) => naturalSort(a.ma_tieu_muc || "", b.ma_tieu_muc || ""));
-        });
-      });
-    });
-
-    return hierarchy;
-  }, [criteriaList, filterNhom]);
-
-  const stats = useMemo(() => {
-    let chaptersCount = 0;
-    let criteriaCount = 0;
-    let subItemsCount = 0;
-
-    Object.keys(groupedData).forEach(p => {
-      chaptersCount += Object.keys(groupedData[p]).length;
-      Object.keys(groupedData[p]).forEach(c => {
-        criteriaCount += Object.keys(groupedData[p][c]).length;
-        Object.keys(groupedData[p][c]).forEach(tc => {
-          subItemsCount += groupedData[p][c][tc].length;
-        });
-      });
-    });
-
-    return { chaptersCount, criteriaCount, subItemsCount };
-  }, [groupedData]);
+  const handleDeleteSheet = async (phieuId: string) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa toàn bộ phiếu đánh giá này không?")) {
+      try {
+        await deletePhieuDanhGia(phieuId);
+        await loadSheets();
+        alert("Đã xóa thành công.");
+      } catch (err) {
+        alert("Lỗi khi xóa phiếu.");
+      }
+    }
+  };
 
   const handleScoreChange = (maTieuMuc: string, field: string, value: any) => {
-    setResults(prev => {
-      const current = prev[maTieuMuc] || {
-        dat: false,
-        khong_dat: false,
-        khong_danh_gia: false,
-        dat_muc: "",
-        ghi_chu: "",
-        hinh_anh_minh_chung: []
-      };
-      const updated = { ...current, [field]: value };
-
-      // Mutual exclusion for Dat/KhongDat/KhongDanhGia
-      if (field === 'dat' && value === true) {
-        updated.khong_dat = false;
-        updated.khong_danh_gia = false;
-      }
-      if (field === 'khong_dat' && value === true) {
-        updated.dat = false;
-        updated.khong_danh_gia = false;
-      }
-      if (field === 'khong_danh_gia' && value === true) {
-        updated.dat = false;
-        updated.khong_dat = false;
-      }
-
-      return { ...prev, [maTieuMuc]: updated };
-    });
+    setResults(prev => ({
+      ...prev,
+      [maTieuMuc]: { ...prev[maTieuMuc], [field]: value }
+    }));
   };
 
   const handleImageUpload = async (maTieuMuc: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
-    const file = files[0];
     try {
-      const publicUrl = await uploadEvidenceImage(file);
+      const publicUrl = await uploadEvidenceImage(files[0]);
       setResults(prev => {
-        const current = prev[maTieuMuc] || {
-          dat: false,
-          khong_dat: false,
-          khong_danh_gia: false,
-          dat_muc: "",
-          ghi_chu: "",
-          hinh_anh_minh_chung: []
-        };
+        const current = prev[maTieuMuc] || {};
+        const images = current.hinh_anh_minh_chung || [];
         return {
           ...prev,
-          [maTieuMuc]: {
-            ...current,
-            hinh_anh_minh_chung: [...current.hinh_anh_minh_chung, publicUrl]
-          }
+          [maTieuMuc]: { ...current, hinh_anh_minh_chung: [...images, publicUrl] }
         };
       });
     } catch (err) {
-      console.error("Upload error:", err);
       alert("Lỗi khi tải ảnh lên.");
     }
   };
@@ -877,200 +795,46 @@ const QualityAssessmentView = () => {
         ...prev,
         [maTieuMuc]: {
           ...current,
-          hinh_anh_minh_chung: current.hinh_anh_minh_chung.filter(url => url !== urlToRemove)
+          hinh_anh_minh_chung: (current.hinh_anh_minh_chung || []).filter(url => url !== urlToRemove)
         }
       };
     });
   };
 
-  const calculateLevel = (items: Data83[]) => {
-    let currentMaxLevel = 0;
-
-    // Group items by level (extracted from item.muc e.g. "Mức 1")
-    const itemsByLevel: Record<number, Data83[]> = {};
-    items.forEach(item => {
-      const levelMatch = item.muc?.match(/\d+/);
-      const levelNum = levelMatch ? parseInt(levelMatch[0]) : 0;
-      if (!itemsByLevel[levelNum]) itemsByLevel[levelNum] = [];
-      itemsByLevel[levelNum].push(item);
-    });
-
-    const sortedLevels = Object.keys(itemsByLevel).map(Number).sort((a, b) => a - b);
-
-    for (const level of sortedLevels) {
-      const levelItems = itemsByLevel[level];
-      const allPassedOrNotEval = levelItems.every(item => {
-        const res = results[item.ma_tieu_muc!] || { dat: false, khong_dat: false, khong_danh_gia: false };
-        return res.dat === true || res.khong_danh_gia === true;
-      });
-
-      const anyFailed = levelItems.some(item => {
-        const res = results[item.ma_tieu_muc!] || { dat: false, khong_dat: false, khong_danh_gia: false };
-        return res.khong_dat === true;
-      });
-
-      if (allPassedOrNotEval) {
-        currentMaxLevel = level;
-      } else if (anyFailed) {
-        // Stop here and keep the previous max level
-        break;
-      } else {
-        // Not all passed but none failed (maybe some are empty) - keep current or stop?
-        // Usually, need all to be chosen to proceed.
-        break;
-      }
-    }
-    return currentMaxLevel > 0 ? `Mức ${currentMaxLevel}` : "Bản điểm";
-  };
-
-  const isItemVisible = (items: Data83[], currentIndex: number) => {
-    // A criterion item is visible only if ALL previous items in the SAME criterion are NOT "Khong Dat"
-    for (let i = 0; i < currentIndex; i++) {
-      const prevResult = results[items[i].ma_tieu_muc!] || { khong_dat: false };
-      if (prevResult.khong_dat) return false;
-    }
-    return true;
-  };
-
-  const handleEditSheet = async (sheet: AssessmentSheet) => {
-    setLoading(true);
-    try {
-      const results = await fetchKqByPhieuId(sheet.phieu_id);
-      // Map results back to the form state
-      const initialResults: any = {};
-      results.forEach(r => {
-        initialResults[r.ma_tieu_muc] = {
-          dat: r.dat,
-          khong_dat: r.khong_dat,
-          khong_danh_gia: r.khong_danh_gia,
-          dat_muc: r.dat_muc,
-          ghi_chu: r.ghi_chu || "",
-          hinh_anh_minh_chung: r.hinh_anh_minh_chung || []
-        };
-      });
-      setResults(initialResults);
-      setEditingPhieuId(sheet.phieu_id);
-      setNgayDanhGia(sheet.ngay_danh_gia);
-      setNguoiDanhGia(sheet.nguoi_danh_gia);
-      setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
-      // Parse saved nhom string back to array
-      const savedNhom = sheet.nhom || "";
-      setFilterNhom(savedNhom ? savedNhom.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
-      setViewMode('FORM');
-    } catch (err) {
-      console.error(err);
-      alert("Không thể tải thông tin phiếu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewSheet = async (sheet: AssessmentSheet) => {
-    setLoading(true);
-    try {
-      const data = await fetchKqByPhieuId(sheet.phieu_id);
-      setViewingData(data);
-      setViewingPhieuId(sheet.phieu_id);
-    } catch (err) {
-      console.error(err);
-      alert("Không thể tải chi tiết phiếu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteSheet = async (phieuId: string) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa toàn bộ phiếu đánh giá này không?")) {
-      try {
-        await deletePhieuDanhGia(phieuId);
-        await loadSheetList();
-        alert("Đã xóa thành công.");
-      } catch (err) {
-        alert("Lỗi khi xóa phiếu.");
-      }
-    }
-  };
-
-  const handleAddNew = () => {
-    setEditingPhieuId(null);
-    setResults({});
-    setDonViDuocDanhGia("");
-    setNguoiDanhGia(user?.full_name || "");
-    setFilterNhom([]);
-    setViewMode('FORM');
-  };
-
   const handleSaveAssessment = async () => {
-    if (!nguoiDanhGia || !donViDuocDanhGia) {
-      alert("Vui lòng nhập đầy đủ thông tin: Người đánh giá và Đơn vị được đánh giá.");
-      return;
-    }
-    if (filterNhom.length === 0) {
-      alert("Vui lòng chọn ít nhất một nhóm phụ trách.");
-      return;
-    }
-
-    // Security check: non-admins can only save for their own unit
-    if (!isAdmin && donViDuocDanhGia.toLowerCase() !== uDept.toLowerCase() && !uDept.toLowerCase().includes(donViDuocDanhGia.toLowerCase()) && !donViDuocDanhGia.toLowerCase().includes(uDept.toLowerCase())) {
-        alert("Bạn không có quyền lưu kết quả cho đơn vị khác.");
-        return;
-    }
-
+    if (!donViDuocDanhGia) { alert("Vui lòng nhập đơn vị được đánh giá"); return; }
     setSaving(true);
     try {
-      const allPayload: KqDanhGia83[] = [];
-      const phieuId = editingPhieuId || crypto.randomUUID();
-
-      // Iterate through the grouped data structure to gather payload
-      Object.keys(groupedData).forEach(p => {
-        Object.keys(groupedData[p]).forEach(c => {
-          Object.keys(groupedData[p][c]).forEach(tc => {
-            const items = groupedData[p][c][tc];
-            const autoLevel = calculateLevel(items);
-
-            items.forEach((item: Data83) => {
-              const res = results[item.ma_tieu_muc!] || { dat: false, khong_dat: false, khong_danh_gia: false, dat_muc: "", ghi_chu: "", hinh_anh_minh_chung: [] };
-              allPayload.push({
-                phieu_id: phieuId,
-                nguoi_tao_id: user?.id,
-                ngay_danh_gia: ngayDanhGia,
-                nguoi_danh_gia: nguoiDanhGia,
-                don_vi_duoc_danh_gia: donViDuocDanhGia,
-                phan: item.phan,
-                chuong: item.chuong,
-                tieu_chi: item.tieu_chi, // Ensure tieu_chi is saved
-                ma_tieu_muc: item.ma_tieu_muc!,
-                tieu_muc: item.tieu_muc,
-                nhom: filterNhom.join(', '),
-                dat: res.dat,
-                khong_dat: res.khong_dat,
-                khong_danh_gia: res.khong_danh_gia,
-                dat_muc: autoLevel, // Save calculated level
-                ghi_chu: res.ghi_chu,
-                hinh_anh_minh_chung: res.hinh_anh_minh_chung
-              });
-            });
-          });
-        });
+      const phieuId = editingPhieuId || `P-83TC-${Date.now()}`;
+      const payload: KqDanhGia83[] = criteria.map(c => {
+        const res = results[c.ma_tieu_muc!] || {};
+        return {
+          phieu_id: phieuId,
+          ngay_danh_gia: ngayDanhGia,
+          nguoi_danh_gia: nguoiDanhGia,
+          don_vi_duoc_danh_gia: donViDuocDanhGia,
+          nguoi_tao_id: user?.id,
+          phan: c.phan || "",
+          chuong: c.chuong || "",
+          tieu_chi: c.tieu_chi || "",
+          ma_tieu_muc: c.ma_tieu_muc!,
+          tieu_muc: c.tieu_muc || "",
+          nhom: c.muc || "", 
+          dat_muc: res.dat_muc || "Chưa đạt",
+          dat: (res.dat_muc || "").includes("Mức") || res.dat_muc === "Đạt",
+          khong_dat: res.dat_muc === "Chưa đạt",
+          khong_danh_gia: false,
+          ghi_chu: res.ghi_chu || "",
+          hinh_anh_minh_chung: res.hinh_anh_minh_chung || []
+        };
       });
 
-      if (allPayload.length === 0) {
-        alert("Không có dữ liệu để lưu.");
-        setSaving(false);
-        return;
-      }
-
-      // Nếu đang sửa, ta xóa cũ đi trước khi thêm mới (với cùng batchId)
-      if (editingPhieuId) {
-        await deletePhieuDanhGia(editingPhieuId);
-      }
-
-      await saveKqDanhGia83Bulk(allPayload);
+      if (editingPhieuId) await deletePhieuDanhGia(editingPhieuId);
+      await saveKqDanhGia83Bulk(payload);
       alert("Đã lưu kết quả đánh giá thành công!");
-      await loadSheetList();
       setViewMode('LIST');
     } catch (err) {
-      alert("Lỗi khi lưu kết quả đánh giá.");
+      alert("Lỗi khi lưu kết quả.");
     } finally {
       setSaving(false);
     }
@@ -1081,145 +845,67 @@ const QualityAssessmentView = () => {
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div>
-            <h3 className="text-section font-black text-black uppercase">Danh sách Phiếu đánh giá 83 tiêu chí</h3>
-            <p className="text-table text-black/60 font-bold">Quản lý các đợt đánh giá đã thực hiện.</p>
+            <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2">
+              <FileText className="text-[#009900]" size={24} />
+              Danh sách Phiếu đánh giá 83 tiêu chí
+            </h3>
+            <p className="text-table text-black/60 font-medium">Lọc theo đơn vị: <span className="text-[#009900] font-bold">{uDept || 'Tất cả'}</span></p>
           </div>
-          {canCreate('ASSESSMENT') && (
-            <button
-              onClick={handleAddNew}
-              className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl hover:bg-primary-700 font-bold transition-all shadow-lg active:scale-95"
-            >
-              <Plus size={20} /> <span>Tạo phiếu mới</span>
-            </button>
-          )}
+          <button
+            onClick={handleAddNew}
+            className="flex items-center gap-2 bg-[#009900] text-white px-6 py-2.5 rounded-xl hover:bg-[#007700] font-bold transition-all shadow-lg active:scale-95"
+          >
+            <Plus size={20} /> <span>Tạo chấm điểm mới</span>
+          </button>
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden md:block bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
           <table className="w-full text-sm text-left">
-            <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest border-b border-slate-100 h-12">
+            <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest h-12">
               <tr>
                 <th className="px-6 py-4">Ngày đánh giá</th>
-                <th className="px-6 py-4">Đơn vị</th>
-                <th className="px-6 py-4 text-center">Tiến độ</th>
-                <th className="px-6 py-4 text-center">Người đánh giá</th>
+                <th className="px-6 py-4">Đơn vị / Người đánh giá</th>
+                <th className="px-6 py-4 text-center">Kết quả</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {sheetList.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center text-slate-400 italic">Chưa có phiếu đánh giá nào.</td>
-                </tr>
+              {loading ? (
+                <tr><td colSpan={4} className="px-6 py-20 text-center text-slate-400">Đang tải danh sách...</td></tr>
+              ) : sheetList.length === 0 ? (
+                <tr><td colSpan={4} className="px-6 py-20 text-center text-slate-400 italic">Chưa có dữ liệu cho đơn vị của bạn.</td></tr>
               ) : (
-                sheetList.map((sheet) => {
-                  const isOwner = user?.id === sheet.nguoi_tao_id || user?.full_name === sheet.nguoi_danh_gia;
-                  const canEditSheet = isAdmin || isOwner || canUpdate('ASSESSMENT');
-                  const canDeleteSheet = isAdmin || isOwner || canDelete('ASSESSMENT');
-
-                  return (
-                    <tr key={sheet.phieu_id} className="hover:bg-primary-50/30 transition-colors group">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-black text-black text-table">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1.5">
-                           <span className="font-black text-black text-table uppercase">{sheet.don_vi_duoc_danh_gia}</span>
-                          <div className="flex flex-wrap gap-1">
-                            {(sheet.nhom || '').split(',').map((n: string) => n.trim()).filter(Boolean).map((n: string) => (
-                              <span key={n} className="inline-block px-1.5 py-0.5 bg-primary-50 text-primary-700 border border-primary-200 rounded text-[9px] font-bold uppercase">{n}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-sm font-black text-primary-700">Mức TB: {sheet.score}</span>
-                          <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden border border-slate-200">
-                            <div
-                              className="bg-primary-500 h-full transition-all duration-500"
-                              style={{ width: `${(sheet.score / 5) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase">({sheet.passed_criteria}/{sheet.total_criteria} đạt TM)</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-xs font-bold text-slate-600">{sheet.nguoi_danh_gia}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-all border border-transparent hover:border-primary-100" title="Xem chi tiết">
-                            <Eye size={16} /> <span className="text-xs font-bold">Xem</span>
-                          </button>
-                          {canEditSheet && (
-                            <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-100" title="Sửa phiếu">
-                              <Edit2 size={16} /> <span className="text-xs font-bold">Sửa</span>
-                            </button>
-                          )}
-                          {canDeleteSheet && (
-                            <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-100" title="Xóa phiếu">
-                              <Trash2 size={16} /> <span className="text-xs font-bold">Xóa</span>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
+                sheetList.map((sheet) => (
+                  <tr key={sheet.phieu_id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-slate-700">
+                      {new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="font-black text-black text-table uppercase">{sheet.don_vi_duoc_danh_gia}</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase">{sheet.nguoi_danh_gia}</p>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-black text-[#009900]">Mức TB: {sheet.score}</span>
+                      <p className="text-[9px] text-slate-400 font-bold">({sheet.passed_criteria}/{sheet.total_criteria} đạt TM)</p>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleViewSheet(sheet)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"><Eye size={18} /></button>
+                        {(isAdmin || sheet.nguoi_tao_id === user?.id) && (
+                          <>
+                            <button onClick={() => handleEditSheet(sheet)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
+                            <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Mobile Cards */}
-        <div className="md:hidden space-y-4">
-          {sheetList.map((sheet) => {
-            const isOwner = user?.id === sheet.nguoi_tao_id || user?.full_name === sheet.nguoi_danh_gia;
-            const canEditSheet = isAdmin || isOwner || canUpdate('ASSESSMENT');
-            const canDeleteSheet = isAdmin || isOwner || canDelete('ASSESSMENT');
-
-            return (
-              <div key={sheet.phieu_id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-4">
-                <div className="flex justify-between items-start border-b border-slate-50 pb-3">
-                  <div>
-                    <p className="text-xs font-black text-primary-600 uppercase tracking-widest">{new Date(sheet.ngay_danh_gia).toLocaleDateString('vi-VN')}</p>
-                    <p className="text-base font-black text-slate-800">{sheet.don_vi_duoc_danh_gia}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Người đánh giá: {sheet.nguoi_danh_gia}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-black text-primary-700">Mức TB: {sheet.score}</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase">({sheet.passed_criteria}/{sheet.total_criteria} TM)</p>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center bg-slate-50 p-2 rounded-xl">
-                  <div className="flex flex-wrap gap-1">
-                    {(sheet.nhom || '').split(',').map((n: string) => n.trim()).filter(Boolean).map((n: string) => (
-                      <span key={n} className="inline-block px-1.5 py-0.5 bg-primary-50 text-primary-700 border border-primary-200 rounded text-[9px] font-bold uppercase">{n}</span>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleViewSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-primary-600 border border-slate-200 rounded-lg shadow-sm">
-                      <Eye size={14} /> <span className="text-[10px] font-bold">Xem</span>
-                    </button>
-                    {canEditSheet && (
-                      <button onClick={() => handleEditSheet(sheet)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-blue-600 border border-slate-200 rounded-lg shadow-sm">
-                        <Edit2 size={14} /> <span className="text-[10px] font-bold">Sửa</span>
-                      </button>
-                    )}
-                    {canDeleteSheet && (
-                      <button onClick={() => handleDeleteSheet(sheet.phieu_id)} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-red-500 border border-slate-200 rounded-lg shadow-sm">
-                        <Trash2 size={14} /> <span className="text-[10px] font-bold">Xóa</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Modal Xem chi tiết (trong LIST mode) */}
         {viewingPhieuId && (
           <ViewSheetDetailModal
             phieuId={viewingPhieuId}
@@ -1234,397 +920,181 @@ const QualityAssessmentView = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <button onClick={() => setViewMode('LIST')} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-2 px-3 hover:bg-slate-100 rounded-lg">
-          <XCircle size={18} /> <span>Quay lại danh sách</span>
-        </button>
-        <div className="h-4 w-px bg-slate-200"></div>
-        <p className="text-sm font-bold text-slate-800">
-          {editingPhieuId ? 'Sửa phiếu đánh giá' : 'Tạo phiếu đánh giá mới'}
-        </p>
-      </div>
-
-      {/* Assessment Info Card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-          <div className="p-2 bg-primary-50 rounded-lg text-primary-600">
-            <FileText size={20} />
-          </div>
-          <div>
-            <h3 className="text-section font-black text-black uppercase">Thông tin Phiếu đánh giá</h3>
-            <p className="text-table text-black/60 font-bold">Nhập thông tin chung trước khi tiến hành chấm điểm</p>
-          </div>
+      <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={() => setViewMode('LIST')} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors py-2 px-3 hover:bg-slate-100 rounded-lg">
+            <XCircle size={18} /> <span>Quay lại</span>
+          </button>
+          <h3 className="text-section font-black text-black uppercase">Phiếu chấm điểm 83 Tiêu chí</h3>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-1.5 font-bold">
-            <label className="text-label text-black font-bold uppercase">Ngày đánh giá</label>
-            <input
-              type="date"
-              value={ngayDanhGia}
-              onChange={(e) => setNgayDanhGia(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-input bg-white focus:ring-2 focus:ring-green-500/20 font-bold text-black"
-            />
-          </div>
-          <div className="space-y-1.5 font-bold">
-            <label className="text-label text-black font-bold uppercase">Người đánh giá</label>
-            <input
-              type="text"
-              placeholder="Nhập tên người đánh giá..."
-              value={nguoiDanhGia}
-              onChange={(e) => setNguoiDanhGia(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-input bg-white focus:ring-2 focus:ring-green-500/20 font-bold text-black"
-            />
-          </div>
-          <div className="space-y-1.5 font-bold">
-            <label className="text-label text-black font-bold uppercase">Đơn vị được đánh giá</label>
-            <select
-              value={donViDuocDanhGia}
-              onChange={(e) => setDonViDuocDanhGia(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-input bg-white focus:ring-2 focus:ring-green-500/20 font-bold text-black"
-            >
-              <option value="">-- Chọn đơn vị --</option>
-              {units
-                .filter(u => isAdmin || u.ten_don_vi.toLowerCase().includes(uDept.toLowerCase()) || uDept.toLowerCase().includes(u.ten_don_vi.toLowerCase()))
-                .map(u => (
-                  <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>
-                ))}
-            </select>
-          </div>
+        <div className="flex items-center gap-2">
+           <span className="text-xs font-bold text-slate-400 uppercase mr-2">Cỡ chữ:</span>
+           <button onClick={() => setFontSize(f => Math.max(10, f - 1))} className="p-1.5 border rounded hover:bg-slate-50"><Minus size={14}/></button>
+           <span className="text-xs font-bold w-6 text-center">{fontSize}</span>
+           <button onClick={() => setFontSize(f => Math.min(20, f + 1))} className="p-1.5 border rounded hover:bg-slate-50"><PlusIcon size={14}/></button>
         </div>
       </div>
 
-      {/* Criteria Filter & Hierarchical List */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-4 w-full md:w-auto font-bold">
-            <div className="flex items-center gap-2">
-              <Filter size={16} className="text-slate-400" />
-              <span className="text-sm text-slate-600">Nhóm phụ trách:</span>
-            </div>
-            {/* Multi-select Nhom Dropdown */}
-            <div className="relative flex-1 md:w-72" ref={nhomDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setNhomDropdownOpen(prev => !prev)}
-                className="w-full flex items-center justify-between px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white font-bold hover:border-primary-300 focus:ring-2 focus:ring-primary-500/20 transition-colors"
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase">Ngày đánh giá</label>
+          <input type="date" value={ngayDanhGia} onChange={e => setNgayDanhGia(e.target.value)} className="w-full px-3 py-2 border rounded-lg font-bold text-sm" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase">Người đánh giá</label>
+          <input type="text" value={nguoiDanhGia} onChange={e => setNguoiDanhGia(e.target.value)} className="w-full px-3 py-2 border rounded-lg font-bold text-sm" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase">Đơn vị được đánh giá</label>
+          <input type="text" value={donViDuocDanhGia} readOnly className="w-full px-3 py-2 border rounded-lg font-bold text-sm bg-slate-50" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {loading ? (
+          <div className="py-20 text-center text-slate-400 italic">Đang tải danh mục tiêu chí...</div>
+        ) : Object.keys(groupedCriteria).length === 0 ? (
+          <div className="py-20 text-center text-slate-400 italic">Đơn vị của bạn không có tiêu chí nào được phân công.</div>
+        ) : (
+          Object.keys(groupedCriteria).sort(naturalSort).map(chuong => (
+            <div key={chuong} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <button 
+                onClick={() => setExpandedChuong(expandedChuong === chuong ? null : chuong)}
+                className={`w-full px-5 py-4 flex justify-between items-center font-black text-left uppercase text-sm tracking-wide transition-colors ${expandedChuong === chuong ? 'bg-[#009900] text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
               >
-                <span className={filterNhom.length === 0 ? 'text-slate-400' : 'text-slate-700'}>
-                  {filterNhom.length === 0
-                    ? '-- Chọn nhóm để bắt đầu --'
-                    : filterNhom.join(', ')}
-                </span>
-                <ChevronDown size={16} className={`text-slate-400 transition-transform ${nhomDropdownOpen ? 'rotate-180' : ''}`} />
+                <span>{chuong}</span>
+                {expandedChuong === chuong ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </button>
-              {nhomDropdownOpen && (
-                <div className="absolute z-50 top-full mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
-                  <div className="p-2 border-b border-slate-100 flex justify-between items-center">
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Chọn một hoặc nhiều nhóm</span>
-                    {filterNhom.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => { setFilterNhom([]); setExpandedPhan(null); setExpandedChuong(null); setExpandedTieuChi(null); }}
-                        className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-1"
+              
+              {expandedChuong === chuong && (
+                <div className="p-4 space-y-4 bg-slate-50/30">
+                  {Object.keys(groupedCriteria[chuong]).sort(naturalSort).map(phan => (
+                    <div key={phan} className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                       <button 
+                        onClick={() => setExpandedPhan(expandedPhan === phan ? null : phan)}
+                        className={`w-full px-4 py-3 flex justify-between items-center font-bold text-left text-xs transition-colors ${expandedPhan === phan ? 'bg-slate-100 text-[#009900]' : 'text-slate-600 hover:bg-slate-50'}`}
                       >
-                        <XCircle size={12} /> Bỏ chọn tất cả
+                        <span>{phan}</span>
+                        {expandedPhan === phan ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
-                    )}
-                  </div>
-                  <div className="max-h-56 overflow-y-auto p-1">
-                    {uniqueNhom.map(n => (
-                      <label
-                        key={n}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-primary-50 cursor-pointer transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={filterNhom.includes(n)}
-                          onChange={() => toggleNhom(n)}
-                          className="w-4 h-4 accent-primary-600 rounded"
-                        />
-                        <span className="text-sm font-bold text-slate-700">{n}</span>
-                      </label>
-                    ))}
-                  </div>
+
+                      {expandedPhan === phan && (
+                        <div className="divide-y divide-slate-100">
+                          {Object.keys(groupedCriteria[chuong][phan]).sort(naturalSort).map(tc => (
+                            <div key={tc} className="p-0">
+                               <button 
+                                onClick={() => setExpandedTieuChi(expandedTieuChi === tc ? null : tc)}
+                                className={`w-full px-4 py-2.5 flex justify-between items-center font-bold text-left text-[11px] transition-colors border-l-4 ${expandedTieuChi === tc ? 'border-[#009900] bg-green-50/30' : 'border-transparent text-slate-700 hover:bg-slate-50'}`}
+                              >
+                                <span>{tc}</span>
+                                {expandedTieuChi === tc ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                              </button>
+
+                              {expandedTieuChi === tc && (
+                                <div className="p-4 bg-white space-y-4">
+                                  <table className="w-full text-xs text-left border-collapse">
+                                    <thead className="bg-slate-50 text-slate-400 uppercase text-[10px] font-black">
+                                       <tr>
+                                         <th className="px-4 py-2 w-24">Mã TM</th>
+                                         <th className="px-4 py-2">Nội dung tiểu mục</th>
+                                         <th className="px-4 py-2 w-20 text-center">Mức</th>
+                                         <th className="px-4 py-2 w-48 text-center">Đánh giá</th>
+                                         <th className="px-4 py-2 w-64">Ghi chú / Minh chứng</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                      {groupedCriteria[chuong][phan][tc].map((item: Data83tc) => {
+                                        const res = results[item.ma_tieu_muc!] || {};
+                                        return (
+                                          <tr key={item.id} className="hover:bg-slate-50/30">
+                                            <td className="px-4 py-4 align-top font-mono font-bold text-[#009900]">{item.ma_tieu_muc}</td>
+                                            <td className="px-4 py-4 align-top font-bold text-slate-700 leading-relaxed" style={{ fontSize: `${fontSize}px` }}>
+                                              {item.tieu_muc}
+                                            </td>
+                                            <td className="px-4 py-4 align-top text-center">
+                                              <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[10px] font-black border border-amber-200 uppercase">{item.muc}</span>
+                                            </td>
+                                            <td className="px-4 py-4 align-top">
+                                              <div className="flex items-center gap-1">
+                                                <button 
+                                                  onClick={() => handleScoreChange(item.ma_tieu_muc!, 'dat_muc', 'Đạt')}
+                                                  className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1 border transition-all ${res.dat_muc === 'Đạt' ? 'bg-green-600 text-white border-green-600 shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50'}`}
+                                                >
+                                                  <CheckCircle2 size={12} /> Đạt
+                                                </button>
+                                                <button 
+                                                  onClick={() => handleScoreChange(item.ma_tieu_muc!, 'dat_muc', 'Chưa đạt')}
+                                                  className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1 border transition-all ${res.dat_muc === 'Chưa đạt' ? 'bg-red-600 text-white border-red-600 shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50'}`}
+                                                >
+                                                  <XCircle size={12} /> Không đạt
+                                                </button>
+                                                <button 
+                                                  onClick={() => handleScoreChange(item.ma_tieu_muc!, 'dat_muc', 'Không đánh giá')}
+                                                  className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1 border transition-all ${res.dat_muc === 'Không đánh giá' ? 'bg-slate-500 text-white border-slate-500 shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50'}`}
+                                                >
+                                                  <Minus size={12} /> K.ĐG
+                                                </button>
+                                              </div>
+                                            </td>
+                                            <td className="px-4 py-4 align-top">
+                                              {res.dat_muc === 'Chưa đạt' ? (
+                                                <div className="space-y-2 animate-in slide-in-from-top-1 duration-200">
+                                                  <textarea 
+                                                    placeholder="Ghi chú lỗi/vấn đề..." 
+                                                    value={res.ghi_chu || ''}
+                                                    onChange={e => handleScoreChange(item.ma_tieu_muc!, 'ghi_chu', e.target.value)}
+                                                    className="w-full p-2 border border-red-100 rounded-lg text-[11px] focus:ring-1 focus:ring-red-500 bg-red-50/20"
+                                                    rows={2}
+                                                  />
+                                                  <div className="flex flex-wrap gap-2">
+                                                    {(res.hinh_anh_minh_chung || []).map((img, i) => (
+                                                      <div key={i} className="relative group w-12 h-12 border rounded-lg overflow-hidden shadow-sm">
+                                                        <img src={img} className="w-full h-full object-cover" />
+                                                        <button onClick={() => removeImage(item.ma_tieu_muc!, img)} className="absolute top-0 right-0 bg-red-500 text-white p-0.5 opacity-0 group-hover:opacity-100"><XCircle size={10}/></button>
+                                                      </div>
+                                                    ))}
+                                                    <label className="w-12 h-12 border-2 border-dashed border-red-100 rounded-lg flex items-center justify-center text-red-200 hover:border-red-400 hover:text-red-400 cursor-pointer bg-red-50/10">
+                                                      <Camera size={20} />
+                                                      <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleImageUpload(item.ma_tieu_muc!, e)} />
+                                                    </label>
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                <div className="h-full flex items-center justify-center text-slate-200 italic text-[10px]">N/A</div>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          </div>
-        </div>
-
-        {filterNhom.length > 0 && (
-          <div className="px-6 py-3 bg-white border-b border-slate-100 flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Thống kê lọc:</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                <LayoutGrid size={14} className="text-primary-500" />
-                <span>Số chương: <span className="text-primary-600">{stats.chaptersCount}</span></span>
-              </div>
-              <div className="h-3 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                <ListFilter size={14} className="text-blue-500" />
-                <span>Số tiêu chí: <span className="text-blue-600">{stats.criteriaCount}</span></span>
-              </div>
-              <div className="h-3 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                <FileText size={14} className="text-orange-500" />
-                <span>Số tiểu mục: <span className="text-orange-600">{stats.subItemsCount}</span></span>
-              </div>
-            </div>
-          </div>
+          ))
         )}
-
-        {/* Font Size & Tool Bar */}
-        <div className="px-4 py-2 border-b border-slate-100 bg-white flex justify-end items-center gap-4">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-[10px] uppercase font-bold text-slate-400 px-2 border-r border-slate-200 flex items-center gap-1">
-              <Type size={12} /> Cỡ chữ
-            </span>
-            <button
-              onClick={() => setFontSize(Math.max(10, fontSize - 1))}
-              className="p-1 px-2 hover:bg-white rounded transition-colors text-slate-600 hover:text-primary-600"
-              title="Giảm cỡ chữ"
-            >
-              <Minus size={14} />
-            </button>
-            <span className="text-xs font-bold text-primary-700 min-w-[24px] text-center">{fontSize}</span>
-            <button
-              onClick={() => setFontSize(Math.min(20, fontSize + 1))}
-              className="p-1 px-2 hover:bg-white rounded transition-colors text-slate-600 hover:text-primary-600"
-              title="Tăng cỡ chữ"
-            >
-              <PlusIcon size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Hierarchical UI */}
-        <div className="p-4 space-y-4">
-          {filterNhom.length === 0 ? (
-            <div className="py-20 text-center text-slate-400 flex flex-col items-center gap-3">
-              <LayoutGrid size={48} className="opacity-20" />
-              <p className="italic font-medium">Vui lòng chọn Nhóm đơn vị phụ trách để bắt đầu chấm điểm</p>
-            </div>
-          ) : Object.keys(groupedData).length === 0 ? (
-            <div className="py-12 text-center text-slate-400 italic font-medium">Không tìm thấy tiêu chí nào cho nhóm này</div>
-          ) : (
-            Object.keys(groupedData).map(phanName => (
-              <div key={phanName} className="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
-                <button
-                  onClick={() => setExpandedPhan(expandedPhan === phanName ? null : phanName)}
-                  className={`w-full flex items-center justify-between px-5 py-3.5 text-left font-bold transition-colors ${expandedPhan === phanName ? 'bg-primary-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
-                    }`}
-                >
-                  <span className="text-section font-black uppercase tracking-wide">{phanName}</span>
-                  {expandedPhan === phanName ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-
-                {expandedPhan === phanName && (
-                  <div className="p-3 bg-slate-50 space-y-3">
-                    {Object.keys(groupedData[phanName]).map(chuongName => (
-                      <div key={chuongName} className="border border-slate-200 rounded-lg bg-white overflow-hidden">
-                        <button
-                          onClick={() => setExpandedChuong(expandedChuong === chuongName ? null : chuongName)}
-                          className={`w-full flex items-center justify-between px-4 py-3 text-left font-bold transition-colors text-sm ${expandedChuong === chuongName ? 'bg-slate-100 text-primary-700' : 'text-slate-600 hover:bg-slate-50/80'
-                            }`}
-                        >
-                           <span className="text-label font-black uppercase">{chuongName}</span>
-                          {expandedChuong === chuongName ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-
-                        {expandedChuong === chuongName && (
-                          <div className="divide-y divide-slate-100">
-                            {Object.keys(groupedData[phanName][chuongName]).map(tcName => {
-                              const items = groupedData[phanName][chuongName][tcName];
-                              const level = calculateLevel(items);
-                              const isExpandedTC = expandedTieuChi === tcName;
-
-                              return (
-                                <div key={tcName} className="bg-white">
-                                  <div
-                                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-3 gap-3"
-                                  >
-                                    <div
-                                      className="flex-1 cursor-pointer group"
-                                      onClick={() => setExpandedTieuChi(isExpandedTC ? null : tcName)}
-                                    >
-                                      <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2 group-hover:text-primary-600 transition-colors">
-                                        {isExpandedTC ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                                        {tcName}
-                                      </h4>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] uppercase font-bold text-slate-400">Đạt mức:</span>
-                                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${level.includes("Mức") ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-500 border-slate-200'
-                                        }`}>
-                                        {level}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  {isExpandedTC && (
-                                    <div className="overflow-x-auto bg-slate-50/30">
-                                      <table className="w-full text-xs text-left border-t border-slate-100">
-                                        <thead className="bg-[#108545]/10 text-[#108545] font-bold uppercase text-[9px]">
-                                          <tr>
-                                            <th className="px-4 py-2.5 w-[110px] text-center">Mã TM & Mức</th>
-                                            <th className="px-4 py-2.5">Nội dung & Đánh giá mức độ đạt được</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                          {items.map((item: Data83, idx: number) => {
-                                            const isVisible = isItemVisible(items, idx);
-                                            if (!isVisible) return null;
-
-                                            const res = results[item.ma_tieu_muc!] || {
-                                              dat: false,
-                                              khong_dat: false,
-                                              khong_danh_gia: false,
-                                              ghi_chu: "",
-                                              hinh_anh_minh_chung: []
-                                            };
-
-                                            const levelNum = item.muc?.match(/\d+/)?.[0] || "";
-
-                                            return (
-                                              <tr key={item.id} className="hover:bg-white transition-colors animate-in slide-in-from-left-1 duration-300">
-                                                <td className="px-4 py-4 align-top text-center border-r border-slate-50">
-                                                  <div className="flex flex-col items-center gap-2">
-                                                    <span className="font-mono text-slate-500 font-bold" style={{ fontSize: Math.max(9, fontSize - 3) + 'px' }}>
-                                                      {item.ma_tieu_muc}
-                                                    </span>
-                                                    <span className="inline-block px-1.5 py-0.5 bg-primary-50 text-primary-700 rounded text-[9px] font-bold border border-primary-200">
-                                                      Mức {levelNum}
-                                                    </span>
-                                                  </div>
-                                                </td>
-                                                <td className="px-4 py-4 align-top">
-                                                  <div className="flex flex-col gap-4">
-                                                    {/* Row 1: Content */}
-                                                    <div className="text-slate-800 font-bold leading-relaxed" style={{ fontSize: fontSize + 'px' }}>
-                                                      {item.tieu_muc}
-                                                    </div>
-
-                                                    {/* Row 2: Action Bar */}
-                                                    <div className="flex flex-wrap items-center gap-4 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                                                      {/* Status Buttons */}
-                                                      <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                                                        <button
-                                                          onClick={() => handleScoreChange(item.ma_tieu_muc!, 'dat', !res.dat)}
-                                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${res.dat ? 'bg-green-600 text-white shadow-md scale-[1.02]' : 'text-slate-500 hover:bg-slate-50'
-                                                            }`}
-                                                        >
-                                                          <CheckCircle2 size={14} /> Đạt
-                                                        </button>
-                                                        <button
-                                                          onClick={() => handleScoreChange(item.ma_tieu_muc!, 'khong_dat', !res.khong_dat)}
-                                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${res.khong_dat ? 'bg-red-600 text-white shadow-md scale-[1.02]' : 'text-slate-500 hover:bg-slate-50'
-                                                            }`}
-                                                        >
-                                                          <XCircle size={14} /> K.Đạt
-                                                        </button>
-                                                        <button
-                                                          onClick={() => handleScoreChange(item.ma_tieu_muc!, 'khong_danh_gia', !res.khong_danh_gia)}
-                                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${res.khong_danh_gia ? 'bg-slate-600 text-white shadow-md scale-[1.02]' : 'text-slate-500 hover:bg-slate-50'
-                                                            }`}
-                                                        >
-                                                          <AlertCircle size={14} /> K.ĐG
-                                                        </button>
-                                                      </div>
-
-                                                      {/* Ghi chú */}
-                                                      <div className="flex-1 min-w-[200px]">
-                                                        <textarea
-                                                          rows={1}
-                                                          placeholder="Nhập ghi chú quan sát..."
-                                                          value={res.ghi_chu}
-                                                          onChange={(e) => handleScoreChange(item.ma_tieu_muc!, 'ghi_chu', e.target.value)}
-                                                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[12px] focus:ring-1 focus:ring-primary-500/20 resize-none min-h-[36px]"
-                                                          style={{ fontSize: Math.max(10, fontSize - 2) + 'px' }}
-                                                        />
-                                                      </div>
-
-                                                      {/* Minh chứng - Thêm ảnh */}
-                                                      <div className="flex items-center gap-2">
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                          {res.hinh_anh_minh_chung?.map((url, i) => (
-                                                            <div key={i} className="relative group w-10 h-10 border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-                                                              <img src={url} alt="Minh chứng" className="w-full h-full object-cover" />
-                                                              <button
-                                                                onClick={() => removeImage(item.ma_tieu_muc!, url)}
-                                                                className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                              >
-                                                                <XCircle size={10} />
-                                                              </button>
-                                                            </div>
-                                                          ))}
-                                                        </div>
-                                                        <label className="w-10 h-10 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:text-primary-600 hover:border-primary-400 cursor-pointer transition-all bg-white hover:bg-white shadow-sm active:scale-95">
-                                                          <Camera size={16} />
-                                                          <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            capture="environment"
-                                                            multiple
-                                                            className="hidden"
-                                                            onChange={(e) => handleImageUpload(item.ma_tieu_muc!, e)}
-                                                          />
-                                                        </label>
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </td>
-                                              </tr>
-                                            );
-                                          })}
-                                          {items.some((_item: any, idx: number) => !isItemVisible(items, idx)) && (
-                                            <tr className="bg-red-50/50">
-                                              <td colSpan={2} className="px-4 py-8 text-center text-red-500 font-bold italic">
-                                                <div className="flex flex-col items-center justify-center gap-2 opacity-70">
-                                                  <AlertTriangle size={24} className="animate-pulse" />
-                                                  <span>Các tiểu mục tiếp theo bị ẩn do có một mục đánh giá "KHÔNG ĐẠT" ở phía trên.</span>
-                                                </div>
-                                              </td>
-                                            </tr>
-                                          )}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
-          <div className="text-xs text-slate-500 font-medium">
-            Phân hệ: <span className="text-primary-600 font-bold uppercase">Bảng 83 tiêu chí CLBV</span>
-          </div>
-          <button
-            onClick={handleSaveAssessment}
-            disabled={saving || !filterNhom}
-            className={`flex items-center gap-2 px-10 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${!filterNhom || saving ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#108545] text-white hover:bg-[#0d6e39] active:scale-95'
-              }`}
-          >
-            {saving ? <RefreshCw className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-            <span>Hoàn tất & Lưu phiếu đánh giá</span>
-          </button>
-        </div>
       </div>
 
-      {/* Modal Xem chi tiết (trong FORM mode) */}
-      {viewingPhieuId && (
+      <div className="flex justify-end bg-white p-6 rounded-xl border border-slate-200 shadow-md">
+        <button 
+          onClick={handleSaveAssessment} 
+          disabled={saving || loading}
+          className="bg-[#009900] text-white px-12 py-3 rounded-xl font-black uppercase text-sm shadow-xl hover:bg-[#007700] transition-all flex items-center gap-3 active:scale-95 disabled:bg-slate-200"
+        >
+          {saving ? <RefreshCw className="animate-spin" size={20}/> : <CheckCircle2 size={20}/>}
+          Lưu phiếu chấm điểm
+        </button>
+      </div>
+
+       {viewingPhieuId && (
         <ViewSheetDetailModal
           phieuId={viewingPhieuId}
           data={viewingData}
@@ -1636,7 +1106,7 @@ const QualityAssessmentView = () => {
   );
 };
 
-// --- Component Modal Xem Chi Tiết ---
+// --- Component Modal Xem Chi Tiết (Updated) ---
 const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
   phieuId: string,
   data: KqDanhGia83[],
@@ -1652,269 +1122,129 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
   const hierarchyData = useMemo(() => {
     const hierarchy: any = {};
     data.forEach(item => {
-      const p = item.phan || "Khác";
       const c = item.chuong || "Khác";
-      const tc = item.tieu_chi || item.ma_tieu_muc?.split('-')[0] || "Khác";
+      const p = item.phan || "Khác";
+      const tc = item.tieu_chi || "Khác";
 
-      if (!hierarchy[p]) hierarchy[p] = { chapters: {}, score: 0 };
-      if (!hierarchy[p].chapters[c]) hierarchy[p].chapters[c] = { criteria: {}, score: 0 };
-      if (!hierarchy[p].chapters[c].criteria[tc]) hierarchy[p].chapters[c].criteria[tc] = [];
+      if (!hierarchy[c]) hierarchy[c] = {};
+      if (!hierarchy[c][p]) hierarchy[c][p] = {};
+      if (!hierarchy[c][p][tc]) hierarchy[c][p][tc] = [];
 
-      hierarchy[p].chapters[c].criteria[tc].push(item);
+      hierarchy[c][p][tc].push(item);
     });
-
-    // Sort and calculate scores
-    Object.keys(hierarchy).forEach(pName => {
-      let phanSum = 0;
-      let phanCount = 0;
-      Object.keys(hierarchy[pName].chapters).forEach(cName => {
-        let chuongSum = 0;
-        let chuongCount = 0;
-        Object.keys(hierarchy[pName].chapters[cName].criteria).forEach(tcName => {
-          const items = hierarchy[pName].chapters[cName].criteria[tcName];
-          // Ensure natural sorting by ma_tieu_muc
-          items.sort((a: any, b: any) => (a.ma_tieu_muc || "").localeCompare(b.ma_tieu_muc || "", undefined, { numeric: true }));
-
-          const critScoreStr = items[0]?.dat_muc || "0";
-          const critScore = parseFloat(critScoreStr.replace(/[^\d.]/g, '')) || 0;
-          chuongSum += critScore;
-          chuongCount++;
-        });
-        const chuongAvg = chuongCount > 0 ? chuongSum / chuongCount : 0;
-        hierarchy[pName].chapters[cName].score = Math.round(chuongAvg * 100) / 100;
-        phanSum += hierarchy[pName].chapters[cName].score;
-        phanCount++;
-      });
-      const phanAvg = phanCount > 0 ? phanSum / phanCount : 0;
-      hierarchy[pName].score = Math.round(phanAvg * 100) / 100;
-    });
-
     return hierarchy;
   }, [data]);
 
+  const naturalSort = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 font-sans">
+      <div className="bg-white w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-primary-600 text-white flex justify-between items-center shadow-md">
+        <div className="px-6 py-4 bg-[#009900] text-white flex justify-between items-center shadow-md">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Eye size={24} />
-            </div>
+            <Eye size={24} />
             <div>
-              <h3 className="font-bold text-lg leading-tight">Chi tiết Phiếu đánh giá</h3>
-              <p className="text-xs text-white/80 font-medium">Mã phiếu: {phieuId}</p>
+              <h3 className="font-black text-lg leading-tight uppercase">Chi tiết Phiếu chấm điểm</h3>
+              <p className="text-[10px] text-white/80 font-bold uppercase">Mã phiếu: {phieuId}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1">
-            <XCircle size={24} /> <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">Đóng</span>
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+            <XCircle size={24} />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/30">
           {/* Summary Info */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ngày đánh giá</p>
-              <div className="flex items-center gap-2 text-slate-800 font-bold">
-                <FileText size={16} className="text-primary-500" />
-                {sheetInfo ? new Date(sheetInfo.ngay_danh_gia).toLocaleDateString('vi-VN') : '---'}
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày đánh giá</p>
+               <p className="font-bold text-slate-700">{sheetInfo ? new Date(sheetInfo.ngay_danh_gia).toLocaleDateString('vi-VN') : '---'}</p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Người đánh giá</p>
-              <div className="flex items-center gap-2 text-slate-800 font-bold">
-                <UserPlus size={16} className="text-blue-500" />
-                {sheetInfo?.nguoi_danh_gia || '---'}
-              </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Người đánh giá</p>
+               <p className="font-bold text-slate-700">{sheetInfo?.nguoi_danh_gia || '---'}</p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1 md:col-span-2">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đơn vị được đánh giá</p>
-              <div className="flex items-center gap-2 text-slate-800 font-bold">
-                <LayoutGrid size={16} className="text-orange-500" />
-                {sheetInfo?.don_vi_duoc_danh_gia || '---'}
-              </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Đơn vị</p>
+               <p className="font-bold text-slate-700">{sheetInfo?.don_vi_duoc_danh_gia || '---'}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <span className="text-sm font-bold text-slate-700 flex items-center gap-2 uppercase tracking-wide">
-                <Star size={18} className="text-amber-500" /> <span>Kết quả chấm điểm chi tiết</span>
-              </span>
-              {sheetInfo && (
-                <div className="flex items-center gap-4 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100">
-                  <div className="flex flex-col items-center">
-                    <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest">Mức TB</span>
-                    <span className="text-lg font-black text-primary-800 leading-tight">{sheetInfo.score}</span>
-                  </div>
-                  <div className="w-px h-8 bg-primary-200"></div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Tỉ lệ đạt</span>
-                    <span className="text-sm font-black text-green-700 leading-tight">{sheetInfo.passed_criteria}/{sheetInfo.total_criteria} TM</span>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="space-y-4">
+            {Object.keys(hierarchyData).sort(naturalSort).map(cName => (
+              <div key={cName} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <button 
+                  onClick={() => toggleSection(cName)}
+                  className={`w-full px-5 py-3 flex justify-between items-center font-black text-left uppercase text-xs transition-colors ${expandedSections[cName] ? 'bg-slate-100 text-[#009900]' : 'bg-slate-50 text-slate-600'}`}
+                >
+                  <span>CHƯƠNG: {cName}</span>
+                  {expandedSections[cName] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
 
-            <div className="divide-y divide-slate-100 p-2">
-              {Object.keys(hierarchyData).length === 0 ? (
-                <div className="p-10 text-center text-slate-400 italic">Không có dữ liệu đánh giá chi tiết.</div>
-              ) : Object.keys(hierarchyData).sort().map(phanName => {
-                const phan = hierarchyData[phanName];
-                return (
-                  <div key={phanName} className="p-1">
-                    <button
-                      onClick={() => toggleSection(phanName)}
-                      className={`w-full flex items-center justify-between text-left p-4 rounded-xl transition-all ${expandedSections[phanName] ? 'bg-primary-50 border border-primary-100 shadow-sm' : 'hover:bg-slate-50'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-black text-primary-700 uppercase tracking-wider">{phanName}</span>
-                        <span className="px-2 py-0.5 bg-primary-100 text-primary-800 rounded-md text-[10px] font-black border border-primary-200">
-                          Đạt mức: {phan.score}
-                        </span>
-                      </div>
-                      {expandedSections[phanName] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                    </button>
-
-                    {expandedSections[phanName] && (
-                      <div className="pl-6 mt-3 mb-3 space-y-4 border-l-2 border-primary-100 ml-4 py-2">
-                        {Object.keys(phan.chapters).sort().map(chuongName => {
-                          const chuong = phan.chapters[chuongName];
-                          return (
-                            <div key={chuongName} className="border border-slate-100 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
-                              <button
-                                onClick={() => toggleSection(chuongName)}
-                                className={`w-full flex items-center justify-between text-left px-5 py-3 hover:bg-slate-50 transition-colors ${expandedSections[chuongName] ? 'bg-slate-50/80 border-b border-slate-100' : ''}`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <span className="text-xs font-bold text-slate-600 leading-relaxed">{chuongName}</span>
-                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[9px] font-black border border-slate-200">
-                                    Đạt mức: {chuong.score}
-                                  </span>
-                                </div>
-                                {expandedSections[chuongName] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                              </button>
-
-                              {expandedSections[chuongName] && (
-                                <div className="divide-y divide-slate-50">
-                                  {Object.keys(chuong.criteria).sort().map(tcName => {
-                                    const items = chuong.criteria[tcName];
-                                    const level = items[0]?.dat_muc || "---";
-
-                                    return (
-                                      <div key={tcName} className="p-5 space-y-4">
-                                        <div className="flex justify-between items-start gap-4">
-                                          <h4 className="text-label font-black text-black flex-1 leading-relaxed uppercase">
-                                            <span className="text-[#009900] mr-2 font-black font-mono">#{tcName.split(':')[0]}</span>
-                                            {tcName.split(':').slice(1).join(':')}
-                                          </h4>
-                                          <div className="flex flex-col items-end gap-1">
-                                            <span className="text-table font-black text-black/40 uppercase tracking-widest">Kết quả</span>
-                                            <span className="px-3 py-1 rounded-full text-table font-black bg-green-100 text-[#009900] border border-green-200 whitespace-nowrap shadow-sm uppercase">
-                                              Đạt: {level}
-                                            </span>
+                {expandedSections[cName] && (
+                  <div className="p-4 space-y-4">
+                    {Object.keys(hierarchyData[cName]).sort(naturalSort).map(pName => (
+                      <div key={pName} className="border border-slate-100 rounded-lg overflow-hidden">
+                        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 text-[10px] font-black text-slate-500 uppercase">PHẦN: {pName}</div>
+                        <div className="divide-y divide-slate-50">
+                          {Object.keys(hierarchyData[cName][pName]).sort(naturalSort).map(tcName => (
+                            <div key={tcName} className="p-4 space-y-3">
+                              <h4 className="text-[11px] font-black text-[#009900] uppercase">TIÊU CHÍ: {tcName}</h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-[11px] text-left">
+                                  <thead className="text-slate-400 uppercase text-[9px] font-bold">
+                                    <tr>
+                                      <th className="py-2 w-20">Mã TM</th>
+                                      <th className="py-2">Nội dung</th>
+                                      <th className="py-2 w-24 text-center">Kết quả</th>
+                                      <th className="py-2 w-48">Ghi chú/Minh chứng</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-50 font-medium">
+                                    {hierarchyData[cName][pName][tcName].map((item: KqDanhGia83) => (
+                                      <tr key={item.id}>
+                                        <td className="py-3 font-mono font-bold text-slate-400">{item.ma_tieu_muc}</td>
+                                        <td className="py-3 text-slate-700 leading-relaxed pr-4">{item.tieu_muc}</td>
+                                        <td className="py-3 text-center">
+                                          <span className={`px-2 py-1 rounded text-[9px] font-black uppercase ${item.dat_muc !== 'Chưa đạt' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}`}>
+                                            {item.dat_muc}
+                                          </span>
+                                        </td>
+                                        <td className="py-3 space-y-2">
+                                          {item.ghi_chu && <p className="text-[10px] italic text-slate-500 bg-slate-50 p-1.5 rounded">{item.ghi_chu}</p>}
+                                          <div className="flex flex-wrap gap-1">
+                                            {(item.hinh_anh_minh_chung || []).map((img, i) => (
+                                              <a key={i} href={img} target="_blank" rel="noreferrer" className="w-8 h-8 rounded border overflow-hidden">
+                                                <img src={img} className="w-full h-full object-cover" />
+                                              </a>
+                                            ))}
                                           </div>
-                                        </div>
-
-                                        <div className="space-y-4 pl-4 border-l-2 border-slate-100 ml-1">
-                                          {(() => {
-                                            let stopShowing = false;
-                                            return items.map((item: KqDanhGia83) => {
-                                              if (stopShowing) return null;
-
-                                              // Render the item
-                                              const element = (
-                                                <div key={item.id} className="space-y-2 group">
-                                                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                                                    <div className="flex items-start gap-2.5 flex-1">
-                                                      {item.dat ? (
-                                                        <div className="p-1 bg-green-100 rounded-full mt-0.5"><CheckCircle2 size={12} className="text-green-600" /></div>
-                                                      ) : item.khong_dat ? (
-                                                        <div className="p-1 bg-red-100 rounded-full mt-0.5"><XCircle size={12} className="text-red-600" /></div>
-                                                      ) : (
-                                                        <div className="p-1 bg-slate-100 rounded-full mt-0.5"><AlertCircle size={12} className="text-slate-400" /></div>
-                                                      )}
-                                                      <span className="text-xs text-slate-600 font-medium leading-relaxed">{item.tieu_muc}</span>
-                                                    </div>
-                                                    <span className="text-[10px] font-mono font-black text-slate-300 group-hover:text-slate-500 transition-colors uppercase">{item.ma_tieu_muc}</span>
-                                                  </div>
-
-                                                  {/* Evidence & Note */}
-                                                  {(item.ghi_chu || (item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0)) && (
-                                                    <div className="ml-8 p-3 bg-slate-50/80 rounded-xl border border-dashed border-slate-200 space-y-3">
-                                                      {item.ghi_chu && (
-                                                        <div className="flex items-start gap-2">
-                                                          <div className="p-1 bg-white rounded-lg shadow-sm border border-slate-100 mt-0.5"><FileText size={10} className="text-slate-400" /></div>
-                                                          <p className="text-[11px] text-slate-500 italic font-medium">Ghi chú: {item.ghi_chu}</p>
-                                                        </div>
-                                                      )}
-                                                      {item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0 && (
-                                                        <div className="flex flex-wrap gap-2 pt-1 border-t border-slate-100/50 mt-1">
-                                                          {item.hinh_anh_minh_chung.map((img, i) => (
-                                                            <a key={i} href={img} target="_blank" rel="noreferrer" className="relative group w-14 h-14 rounded-lg bg-white p-1 border border-slate-200 overflow-hidden hover:border-primary-400 transition-all shadow-sm">
-                                                              <img src={img} alt="Evidence" className="w-full h-full object-cover rounded shadow-inner" />
-                                                              <div className="absolute inset-0 bg-primary-600/0 group-hover:bg-primary-600/10 flex items-center justify-center transition-all">
-                                                                <Eye size={12} className="text-white opacity-0 group-hover:opacity-100" />
-                                                              </div>
-                                                            </a>
-                                                          ))}
-                                                        </div>
-                                                      )}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              );
-
-                                              // IF this item is "Khong Dat", the NEXT items in this criterion should be hidden.
-                                              if (item.khong_dat) {
-                                                stopShowing = true;
-                                              }
-
-                                              return element;
-                                            });
-                                          })()}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-between items-center z-10">
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 font-bold transition-all active:scale-95"
-          >
-            <XCircle size={18} /> <span>Đóng cửa sổ</span>
+        <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end gap-3">
+          <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 font-bold transition-all text-xs">
+            <Printer size={16} /> <span>In (PDF)</span>
           </button>
-          <div className="flex gap-2">
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary-50 text-primary-700 rounded-xl hover:bg-primary-100 font-bold transition-all border border-primary-200 shadow-sm active:scale-95"
-            >
-              <Printer size={18} /> <span>In báo cáo (PDF)</span>
-            </button>
-            <button
-              onClick={() => alert("Chức năng đang được cập nhật...")}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-bold transition-all shadow-md active:scale-95"
-            >
-              <Download size={18} /> <span>Xuất Excel (.xlsx)</span>
-            </button>
-          </div>
+          <button onClick={onClose} className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-bold transition-all text-xs">Đóng</button>
         </div>
       </div>
     </div>
