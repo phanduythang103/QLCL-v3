@@ -19,12 +19,26 @@ const SELECT_FIELDS = '*';
  * Fetch all items from data83tc table
  */
 export async function fetchData83tc(): Promise<Data83tc[]> {
-    const { data, error } = await supabase
-        .from('data83tc')
-        .select(SELECT_FIELDS)
-        .order('id', { ascending: true });
-    if (error) throw error;
-    return data || [];
+    let allData: Data83tc[] = [];
+    let from = 0;
+    const PAGE_SIZE = 1000;
+
+    while (true) {
+        const { data, error } = await supabase
+            .from('data83tc')
+            .select(SELECT_FIELDS)
+            .order('id', { ascending: true })
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allData = allData.concat(data);
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+    }
+
+    return allData;
 }
 
 /**

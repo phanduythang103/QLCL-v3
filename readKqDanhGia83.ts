@@ -1,6 +1,9 @@
 import { supabase } from './supabaseClient';
-// Re-export từ readDmDonVi để tránh duplicate
+import { fetchDmDonVi, type DmDonVi } from './readDmDonVi';
+import { fetchData83tc, type Data83tc } from './readData83tc';
+
 export { fetchDmDonVi as fetchDonVi, type DmDonVi as DonVi } from './readDmDonVi';
+export { fetchData83tc, type Data83tc };
 
 export interface KqDanhGia83 {
     id?: string;
@@ -28,6 +31,8 @@ export interface KqDanhGia83 {
     // Minh chứng
     hinh_anh_minh_chung?: string[]; // Mảng URLs
 
+    muc_dat_duoc?: number; // Mức đạt được (1-5)
+
     created_at?: string;
     updated_at?: string;
 }
@@ -46,15 +51,26 @@ export interface AssessmentSheet {
 }
 
 export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
-    const { data: rawData, error } = await supabase
-        .from('kq_danh_gia_83tc')
-        .select('phieu_id, ngay_danh_gia, nguoi_danh_gia, nguoi_tao_id, don_vi_duoc_danh_gia, nhom, dat_muc, phan, chuong, ma_tieu_muc, dat, created_at');
+    let allRawData: any[] = [];
+    let from = 0;
+    const PAGE_SIZE = 1000;
 
-    if (error) throw error;
+    while (true) {
+        const { data: rawData, error } = await supabase
+            .from('kq_danh_gia_83tc')
+            .select('phieu_id, ngay_danh_gia, nguoi_danh_gia, nguoi_tao_id, don_vi_duoc_danh_gia, nhom, dat_muc, phan, chuong, ma_tieu_muc, dat, created_at, muc_dat_duoc')
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) throw error;
+        if (!rawData || rawData.length === 0) break;
+
+        allRawData = allRawData.concat(rawData);
+        if (rawData.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+    }
 
     const sheetsMap: Record<string, any[]> = {};
-
-    rawData?.forEach((row: any) => {
+    allRawData.forEach((row: any) => {
         if (!row.phieu_id) return;
         if (!sheetsMap[row.phieu_id]) {
             sheetsMap[row.phieu_id] = [];
@@ -62,56 +78,74 @@ export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
         sheetsMap[row.phieu_id].push(row);
     });
 
+    // Fetch Configured Criteria for Denominators
+    const allConfig = await fetchData83tc();
+
     const sheets: AssessmentSheet[] = Object.keys(sheetsMap).map(phieuId => {
         const rows = sheetsMap[phieuId];
         const first = rows[0];
+        const unitName = first.don_vi_duoc_danh_gia || "";
+        const unitCode = unitName.split('-')[0].trim();
 
-        // Group rows to calculate scores: Phan -> Chuong -> TieuChi
-        const hierarchy: any = {};
-        rows.forEach(r => {
-            const p = r.phan || "Khác";
-            const c = r.chuong || "Khác";
-            // Fallback for tieu_chi: split ma_tieu_muc (e.g. A1.1-1.1 -> A1.1)
-            const tc = r.ma_tieu_muc?.split('-')[0] || "Khác";
-
-            if (!hierarchy[p]) hierarchy[p] = {};
-            if (!hierarchy[p][c]) hierarchy[p][c] = {};
-            if (!hierarchy[p][c][tc]) hierarchy[p][c][tc] = [];
-
-            hierarchy[p][c][tc].push(r);
+        // 1. Identify "Assigned Criteria" for this unit
+        const assignedCriteria = allConfig.filter((c: Data83tc) => {
+            if (!c.phu_trach) return false;
+            return c.phu_trach.split(',').map((s: string) => s.trim()).includes(unitCode);
         });
 
-        const phanScores: number[] = [];
-        Object.keys(hierarchy).forEach(p => {
-            const chuongScores: number[] = [];
-            Object.keys(hierarchy[p]).forEach(c => {
-                const tcScores: number[] = [];
-                Object.keys(hierarchy[p][c]).forEach(tc => {
-                    const tcItems = hierarchy[p][c][tc];
-                    // Tieu Chi level = max level achieved (dat_muc format: "Mức X" or "Bản điểm")
-                    let maxLevel = 0;
-                    tcItems.forEach((item: any) => {
-                        const levelMatch = item.dat_muc?.match(/\d+/);
-                        const levelNum = levelMatch ? parseInt(levelMatch[0]) : 0;
-                        if (levelNum > maxLevel) maxLevel = levelNum;
-                    });
-                    // Tieu chi level is 1-5 (if maxLevel is 0 but it's "Bản điểm", we can say 1? 
-                    // Actually if it reached "Mức 1", score is 1. If "Mức 2", score is 2.
-                    // If no level reached, score is 0? The user said "đạt mức" average.
-                    tcScores.push(maxLevel);
-                });
-                if (tcScores.length > 0) {
-                    const chuongAvg = tcScores.reduce((a, b) => a + b, 0) / tcScores.length;
-                    chuongScores.push(chuongAvg);
-                }
-            });
-            if (chuongScores.length > 0) {
-                const phanAvg = chuongScores.reduce((a, b) => a + b, 0) / chuongScores.length;
-                phanScores.push(phanAvg);
+        // 2. Identify unique "Criteria (Tiêu chí)" names assigned to this unit
+        const assignedTieuChiNames = [...new Set(assignedCriteria.map((c: Data83tc) => c.tieu_chi).filter(Boolean))];
+
+        // 3. Group assignment into Hierarchy: Phan -> Chuong -> TieuChi
+        const assignmentHierarchy: any = {};
+        assignedCriteria.forEach((c: Data83tc) => {
+            const p = c.phan || "Khác";
+            const ch = c.chuong || "Khác";
+            const tc = c.tieu_chi || "Khác";
+            if (!assignmentHierarchy[p]) assignmentHierarchy[p] = {};
+            if (!assignmentHierarchy[p][ch]) assignmentHierarchy[p][ch] = new Set();
+            assignmentHierarchy[p][ch].add(tc);
+        });
+
+        // 4. Map Results from DB to Criteria Names
+        const resultsByTc: Record<string, number> = {};
+        rows.forEach(r => {
+            const tcName = r.tieu_chi;
+            if (!tcName) return;
+            const level = r.muc_dat_duoc || 1;
+            if (!resultsByTc[tcName] || level > resultsByTc[tcName]) {
+                resultsByTc[tcName] = level;
             }
         });
 
-        const finalScore = phanScores.length > 0 ? phanScores.reduce((a, b) => a + b, 0) / phanScores.length : 0;
+        // 5. Hierarchical Averaging
+        const phanScores: number[] = [];
+        console.group(`Sheet Calculation: ${phieuId} for unit ${unitCode}`);
+        Object.keys(assignmentHierarchy).forEach(p => {
+            const chuongScores: number[] = [];
+            Object.keys(assignmentHierarchy[p]).forEach(ch => {
+                const tcNamesInChuong = Array.from(assignmentHierarchy[p][ch] as Set<string>);
+                const tcLevels = tcNamesInChuong.map(name => resultsByTc[name] || 1); 
+                
+                if (tcLevels.length > 0) {
+                    const chuongAvg = tcLevels.reduce((a, b) => a + b, 0) / tcLevels.length;
+                    chuongScores.push(chuongAvg);
+                    console.log(`  - Chapter ${ch}: ${chuongAvg.toFixed(2)} (${tcLevels.length} items)`);
+                }
+            });
+            
+            if (chuongScores.length > 0) {
+                const phanAvg = chuongScores.reduce((a, b) => a + b, 0) / chuongScores.length;
+                phanScores.push(phanAvg);
+                console.log(`- Part ${p}: ${phanAvg.toFixed(2)} (${chuongScores.length} chapters)`);
+            }
+        });
+
+        // Use a fixed denominator of 5 for Parts as per "83 criteria" standard
+        const TOTAL_PARTS_CONFIGURED = 5;
+        const finalScore = phanScores.length > 0 ? phanScores.reduce((a, b) => a + b, 0) / TOTAL_PARTS_CONFIGURED : 0;
+        console.log(`Final Sheet Score (divided by ${TOTAL_PARTS_CONFIGURED} parts): ${finalScore.toFixed(2)}`);
+        console.groupEnd();
 
         return {
             phieu_id: phieuId,
@@ -131,12 +165,26 @@ export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
 }
 
 export async function fetchKqByPhieuId(phieuId: string): Promise<KqDanhGia83[]> {
-    const { data, error } = await supabase
-        .from('kq_danh_gia_83tc')
-        .select('*')
-        .eq('phieu_id', phieuId);
-    if (error) throw error;
-    return data || [];
+    let allData: KqDanhGia83[] = [];
+    let from = 0;
+    const PAGE_SIZE = 1000;
+
+    while (true) {
+        const { data, error } = await supabase
+            .from('kq_danh_gia_83tc')
+            .select('*')
+            .eq('phieu_id', phieuId)
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allData = allData.concat(data);
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+    }
+
+    return allData;
 }
 
 export async function deletePhieuDanhGia(phieuId: string): Promise<void> {
@@ -161,18 +209,32 @@ export async function saveKqDanhGia83Bulk(items: KqDanhGia83[]): Promise<KqDanhG
 }
 
 export async function fetchKqDanhGia83(filters?: { don_vi?: string, ngay?: string }): Promise<KqDanhGia83[]> {
-    let query = supabase.from('kq_danh_gia_83tc').select('*');
+    let allData: KqDanhGia83[] = [];
+    let from = 0;
+    const PAGE_SIZE = 1000;
 
-    if (filters?.don_vi) query = query.eq('don_vi_duoc_danh_gia', filters.don_vi);
-    if (filters?.ngay) query = query.eq('ngay_danh_gia', filters.ngay);
+    while (true) {
+        let query = supabase.from('kq_danh_gia_83tc').select('*');
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+        if (filters?.don_vi) query = query.eq('don_vi_duoc_danh_gia', filters.don_vi);
+        if (filters?.ngay) query = query.eq('ngay_danh_gia', filters.ngay);
 
-    if (error) {
-        console.error('Error fetching kq_danh_gia_83tc:', error);
-        throw error;
+        const { data, error } = await query
+            .order('created_at', { ascending: false })
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) {
+            console.error('Error fetching kq_danh_gia_83tc:', error);
+            throw error;
+        }
+        if (!data || data.length === 0) break;
+
+        allData = allData.concat(data);
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
     }
-    return data || [];
+
+    return allData;
 }
 
 /**
