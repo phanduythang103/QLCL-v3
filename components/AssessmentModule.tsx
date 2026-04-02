@@ -1155,10 +1155,28 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
   onClose: () => void,
   sheetInfo?: AssessmentSheet
 }) => {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [expandedTCs, setExpandedTCs] = useState<Record<string, boolean>>({});
 
-  const toggleSection = (key: string) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleTC = (tcKey: string) => {
+    setExpandedTCs(prev => ({ ...prev, [tcKey]: !prev[tcKey] }));
+  };
+
+  const calculateCriteriaLevel = (items: KqDanhGia83[]) => {
+    // Logic: Criteria reaches Level X if all items <= X are 'Đạt' or 'Không đánh giá'
+    // Default min level is 1
+    let maxLevel = 1;
+    for (let level = 2; level <= 5; level++) {
+      const levelItems = items.filter(i => parseInt(i.nhom || '1') === level);
+      if (levelItems.length === 0) continue; // Skip if no items for this level
+      
+      const allMet = levelItems.every(i => i.dat_muc === 'Đạt' || i.dat_muc === 'Không đánh giá');
+      if (allMet) {
+        maxLevel = level;
+      } else {
+        break; // If any level fails, cannot reach any higher level
+      }
+    }
+    return maxLevel;
   };
 
   const hierarchyData = useMemo(() => {
@@ -1209,19 +1227,19 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
         {/* Modal Content */}
         <div className="flex-1 overflow-y-auto p-10 bg-white print:p-0 print:overflow-visible">
           {/* Formal Report Header */}
-          <div className="text-center space-y-2 mb-10">
-            <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">BẢNG CHẤM ĐIỂM CHẤT LƯỢNG BỆNH VIỆN</h1>
-            <p className="text-sm font-bold text-slate-600 italic">(Theo Bộ 83 tiêu chí chất lượng Bệnh viện Việt Nam version 2)</p>
+          <div className="text-center space-y-2 mb-10 text-[13pt]">
+            <h1 className="font-black uppercase tracking-tight text-slate-900 text-[15pt]">BẢNG CHẤM ĐIỂM CHẤT LƯỢNG BỆNH VIỆN</h1>
+            <p className="font-bold text-slate-600 italic">(Theo Bộ 83 tiêu chí chất lượng Bệnh viện Việt Nam version 2)</p>
           </div>
 
-          <div className="flex flex-wrap justify-between gap-6 mb-8 text-sm font-bold text-slate-700">
+          <div className="flex flex-wrap justify-between gap-6 mb-8 font-bold text-slate-700 text-[13pt]">
             <p>Đơn vị được chấm điểm: <span className="border-b border-dotted border-slate-400 px-2">{sheetInfo?.don_vi_duoc_danh_gia || '---'}</span></p>
             <p>Người chấm điểm: <span className="border-b border-dotted border-slate-400 px-2">{sheetInfo?.nguoi_danh_gia || '---'}</span></p>
             <p>Ngày chấm điểm: <span className="border-b border-dotted border-slate-400 px-2">{sheetInfo ? new Date(sheetInfo.ngay_danh_gia).toLocaleDateString('vi-VN') : '---'}</span></p>
           </div>
 
           <div className="mb-6">
-             <p className="text-lg font-black text-[#009900]">Kết quả: Mức trung bình {sheetInfo?.score || '---'}</p>
+             <p className="font-black text-[#009900] text-[13pt]">Kết quả: Mức trung bình {sheetInfo?.score || '---'}</p>
           </div>
 
           {/* Excel-style Table */}
@@ -1233,7 +1251,7 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
                   <th className="border-r border-black p-2 w-16">Mức</th>
                   <th className="p-0 w-60">
                     <div className="border-b border-black p-1">Đánh giá</div>
-                    <div className="flex divide-x divide-black text-[10pt]">
+                    <div className="flex divide-x divide-black text-[12pt]">
                       <div className="w-20 p-1">Đạt</div>
                       <div className="w-20 p-1">Không đạt</div>
                       <div className="w-20 p-1">Không đánh giá</div>
@@ -1242,68 +1260,88 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
                 </tr>
               </thead>
               <tbody className="divide-y divide-black">
-                {Object.keys(hierarchyData).sort(naturalSort).map(phan => (
-                  <React.Fragment key={phan}>
-                    {/* Phần Row */}
-                    <tr className="bg-slate-200 font-black align-middle border-b border-black">
-                      <td className="border-r border-black p-2 uppercase" colSpan={3}>{phan}</td>
-                    </tr>
-
-                    {Object.keys(hierarchyData[phan].chuongs).sort(naturalSort).map(chuong => (
-                      <React.Fragment key={chuong}>
-                        {/* Chương Row */}
-                        <tr className="bg-slate-50 font-bold align-middle border-b border-black">
-                          <td className="border-r border-black p-2 italic" colSpan={3}>{chuong}</td>
-                        </tr>
-
-                        {Object.keys(hierarchyData[phan].chuongs[chuong].tieuChis).sort(naturalSort).map(tc => (
-                          <React.Fragment key={tc}>
-                            {/* Tiêu chí Row */}
-                            <tr className="bg-white font-black align-middle border-b border-black text-[#009900]">
-                              <td className="border-r border-black p-2" colSpan={3}>{tc}</td>
-                            </tr>
-
-                            {/* Sub-items (Tiểu mục) */}
-                            {hierarchyData[phan].chuongs[chuong].tieuChis[tc].map((item: KqDanhGia83) => (
-                              <tr key={item.id} className="align-top border-b border-black last:border-b-0">
-                                <td className="border-r border-black p-2 leading-relaxed">
-                                  <div className="flex gap-2">
-                                    <span className="font-bold text-slate-400 shrink-0">
-                                      {item.ma_tieu_muc?.split('-')[1]?.split('.')[1] || item.ma_tieu_muc?.split('.').pop()}.
-                                    </span>
-                                    <span>{item.tieu_muc}</span>
-                                  </div>
-                                  {item.ghi_chu && (
-                                    <div className="mt-2 text-[10pt] text-slate-500 italic bg-slate-50 p-1 rounded">
-                                      Ghi chú: {item.ghi_chu}
-                                    </div>
-                                  )}
-                                  {item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0 && (
-                                    <div className="mt-2 flex gap-1 print:hidden">
-                                      {item.hinh_anh_minh_chung.map((url, i) => (
-                                        <div key={i} className="w-10 h-10 rounded border border-slate-200 overflow-hidden">
-                                          <img src={url} alt="Minh chứng" className="w-full h-full object-cover" />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="border-r border-black p-2 text-center font-bold">{item.nhom?.replace('Mức ', '') || '1'}</td>
-                                <td className="p-0 h-full" colSpan={3}>
-                                   <div className="flex h-full min-h-[44px] divide-x divide-black text-center font-black">
-                                      <div className="w-20 flex items-center justify-center text-green-600">{item.dat_muc === 'Đạt' ? 'X' : ''}</div>
-                                      <div className="w-20 flex items-center justify-center text-red-600">{item.dat_muc === 'Chưa đạt' ? 'X' : ''}</div>
-                                      <div className="w-20 flex items-center justify-center text-slate-400">{item.dat_muc === 'Không đánh giá' ? 'X' : ''}</div>
+                 {Object.keys(hierarchyData).sort(naturalSort).map(phan => (
+                   <React.Fragment key={phan}>
+                     {/* Phần Row */}
+                     <tr className="bg-slate-200 font-extrabold align-middle border-b border-black">
+                       <td className="border-r border-black p-2 uppercase text-[12pt]" colSpan={3}>{phan}</td>
+                     </tr>
+ 
+                     {Object.keys(hierarchyData[phan].chuongs).sort(naturalSort).map(chuong => (
+                       <React.Fragment key={chuong}>
+                         {/* Chương Row */}
+                         <tr className="bg-slate-100 font-bold align-middle border-b border-black">
+                           <td className="border-r border-black p-2 italic text-[12pt] pl-4" colSpan={3}>{chuong}</td>
+                         </tr>
+ 
+                         {Object.keys(hierarchyData[phan].chuongs[chuong].tieuChis).sort(naturalSort).map(tc => {
+                           const items = hierarchyData[phan].chuongs[chuong].tieuChis[tc];
+                           const isExpanded = expandedTCs[tc];
+                           const criteriaLevel = calculateCriteriaLevel(items);
+                           
+                           return (
+                             <React.Fragment key={tc}>
+                               {/* Tiêu chí Row (Clickable) */}
+                               <tr 
+                                 onClick={() => toggleTC(tc)}
+                                 className="bg-white font-black align-middle border-b border-black text-[#009900] cursor-pointer hover:bg-green-50 transition-colors"
+                               >
+                                 <td className="border-r border-black p-2 pl-8 flex items-center gap-3 text-[12pt]">
+                                   {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                                   <span className="uppercase tracking-tight">{tc}</span>
+                                 </td>
+                                 <td className="border-r border-black p-2 text-center text-[12pt]">{criteriaLevel}</td>
+                                 <td className="p-0">
+                                   <div className="flex h-full min-h-[44px] divide-x divide-black text-center font-black opacity-20">
+                                      <div className="w-20"></div>
+                                      <div className="w-20"></div>
+                                      <div className="w-20"></div>
                                    </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </React.Fragment>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                  </React.Fragment>
-                ))}
+                                 </td>
+                               </tr>
+ 
+                               {/* Sub-items (Tiểu mục) - Shown ONLY if expanded */}
+                               {isExpanded && items.map((item: KqDanhGia83) => (
+                                 <tr key={item.id} className="align-top border-b border-black last:border-b-0">
+                                   <td className="border-r border-black p-2 pl-14 leading-relaxed">
+                                     <div className="flex gap-2">
+                                       <span className="font-bold text-slate-400 shrink-0">
+                                         {item.ma_tieu_muc?.split('-')[1]?.split('.')[1] || item.ma_tieu_muc?.split('.').pop()}.
+                                       </span>
+                                       <span>{item.tieu_muc}</span>
+                                     </div>
+                                     {item.ghi_chu && (
+                                       <div className="mt-2 text-[10pt] text-slate-500 italic bg-slate-50 p-2 rounded ml-6">
+                                         Ghi chú minh chứng: {item.ghi_chu}
+                                       </div>
+                                     )}
+                                     {item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0 && (
+                                       <div className="mt-2 flex gap-2 ml-6 print:hidden">
+                                         {item.hinh_anh_minh_chung.map((url, i) => (
+                                           <div key={i} className="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                                             <img src={url} alt="Minh chứng" className="w-full h-full object-cover" />
+                                           </div>
+                                         ))}
+                                       </div>
+                                     )}
+                                   </td>
+                                   <td className="border-r border-black p-2 text-center font-bold text-slate-400">{item.nhom?.replace('Mức ', '') || '1'}</td>
+                                   <td className="p-0 h-full">
+                                      <div className="flex h-full min-h-[44px] divide-x divide-black text-center font-black">
+                                         <div className="w-20 flex items-center justify-center text-green-600">{item.dat_muc === 'Đạt' ? 'X' : ''}</div>
+                                         <div className="w-20 flex items-center justify-center text-red-600">{item.dat_muc === 'Chưa đạt' ? 'X' : ''}</div>
+                                         <div className="w-20 flex items-center justify-center text-slate-400">{item.dat_muc === 'Không đánh giá' ? 'X' : ''}</div>
+                                      </div>
+                                   </td>
+                                 </tr>
+                               ))}
+                             </React.Fragment>
+                           );
+                         })}
+                       </React.Fragment>
+                     ))}
+                   </React.Fragment>
+                 ))}
               </tbody>
             </table>
           </div>

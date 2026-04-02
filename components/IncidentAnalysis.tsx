@@ -276,14 +276,41 @@ const IncidentAnalysis: React.FC = () => {
         setIsAnalyzing(true);
         setAiRole(role);
         try {
-            const prompt = `LỆNH: Phân tích RCA Hệ thống cho [${incident.so_bc_ma_scyk}].
+            const prompt = `LỆNH: Phân tích RCA (5-Whys và Ishikawa) cho sự cố: [${incident.so_bc_ma_scyk}].
 DỮ LIỆU: ${incident.mo_ta_su_co}. ${currentVerification?.ket_qua_xac_minh || ''}.
-QUY TẮC BẮT BUỘC:
-1. KHÔNG đổ lỗi cá nhân (thiếu chú ý, cẩu thả).
-2. 5-WHYS LOGIC: Mỗi WHY sau phải là nguyên nhân trực tiếp của WHY trước (W1 -> W2 -> W3 -> W4 -> W5).
-3. ĐÀO SÂU: Phải tìm ra lỗ hổng trong QUY TRÌNH / GIÁM SÁT / ĐÀO TẠO.
-VÍ DỤ CHUẨN: W1: Không tuân thủ -> W2: Thiếu checklist -> W3: Chưa chuẩn hóa quy trình -> W4: Thiếu giám sát/audit định kỳ.
-YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, environment, whys, root, solution, incidentTypes, causeGroups).`;
+
+QUY TẮC PHÂN TÍCH 5-WHYS (BẮT BUỘC):
+1. Mỗi WHY phải gồm cặp { question, answer }.
+2. Câu hỏi của W(n) phải kế thừa trực tiếp từ nội dung câu trả lời của W(n-1).
+VÍ DỤ: 
+- W1: Question: Tại sao tiêm nhầm? -> Answer: Vì không check ID.
+- W2: Question: Tại sao không check ID? -> Answer: Vì quá tải công việc.
+3. KHÔNG đổ lỗi cá nhân đơn thuần (như "do cẩu thả"). Phải tìm ra lỗ hổng hệ thống.
+
+QUY TẮC KẾT LUẬN & GIẢI PHÁP (BẮT BUỘC):
+1. Root Causes (Nguyên nhân gốc): Chia làm 3 nhóm: individual (Cá nhân), process (Quy trình), system (Hệ thống).
+2. Solutions (Giải pháp): Chia làm 3 giai đoạn: shortTerm (Ngắn hạn), mediumTerm (Trung hạn), longTerm (Dài hạn).
+
+YÊU CẦU TRẢ VỀ JSON:
+{
+  "man": "...", "method": "...", "machine": "...", "management": "...", "environment": "...",
+  "whys": [
+    {"question": "Tại sao...?", "answer": "Vì..."},
+    ... (đủ 5 whys)
+  ],
+  "root": {
+    "individual": "...", 
+    "process": "...", 
+    "system": "..."
+  },
+  "solution": {
+    "shortTerm": "...", 
+    "mediumTerm": "...", 
+    "longTerm": "..."
+  },
+  "incidentTypes": ["...", "..."],
+  "causeGroups": ["...", "..."]
+}`;
 
             const result = await analyzeWithAi(prompt, { 
                 moduleKey: role === 'SPECIALIST' ? 'RCA_SPECIALIST' : 'RCA_MANAGEMENT' 
@@ -317,9 +344,20 @@ YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, enviro
                         management: ensureString(json.management),
                         environment: ensureString(json.environment),
                     },
-                    whys: Array.isArray(json.whys) ? json.whys.map((w: any) => ensureString(w)) : [],
-                    rootCause: ensureString(json.root),
-                    solution: ensureString(json.solution),
+                    whys: Array.isArray(json.whys) ? json.whys.map((w: any) => ({
+                        question: ensureString(w.question || w.q),
+                        answer: ensureString(w.answer || w.a)
+                    })) : [],
+                    rootCause: {
+                        individual: ensureString(json.root?.individual || json.root_individual),
+                        process: ensureString(json.root?.process || json.root_process),
+                        system: ensureString(json.root?.system || json.root_system)
+                    },
+                    solution: {
+                        shortTerm: ensureString(json.solution?.shortTerm || json.sol_short),
+                        mediumTerm: ensureString(json.solution?.mediumTerm || json.sol_medium),
+                        longTerm: ensureString(json.solution?.longTerm || json.sol_long)
+                    },
                     incidentTypes: Array.isArray(json.incidentTypes) ? json.incidentTypes.map((t: any) => ensureString(t)).join(', ') : ensureString(json.incidentTypes),
                     causeGroups: Array.isArray(json.causeGroups) ? json.causeGroups.map((c: any) => ensureString(c)).join(', ') : ensureString(json.causeGroups)
                 };
@@ -343,9 +381,20 @@ YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, enviro
                         management: parse('MANAGEMENT'),
                         environment: parse('ENVIRONMENT'),
                     },
-                    whys: parse('WHYS').split(/W\d:/i).filter(l => l.trim() !== '').map(l => l.trim()),
-                    rootCause: parse('ROOT'),
-                    solution: parse('SOLUTION'),
+                    whys: parse('WHYS').split(/W\d:/i).filter(l => l.trim() !== '').map(l => ({
+                        question: "Tại sao?",
+                        answer: l.trim()
+                    })),
+                    rootCause: {
+                        individual: parse('ROOT_INDIVIDUAL') || parse('ROOT'),
+                        process: parse('ROOT_PROCESS'),
+                        system: parse('ROOT_SYSTEM')
+                    },
+                    solution: {
+                        shortTerm: parse('SOL_SHORT') || parse('SOLUTION'),
+                        mediumTerm: parse('SOL_MEDIUM'),
+                        longTerm: parse('SOL_LONG')
+                    },
                     incidentTypes: parse('TYPES'),
                     causeGroups: parse('CAUSES')
                 };
@@ -392,22 +441,36 @@ YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, enviro
                 });
             });
 
-            const ishikawaText = `PHÂN TÍCH XƯƠNG CÁ:\n- Con người (Đào tạo): ${structuredData.ishikawa.man}\n- Quy trình (Method): ${structuredData.ishikawa.method}\n- Thiết bị (Machine): ${structuredData.ishikawa.machine}\n- Môi trường: ${structuredData.ishikawa.environment}\n- Quản lý (Management): ${structuredData.ishikawa.management}`;
+            const rootTextArr = [];
+            if (structuredData.rootCause.individual) rootTextArr.push(`1. 👤 Cá nhân: ${structuredData.rootCause.individual}`);
+            if (structuredData.rootCause.process) rootTextArr.push(`2. ⚙️ Quy trình: ${structuredData.rootCause.process}`);
+            if (structuredData.rootCause.system) rootTextArr.push(`3. 🏥 Hệ thống: ${structuredData.rootCause.system}`);
+            const rootTextFull = `⚠️ KẾT LUẬN (NGUYÊN NHÂN GỐC):\n${rootTextArr.join('\n')}`;
+
+            const solTextArr = [];
+            if (structuredData.solution.shortTerm) solTextArr.push(`🔹 Ngắn hạn: ${structuredData.solution.shortTerm}`);
+            if (structuredData.solution.mediumTerm) solTextArr.push(`🔹 Trung hạn: ${structuredData.solution.mediumTerm}`);
+            if (structuredData.solution.longTerm) solTextArr.push(`🔹 Dài hạn: ${structuredData.solution.longTerm}`);
+            const solTextFull = `🛠️ ĐỀ XUẤT BIỆN PHÁP KHẮC PHỤC:\n${solTextArr.join('\n')}`;
+
+            const whysText = structuredData.whys.map((w: any, idx: number) => `❓ WHY ${idx + 1}:\nQuestion: ${w.question}\n➡️ Answer: ${w.answer}`).join('\n\n');
+
+            const ishikawaText = `🐟 BIỂU ĐỒ XƯƠNG CÁ:\n- Con người (Đào tạo): ${structuredData.ishikawa.man}\n- Quy trình (Method): ${structuredData.ishikawa.method}\n- Thiết bị (Machine): ${structuredData.ishikawa.machine}\n- Môi trường: ${structuredData.ishikawa.environment}\n- Quản lý (Management): ${structuredData.ishikawa.management}`;
 
             setFormData(prev => ({
                 ...prev,
                 i_mo_ta_chi_tiet: `${prev.i_mo_ta_chi_tiet}\n\n${ishikawaText}`,
                 ii_phan_loai_theo_nhom: selectedTypes.join('\n'),
-                iiii_phan_loai_theo_nhom_nguyen_nhan: `NGUYÊN NHÂN GỐC TƯ DUY HỆ THỐNG: ${structuredData.rootCause}\n\n5 WHYS (Câu hỏi -> Trả lời):\n${structuredData.whys.join('\n')}\n\n${selectedCauses.join('\n')}`,
-                iiiii_han_dong_khac_phuc: structuredData.solution,
-                iiiiii_de_xuat_khuyen_cao: "Khuyến nghị quản lý hệ thống:\n" + structuredData.solution
+                iiii_phan_loai_theo_nhom_nguyen_nhan: `${rootTextFull}\n\n5 WHYS (Câu hỏi -> Trả lời):\n${whysText}\n\n${selectedCauses.join('\n')}`,
+                iiiii_han_dong_khac_phuc: solTextFull,
+                iiiiii_de_xuat_khuyen_cao: "Khuyến nghị quản lý hệ thống:\n" + solTextFull
             }));
         } else {
             // Section B Mapping handled similarly
             setMgmtData(prev => ({
                 ...prev,
-                findings: structuredData.rootCause || structuredData.ishikawa.man,
-                severityPatient: structuredData.rootCause?.includes('NC2') ? 'E' : (structuredData.rootCause?.includes('NC3') ? 'G' : 'C'),
+                findings: structuredData.rootCause.process || structuredData.rootCause.system || structuredData.ishikawa.man,
+                severityPatient: (structuredData.rootCause.system?.includes('NC2') || structuredData.rootCause.process?.includes('NC2')) ? 'E' : (structuredData.rootCause.system?.includes('NC3') ? 'G' : 'C'),
             }));
         }
 
@@ -547,8 +610,8 @@ YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, enviro
                                     </div>
                                 ) : (
                                     /* 5 Whys Chain */
-                                    <div className="space-y-4">
-                                        {structuredData.whys.map((step: string, i: number) => (
+                                    <div className="space-y-6">
+                                        {structuredData.whys.map((w: any, i: number) => (
                                             <div key={i} className="flex gap-4 group">
                                                 <div className="flex flex-col items-center">
                                                     <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-xs">
@@ -556,9 +619,15 @@ YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, enviro
                                                     </div>
                                                     {i < structuredData.whys.length - 1 && <div className="w-0.5 h-full bg-slate-800" />}
                                                 </div>
-                                                <div className="pb-6">
-                                                   <p className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-[0.2em]">SỰ CỐ TẠI SAO ({i + 1})</p>
-                                                   <p className="text-white text-lg font-bold group-hover:text-indigo-400 transition-colors uppercase leading-snug">{step}</p>
+                                                <div className="pb-4 flex-1">
+                                                   <div className="mb-4">
+                                                       <p className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-[0.2em]">❓ WHY {i + 1} (QUESTION)</p>
+                                                       <p className="text-indigo-400 text-lg font-bold leading-snug uppercase">{w.question}</p>
+                                                   </div>
+                                                   <div className="pl-4 border-l-2 border-slate-800">
+                                                       <p className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-[0.2em]">➡️ ANSWER</p>
+                                                       <p className="text-white text-base font-medium leading-relaxed italic">"{w.answer}"</p>
+                                                   </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -573,15 +642,71 @@ YÊU CẦU: TRẢ VỀ JSON DUY NHẤT (man, method, machine, management, enviro
                                         <div className="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-widest">
                                             <AlertCircle size={18} /> Kết luận & Đề xuất
                                         </div>
-                                        <div className="bg-rose-500/5 border border-rose-500/20 p-6 rounded-2xl space-y-3">
-                                            <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest">NGUYÊN NHÂN GỐC RỄ (ROOT CAUSE)</p>
-                                            <p className="text-white text-base font-bold italic leading-relaxed">{structuredData.rootCause}</p>
+                                        <div className="bg-rose-500/5 border border-rose-500/20 p-6 rounded-2xl space-y-4">
+                                            <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest">⚠️ NGUYÊN NHÂN GỐC (ROOT CAUSES)</p>
+                                            <div className="space-y-4">
+                                                {structuredData.rootCause.individual && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-rose-500 shrink-0 mt-1">👤</span>
+                                                        <div>
+                                                            <p className="text-rose-300 text-[9px] font-black uppercase">Cá nhân</p>
+                                                            <p className="text-white text-xs font-medium">{structuredData.rootCause.individual}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {structuredData.rootCause.process && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-rose-500 shrink-0 mt-1">⚙️</span>
+                                                        <div>
+                                                            <p className="text-rose-300 text-[9px] font-black uppercase">Quy trình</p>
+                                                            <p className="text-white text-xs font-medium">{structuredData.rootCause.process}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {structuredData.rootCause.system && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-rose-500 shrink-0 mt-1">🏥</span>
+                                                        <div>
+                                                            <p className="text-rose-300 text-[9px] font-black uppercase">Hệ thống</p>
+                                                            <p className="text-white text-xs font-medium">{structuredData.rootCause.system}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="space-y-4">
-                                        <div className="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-2xl space-y-3">
-                                            <p className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">GIẢI PHÁP ĐỀ XUẤT</p>
-                                            <p className="text-white text-sm font-medium leading-relaxed">{structuredData.solution}</p>
+                                        <div className="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-2xl space-y-4">
+                                            <p className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">🛠️ BIỆN PHÁP KHẮC PHỤC (SOLUTIONS)</p>
+                                            <div className="space-y-4">
+                                                {structuredData.solution.shortTerm && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-emerald-500 shrink-0">🔹</span>
+                                                        <div>
+                                                            <p className="text-emerald-300 text-[9px] font-black uppercase">Ngắn hạn</p>
+                                                            <p className="text-white text-xs font-medium">{structuredData.solution.shortTerm}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {structuredData.solution.mediumTerm && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-emerald-500 shrink-0">🔹</span>
+                                                        <div>
+                                                            <p className="text-emerald-300 text-[9px] font-black uppercase">Trung hạn</p>
+                                                            <p className="text-white text-xs font-medium">{structuredData.solution.mediumTerm}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {structuredData.solution.longTerm && (
+                                                    <div className="flex gap-2">
+                                                        <span className="text-emerald-500 shrink-0">🔹</span>
+                                                        <div>
+                                                            <p className="text-emerald-300 text-[9px] font-black uppercase">Dài hạn</p>
+                                                            <p className="text-white text-xs font-medium">{structuredData.solution.longTerm}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <button 
                                             onClick={applyDashboardToForm}
