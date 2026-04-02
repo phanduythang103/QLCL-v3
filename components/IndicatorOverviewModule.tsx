@@ -160,18 +160,18 @@ const ChartRow = ({
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2 min-w-0">
           <RowIcon size={15} className={`${iconColor} shrink-0`} />
-          <span className="text-sm font-black text-slate-800 group-hover:text-[#009900] transition-colors tracking-tight truncate lowercase first-letter:uppercase">
+          <span className="text-table font-bold text-slate-800 group-hover:text-[#009900] transition-colors tracking-tight truncate lowercase first-letter:uppercase">
             {label}
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-4">
           {target !== null && target !== undefined && (
-            <span className="text-sm text-[#009900] font-black whitespace-nowrap">
+            <span className="text-[11px] text-[#009900] font-bold whitespace-nowrap">
               Mục tiêu: {target}{unit}
             </span>
           )}
           {hasData ? (
-            <span className={`text-sm font-black whitespace-nowrap ${
+            <span className={`text-lg font-bold whitespace-nowrap ${
               status === 'EXCEEDED' ? 'text-indigo-600' :
               status === 'SUCCESS' ? 'text-[#009900]' : 
               status === 'WARNING' ? 'text-amber-600' : 
@@ -240,24 +240,24 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-slate-50`}>
             <RowIcon size={16} className={iconColor} />
           </div>
-          <span className="text-sm font-black text-slate-800 group-hover:text-[#009900] transition-colors leading-snug lowercase first-letter:uppercase">
+          <span className="text-table font-bold text-slate-800 group-hover:text-[#009900] transition-colors leading-snug lowercase first-letter:uppercase">
             {cfg.ten_chi_so}
           </span>
         </div>
-        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${statusBadge.cls}`}>
+        <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${statusBadge.cls}`}>
           {statusBadge.label}
         </span>
       </div>
 
       {/* Mục tiêu + kết quả */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-base text-[#009900] font-black">
+        <span className="text-lg text-[#009900] font-bold">
           {cfg.muc_tieu !== null && cfg.muc_tieu !== undefined
             ? `MT: ${cfg.muc_tieu}${unit}`
             : 'Chưa đặt mục tiêu'}
         </span>
         {hasData ? (
-          <span className={`text-base font-black ${
+          <span className={`text-lg font-bold ${
             status === 'EXCEEDED' ? 'text-indigo-600' :
             status === 'SUCCESS' ? 'text-[#009900]' : 
             status === 'WARNING' ? 'text-amber-600' : 'text-red-600'
@@ -551,8 +551,8 @@ const IndicatorOverviewModule: React.FC = () => {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tổng quan Chỉ số QLCL</h2>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">So sánh mục tiêu – kết quả</p>
+          <h2 className="text-main-title font-bold text-slate-800 uppercase">Tổng quan Chỉ số QLCL</h2>
+          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">So sánh mục tiêu – kết quả</p>
         </div>
         <button
           onClick={loadAll}
@@ -573,7 +573,7 @@ const IndicatorOverviewModule: React.FC = () => {
               placeholder="Tìm tên chỉ số..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-table font-bold focus:ring-2 focus:ring-[#009900]/20 transition-all"
             />
           </div>
 
@@ -657,8 +657,8 @@ const IndicatorOverviewModule: React.FC = () => {
           <div key={label} className={`${bg} border rounded-xl px-4 py-3 flex items-center gap-3`}>
             <Icon size={18} className={`${color} shrink-0`} />
             <div>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-              <p className={`text-lg font-black ${color}`}>{val}</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+              <p className={`text-lg font-bold ${color}`}>{val}</p>
             </div>
           </div>
         ))}

@@ -22,6 +22,7 @@ import { analyzeWithAi } from '../aiClient';
 import VerificationMinutes from './VerificationMinutes';
 import BcCqyList from './BcCqyList';
 import IncidentAnalysis from './IncidentAnalysis';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 
 type MenuItem = 'OVERVIEW' | 'LIST' | 'VERIFICATION' | 'REPORTS' | 'ANALYSIS';
 type ViewMode = 'LIST' | 'STATS' | 'FORM' | 'VIEW';
@@ -92,6 +93,9 @@ export const Incidents: React.FC = () => {
   // Specific filters state passed down to lists
   const [listStatusFilter, setListStatusFilter] = useState<string>('ALL');
   const [latestLogs, setLatestLogs] = useState<Record<string, ScykTienDoLog>>({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -237,13 +241,9 @@ export const Incidents: React.FC = () => {
               item={viewingItem}
               onBack={() => { setViewMode('LIST'); setViewingItem(null); loadData(); }}
               onEdit={() => { setEditingItem(viewingItem); setViewMode('FORM'); }}
-              onDelete={async () => {
-                if (window.confirm('Bạn có chắc muốn xóa?')) {
-                  await deleteBaoCaoScyk(viewingItem.id);
-                  setViewMode('LIST');
-                  setViewingItem(null);
-                  loadData();
-                }
+              onDelete={() => {
+                setTargetDeleteId(viewingItem.id);
+                setIsDeleteModalOpen(true);
               }}
               onStatusUpdate={async (status: string) => {
                 try {
@@ -302,15 +302,9 @@ export const Incidents: React.FC = () => {
                         data={incidents}
                         onCreate={() => { setEditingItem(null); setViewMode('FORM'); }}
                         onEdit={(item) => { setEditingItem(item); setViewMode('FORM'); }}
-                        onDelete={async (id) => {
-                          if (window.confirm('Bạn có chắc muốn xóa?')) {
-                            try {
-                              await deleteBaoCaoScyk(id);
-                              loadData();
-                            } catch (err: any) {
-                              alert('Không thể xóa sự cố: ' + err.message);
-                            }
-                          }
+                        onDelete={(id) => {
+                          setTargetDeleteId(id);
+                          setIsDeleteModalOpen(true);
                         }}
                         onView={(item) => { setViewingItem(item); setViewMode('VIEW'); }}
                         onStatusUpdated={() => loadData()}
@@ -346,6 +340,30 @@ export const Incidents: React.FC = () => {
           )}
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={async () => {
+          if (!targetDeleteId) return;
+          setIsDeleting(true);
+          try {
+            await deleteBaoCaoScyk(targetDeleteId);
+            setIsDeleteModalOpen(false);
+            if (viewingItem && viewingItem.id === targetDeleteId) {
+              setViewMode('LIST');
+              setViewingItem(null);
+            }
+            loadData();
+          } catch (err: any) {
+            alert('Lỗi khi xóa: ' + err.message);
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        title="Xác nhận xóa sự cố"
+        message="Bạn có chắc chắn muốn xóa báo cáo sự cố này không? Thao tác này không thể hoàn tác."
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
@@ -622,7 +640,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
         {canCreate('INCIDENTS', 'LIST') && (
           <button
             onClick={onCreate}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl text-label font-black uppercase flex items-center transition-all shadow-xl shadow-red-900/10 active:scale-95"
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl text-table font-bold uppercase flex items-center transition-all shadow-xl shadow-red-900/10 active:scale-95"
           >
             <Plus className="w-5 h-5 mr-2" /> Báo cáo sự cố mới
           </button>
@@ -631,18 +649,21 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
 
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm text-left text-slate-600 border-collapse border border-slate-300">
-          <thead className="bg-[#009900] text-white font-black text-table uppercase text-center align-middle h-14">
+        <table className="table-standardized">
+          <thead>
             <tr>
-              <th className="border border-slate-300 px-3 py-2 w-48 text-left">Ngày báo cáo</th>
-              <th className="border border-slate-300 px-3 py-2 w-48 text-left">Đơn vị báo cáo</th>
-              <th className="border border-slate-300 px-3 py-2">Mô tả sự cố</th>
-              <th className="border border-slate-300 px-3 py-2 w-40">Thao tác</th>
+              <th className="w-40">Ngày báo cáo</th>
+              <th className="w-48">Đơn vị báo cáo</th>
+              <th className="w-36">Cơ quan tiếp nhận</th>
+              <th className="w-36">Nhóm báo cáo</th>
+              <th className="w-48">Nhóm sự cố</th>
+              <th>Mô tả sự cố</th>
+              <th className="w-40 text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredData.length === 0 ? (
-              <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</td></tr>
+              <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-400">Không tìm thấy sự cố phù hợp</td></tr>
             ) : (
               filteredData.map((inc) => {
                 const uDept = user?.department?.trim().toLowerCase() || '';
@@ -652,36 +673,48 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
 
                 return (
                   <tr key={inc.id} className="hover:bg-slate-50 transition-colors text-table text-black group">
-                    <td className="border border-slate-300 px-3 py-4">
-                      <div className="flex flex-col gap-1">
+                    <td className="border border-slate-300 px-3 py-4 text-center">
+                      <div className="flex flex-col gap-1 items-center">
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-slate-400" />
-                          <span className="font-black text-black">{inc.ngay_bao_cao ? new Date(inc.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}</span>
+                          <span className="text-black font-bold">{inc.ngay_bao_cao ? new Date(inc.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}</span>
                         </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] w-fit font-bold ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
-                          {inc.hinh_thuc_bao_cao || 'Tự nguyện'}
-                        </span>
-                        <div className="mt-1 text-[10px] font-mono text-slate-400 italic">#{inc.so_bc_ma_scyk}</div>
+                        <div className="text-[10px] font-mono text-slate-400 italic">#{inc.so_bc_ma_scyk}</div>
                       </div>
                     </td>
                     <td className="border border-slate-300 px-3 py-4">
                       <div className="flex flex-col gap-1">
-                        <div className="font-black text-black text-table">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
-                        <div className="text-[11px] text-slate-500 font-medium">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</div>
+                        <div className="text-black text-table font-bold">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
+                        <div className="text-[11px] text-slate-500 font-medium tracking-tight">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</div>
                         <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                           <Clock size={12} /> Xảy ra: {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : '---'}
                         </div>
                       </div>
                     </td>
-                    <td className="border border-slate-300 px-3 py-4 max-w-md">
+                    <td className="border border-slate-300 px-3 py-4 text-center">
+                      <span className={`px-2 py-1 rounded-full text-[11px] font-black uppercase tracking-wider ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'}`}>
+                        {inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'Cục Quân y' : 'Bệnh viện'}
+                      </span>
+                    </td>
+                    <td className="border border-slate-300 px-3 py-4 text-center">
+                      <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-tight ${inc.nhom_bao_cao === 'Ngoài sự cố y khoa' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                        {inc.nhom_bao_cao || 'Sự cố y khoa'}
+                      </span>
+                    </td>
+                    <td className="border border-slate-300 px-3 py-4">
+                      <div className="text-[10px] font-bold text-slate-600 uppercase leading-tight line-clamp-2">
+                        {inc.nhom_su_co || 'Khác'}
+                      </div>
+                    </td>
+                    <td className="border border-slate-300 px-3 py-4">
                       <div className="flex flex-col gap-2">
-                        <p className="line-clamp-3 text-black leading-relaxed font-medium text-sm">{inc.mo_ta_su_co || '---'}</p>
+                        <p className="line-clamp-3 text-black leading-relaxed font-normal text-table">{inc.mo_ta_su_co || '---'}</p>
                         <div className="flex items-center gap-3">
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded flex items-center gap-1 ${getStatusColor(inc.trang_thai)} bg-white border border-current uppercase`}>
+                          <span className={`text-[10px] font-normal px-2 py-0.5 rounded flex items-center gap-1 ${getStatusColor(inc.trang_thai)} bg-white border border-current uppercase`}>
                             {getStatusLabel(inc.trang_thai)}
                           </span>
                           {inc.phan_loai_ban_dau && (
-                            <span className="text-[10px] text-black/40 font-black bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{inc.phan_loai_ban_dau}</span>
+                            <span className="text-[10px] text-black/40 font-normal bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 uppercase">{inc.phan_loai_ban_dau}</span>
                           )}
                         </div>
                       </div>
@@ -767,8 +800,11 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                   <div className="font-bold text-slate-800 text-[11px] mb-1 leading-tight">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
                   <div className="flex items-center justify-between text-[10px]">
                     <span className="text-slate-500 font-medium">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'text-red-600' : 'text-blue-600'}`}>
-                      {inc.hinh_thuc_bao_cao || 'Tự nguyện'}
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'bg-red-50 text-red-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                      {inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'CQY' : 'BV'}
+                    </span>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${inc.nhom_bao_cao === 'Ngoài sự cố y khoa' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>
+                      {inc.nhom_bao_cao === 'Ngoài sự cố y khoa' ? 'Ngoài SCYK' : 'SCYK'}
                     </span>
                   </div>
                 </div>
@@ -1168,6 +1204,12 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                   </td>
                 </tr>
                 <tr>
+                  <td className="border border-slate-400 p-2 bg-blue-50 font-bold w-1/2">NHÓM SỰ CỐ (INCIDENT TYPE):</td>
+                  <td className="border border-slate-400 p-2 w-1/2 font-bold uppercase">
+                    {item.nhom_su_co || 'Khác'}
+                  </td>
+                </tr>
+                <tr>
                   <td className="border border-slate-400 p-2"><strong>Số báo cáo/Mã số sự cố:</strong> {item.so_bc_ma_scyk}</td>
                   <td className="border border-slate-400 p-2"><strong>Ngày báo cáo:</strong> {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : ''}</td>
                 </tr>
@@ -1287,9 +1329,27 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                 </span>
               </p>
             </div>
-            <div className="text-right">
-              <span className="block text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Mức độ</span>
-              <span className="text-label font-black text-black uppercase">{item.phan_loai_ban_dau || 'Chưa phân loại'}</span>
+            <div className="flex gap-4">
+              <div className="text-right">
+                <span className="block text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Nhóm BC</span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${item.nhom_bao_cao === 'Ngoài sự cố y khoa' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                  {item.nhom_bao_cao || 'Sự cố y khoa'}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="block text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Cơ quan</span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${item.hinh_thuc_bao_cao === 'Bắt buộc' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'}`}>
+                  {item.hinh_thuc_bao_cao === 'Bắt buộc' ? 'Cục Quân y' : 'Bệnh viện'}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="block text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Nhóm sự cố</span>
+                <span className="text-[10px] font-black text-primary-700 uppercase bg-primary-50 px-2 py-0.5 rounded border border-primary-100">{item.nhom_su_co || 'Khác'}</span>
+              </div>
+              <div className="text-right">
+                <span className="block text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-1">Mức độ</span>
+                <span className="text-label font-black text-black uppercase">{item.phan_loai_ban_dau || 'Chưa phân loại'}</span>
+              </div>
             </div>
           </div>
 
@@ -1596,6 +1656,8 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
     thong_bao_nb: editingItem?.thong_bao_nb || 'Không ghi nhận',
     phan_loai_sc: editingItem?.phan_loai_sc || 'Đã xảy ra',
     phan_loai_ban_dau: editingItem?.phan_loai_ban_dau || 'Nhẹ',
+    nhom_bao_cao: editingItem?.nhom_bao_cao || 'Sự cố y khoa',
+    nhom_su_co: editingItem?.nhom_su_co || 'Khác',
     ho_ten_nguoi_bc: editingItem?.ho_ten_nguoi_bc || user?.full_name || '',
     sdt: editingItem?.sdt || '',
     email: editingItem?.email || '',
@@ -1792,30 +1854,31 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
 
             {openSections.includes('general') && (
               <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 animate-in slide-in-from-top-2 duration-200">
-                {/* Form fields here... */}
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <ToggleGroup label="Hình thức báo cáo" field="hinh_thuc_bao_cao" options={['Tự nguyện', 'Bắt buộc']} value={formData.hinh_thuc_bao_cao} />
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Đơn vị báo cáo <span className="text-red-500">*</span></label>
-                    <input 
-                      type="text"
-                      list="don-vi-list"
-                      value={formData.don_vi_bao_cao}
-                      onChange={(e) => { 
-                        handleChange('don_vi_bao_cao', e.target.value); 
-                        const u = dmDonVi.find(d => d.ten_don_vi === e.target.value); 
-                        if (u) generateNextCode(u.ma_don_vi); 
-                      }}
-                      className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 bg-white transition-all placeholder:normal-case"
-                      placeholder="Nhập hoặc lọc tên khoa phòng..."
-                      autoComplete="off"
-                    />
-                    <datalist id="don-vi-list">
-                      {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>)}
-                    </datalist>
-                  </div>
-                  <MaskedDateInput label="Ngày báo cáo" value={formData.ngay_bao_cao} onChange={(val: string) => handleChange('ngay_bao_cao', val)} />
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                  <ToggleGroup label="Nhóm báo cáo" field="nhom_bao_cao" options={['Sự cố y khoa', 'Ngoài sự cố y khoa']} value={formData.nhom_bao_cao} />
+                  <ToggleGroup label="Cơ quan tiếp nhận" field="hinh_thuc_bao_cao" options={['Tự nguyện', 'Bắt buộc']} value={formData.hinh_thuc_bao_cao} />
                 </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Đơn vị báo cáo <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text"
+                    list="don-vi-list"
+                    value={formData.don_vi_bao_cao}
+                    onChange={(e) => { 
+                      handleChange('don_vi_bao_cao', e.target.value); 
+                      const u = dmDonVi.find(d => d.ten_don_vi === e.target.value); 
+                      if (u) generateNextCode(u.ma_don_vi); 
+                    }}
+                    className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 bg-white transition-all placeholder:normal-case"
+                    placeholder="Nhập hoặc lọc tên khoa phòng..."
+                    autoComplete="off"
+                  />
+                  <datalist id="don-vi-list">
+                    {dmDonVi.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ten_don_vi}</option>)}
+                  </datalist>
+                </div>
+                <MaskedDateInput label="Ngày báo cáo" value={formData.ngay_bao_cao} onChange={(val: string) => handleChange('ngay_bao_cao', val)} />
 
                 <div className="md:col-span-2 border-t border-slate-100 my-2 pt-4"></div>
 
@@ -1884,9 +1947,32 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onCancel, onSaved, editingI
                   <label className="text-[10px] text-black/40 uppercase tracking-widest ml-1">Mô tả sự cố</label>
                   <textarea rows={4} value={formData.mo_ta_su_co} onChange={e => handleChange('mo_ta_su_co', e.target.value)} className="w-full border border-slate-200 rounded-xl p-4 text-input font-medium italic outline-none focus:ring-4 focus:ring-primary-500/10 bg-white transition-all resize-none" placeholder="Mô tả chi tiết diễn biến..." />
                 </div>
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-                  <ToggleGroup label="Phân loại ban đầu" field="phan_loai_ban_dau" options={['Nhẹ', 'Trung bình', 'Nặng']} value={formData.phan_loai_ban_dau} />
-                  <ToggleGroup label="Nhóm sự cố" field="phan_loai_sc" options={['Đã xảy ra', 'Suýt xảy ra', 'Có nguy cơ']} value={formData.phan_loai_sc} />
+                <div className="md:col-span-2 space-y-4 mt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ToggleGroup label="Phân loại ban đầu" field="phan_loai_ban_dau" options={['Nhẹ', 'Trung bình', 'Nặng']} value={formData.phan_loai_ban_dau} />
+                    <ToggleGroup label="Tính chất sự cố" field="phan_loai_sc" options={['Đã xảy ra', 'Suýt xảy ra', 'Có nguy cơ']} value={formData.phan_loai_sc} />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-black/40 uppercase tracking-widest ml-1">Nhóm sự cố (Incident Type)</label>
+                    <select 
+                      value={formData.nhom_su_co} 
+                      onChange={e => handleChange('nhom_su_co', e.target.value)} 
+                      className="w-full border border-slate-200 rounded-xl p-3 text-input font-black uppercase outline-none focus:ring-4 focus:ring-primary-500/10 bg-white cursor-pointer transition-all"
+                    >
+                      <option value="Thực hiện quy trình kỹ thuật, thủ thuật chuyên môn">1. Thực hiện quy trình kỹ thuật, thủ thuật chuyên môn</option>
+                      <option value="Nhiễm khuẩn bệnh viện">2. Nhiễm khuẩn bệnh viện</option>
+                      <option value="Thuốc và dịch truyền">3. Thuốc và dịch truyền</option>
+                      <option value="Máu và các chế phẩm máu">4. Máu và các chế phẩm máu</option>
+                      <option value="Thiết bị y tế">5. Thiết bị y tế</option>
+                      <option value="Hành vi">6. Hành vi</option>
+                      <option value="Tai nạn đối với người bệnh">7. Tai nạn đối với người bệnh</option>
+                      <option value="Hạ tầng cơ sở">8. Hạ tầng cơ sở</option>
+                      <option value="Quản lý nguồn lực, tổ chức">9. Quản lý nguồn lực, tổ chức</option>
+                      <option value="Hồ sơ, tài liệu, thủ tục hành chính">10. Hồ sơ, tài liệu, thủ tục hành chính</option>
+                      <option value="Khác">11. Khác</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             )}

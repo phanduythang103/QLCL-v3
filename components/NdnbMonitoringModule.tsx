@@ -68,7 +68,7 @@ const defaultForm = (userName = '', criteria: any[]): any => {
 
 // ─── COMMON SUBCOMPONENTS ─────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -199,9 +199,9 @@ const ModuleListView = ({ type, data, onView, onEdit, onDelete, onAdd }: any) =>
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-[#009900] text-white text-[10px] font-black uppercase tracking-widest">
-            <tr><th className="p-4">Ngày</th><th className="p-4">Khoa</th><th className="p-4">Đối tượng</th><th className="p-4">Người GS</th><th className="p-4 text-center">Tỷ lệ</th><th className="p-4 text-right">Thao tác</th></tr>
+        <table className="table-standardized">
+          <thead className="bg-[#009900] text-white">
+            <tr><th>Ngày</th><th>Khoa</th><th>Đối tượng</th><th>Người GS</th><th className="text-center">Tỷ lệ</th><th className="text-right">Thao tác</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map((d: any) => {
@@ -209,11 +209,11 @@ const ModuleListView = ({ type, data, onView, onEdit, onDelete, onAdd }: any) =>
               const color = rate === 100 ? 'text-[#009900]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
               return (
                 <tr key={d.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-4 text-sm font-bold text-slate-600">{new Date(d.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
-                  <td className="p-4 text-sm font-bold text-slate-800 uppercase">{d.khoa_duoc_giam_sat}</td>
-                  <td className="p-4 text-sm text-slate-600 font-bold">{d.doi_tuong_giam_sat}</td>
-                  <td className="p-4 text-xs text-slate-400">{d.nguoi_giam_sat}</td>
-                  <td className={`p-4 text-center font-black text-lg ${color}`}>{rate}%</td>
+                  <td className="p-4 text-table font-normal text-slate-600">{new Date(d.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
+                  <td className="p-4 text-table font-normal text-slate-800 uppercase">{d.khoa_duoc_giam_sat}</td>
+                  <td className="p-4 text-table text-slate-600 font-normal">{d.doi_tuong_giam_sat}</td>
+                  <td className="p-4 text-sm text-slate-400 font-normal">{d.nguoi_giam_sat}</td>
+                  <td className={`p-4 text-center font-bold text-lg ${color}`}>{rate}%</td>
                   <td className="p-4 flex justify-end gap-2">
                     <button onClick={() => onView(d)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl"><Eye size={16} /></button>
                     <button onClick={() => onEdit(d)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"><Edit2 size={16} /></button>
@@ -253,8 +253,8 @@ const ReportTab = ({ dataCriteria, dataTech }: any) => {
         <h3 className="text-sm font-black text-slate-800 uppercase">{title}</h3>
       </div>
       <div className="p-4 flex-1">
-        <table className="w-full text-[12pt]">
-          <thead><tr><th className="text-left py-2 text-slate-400">Khoa</th><th className="text-center py-2 text-slate-400">Lượt</th><th className="text-center py-2 text-slate-400">Tỷ lệ</th></tr></thead>
+        <table className="table-standardized no-border-outer">
+          <thead><tr><th className="text-left">Khoa</th><th className="text-center">Lượt</th><th className="text-center">Tỷ lệ</th></tr></thead>
           <tbody className="divide-y divide-slate-50">
             {data.slice(0, 5).map((r: any) => (
               <tr key={r.dept}><td className="py-2 font-bold text-slate-700 truncate max-w-[120px]">{r.dept}</td><td className="py-2 text-center text-slate-500 font-bold">{r.count}</td><td className={`py-2 text-center font-black ${Number(r.avg) === 100 ? 'text-[#009900]' : 'text-red-500'}`}>{r.avg}%</td></tr>
@@ -279,7 +279,7 @@ const ReportTab = ({ dataCriteria, dataTech }: any) => {
 };
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export const NdnbMonitoringModule: React.FC = () => {
+export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'CRITERIA' | 'TECHNIQUE' | 'REPORT'>('OVERVIEW');
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
@@ -435,8 +435,8 @@ const MergedForm = ({ type, item, criteria, currentUser, departmentList, onSaved
             {type === 'CRITERIA' ? <Users size={22} /> : <Activity size={22} />}
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-800 uppercase">{item?.id ? 'Sửa' : 'Thêm'} phiếu: {type === 'CRITERIA' ? 'Nhận diện đúng NB' : 'Theo Kỹ thuật'}</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{type === 'CRITERIA' ? 'Tiêu chí định danh cốt lõi' : 'Kiểm soát tại các thời điểm rủi ro'}</p>
+            <h2 className="text-main-title font-bold text-slate-800 uppercase leading-tight">{item?.id ? 'Sửa' : 'Thêm'} phiếu: {type === 'CRITERIA' ? 'Nhận diện đúng NB' : 'Theo Kỹ thuật'}</h2>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{type === 'CRITERIA' ? 'Tiêu chí định danh cốt lõi' : 'Kiểm soát tại các thời điểm rủi ro'}</p>
           </div>
         </div>
         <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl"><X size={22} /></button>
@@ -508,7 +508,7 @@ const MergedDetail = ({ type, item, criteria, currentUser, onClose, onEdit }: an
 
         <div className="text-center space-y-3">
            <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center mx-auto shadow-xl mb-4 ${type === 'CRITERIA' ? 'bg-blue-600 text-white' : 'bg-emerald-600 text-white'}`}>{type === 'CRITERIA' ? <Users size={32}/> : <Activity size={32}/>}</div>
-           <h1 className="text-2xl font-black text-slate-900 uppercase leading-tight tracking-tight">BẢNG KIỂM GIÁM SÁT NHẬN DIỆN NGƯỜI BỆNH<br/><span className={type === 'CRITERIA' ? 'text-blue-600' : 'text-emerald-600'}>{type === 'CRITERIA' ? 'THEO TIÊU CHÍ ĐỊNH DANH' : 'THEO THỜI ĐIỂM & KỸ THUẬT'}</span></h1>
+           <h1 className="text-main-title font-bold text-slate-900 uppercase leading-tight tracking-tight">BẢNG KIỂM GIÁM SÁT NHẬN DIỆN NGƯỜI BỆNH<br/><span className={type === 'CRITERIA' ? 'text-blue-600' : 'text-emerald-600'}>{type === 'CRITERIA' ? 'THEO TIÊU CHÍ ĐỊNH DANH' : 'THEO THỜI ĐIỂM & KỸ THUẬT'}</span></h1>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 border-y border-dashed border-slate-200">
@@ -520,10 +520,10 @@ const MergedDetail = ({ type, item, criteria, currentUser, onClose, onEdit }: an
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border-4 border-slate-900 text-[12pt]">
-            <thead className="bg-[#009900] text-white font-black uppercase text-[12pt]">
+            <thead className="bg-[#009900] text-white font-bold uppercase text-table">
                <tr><th className="p-4 border-2 border-slate-900 w-10">STT</th><th className="p-4 border-2 border-slate-900 text-left">Nội dung giám sát</th><th className="p-4 border-2 border-slate-900 w-24">Kết quả</th><th className="p-4 border-2 border-slate-900">Ghi chú vi phạm</th></tr>
             </thead>
-            <tbody className="font-bold text-slate-700">
+            <tbody className="font-normal text-slate-700">
                {criteria.map((c: any, i: number) => {
                  const isPass = (item as any)[c.id] !== false;
                  return (

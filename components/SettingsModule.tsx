@@ -125,19 +125,6 @@ export const SettingsModule: React.FC = () => {
 
       {/* Content Area */}
       <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[500px]">
-        {/* Header of Content */}
-        <div className="p-4 lg:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
-          <div>
-            <h2 className="text-title font-black text-black flex items-center gap-2 uppercase">
-              <span className="lg:hidden p-2 bg-primary-50 text-primary-600 rounded-lg">
-                {menuItems.find(i => i.id === activeTab)?.icon}
-              </span>
-              {menuItems.find(i => i.id === activeTab)?.label}
-            </h2>
-            <p className="text-table text-black/60 font-bold uppercase tracking-wider">Cấu hình chi tiết cho phần quản lý {menuItems.find(i => i.id === activeTab)?.label.toLowerCase()}.</p>
-          </div>
-        </div>
-
         {/* Body of Content */}
         <div className="flex-1 p-4 lg:p-6 overflow-y-auto bg-slate-50/30 custom-scrollbar">
           {renderContent(activeTab)}

@@ -105,7 +105,7 @@ const defaultFormCapCuu = (userName = ''): any => {
 
 // ─── SHARED UI COMPONENTS ─────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -121,7 +121,7 @@ const StatCard = ({ icon, label, value, color }: any) => {
   return (
     <div className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4">
       <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${colors[color]}`}>{React.cloneElement(icon, { size: 20 })}</div>
-      <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p><h3 className="text-lg font-black text-slate-800">{value}</h3></div>
+      <div><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p><h3 className="text-lg font-bold text-slate-800">{value}</h3></div>
     </div>
   );
 };
@@ -219,18 +219,18 @@ const CapCuuErrorSummary = ({ data }: { data: GiamSatCapCuu[] }) => {
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-8 border border-slate-100 space-y-6">
       <div className="text-center space-y-2 mb-8">
-        <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">TỔNG HỢP VI PHẠM CÔNG TÁC CẤP CỨU</h2>
+        <h2 className="text-main-title font-bold text-slate-900 uppercase tracking-tight">TỔNG HỢP VI PHẠM CÔNG TÁC CẤP CỨU</h2>
         <p className="text-xs text-slate-500 italic">Dùng cho cơ quan chức năng báo cáo định kỳ về chất lượng cấp cứu.</p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border-4 border-slate-900 text-[12pt]">
-          <thead className="bg-[#009900] text-white font-black uppercase">
+        <table className="table-standardized">
+          <thead>
             <tr>
-              <th className="p-4 border-2 border-slate-900 text-left w-1/3">Nội dung giám sát (Tiêu chí)</th>
-              <th className="p-4 border-2 border-slate-900 text-center w-24">Số kíp vi phạm</th>
-              <th className="p-4 border-2 border-slate-900 text-center w-20">Tỷ lệ (%)</th>
-              <th className="p-4 border-2 border-slate-900 text-left">Ghi chú & Đơn vị</th>
+              <th className="text-left w-1/3">Nội dung giám sát (Tiêu chí)</th>
+              <th className="text-center w-24">Số kíp vi phạm</th>
+              <th className="text-center w-20">Tỷ lệ (%)</th>
+              <th className="text-left">Ghi chú & Đơn vị</th>
             </tr>
           </thead>
           <tbody className="font-bold text-slate-700">
@@ -315,17 +315,17 @@ const CapCuuList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-[#009900] text-white text-[10px] font-black uppercase tracking-widest">
-            <tr><th className="p-4">Ngày/Giờ kiểm tra</th><th className="p-4">Khoa/Đơn vị</th><th className="p-4">Người giám sát</th><th className="p-4 text-center">Tỷ lệ đạt</th><th className="p-4 text-right">Thao tác</th></tr>
+        <table className="table-standardized">
+          <thead>
+            <tr><th>Ngày/Giờ kiểm tra</th><th>Khoa/Đơn vị</th><th>Người giám sát</th><th className="text-center">Tỷ lệ đạt</th><th className="text-right">Thao tác</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map((d: any) => (
               <tr key={d.id} className="hover:bg-slate-50">
-                <td className="p-4 text-sm font-bold text-slate-600">{formatDateTime(d.ngay_kiem_tra)}</td>
-                <td className="p-4 text-sm font-black text-slate-800 uppercase">{d.don_vi_duoc_kiem_tra}</td>
-                <td className="p-4 text-[10px] text-slate-400 font-bold">{d.nguoi_kiem_tra}</td>
-                <td className={`p-4 text-center font-black text-lg ${d.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-amber-600'}`}>{d.ty_le_tuan_thu}%</td>
+                <td className="p-4 text-table font-normal text-slate-600">{formatDateTime(d.ngay_kiem_tra)}</td>
+                <td className="p-4 text-table font-normal text-slate-800 uppercase">{d.don_vi_duoc_kiem_tra}</td>
+                <td className="p-4 text-sm text-slate-400 font-normal">{d.nguoi_kiem_tra}</td>
+                <td className={`p-4 text-center font-bold text-lg ${d.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-amber-600'}`}>{d.ty_le_tuan_thu}%</td>
                 <td className="p-4 flex justify-end gap-2">
                   <button onClick={() => onView(d)} className="p-2 text-[#009900] hover:bg-green-50 rounded-xl"><Eye size={16} /></button>
                   <button onClick={() => onEdit(d)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"><Edit2 size={16} /></button>
@@ -371,7 +371,7 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
       <div className="p-7 border-b border-slate-50 flex justify-between items-center bg-green-50/50">
          <div className="flex items-center gap-4">
            <div className="w-12 h-12 bg-[#009900] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200"><Zap size={22} /></div>
-           <div><h2 className="text-xl font-black text-slate-800 uppercase">Giám sát Công tác cấp cứu</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Theo quy trình xử trí và sẵn sàng cấp cứu (13 tiêu chí)</p></div>
+           <div><h2 className="text-main-title font-bold text-slate-800 uppercase">Giám sát Công tác cấp cứu</h2><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Theo quy trình xử trí và sẵn sàng cấp cứu (13 tiêu chí)</p></div>
          </div>
          <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl"><X size={22} /></button>
       </div>
@@ -448,8 +448,8 @@ const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
         </div>
 
         <div className="text-center space-y-2">
-           <h1 className="text-2xl font-black text-slate-900 uppercase leading-tight">BẢNG KIỂM GIÁM SÁT CÔNG TÁC CẤP CỨU</h1>
-           <p className="text-[11pt] font-black text-slate-600">(Áp dụng định kỳ cho các khoa chuyên môn và Ban trực chuyên môn)</p>
+           <h1 className="text-main-title font-bold text-slate-900 uppercase leading-tight">BẢNG KIỂM GIÁM SÁT CÔNG TÁC CẤP CỨU</h1>
+           <p className="text-sm font-bold text-slate-600">(Áp dụng định kỳ cho các khoa chuyên môn và Ban trực chuyên môn)</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6 border-y border-dashed border-slate-200 text-sm font-bold uppercase tracking-tight">
@@ -459,21 +459,21 @@ const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
         </div>
 
         <div className="space-y-4">
-           <table className="w-full border-collapse border-4 border-slate-900 text-[12pt] font-bold">
-              <thead className="bg-[#f0f0f0] text-slate-900 font-black uppercase text-center">
+           <table className="w-full border-collapse border-4 border-slate-900 text-table">
+              <thead className="bg-[#f0f0f0] text-slate-900 font-bold uppercase text-center text-table">
                  <tr><th className="p-3 border-2 border-slate-900 w-10">STT</th><th className="p-3 border-2 border-slate-900 text-left">Nội dung giám sát (Tiêu chuẩn quy chuẩn)</th><th className="p-3 border-2 border-slate-900 w-20">Đạt</th><th className="p-3 border-2 border-slate-900 w-20 text-red-600">K.Đạt</th><th className="p-3 border-2 border-slate-900">Ghi chú lỗi cụ thể</th></tr>
               </thead>
               <tbody>
                 {SECTIONS_CAP_CUU.map((section, sIdx) => (
                   <React.Fragment key={sIdx}>
-                    <tr className="bg-slate-100"><td colSpan={5} className="p-2 border-2 border-slate-900 font-black text-[#009900] uppercase tracking-tighter">{section.title}</td></tr>
+                    <tr className="bg-slate-100"><td colSpan={5} className="p-2 border-2 border-slate-900 font-bold text-[#009900] uppercase tracking-tighter text-table">{section.title}</td></tr>
                     {section.criteria.map((c, cIdx) => (
                       <tr key={c.id}>
-                        <td className="p-3 border-2 border-slate-900 text-center">{cIdx + 1}</td>
-                        <td className="p-3 border-2 border-slate-900 text-slate-800 leading-snug">{c.label}</td>
-                        <td className="p-3 border-2 border-slate-900 text-center">{item[c.id] && <Check size={20} className="text-[#009900] mx-auto" />}</td>
-                        <td className="p-3 border-2 border-slate-900 text-center">{!item[c.id] && <X size={20} className="text-red-500 mx-auto" />}</td>
-                        <td className="p-3 border-2 border-slate-900 italic text-red-500 text-[11pt] font-black">{item[`${c.id}_ghi_chu`]}</td>
+                        <td className="p-3 border-2 border-slate-900 text-center font-normal">{cIdx + 1}</td>
+                        <td className="p-3 border-2 border-slate-900 text-slate-800 leading-snug font-normal">{c.label}</td>
+                        <td className="p-3 border-2 border-slate-900 text-center font-normal">{item[c.id] && <Check size={20} className="text-[#009900] mx-auto" />}</td>
+                        <td className="p-3 border-2 border-slate-900 text-center font-normal">{!item[c.id] && <X size={20} className="text-red-500 mx-auto" />}</td>
+                        <td className="p-3 border-2 border-slate-900 italic text-red-500 text-sm font-normal">{item[`${c.id}_ghi_chu`]}</td>
                       </tr>
                     ))}
                   </React.Fragment>
@@ -509,7 +509,7 @@ const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
 };
 
 // ─── MAIN MODULE ──────────────────────────────────────────────────────────────
-export const EmergencyMonitoringModule: React.FC = () => {
+export const EmergencyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'LIST' | 'SUMMARY'>('OVERVIEW');
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');

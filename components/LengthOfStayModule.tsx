@@ -18,7 +18,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; on
     }`}
   >
     <Icon size={16} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span className="font-bold uppercase text-table tracking-wider">{label}</span>
   </button>
 );
 
@@ -281,8 +281,8 @@ export const LengthOfStayModule: React.FC = () => {
               <Icon size={28} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{label}</p>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">{value} <span className="text-sm font-bold text-slate-400">{unit}</span></p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+              <p className="text-lg font-bold text-slate-800 tracking-tight">{value} <span className="text-sm font-normal text-slate-400">{unit}</span></p>
             </div>
           </div>
         ))}
@@ -298,38 +298,38 @@ export const LengthOfStayModule: React.FC = () => {
         </div>
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-100">
-                <th className="px-6 py-4 font-black">Ngày báo cáo</th>
-                <th className="px-6 py-4 font-black">Đơn vị</th>
-                <th className="px-6 py-4 font-black text-center">Lượt RV</th>
-                <th className="px-6 py-4 font-black text-center">Ngày điều trị</th>
-                <th className="px-6 py-4 font-black text-center">Trung bình</th>
-                <th className="px-6 py-4 font-black text-center">Mục tiêu</th>
-                <th className="px-6 py-4 font-black text-right">Chênh lệch</th>
+            <thead className="bg-[#009900] text-white font-bold uppercase text-[14px]">
+              <tr>
+                <th className="px-6 py-4 rounded-tl-xl">Ngày báo cáo</th>
+                <th className="px-6 py-4">Đơn vị</th>
+                <th className="px-6 py-4 text-center">Lượt RV</th>
+                <th className="px-6 py-4 text-center">Ngày điều trị</th>
+                <th className="px-6 py-4 text-center">Trung bình</th>
+                <th className="px-6 py-4 text-center">Mục tiêu</th>
+                <th className="px-6 py-4 text-right rounded-tr-xl">Chênh lệch</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-50 text-table font-normal">
               {filteredRecords.slice(0, 5).map(r => (
                 <tr key={r.id} className="hover:bg-slate-50/30 transition-colors">
-                  <td className="px-6 py-4 text-xs font-bold text-slate-600">{r.ngay_bao_cao.split('-').reverse().join('/')}</td>
-                  <td className="px-6 py-4 text-xs font-black text-slate-800">{r.don_vi}</td>
-                  <td className="px-6 py-4 text-xs font-bold text-center">{r.tong_luot_ra_vien}</td>
-                  <td className="px-6 py-4 text-xs font-bold text-center">{r.tong_ngay_dieu_tri}</td>
-                  <td className="px-6 py-4 text-xs font-black text-center text-blue-600">{r.ngay_tb}</td>
-                  <td className="px-6 py-4 text-xs font-bold text-center text-slate-400">{r.muc_tieu}</td>
+                  <td className="px-6 py-4 font-bold text-slate-600">{r.ngay_bao_cao.split('-').reverse().join('/')}</td>
+                  <td className="px-6 py-4 font-bold text-slate-800">{r.don_vi}</td>
+                  <td className="px-6 py-4 text-center font-bold">{r.tong_luot_ra_vien}</td>
+                  <td className="px-6 py-4 text-center font-bold">{r.tong_ngay_dieu_tri}</td>
+                  <td className="px-6 py-4 text-center font-bold text-blue-600">{r.ngay_tb}</td>
+                  <td className="px-6 py-4 text-center font-bold text-slate-400">{r.muc_tieu}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1.5 shrink-0">
                       {r.chenh_lech > 0 ? (
-                        <div className="flex items-center gap-1 text-red-600 font-black text-xs">
+                        <div className="flex items-center gap-1 text-red-600 font-bold">
                           <TrendingUp size={14} /> +{r.chenh_lech}
                         </div>
                       ) : r.chenh_lech < 0 ? (
-                        <div className="flex items-center gap-1 text-[#009900] font-black text-xs">
+                        <div className="flex items-center gap-1 text-[#009900] font-bold">
                           <TrendingDown size={14} /> {r.chenh_lech}
                         </div>
                       ) : (
-                        <span className="text-slate-400 font-bold text-xs">0</span>
+                        <span className="text-slate-400 font-bold">0</span>
                       )}
                     </div>
                   </td>
@@ -399,7 +399,7 @@ export const LengthOfStayModule: React.FC = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             placeholder="Tìm theo đơn vị, người báo cáo..." 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20" 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-[#009900]/20" 
           />
         </div>
       </div>
@@ -407,39 +407,39 @@ export const LengthOfStayModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
-            <thead>
-              <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-widest border-b border-green-700">
-                <th className="px-6 py-4 font-black">Ngày</th>
-                <th className="px-6 py-4 font-black">Đơn vị</th>
-                <th className="px-6 py-4 font-black">Lượt RV</th>
-                <th className="px-6 py-4 font-black">Ngày ĐT</th>
-                <th className="px-6 py-4 font-black text-center">Trung bình</th>
-                <th className="px-6 py-4 font-black text-center">Mục tiêu</th>
-                <th className="px-6 py-4 font-black text-right">Chênh lệch</th>
-                <th className="px-6 py-4 font-black text-right">Thao tác</th>
+            <thead className="bg-[#009900] text-white font-bold uppercase text-[14px] text-center">
+              <tr>
+                <th className="px-6 py-4 rounded-tl-xl text-left">Ngày</th>
+                <th className="px-6 py-4 text-left">Đơn vị</th>
+                <th className="px-6 py-4">Lượt RV</th>
+                <th className="px-6 py-4">Ngày ĐT</th>
+                <th className="px-6 py-4">Trung bình</th>
+                <th className="px-6 py-4">Mục tiêu</th>
+                <th className="px-6 py-4">Chênh lệch</th>
+                <th className="px-6 py-4 rounded-tr-xl text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-50 text-table font-normal">
               {filteredRecords.map(r => (
                 <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4 text-xs font-bold text-slate-600">{r.ngay_bao_cao.split('-').reverse().join('/')}</td>
-                  <td className="px-6 py-4 text-xs font-black text-slate-800">{r.don_vi}</td>
-                  <td className="px-6 py-4 text-xs font-bold">{r.tong_luot_ra_vien}</td>
-                  <td className="px-6 py-4 text-xs font-bold">{r.tong_ngay_dieu_tri}</td>
-                  <td className="px-6 py-4 text-xs font-black text-center text-blue-600">{r.ngay_tb}</td>
-                  <td className="px-6 py-4 text-xs font-bold text-center text-slate-400">{r.muc_tieu}</td>
+                  <td className="px-6 py-4 font-bold text-slate-600">{r.ngay_bao_cao.split('-').reverse().join('/')}</td>
+                  <td className="px-6 py-4 font-bold text-slate-800">{r.don_vi}</td>
+                  <td className="px-6 py-4 font-bold">{r.tong_luot_ra_vien}</td>
+                  <td className="px-6 py-4 font-bold">{r.tong_ngay_dieu_tri}</td>
+                  <td className="px-6 py-4 font-bold text-center text-blue-600">{r.ngay_tb}</td>
+                  <td className="px-6 py-4 font-bold text-center text-slate-400">{r.muc_tieu}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1.5 shrink-0">
                       {r.chenh_lech > 0 ? (
-                        <div className="flex items-center gap-1 text-red-600 font-black text-xs">
+                        <div className="flex items-center gap-1 text-red-600 font-bold">
                           <TrendingUp size={14} /> +{r.chenh_lech}
                         </div>
                       ) : r.chenh_lech < 0 ? (
-                        <div className="flex items-center gap-1 text-[#009900] font-black text-xs">
+                        <div className="flex items-center gap-1 text-[#009900] font-bold">
                           <TrendingDown size={14} /> {r.chenh_lech}
                         </div>
                       ) : (
-                        <span className="text-slate-400 font-bold text-xs">0</span>
+                        <span className="text-slate-400 font-bold">0</span>
                       )}
                     </div>
                   </td>
@@ -566,8 +566,8 @@ export const LengthOfStayModule: React.FC = () => {
             <Clock size={28} />
           </div>
           <div>
-            <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Thời gian nằm viện trung bình</h2>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Phân tích & Tối ưu hóa thời gian điều trị</p>
+            <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Thời gian nằm viện trung bình</h2>
+            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Phân tích & Tối ưu hóa thời gian điều trị</p>
           </div>
         </div>
 

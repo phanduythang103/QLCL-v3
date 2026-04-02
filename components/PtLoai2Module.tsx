@@ -61,15 +61,15 @@ export const PtLoai2Module: React.FC = () => {
               <Scissors size={24} />
             </div>
             <div>
-              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tỷ lệ Phẫu thuật loại II trở lên</h2>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Giám sát & Phân tích cơ cấu kỹ thuật phẫu thuật</p>
+              <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Tỷ lệ Phẫu thuật loại II trở lên</h2>
+              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Phân tích cơ cấu kỹ thuật phẫu thuật</p>
             </div>
           </div>
           
           <div className="flex bg-slate-100/80 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
             <button
               onClick={() => setActiveTab('OVERVIEW')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-table font-bold transition-all whitespace-nowrap uppercase ${
                 activeTab === 'OVERVIEW' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -77,7 +77,7 @@ export const PtLoai2Module: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('LIST')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-table font-bold transition-all whitespace-nowrap uppercase ${
                 activeTab === 'LIST' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -289,8 +289,8 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             <FileText size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng số PT</div>
-            <div className="text-2xl font-black text-blue-600">{stats.tongSoPT}</div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Tổng số PT</div>
+            <div className="text-lg font-bold text-blue-600">{stats.tongSoPT}</div>
           </div>
         </div>
 
@@ -299,8 +299,8 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             <CheckCircle2 size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">PT Loại II trở lên</div>
-            <div className="text-2xl font-black text-emerald-600">{stats.tongLoai2TroLen}</div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">PT Loại II trở lên</div>
+            <div className="text-lg font-bold text-emerald-600">{stats.tongLoai2TroLen}</div>
           </div>
         </div>
 
@@ -309,8 +309,8 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             <Target size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-indigo-100 uppercase tracking-wider mb-1">Tỷ lệ PT ≥ Loại II</div>
-            <div className="text-2xl font-black text-white">{stats.tyLeChung}%</div>
+            <div className="text-[11px] font-bold text-indigo-100 uppercase tracking-widest leading-none mb-1">Tỷ lệ PT ≥ Loại II</div>
+            <div className="text-lg font-bold text-white">{stats.tyLeChung}%</div>
           </div>
         </div>
       </div>
@@ -322,8 +322,8 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             <Activity size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Loại Đặc Biệt</div>
-            <div className="text-2xl font-black text-rose-600">{stats.tongLoaiDB}</div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Loại Đặc Biệt</div>
+            <div className="text-lg font-bold text-rose-600">{stats.tongLoaiDB}</div>
           </div>
         </div>
 
@@ -332,8 +332,8 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             <Activity size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Loại I</div>
-            <div className="text-2xl font-black text-amber-600">{stats.tongLoai1}</div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Loại I</div>
+            <div className="text-lg font-bold text-amber-600">{stats.tongLoai1}</div>
           </div>
         </div>
 
@@ -342,8 +342,8 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             <Activity size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Loại II</div>
-            <div className="text-2xl font-black text-sky-600">{stats.tongLoai2}</div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Loại II</div>
+            <div className="text-lg font-bold text-sky-600">{stats.tongLoai2}</div>
           </div>
         </div>
       </div>
@@ -414,8 +414,8 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: PtLoai2[]
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-black">
+          <thead className="bg-[#009900] text-white font-bold uppercase text-table">
+            <tr>
               <th className="p-4 rounded-tl-xl whitespace-nowrap">Ngày báo cáo</th>
               <th className="p-4 whitespace-nowrap">Khoa</th>
               <th className="p-4 text-center">Tổng PT</th>
@@ -441,13 +441,13 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: PtLoai2[]
                     <Calendar size={14} className="text-slate-400" />
                     {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-1 font-medium">{item.nguoi_bao_cao}</div>
+                  <div className="text-[11px] text-slate-500 mt-1 font-normal uppercase tracking-widest leading-none">{item.nguoi_bao_cao}</div>
                 </td>
                 <td className="p-4 font-bold text-slate-800">{item.khoa || '---'}</td>
                 <td className="p-4 text-center font-bold text-blue-600 bg-blue-50/30">{item.tong_so_pt || 0}</td>
                 <td className="p-4 text-center font-bold text-emerald-600 bg-emerald-50/30">{item.tong_pt_loai_2_tro_len || 0}</td>
                 <td className="p-4 text-center">
-                  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-sm border border-indigo-100">
+                  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-table border border-indigo-100">
                     {item.ty_le !== null ? `${item.ty_le}%` : '0%'}
                   </span>
                 </td>
@@ -538,7 +538,7 @@ const PtLoai2FormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, dep
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-4 duration-300">
         <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-          <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+          <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2">
             <Scissors className="text-indigo-600" />
             {isReadOnly ? 'Chi tiết báo cáo' : item ? 'Cập nhật báo cáo' : 'Thêm báo cáo mới'}
           </h2>

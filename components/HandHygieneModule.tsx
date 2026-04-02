@@ -19,7 +19,7 @@ const MOMENTS = [
   "Sau khi tiếp xúc với vật dụng xung quanh NB"
 ];
 
-export const HandHygieneModule: React.FC = () => {
+export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [data, setData] = useState<GsVst[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -330,16 +330,16 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
 
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[1000px]">
-          <thead>
-            <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-[0.1em] font-black">
-              <th className="p-6">Thời gian</th>
-              <th className="p-6">Khoa được giám sát</th>
-              <th className="p-6">Đối tượng</th>
-              <th className="p-6 text-center">Cơ hội</th>
-              <th className="p-6 text-center">Tuân thủ</th>
-              <th className="p-6 text-center">Kỹ thuật</th>
-              <th className="p-6 text-right">Thao tác</th>
+        <table className="table-standardized">
+          <thead className="bg-[#009900] text-white">
+            <tr>
+              <th className="p-4">Thời gian</th>
+              <th className="p-4">Khoa được giám sát</th>
+              <th className="p-4">Đối tượng</th>
+              <th className="p-4 text-center">Cơ hội</th>
+              <th className="p-4 text-center">Tuân thủ</th>
+              <th className="p-4 text-center">Kỹ thuật</th>
+              <th className="p-4 text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
@@ -578,10 +578,10 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
                <Camera size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+              <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">
                 {isReadOnly ? 'Chi tiết giám sát' : item ? 'Cập nhật giám sát' : 'Phiếu giám sát VST'}
               </h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cơ hội và tuân thủ kỹ thuật vệ sinh tay</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Cơ hội và tuân thủ kỹ thuật vệ sinh tay</p>
             </div>
           </div>
           <button onClick={onClose} className="p-3 text-slate-400 hover:bg-slate-200 rounded-2xl transition-all active:scale-90 bg-white border border-slate-100"><X size={24}/></button>
@@ -648,7 +648,7 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
               <div className="hidden md:block overflow-x-auto rounded-[32px] border border-slate-100 shadow-sm">
                 <table className="w-full text-[12pt] border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-100 text-[12pt] uppercase font-black text-slate-400 tracking-[0.2em]">
+                    <tr className="bg-slate-50/80 border-b border-slate-100 text-table uppercase font-bold text-slate-600 tracking-wider">
                       <th className="p-5 text-center w-16">STT</th>
                       <th className="p-5 text-left">Thời điểm (Cơ hội)</th>
                       <th className="p-5 text-center w-36">Tuân thủ</th>
@@ -659,8 +659,8 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
                   <tbody className="divide-y divide-slate-50">
                     {formData.checklist_data.moments.map((m: any) => (
                       <tr key={m.id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="p-5 text-center font-black text-slate-400">{m.id}</td>
-                        <td className="p-5 font-bold text-slate-700">{m.name}</td>
+                        <td className="p-5 text-center font-normal text-slate-400">{m.id}</td>
+                        <td className="p-5 font-normal text-slate-700">{m.name}</td>
                         <td className="p-3 text-center">
                           <button 
                             type="button"

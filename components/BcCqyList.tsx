@@ -8,6 +8,7 @@ import { fetchBcCqy, addBcCqy, updateBcCqy, deleteBcCqy } from '../readBcCqy';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import { BcCqy } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 export default function BcCqyList() {
     const { user } = useAuth();
     const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
@@ -19,6 +20,9 @@ export default function BcCqyList() {
     const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'VIEW'>('LIST');
     const [editingItem, setEditingItem] = useState<BcCqy | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const [formData, setFormData] = useState<Omit<BcCqy, 'id' | 'created_at'>>({
         ngay_bao_cao: new Date().toISOString().split('T')[0],
@@ -83,14 +87,24 @@ export default function BcCqyList() {
         setViewMode('FORM');
     };
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Bạn có chắc muốn xóa báo cáo này?')) {
-            try {
-                await deleteBcCqy(id);
-                loadItems();
-            } catch (err: any) {
-                alert('Lỗi: ' + err.message);
-            }
+    const handleDelete = (id: string) => {
+        setTargetDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!targetDeleteId) return;
+        setIsDeleting(true);
+        try {
+            await deleteBcCqy(targetDeleteId);
+            loadItems();
+            setIsDeleteModalOpen(false);
+            setTargetDeleteId(null);
+            if (viewMode === 'VIEW') setViewMode('LIST');
+        } catch (err: any) {
+            alert('Lỗi: ' + err.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -403,14 +417,14 @@ export default function BcCqyList() {
             {/* List content */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-[#009900] text-white">
+                    <table className="table-standardized">
+                        <thead>
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Ngày báo cáo</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Nội dung báo cáo</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Nơi xảy ra</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Thời gian</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Thao tác</th>
+                                <th className="text-left">Ngày báo cáo</th>
+                                <th className="text-left">Nội dung báo cáo</th>
+                                <th className="text-left">Nơi xảy ra</th>
+                                <th className="text-left">Thời gian</th>
+                                <th className="text-left">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -539,6 +553,14 @@ export default function BcCqyList() {
                     })}
                 </div>
             </div>
-        </div>
-    );
+        <DeleteConfirmationModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={confirmDelete}
+            title="Xác nhận xóa báo cáo"
+            message="Bạn có chắc chắn muốn xóa báo cáo Cục Quân y này không? Thao tác này không thể hoàn tác."
+            isLoading={isDeleting}
+        />
+    </div>
+);
 }

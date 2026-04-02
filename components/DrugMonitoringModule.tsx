@@ -33,7 +33,7 @@ const CRITERIA = [
   { id: 'tc10_nb_khong_tu_mua_thuoc', section: 'IV', label: 'Người bệnh không phải tự mua các loại thuốc có trong danh mục được hưởng.', role: 'Người bệnh' },
 ];
 
-export const DrugMonitoringModule: React.FC = () => {
+export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [data, setData] = useState<DrugMonitoring[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -277,7 +277,7 @@ export const DrugMonitoringModule: React.FC = () => {
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all ${
       active 
         ? 'bg-white text-[#009900] shadow-lg shadow-green-100 border border-green-50' 
         : 'text-slate-400 hover:text-slate-600'
@@ -301,8 +301,8 @@ const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label:
         {React.cloneElement(icon as React.ReactElement<any>, { size: 16, className: "sm:w-5 sm:h-5" })}
       </div>
       <div className="min-w-0 w-full overflow-hidden">
-        <p className="text-[7px] sm:text-[8px] font-black text-slate-400 uppercase tracking-tight sm:tracking-widest leading-tight truncate">{label}</p>
-        <h3 className="text-[10px] sm:text-sm font-black text-slate-800 tracking-tight truncate">{value}</h3>
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight sm:tracking-widest leading-tight truncate">{label}</p>
+        <h3 className="text-[10px] sm:text-sm font-bold text-slate-800 tracking-tight truncate">{value}</h3>
       </div>
     </div>
   );
@@ -341,7 +341,7 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm h-80">
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <h3 className="text-main-title font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
             <TrendingUp size={16} className="text-indigo-600" /> Xu hướng tuân thủ (%)
           </h3>
           <ResponsiveContainer width="100%" height="100%">
@@ -355,7 +355,7 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
           </ResponsiveContainer>
         </div>
         <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm h-80">
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <h3 className="text-main-title font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
             <BarChart size={16} className="text-[#009900]" /> Số lượt giám sát (Ca)
           </h3>
           <ResponsiveContainer width="100%" height="100%">
@@ -395,8 +395,8 @@ const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitor
       </div>
 
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-[#009900] text-white text-[10px] font-black uppercase tracking-widest">
+        <table className="table-standardized">
+          <thead>
             <tr>
               <th className="p-6">Ngày</th>
               <th className="p-6">Đơn vị</th>
@@ -408,14 +408,14 @@ const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitor
           <tbody className="divide-y divide-slate-50">
             {filtered.map((item: DrugMonitoring) => (
               <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-6 text-sm font-bold text-slate-700">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
-                <td className="p-6 text-sm text-slate-600">{item.don_vi_duoc_giam_sat}</td>
+                <td className="p-6 text-table font-normal text-slate-700">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
+                <td className="p-6 text-table font-normal text-slate-600">{item.don_vi_duoc_giam_sat}</td>
                 <td className="p-6">
-                   <p className="text-sm font-black text-slate-800 uppercase">{item.ho_ten_nb}</p>
-                   <p className="text-[10px] text-slate-400 font-bold">{item.ma_nb || '---'}</p>
+                   <p className="text-table font-bold text-slate-800 uppercase">{item.ho_ten_nb}</p>
+                   <p className="text-sm text-slate-400 font-normal">{item.ma_nb || '---'}</p>
                 </td>
                 <td className="p-6 text-center">
-                   <span className={`text-sm font-black ${item.ty_le_tuan_thu >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                   <span className={`text-table font-bold ${item.ty_le_tuan_thu >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
                       {Number(item.ty_le_tuan_thu).toFixed(0)}%
                    </span>
                 </td>
@@ -479,8 +479,8 @@ const DrugReport = ({ data }: { data: DrugMonitoring[] }) => {
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
        <div className="hidden md:block">
-         <table className="w-full text-left">
-           <thead className="bg-[#009900] text-white text-[10px] font-black uppercase tracking-widest">
+         <table className="table-standardized">
+           <thead>
              <tr>
                <th className="p-6">Đơn vị</th>
                <th className="p-6 text-center">Tổng (A)</th>
@@ -613,10 +613,6 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
        <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
           <div className="flex items-center gap-4">
              <div className="w-12 h-12 bg-[#009900] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-100"><Pill size={24}/></div>
-             <div>
-                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">{item?.id ? 'Sửa' : 'Thêm'} Giám sát Thuốc</h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kiểm tra công khai và tư vấn thuốc</p>
-             </div>
           </div>
           <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl transition-all"><X size={24}/></button>
        </div>
@@ -647,7 +643,6 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
           </div>
 
           <div className="space-y-4">
-             <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 px-2"><ShieldCheck size={16} className="text-[#009900]"/> Nội dung đánh giá</h3>
              <div className="grid grid-cols-1 gap-3">
                 {CRITERIA.map((c, i) => (
                    <div key={c.id} className="bg-white border border-slate-100 rounded-2xl shadow-sm">
@@ -680,9 +675,6 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
           </div>
 
           <div className="space-y-4">
-             <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 px-2">
-                <ImageIcon size={16} className="text-[#009900]"/> Minh chứng hình ảnh ({formData.hinh_anh?.length || 0})
-             </h3>
              <div className="bg-slate-50/50 p-6 rounded-[32px] border border-slate-100 space-y-4">
                 <div className="flex flex-wrap gap-4">
                    {formData.hinh_anh?.map((url: string, i: number) => (
@@ -703,11 +695,11 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-slate-100">
              <div className="flex gap-8">
                 <div className="text-center md:text-left">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tiêu chí Đạt</p>
+                   <p className="text-label font-bold text-slate-400 uppercase tracking-widest">Tiêu chí Đạt</p>
                    <p className="text-2xl font-black text-[#009900]">{formData.tong_dat} / 10</p>
                 </div>
                 <div className="text-center md:text-left">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tỷ lệ %</p>
+                   <p className="text-label font-bold text-slate-400 uppercase tracking-widest">Tỷ lệ %</p>
                    <p className="text-2xl font-black text-indigo-600">{formData.ty_le_tuan_thu.toFixed(1)}%</p>
                 </div>
              </div>
@@ -746,9 +738,9 @@ const DrugDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) =
              </div>
           </div>
 
-          <div className="text-center space-y-2">
-             <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">BẢNG KIỂM GIÁM SÁT AN TOÀN SỬ DỤNG THUỐC</h1>
-             <p className="text-slate-500 italic text-xs md:text-sm">(Xây dựng theo Thông tư 23/2011/TT-BYT và quy chuẩn an toàn người bệnh)</p>
+          <div className="text-center space-y-1">
+             <h1 className="text-main-title font-bold text-slate-900 uppercase tracking-tight">BẢNG KIỂM GIÁM SÁT AN TOÀN SỬ DỤNG THUỐC</h1>
+             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">(Xây dựng theo Thông tư 23/2011/TT-BYT và quy chuẩn an toàn người bệnh)</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b-2 border-slate-900 border-dashed">

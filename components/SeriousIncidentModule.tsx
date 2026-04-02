@@ -152,36 +152,33 @@ export const SeriousIncidentModule: React.FC = () => {
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-4 -bottom-4 bg-blue-50 w-24 h-24 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="relative">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4">
-                <AlertTriangle size={24} />
-              </div>
-              <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Tổng số sự cố NT</h4>
-              <p className="text-4xl font-black text-slate-800">{totalReports}</p>
+          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <AlertTriangle size={20} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Tổng số sự cố NT</h4>
+              <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{totalReports}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-4 -bottom-4 bg-orange-50 w-24 h-24 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="relative">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mb-4">
-                <Clock size={24} />
-              </div>
-              <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Đang xử lý</h4>
-              <p className="text-4xl font-black text-slate-800">{ongoingReports}</p>
+          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <Clock size={20} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Đang xử lý</h4>
+              <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{ongoingReports}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-4 -bottom-4 bg-green-50 w-24 h-24 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="relative">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4">
-                <CheckCircle2 size={24} />
-              </div>
-              <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Đã kết luận</h4>
-              <p className="text-4xl font-black text-slate-800">{completedReports}</p>
+          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle2 size={20} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Đã kết luận</h4>
+              <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{completedReports}</p>
             </div>
           </div>
         </div>
@@ -237,7 +234,7 @@ export const SeriousIncidentModule: React.FC = () => {
         <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[300px]">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-             <input type="text" placeholder="Tìm kiếm mã sự cố, đơn vị, nội dung..." className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 transition-all font-medium" />
+             <input type="text" placeholder="Tìm kiếm mã sự cố, đơn vị, nội dung..." className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-table focus:ring-2 focus:ring-green-500/20 transition-all font-bold" />
           </div>
           <div className="flex items-center gap-2">
             <button className="flex items-center gap-2 px-4 py-2 border border-slate-100 rounded-xl text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors">
@@ -317,7 +314,7 @@ export const SeriousIncidentModule: React.FC = () => {
               <AlertTriangle size={28} />
             </div>
             <div>
-              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Sự cố y khoa nghiêm trọng</h2>
+              <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Sự cố ngoài y khoa nghiêm trọng</h2>
               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Báo cáo & Phân tích sự cố y khoa loại nghiêm trọng</p>
             </div>
           </div>

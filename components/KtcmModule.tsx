@@ -54,8 +54,8 @@ export const KtcmModule: React.FC = () => {
               <Activity size={24} />
             </div>
             <div>
-              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tỷ lệ kỹ thuật chuyên môn thực hiện theo tuyến</h2>
-              {/* <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Giám sát & Đánh giá năng lực thực hiện kỹ thuật chuyên môn</p> */}
+              <h2 className="text-main-title font-bold text-slate-800 uppercase">Tỷ lệ kỹ thuật chuyên môn thực hiện theo tuyến</h2>
+              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Đánh giá năng lực thực hiện kỹ thuật chuyên môn</p>
             </div>
           </div>
           
@@ -247,8 +247,8 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
             <FileText size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng kỹ thuật</div>
-            <div className="text-2xl font-black text-slate-800">{stats.tongKyThuat}</div>
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng kỹ thuật</div>
+            <div className="text-lg font-bold text-slate-800">{stats.tongKyThuat}</div>
           </div>
         </div>
 
@@ -257,8 +257,8 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
             <CheckCircle2 size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đã thực hiện</div>
-            <div className="text-2xl font-black text-emerald-600">{stats.daThucHien}</div>
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Đã thực hiện</div>
+            <div className="text-lg font-bold text-emerald-600">{stats.daThucHien}</div>
           </div>
         </div>
 
@@ -267,8 +267,8 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
             <AlertTriangle size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Chưa thực hiện</div>
-            <div className="text-2xl font-black text-rose-600">{stats.chuaThucHien}</div>
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chưa thực hiện</div>
+            <div className="text-lg font-bold text-rose-600">{stats.chuaThucHien}</div>
           </div>
         </div>
 
@@ -277,8 +277,8 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
             <Target size={24} />
           </div>
           <div>
-            <div className="text-xs font-bold text-indigo-100 uppercase tracking-wider mb-1">Tỷ lệ chung</div>
-            <div className="text-2xl font-black text-white">{stats.tyLeChung}%</div>
+            <div className="text-[11px] font-bold text-indigo-100 uppercase tracking-wider mb-1">Tỷ lệ chung</div>
+            <div className="text-lg font-bold text-white">{stats.tyLeChung}%</div>
           </div>
         </div>
       </div>
@@ -336,7 +336,7 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: KtcmTheoT
             placeholder="Tìm theo chuyên khoa hoặc người báo cáo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-table focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-bold transition-all"
           />
         </div>
         <button
@@ -350,7 +350,7 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: KtcmTheoT
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-black">
+            <tr className="bg-[#009900] text-white text-[14px] uppercase font-bold">
               <th className="p-4 rounded-tl-xl whitespace-nowrap">Ngày báo cáo</th>
               <th className="p-4 whitespace-nowrap">Chuyên khoa/Lĩnh vực</th>
               <th className="p-4 text-center">Tổng số</th>
@@ -360,7 +360,7 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: KtcmTheoT
               <th className="p-4 w-28 text-center rounded-tr-xl">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 text-table font-normal">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
@@ -377,14 +377,14 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: KtcmTheoT
                     <Calendar size={14} className="text-slate-400" />
                     {item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-1 font-medium">{item.nguoi_bao_cao}</div>
+                  <div className="text-[11px] text-slate-500 mt-1 font-bold">{item.nguoi_bao_cao}</div>
                 </td>
                 <td className="p-4 font-bold text-slate-800">{item.chuyen_khoa_linh_vuc || '---'}</td>
                 <td className="p-4 text-center font-bold text-blue-600 bg-blue-50/30">{item.tong_so_ky_thuat || 0}</td>
                 <td className="p-4 text-center font-bold text-emerald-600 bg-emerald-50/30">{item.so_ky_thuat_da_thuc_hien || 0}</td>
                 <td className="p-4 text-center font-bold text-rose-600 bg-rose-50/30">{item.so_ky_thuat_chua_thuc_hien || 0}</td>
                 <td className="p-4 text-center">
-                  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-sm border border-indigo-100">
+                  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-table border border-indigo-100">
                     {item.ty_le !== null ? `${item.ty_le}%` : '0%'}
                   </span>
                 </td>

@@ -105,7 +105,7 @@ const defaultFormCdTruc = (userName = ''): any => {
 
 // ─── SHARED UI COMPONENTS ─────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -121,7 +121,7 @@ const StatCard = ({ icon, label, value, color }: any) => {
   return (
     <div className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4">
       <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${colors[color]}`}>{React.cloneElement(icon, { size: 20 })}</div>
-      <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p><h3 className="text-lg font-black text-slate-800">{value}</h3></div>
+      <div><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p><h3 className="text-lg font-bold text-slate-800">{value}</h3></div>
     </div>
   );
 };
@@ -218,19 +218,19 @@ const CdTrucErrorSummary = ({ data }: { data: GiamSatCdTruc[] }) => {
 
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-8 border border-slate-100 space-y-6">
-      <div className="text-center space-y-2 mb-8">
-        <h2 className="text-xl font-black text-slate-900 uppercase">PHIẾU TỔNG HỢP CHỈ SỐ LỖI CHẾ ĐỘ THƯỜNG TRỰC</h2>
-        <p className="text-xs text-slate-500 italic">Dùng cho kíp trực Chỉ huy hoặc Ban QLCL báo cáo tình hình trực chuyên môn.</p>
+      <div className="text-center space-y-1 mb-8">
+        <h2 className="text-main-title font-bold text-slate-900 uppercase">PHIẾU TỔNG HỢP CHỈ SỐ LỖI CHẾ ĐỘ THƯỜNG TRỰC</h2>
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Dùng cho kíp trực Chỉ huy hoặc Ban QLCL báo cáo tình hình trực chuyên môn.</p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border-4 border-slate-900 text-[12pt]">
-          <thead className="bg-[#009900] text-white font-black uppercase">
+        <table className="table-standardized">
+          <thead>
             <tr>
-              <th className="p-4 border-2 border-slate-900 text-left w-1/3">Nội dung giám sát (Tiêu chí vi phạm)</th>
-              <th className="p-4 border-2 border-slate-900 text-center w-24">Số kíp vi phạm</th>
-              <th className="p-4 border-2 border-slate-900 text-center w-20">Tỷ lệ (%)</th>
-              <th className="p-4 border-2 border-slate-900 text-left">Lỗi cụ thể & Đơn vị liên quan</th>
+              <th className="text-left w-1/3">Nội dung giám sát (Tiêu chí vi phạm)</th>
+              <th className="text-center w-24">Số kíp vi phạm</th>
+              <th className="text-center w-20">Tỷ lệ (%)</th>
+              <th className="text-left">Lỗi cụ thể & Đơn vị liên quan</th>
             </tr>
           </thead>
           <tbody className="font-bold text-slate-700">
@@ -286,7 +286,7 @@ const CdTrucOverview = ({ data }: { data: GiamSatCdTruc[] }) => {
         <StatCard icon={<AlertTriangle />} label="Kíp trực sai lỗi" value={stats.fail} color="red" />
       </div>
       <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm h-80">
-        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><TrendingUp size={16} className="text-[#009900]" /> Xu hướng tuân thủ chế độ chuyên môn trực</h3>
+        <h3 className="text-main-title font-bold text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><TrendingUp size={16} className="text-[#009900]" /> Xu hướng tuân thủ chế độ chuyên môn trực</h3>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={trendData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -315,17 +315,17 @@ const CdTrucList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-[#009900] text-white text-[10px] font-black uppercase tracking-widest">
-            <tr><th className="p-4">Ngày kiểm tra</th><th className="p-4">Đơn vị</th><th className="p-4">Người giám sát</th><th className="p-4 text-center">Tỷ lệ</th><th className="p-4 text-right">Thao tác</th></tr>
+        <table className="table-standardized">
+          <thead>
+            <tr><th>Ngày kiểm tra</th><th>Đơn vị</th><th>Người giám sát</th><th className="text-center">Tỷ lệ</th><th className="text-right">Thao tác</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map((d: any) => (
               <tr key={d.id} className="hover:bg-slate-50">
-                <td className="p-4 text-sm font-bold text-slate-600">{formatDateTime(d.ngay_kiem_tra)}</td>
-                <td className="p-4 text-sm font-black text-slate-800 uppercase">{d.don_vi_duoc_kiem_tra}</td>
-                <td className="p-4 text-[10px] text-slate-400 font-bold">{d.nguoi_kiem_tra}</td>
-                <td className={`p-4 text-center font-black text-lg ${d.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-red-500'}`}>{d.ty_le_tuan_thu}%</td>
+                <td className="p-4 text-table font-normal text-slate-600">{formatDateTime(d.ngay_kiem_tra)}</td>
+                <td className="p-4 text-table font-normal text-slate-800 uppercase">{d.don_vi_duoc_kiem_tra}</td>
+                <td className="p-4 text-sm text-slate-400 font-normal">{d.nguoi_kiem_tra}</td>
+                <td className={`p-4 text-center font-bold text-lg ${d.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-red-500'}`}>{d.ty_le_tuan_thu}%</td>
                 <td className="p-4 flex justify-end gap-2">
                   <button onClick={() => onView(d)} className="p-2 text-green-600 hover:bg-green-50 rounded-xl"><Eye size={16} /></button>
                   <button onClick={() => onEdit(d)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"><Edit2 size={16} /></button>
@@ -374,7 +374,7 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
       <div className="p-7 border-b border-slate-50 flex justify-between items-center bg-[#009900]/5">
          <div className="flex items-center gap-4">
            <div className="w-12 h-12 bg-[#009900] rounded-2xl flex items-center justify-center text-white shadow-lg"><ScrollText size={22} /></div>
-           <div><h2 className="text-xl font-black text-slate-800 uppercase">Giám sát Chế độ thường trực</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Theo quy định thường trực chuyên môn (13 tiêu chí)</p></div>
+           
          </div>
          <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl"><X size={22} /></button>
       </div>
@@ -382,7 +382,7 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
       <form onSubmit={handleSubmit} className="p-7 space-y-7">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-5 rounded-[28px] border border-slate-100">
            <div className="space-y-1 md:col-span-1">
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ngày</label>
+             <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Ngày</label>
              <input 
                type="date" 
                value={form.ngay_kiem_tra.split('T')[0]} 
@@ -395,7 +395,7 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
              />
            </div>
            <div className="space-y-1 md:col-span-1">
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Giờ (24h)</label>
+             <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Giờ (24h)</label>
              <input 
                type="text" 
                placeholder="HH:mm"
@@ -418,14 +418,14 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
                className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" 
              />
            </div>
-           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Đơn vị được giám sát</label><input list="cd-truc-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="cd-truc-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ten_don_vi}`} />)}</datalist></div>
-           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_kiem_tra} onChange={e => setField('nguoi_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
+           <div className="space-y-1"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Đơn vị được giám sát</label><input list="cd-truc-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="cd-truc-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ten_don_vi}`} />)}</datalist></div>
+           <div className="space-y-1"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_kiem_tra} onChange={e => setField('nguoi_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
         </div>
 
         <div className="space-y-6">
           {SECTIONS_CD_TRUC.map((section, sIdx) => (
             <div key={sIdx} className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm">
-               <div className="bg-[#009900] text-white px-5 py-3"><h3 className="text-[10px] font-black uppercase tracking-widest">{section.title}</h3></div>
+               <div className="bg-[#009900] text-white px-5 py-3"><h3 className="text-label font-bold uppercase tracking-widest">{section.title}</h3></div>
                <div className="divide-y divide-slate-50">
                  {section.criteria.map((c, cIdx) => {
                    const isPass = form[c.id] !== false;
@@ -433,7 +433,7 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
                    return (
                      <div key={c.id} className={`p-4 space-y-3 ${!isPass ? 'bg-red-50/30' : ''}`}>
                         <div className="flex items-start gap-4">
-                           <span className="text-[10px] font-black text-slate-400 mt-1">{cIdx + 1}</span>
+                           <span className="text-[11px] font-bold text-slate-400 mt-1">{cIdx + 1}</span>
                            <p className="flex-1 text-sm font-bold text-slate-700">{c.label}</p>
                            <DatKhongDatToggle value={isPass} onChange={v => setField(c.id, v)} />
                         </div>
@@ -448,8 +448,8 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
           ))}
         </div>
 
-        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hình ảnh minh chứng</label><ImageUploaderCdTruc images={form.hinh_anh_minh_chung || []} onChange={urls => setField('hinh_anh_minh_chung', urls)} /></div>
-        <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kết luận chung</label><textarea rows={3} value={form.ket_luan_chung} onChange={e => setField('ket_luan_chung', e.target.value)} placeholder="Nhập tóm tắt ưu/nhược điểm trong ca trực..." className="w-full p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
+        <div className="space-y-2"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Hình ảnh minh chứng</label><ImageUploaderCdTruc images={form.hinh_anh_minh_chung || []} onChange={urls => setField('hinh_anh_minh_chung', urls)} /></div>
+        <div className="space-y-1"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Kết luận chung</label><textarea rows={3} value={form.ket_luan_chung} onChange={e => setField('ket_luan_chung', e.target.value)} placeholder="Nhập tóm tắt ưu/nhược điểm trong ca trực..." className="w-full p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-slate-100">
            <div className="flex items-center gap-6">
@@ -479,9 +479,8 @@ const CdTrucDetail = ({ item, onClose, onEdit }: any) => {
           </div>
         </div>
 
-        <div className="text-center space-y-2">
-           <h1 className="text-2xl font-black text-slate-900 uppercase leading-snug">BẢNG KIỂM GIÁM SÁT CHẾ ĐỘ CÔNG TÁC THƯỜNG TRỰC</h1>
-           <p className="text-sm font-bold text-slate-600">(Dành cho Trực chỉ huy/Cơ quan chức năng giám sát tại các Khoa/Phòng)</p>
+        <div className="text-center">
+           {/* Header title and description removed as requested */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6 border-y border-dashed border-slate-200 text-sm font-bold">
@@ -491,30 +490,30 @@ const CdTrucDetail = ({ item, onClose, onEdit }: any) => {
         </div>
 
         <div className="space-y-4">
-           <table className="w-full border-collapse border-4 border-slate-900 text-[12pt] font-bold">
-              <thead className="bg-[#009900] text-white font-black uppercase">
+           <table className="w-full border-collapse border-4 border-slate-900 text-table font-bold">
+              <thead className="bg-[#009900] text-white font-bold uppercase">
                  <tr><th className="p-3 border-2 border-slate-900 w-10">STT</th><th className="p-3 border-2 border-slate-900 text-left">Nội dung giám sát (Tiêu chuẩn quy định)</th><th className="p-3 border-2 border-slate-900 w-24">Đạt</th><th className="p-3 border-2 border-slate-900 w-24">Không đạt</th><th className="p-3 border-2 border-slate-900">Ghi chú (Lỗi cụ thể)</th></tr>
               </thead>
               <tbody>
                 {SECTIONS_CD_TRUC.map((section, sIdx) => (
                   <React.Fragment key={sIdx}>
-                    <tr className="bg-slate-50"><td colSpan={5} className="p-2 border-2 border-slate-900 font-black text-[#009900]">{section.title}</td></tr>
+                    <tr className="bg-slate-50"><td colSpan={5} className="p-2 border-2 border-slate-900 font-bold text-[#009900] text-table uppercase">{section.title}</td></tr>
                     {section.criteria.map((c, cIdx) => (
                       <tr key={c.id}>
-                        <td className="p-2 border-2 border-slate-900 text-center">{cIdx + 1}</td>
-                        <td className="p-2 border-2 border-slate-900">{c.label}</td>
-                        <td className="p-2 border-2 border-slate-900 text-center">
+                        <td className="p-2 border-2 border-slate-900 text-center font-normal">{cIdx + 1}</td>
+                        <td className="p-2 border-2 border-slate-900 font-normal">{c.label}</td>
+                        <td className="p-2 border-2 border-slate-900 text-center font-normal">
                           {item[c.id] && <Check size={20} className="text-[#009900] mx-auto" />}
                         </td>
-                        <td className="p-2 border-2 border-slate-900 text-center">
+                        <td className="p-2 border-2 border-slate-900 text-center font-normal">
                           {!item[c.id] && <X size={20} className="text-red-500 mx-auto" />}
                         </td>
-                        <td className="p-2 border-2 border-slate-900 italic text-red-500 font-black">{item[`${c.id}_ghi_chu`]}</td>
+                        <td className="p-2 border-2 border-slate-900 italic text-red-500 font-normal">{item[`${c.id}_ghi_chu`]}</td>
                       </tr>
                     ))}
                   </React.Fragment>
                 ))}
-                  <tr className="bg-slate-100 font-black text-[12pt]">
+                  <tr className="bg-slate-100 font-bold text-table">
                     <td colSpan={2} className="p-3 border-2 border-slate-900 uppercase text-right">KẾT LUẬN CHUNG</td>
                     <td colSpan={2} className="p-3 border-2 border-slate-900 text-center text-xl text-[#009900]">{item.tong_dat}/13</td>
                     <td className="p-3 border-2 border-slate-900 text-[#009900] text-center">{item.ty_le_tuan_thu}%</td>
@@ -523,7 +522,7 @@ const CdTrucDetail = ({ item, onClose, onEdit }: any) => {
            </table>
         </div>
 
-        {item.ket_luan_chung && <div className="space-y-2"><h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Ghi chú bổ sung:</h3><p className="text-sm border-l-4 border-[#009900] pl-4 italic text-slate-600 leading-relaxed">{item.ket_luan_chung}</p></div>}
+        {item.ket_luan_chung && <div className="space-y-2"><h3 className="text-label font-bold text-slate-800 uppercase tracking-widest">Ghi chú bổ sung:</h3><p className="text-sm border-l-4 border-[#009900] pl-4 italic text-slate-600 leading-relaxed">{item.ket_luan_chung}</p></div>}
 
         {item.hinh_anh_minh_chung?.length > 0 && (
            <div className="space-y-3 no-print"><h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Hình ảnh minh chứng</h3><div className="flex flex-wrap gap-3">{item.hinh_anh_minh_chung.map((u: string, i: number) => <img key={i} src={u} className="w-40 h-40 object-cover rounded-2xl border border-slate-200" alt=""/>)}</div></div>
@@ -539,7 +538,7 @@ const CdTrucDetail = ({ item, onClose, onEdit }: any) => {
 };
 
 // ─── MAIN MODULE ──────────────────────────────────────────────────────────────
-export const DutyMonitoringModule: React.FC = () => {
+export const DutyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'LIST' | 'SUMMARY'>('OVERVIEW');
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');

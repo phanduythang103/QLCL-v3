@@ -636,7 +636,7 @@ export const HRModule: React.FC = () => {
                     {/* Tên, cấp bậc, và vai trò cùng hàng */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-slate-800 text-base">{item.ho_ten}</h3>
+                        <h3 className="text-main-title font-bold text-slate-800 uppercase">{item.ho_ten}</h3>
                         {item.cap_bac && (
                           <span className="text-xs font-medium text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded">{item.cap_bac}</span>
                         )}
@@ -729,10 +729,10 @@ export const HRModule: React.FC = () => {
               </div>
             )}
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-slate-600">
-                <thead className="bg-[#009900] text-white font-black text-table border-b border-[#008800] uppercase tracking-wide h-12">
+              <table className="table-standardized">
+                <thead className="bg-[#009900] text-white font-bold uppercase text-table">
                   <tr>
-                    <th className="px-4 py-3 w-12">
+                    <th className="w-12">
                       <input
                         type="checkbox"
                         checked={selectedIds.length === filteredStaff.length && filteredStaff.length > 0}
@@ -740,12 +740,12 @@ export const HRModule: React.FC = () => {
                         className="w-4 h-4 rounded"
                       />
                     </th>
-                    <th className="px-4 py-3">Họ và tên / Cấp bậc</th>
-                    <th className="px-4 py-3">Chức vụ / Đơn vị</th>
-                    <th className="px-4 py-3">Vai trò QLCL</th>
-                    <th className="px-4 py-3">Liên hệ</th>
-                    <th className="px-4 py-3 text-center">Chứng chỉ</th>
-                    <th className="px-4 py-3 text-center">Thao tác</th>
+                    <th className="p-3 text-left">Họ và tên / Cấp bậc</th>
+                    <th className="p-3 text-left">Chức vụ / Đơn vị</th>
+                    <th className="p-3 text-left">Vai trò QLCL</th>
+                    <th className="p-3 text-left">Liên hệ</th>
+                    <th className="p-3 text-center">Chứng chỉ</th>
+                    <th className="p-3 text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -773,16 +773,16 @@ export const HRModule: React.FC = () => {
                             )}
                           </div>
                           <div>
-                            <p className="font-black text-black text-table">{item.ho_ten}</p>
+                            <p className="text-table font-bold text-black uppercase">{item.ho_ten}</p>
                             {item.cap_bac && (
-                              <p className="text-xs font-medium text-primary-600 bg-primary-50 inline-block px-1.5 rounded mt-0.5">{item.cap_bac}</p>
+                              <p className="text-xs font-bold text-primary-600 bg-primary-50 inline-block px-1.5 rounded mt-0.5">{item.cap_bac}</p>
                             )}
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-black text-black text-table leading-tight">{item.chuc_vu || '-'}</p>
-                        <p className="text-table text-black/70 italic font-bold">{item.don_vi || '-'}</p>
+                        <p className="text-table font-bold text-black uppercase leading-tight">{item.chuc_vu || '-'}</p>
+                        <p className="text-table text-slate-500 italic font-normal">{item.don_vi || '-'}</p>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
@@ -979,10 +979,9 @@ export const HRModule: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-              <h3 className="text-title font-black text-black flex items-center gap-2 uppercase">
+              <div className="flex items-center gap-2">
                 <User className="text-primary-600" size={20} />
-                Thông tin nhân sự
-              </h3>
+              </div>
               <button onClick={() => setViewingItem(null)} className="text-slate-400 hover:text-slate-600">
                 <X size={20} />
               </button>
@@ -1002,9 +1001,9 @@ export const HRModule: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <h4 className="text-title font-black text-black">{viewingItem.ho_ten}</h4>
+                  <h4 className="text-main-title font-bold text-black uppercase">{viewingItem.ho_ten}</h4>
                   {viewingItem.cap_bac && (
-                    <span className="text-sm font-medium text-primary-600 bg-primary-50 inline-block px-2 py-0.5 rounded mt-1">{viewingItem.cap_bac}</span>
+                    <span className="text-[11px] font-bold text-primary-600 bg-primary-50 inline-block px-2 py-0.5 rounded mt-1 uppercase tracking-wider">{viewingItem.cap_bac}</span>
                   )}
                 </div>
               </div>
@@ -1013,26 +1012,26 @@ export const HRModule: React.FC = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-label text-black/60 uppercase font-bold">Chức vụ</label>
-                    <p className="text-input font-black text-black mt-0.5">{viewingItem.chuc_vu || '-'}</p>
+                    <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Chức vụ</label>
+                    <p className="text-input font-bold text-black mt-0.5">{viewingItem.chuc_vu || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-label text-black/60 uppercase font-bold">Đơn vị</label>
-                    <p className="text-input font-black text-black mt-0.5">{viewingItem.don_vi || '-'}</p>
+                    <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Đơn vị</label>
+                    <p className="text-input font-bold text-black mt-0.5">{viewingItem.don_vi || '-'}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-label text-black/60 uppercase font-bold">Số điện thoại</label>
-                    <p className="text-input font-black text-black mt-0.5 flex items-center gap-1.5">
+                    <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Số điện thoại</label>
+                    <p className="text-input font-bold text-black mt-0.5 flex items-center gap-1.5">
                       <Phone size={14} className="text-slate-400" />
                       {viewingItem.so_dien_thoai || '-'}
                     </p>
                   </div>
                   <div>
-                    <label className="text-label text-black/60 uppercase font-bold">Email</label>
-                    <p className="text-input font-black text-black mt-0.5 flex items-center gap-1.5 break-all">
+                    <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Email</label>
+                    <p className="text-input font-bold text-black mt-0.5 flex items-center gap-1.5 break-all">
                       <Mail size={14} className="text-slate-400 flex-shrink-0" />
                       {viewingItem.email || '-'}
                     </p>
@@ -1040,7 +1039,7 @@ export const HRModule: React.FC = () => {
                 </div>
 
                 <div>
-                   <label className="text-label text-black/60 uppercase font-bold">Vai trò QLCL</label>
+                   <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Vai trò QLCL</label>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {viewingItem.vai_tro_qlcl?.length > 0 ? (
                       viewingItem.vai_tro_qlcl.map(role => getRoleBadge(role))
@@ -1052,23 +1051,23 @@ export const HRModule: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                     <label className="text-label text-black/60 uppercase font-bold">Chứng chỉ QLCL</label>
+                     <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Chứng chỉ QLCL</label>
                     <div className="mt-1.5">
                       {viewingItem.co_chung_chi ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-[11px] font-bold uppercase tracking-wider">
                           <CheckIcon /> Đã có chứng chỉ
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[11px] font-bold uppercase tracking-wider">
                           Chưa có chứng chỉ
                         </span>
                       )}
                     </div>
                   </div>
                   <div>
-                     <label className="text-label text-black/60 uppercase font-bold">Trạng thái</label>
+                     <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Trạng thái</label>
                     <p className="mt-1.5">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${viewingItem.trang_thai === 'Hoạt động'
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${viewingItem.trang_thai === 'Hoạt động'
                         ? 'bg-green-100 text-green-700'
                         : 'bg-slate-100 text-slate-500'
                         }`}>
@@ -1080,8 +1079,8 @@ export const HRModule: React.FC = () => {
 
                 {viewingItem.ghi_chu && (
                   <div>
-                     <label className="text-label text-black/60 uppercase font-bold">Ghi chú</label>
-                     <p className="text-input text-black mt-0.5 bg-slate-50 p-3 rounded-lg font-bold">{viewingItem.ghi_chu}</p>
+                     <label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-1">Ghi chú</label>
+                     <p className="text-sm text-slate-600 mt-1 bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold italic">{viewingItem.ghi_chu}</p>
                   </div>
                 )}
               </div>
@@ -1316,7 +1315,7 @@ const FormModal: React.FC<FormModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-          <h3 className="text-title font-black text-black uppercase">
+          <h3 className="text-main-title font-bold text-black uppercase">
             {editingItem ? 'Chỉnh sửa nhân sự' : 'Thêm nhân sự mới'}
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">

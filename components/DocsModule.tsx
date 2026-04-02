@@ -282,7 +282,7 @@ const DocumentLibrary = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm số hiệu, trích yếu..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#009900]"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-table text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#009900]"
               />
             </div>
           </div>
@@ -302,8 +302,8 @@ const DocumentLibrary = () => {
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm text-left min-w-[600px]">
-              <thead className="bg-[#009900] text-white font-black text-table uppercase border-b border-[#008800] h-12">
+            <table className="table-standardized">
+              <thead>
                 <tr>
                   <th className="px-3 py-2 w-1/4">Số hiệu</th>
                   <th className="px-3 py-2 w-1/2">Tên văn bản</th>
@@ -313,9 +313,9 @@ const DocumentLibrary = () => {
               <tbody className="divide-y divide-slate-100">
                 {pagedDocs.map((doc) => (
                   <tr key={doc.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-3 py-3 font-mono text-table text-black font-bold whitespace-nowrap">{doc.so_hieu_vb}</td>
+                    <td className="px-3 py-3 font-mono text-table text-black whitespace-nowrap">{doc.so_hieu_vb}</td>
                     <td className="px-3 py-3 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
-                      <div className="font-bold text-black text-table line-clamp-2 hover:text-green-700 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
+                      <div className="text-black text-table line-clamp-2 hover:text-green-700 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex justify-end gap-2">
@@ -464,7 +464,7 @@ const TrainingCenter = () => {
         {/* Section: Video Library */}
         <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-black text-black text-section flex items-center gap-2 uppercase">
+            <h3 className="text-main-title text-black flex items-center gap-2 uppercase">
               <Youtube className="text-red-600" size={20} />
               Video Đào tạo & Quy trình mẫu
             </h3>
@@ -483,7 +483,7 @@ const TrainingCenter = () => {
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
                     <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">{video.thoi_luong || '--:--'}</span>
                   </div>
-                  <h4 className="font-black text-black text-table leading-tight group-hover:text-green-700 transition-colors uppercase">{video.tieu_de}</h4>
+                  <h4 className="text-table text-black leading-tight group-hover:text-green-700 transition-colors">{video.tieu_de}</h4>
                   <p className="text-xs text-slate-500 mt-1">{video.tac_gia || 'N/A'} • {video.luot_xem || 0} lượt xem</p>
                 </div>
               ))}
@@ -494,7 +494,7 @@ const TrainingCenter = () => {
         {/* Section: Self-Study Quizzes */}
         <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-black text-black text-section flex items-center gap-2 uppercase">
+            <h3 className="text-main-title text-black flex items-center gap-2 uppercase">
               <CheckSquare className="text-[#009900]" size={20} />
               Ôn tập & Kiểm tra kiến thức
             </h3>
@@ -503,7 +503,7 @@ const TrainingCenter = () => {
             {QUIZZES.map(quiz => (
               <div key={quiz.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary-200 hover:bg-slate-50 transition-colors">
                 <div className="mb-2 sm:mb-0">
-                  <h4 className="font-black text-black text-table">{quiz.title}</h4>
+                  <h4 className="text-table text-black">{quiz.title}</h4>
                   <div className="flex gap-3 text-xs text-slate-500 mt-1">
                     <span className="flex items-center gap-1"><HelpCircle size={12} /> {quiz.questions} câu hỏi</span>
                     <span className="flex items-center gap-1"><BookOpen size={12} /> {quiz.time}</span>
@@ -532,7 +532,7 @@ const TrainingCenter = () => {
       <div className="space-y-6">
         <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-black text-black text-table uppercase flex items-center gap-2">
+            <h3 className="text-main-title text-black uppercase flex items-center gap-2">
               <Building size={18} className="text-indigo-600" />
               Hồ sơ đào tạo tại đơn vị
             </h3>
@@ -753,8 +753,8 @@ const KnowledgeSharing = () => {
               </div>
             </div>
 
-            <h3 className="font-black text-black text-title mb-2 line-clamp-2 group-hover:text-green-700 transition-colors leading-tight uppercase">{article.tieu_de}</h3>
-            <p className="text-input font-bold text-black/80 line-clamp-3 mb-4 leading-relaxed">{article.noi_dung}</p>
+            <h3 className="text-table text-black mb-2 line-clamp-2 group-hover:text-green-700 transition-colors leading-tight">{article.tieu_de}</h3>
+            <p className="text-table text-black/80 line-clamp-3 mb-4 leading-relaxed">{article.noi_dung}</p>
 
             <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 uppercase font-bold tracking-wider">
               <div className="flex items-center gap-2">
@@ -1077,12 +1077,12 @@ const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, on
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-label font-bold text-black mb-1 text-label font-bold text-black">Tiêu đề *</label>
+            <label className="block text-label font-bold text-slate-400 uppercase tracking-widest mb-1 pl-1">Tiêu đề *</label>
             <input
               type="text"
               value={formData.tieu_de}
               onChange={e => setFormData({ ...formData, tieu_de: e.target.value })}
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+              className="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-bold bg-white"
               placeholder="Nhập tiêu đề bài viết..."
             />
           </div>
@@ -1119,7 +1119,7 @@ const SharingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, on
             {fileUpload && <p className="text-xs text-slate-500 mt-1">Đã chọn: {fileUpload.name}</p>}
           </div>
           <div>
-            <label className="block text-label font-bold text-black mb-1">Link video (YouTube, Google Drive)</label>
+            <label className="block text-label font-bold text-slate-400 uppercase tracking-widest mb-1 pl-1">Link video (YouTube, Google Drive)</label>
             <input
               type="text"
               value={formData.video_url}
@@ -1235,9 +1235,8 @@ const SharingDetailModal = ({ article, onClose }: any) => {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
         <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-20 flex justify-between items-start">
-          <div>
-            <span className="px-2 py-0.5 rounded bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest">{article.phan_loai || 'Chia sẻ'}</span>
-            <h3 className="text-title font-black text-black mt-2 uppercase">{article.tieu_de}</h3>
+          <div className="flex items-center gap-2">
+            {/* Header Title and Classification Removed */}
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><X size={24} /></button>
         </div>
@@ -1309,7 +1308,7 @@ const SharingDetailModal = ({ article, onClose }: any) => {
 
           {/* Comment Section (Right Column) */}
           <div className="p-6 bg-slate-50 flex flex-col max-h-[70vh] lg:max-h-full overflow-hidden">
-            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h4 className="text-label font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
               <MessageCircle size={14} /> Bình luận ({comments.length})
             </h4>
 

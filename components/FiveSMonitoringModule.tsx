@@ -70,7 +70,7 @@ const defaultForm = (): any => {
 
 // ─── SUBCOMPONENTS ────────────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-white text-orange-600 shadow-lg border border-orange-50' : 'text-slate-400 hover:text-slate-600'}`}>
+  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all ${active ? 'bg-white text-orange-600 shadow-lg border border-orange-50' : 'text-slate-400 hover:text-slate-600'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -85,7 +85,7 @@ const StatCard = ({ icon, label, value, color }: any) => {
   return (
     <div className="bg-white p-3 rounded-[20px] border border-slate-200 shadow-sm flex items-center gap-3">
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${colors[color]}`}>{React.cloneElement(icon, { size: 18 })}</div>
-      <div><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{label}</p><h3 className="text-sm font-black text-slate-800">{value}</h3></div>
+      <div><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{label}</p><h3 className="text-sm font-bold text-slate-800">{value}</h3></div>
     </div>
   );
 };
@@ -124,7 +124,7 @@ const FiveSOverview = ({ data }: { data: GiamSat5s[] }) => {
         <StatCard icon={<AlertTriangle />} label="TB/Yếu" value={pl['Trung bình'] + pl['Yếu']} color="amber" />
       </div>
       <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm h-72">
-        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2"><TrendingUp size={15} className="text-orange-500" /> Xu hướng điểm TB</h3>
+        <h3 className="text-main-title font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2"><TrendingUp size={15} className="text-orange-500" /> Xu hướng điểm TB</h3>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -149,15 +149,15 @@ const FiveSList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/30">
-        <button onClick={onAdd} className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase shadow-lg shadow-orange-100 flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát</button>
+        <button onClick={onAdd} className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-2xl text-[11px] font-bold uppercase shadow-lg shadow-orange-100 flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát</button>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input placeholder="Tìm đơn vị, người GS..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-orange-500/10" />
         </div>
       </div>
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest">
+        <table className="table-standardized">
+          <thead className="bg-[#009900] text-white">
             <tr>
               <th className="p-5">Ngày</th><th className="p-5">Đơn vị</th><th className="p-5">Khu vực</th>
               <th className="p-5 text-center">Điểm</th><th className="p-5 text-center">Phân loại</th><th className="p-5 text-right">Thao tác</th>
@@ -229,7 +229,7 @@ const FiveSReport = ({ data }: { data: GiamSat5s[] }) => {
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
       <table className="w-full text-left">
-        <thead className="bg-orange-500 text-white text-[12pt] font-black uppercase tracking-widest">
+        <thead className="bg-orange-500 text-white text-table font-bold uppercase tracking-widest">
           <tr><th className="p-5">Đơn vị</th><th className="p-5 text-center">Số lượt</th><th className="p-5 text-center">Điểm TB</th><th className="p-5 text-center">Phân loại</th></tr>
         </thead>
         <tbody className="divide-y divide-slate-50">
@@ -314,8 +314,8 @@ const FiveSFormView = ({ item, onClose, onSaved, currentUser, departmentList }: 
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg"><LayoutGrid size={22} /></div>
           <div>
-            <h2 className="text-xl font-black text-slate-800 uppercase">{item?.id ? 'Sửa' : 'Thêm'} Giám sát 5S</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sàng lọc · Sắp xếp · Sạch sẽ · Săn sóc · Sẵn sàng</p>
+            <h2 className="text-main-title font-bold text-slate-800 uppercase">{item?.id ? 'Sửa' : 'Thêm'} Giám sát 5S</h2>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Sàng lọc · Sắp xếp · Sạch sẽ · Săn sóc · Sẵn sàng</p>
           </div>
         </div>
         <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl"><X size={22} /></button>
@@ -446,7 +446,7 @@ const FiveSDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) 
         </div>
 
         <div className="text-center space-y-1">
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">BẢNG KIỂM GIÁM SÁT 5S</h1>
+          <h1 className="text-main-title font-bold text-slate-900 uppercase tracking-tight">BẢNG KIỂM GIÁM SÁT 5S</h1>
           <p className="text-slate-500 italic text-xs">(Sàng lọc · Sắp xếp · Sạch sẽ · Săn sóc · Sẵn sàng)</p>
         </div>
 
@@ -558,7 +558,7 @@ const FiveSDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) 
 };
 
 // ─── MAIN MODULE ──────────────────────────────────────────────────────────────
-export const FiveSMonitoringModule: React.FC = () => {
+export const FiveSMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DANH_SACH' | 'REPORT'>('OVERVIEW');
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');

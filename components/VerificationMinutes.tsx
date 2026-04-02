@@ -11,6 +11,7 @@ import { fetchBaoCaoScyk, BaoCaoScyk } from '../readBaoCaoScyk';
 import { fetchNhanSuQlcl, NhanSuQlcl } from '../readNhanSuQlcl';
 import { useAuth } from '../contexts/AuthContext';
 import { exportBienBanToPdf } from '../utils/generateBienBanPdf';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 
 const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
     value: string,
@@ -66,6 +67,9 @@ const VerificationMinutes = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [exportLoading, setExportLoading] = useState(false);
     const [exportResult, setExportResult] = useState<{ success: boolean; message: string; fileUrl?: string } | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [targetDeleteId, setTargetDeleteId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Form State
     const initialForm: Partial<BienBanXacMinh> = {
@@ -143,14 +147,23 @@ const VerificationMinutes = () => {
         setViewMode('FORM');
     };
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa biên bản này?')) {
-            try {
-                await deleteBienBanXacMinh(id);
-                loadData();
-            } catch (e: any) {
-                alert('Lỗi khi xóa: ' + e.message);
-            }
+    const handleDelete = (id: string) => {
+        setTargetDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!targetDeleteId) return;
+        setIsDeleting(true);
+        try {
+            await deleteBienBanXacMinh(targetDeleteId);
+            loadData();
+            setIsDeleteModalOpen(false);
+            setTargetDeleteId(null);
+        } catch (e: any) {
+            alert('Lỗi khi xóa: ' + e.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -370,13 +383,13 @@ const VerificationMinutes = () => {
                             <Users size={16} className="text-[#009900]" /> Thành phần đoàn xác minh
                         </h3>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
-                                <thead className="bg-[#009900] text-white text-table font-black uppercase">
+                            <table className="table-standardized">
+                                <thead>
                                     <tr>
-                                        <th className="px-4 py-3 text-left">Họ tên</th>
-                                        <th className="px-4 py-3 text-left">Chức vụ</th>
-                                        <th className="px-4 py-3 text-left">Đơn vị</th>
-                                        <th className="px-4 py-3 text-left">Vai trò</th>
+                                        <th className="text-left">Họ tên</th>
+                                        <th className="text-left">Chức vụ</th>
+                                        <th className="text-left">Đơn vị</th>
+                                        <th className="text-left">Vai trò</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-table font-black text-black uppercase">
@@ -785,15 +798,15 @@ const VerificationMinutes = () => {
                         <button onClick={handleCreate} className="mt-6 px-6 py-2.5 bg-[#009900] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 active:scale-95 transition-all">Tạo ngay</button>
                     </div>
                 ) : (
-                    <table className="w-full text-table text-left uppercase">
-                        <thead className="bg-[#009900] text-white font-black uppercase text-table border-b border-green-700">
+                    <table className="table-standardized">
+                        <thead>
                             <tr>
-                                <th className="px-6 py-4">Mã SCYK</th>
-                                <th className="px-6 py-4">Thời gian / Địa điểm</th>
-                                <th className="px-6 py-4">Chủ trì đoàn</th>
-                                <th className="px-6 py-4">Nội dung xác minh</th>
-                                <th className="px-6 py-4 w-28">Báo cáo</th>
-                                <th className="px-6 py-4 text-right">Thao tác</th>
+                                <th>Mã SCYK</th>
+                                <th>Thời gian / Địa điểm</th>
+                                <th>Chủ trì đoàn</th>
+                                <th>Nội dung xác minh</th>
+                                <th className="w-28 text-center">Báo cáo</th>
+                                <th className="text-right">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -887,6 +900,15 @@ const VerificationMinutes = () => {
                     </table>
                 )}
             </div>
+
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Xác nhận xóa biên bản"
+                message="Bạn có chắc chắn muốn xóa biên bản xác minh này không? Thao tác này không thể hoàn tác."
+                isLoading={isDeleting}
+            />
         </div>
     );
 };

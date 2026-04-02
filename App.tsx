@@ -34,8 +34,9 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
   const [profExpanded, setProfExpanded] = useState(false);
 
   const toggleExpansion = () => {
+    onSelectModule();
+    setCategory(null);
     if (!active) {
-      onSelectModule();
       setIsExpanded(true);
     } else {
       setIsExpanded(!isExpanded);
@@ -57,10 +58,10 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
     { label: "Nhận diện người bệnh", cat: 'NDNB' as SupervisionCategory, subId: 'NDNB' },
     { label: "Hồ sơ bệnh án", cat: 'RECORDS' as SupervisionCategory, subId: 'RECORDS' },
     { label: "Sử dụng thuốc", cat: 'DRUGS' as SupervisionCategory, subId: 'DRUGS' },
-    { 
-      label: "Chế độ chuyên môn", 
-      cat: 'PROFESSIONAL' as SupervisionCategory, 
-      subId: 'PROFESSIONAL' ,
+    {
+      label: "Chế độ chuyên môn",
+      cat: 'PROFESSIONAL' as SupervisionCategory,
+      subId: 'PROFESSIONAL',
       children: [
         { label: "Công tác thường trực", cat: 'PROF_DUTY' as SupervisionCategory },
         { label: "Công tác cấp cứu", cat: 'PROF_EMERGENCY' as SupervisionCategory },
@@ -86,10 +87,10 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
           {subNavItems.map(item => {
             const hasChildren = 'children' in item && item.children;
             const isProf = item.subId === 'PROFESSIONAL';
-            
+
             return (
               <div key={item.label} className="space-y-1">
-                <button 
+                <button
                   onClick={() => {
                     if (isProf) {
                       setProfExpanded(!profExpanded);
@@ -97,20 +98,20 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
                     } else {
                       handleSubNavClick(item.cat);
                     }
-                  }} 
+                  }}
                   className={`w-full text-left pl-11 pr-4 py-2 text-label transition-colors relative flex items-center justify-between ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}
                 >
                   <span className="truncate">{item.label}</span>
                   {isProf && <ChevronDown size={14} className={`transition-transform duration-200 ${profExpanded ? 'rotate-180' : ''}`} />}
                 </button>
-                
+
                 {isProf && profExpanded && hasChildren && (
                   <div className="space-y-1 animate-in slide-in-from-top-1 duration-200">
                     {item.children.map(child => (
-                      <button 
-                        key={child.label} 
-                        onClick={() => handleSubNavClick(child.cat)} 
-                        className={`w-full text-left pl-16 pr-4 py-1.5 text-[11px] transition-colors relative ${active && category === child.cat ? 'text-white font-black before:absolute before:left-12 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-1 before:bg-primary-400 before:rounded-full' : 'text-primary-300/60 hover:text-white hover:bg-primary-800/30'}`}
+                      <button
+                        key={child.label}
+                        onClick={() => handleSubNavClick(child.cat)}
+                        className={`w-full text-left pl-16 pr-4 py-1.5 text-label transition-colors relative ${active && category === child.cat ? 'text-white font-black before:absolute before:left-12 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-1 before:bg-primary-400 before:rounded-full' : 'text-primary-300/60 hover:text-white hover:bg-primary-800/30'}`}
                       >
                         {child.label}
                       </button>
@@ -177,7 +178,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
       {!collapsed && isExpanded && (
         <div className="space-y-1 animate-in slide-in-from-top-2 duration-200 lg:max-h-64 overflow-y-auto custom-scrollbar-light">
           {subNavItems.map(item => (
-            <button key={item.label} onClick={() => handleSubNavClick(item.cat)} className={`w-full text-left pl-11 pr-4 py-2 text-xs transition-colors relative ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}>
+            <button key={item.label} onClick={() => handleSubNavClick(item.cat)} className={`w-full text-left pl-11 pr-4 py-2 text-label transition-colors relative ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}>
               {item.label}
             </button>
           ))}
@@ -198,14 +199,14 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
           <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
           {!collapsed && (
             <div className="flex flex-col overflow-hidden py-1">
-              <h1 className="text-white font-bold text-sm uppercase leading-relaxed whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
-              <span className="text-primary-200 text-[10px] font-bold uppercase tracking-normal leading-normal whitespace-nowrap truncate">HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG</span>
+              <h1 className="text-white font-bold text-label uppercase leading-relaxed whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
+              <span className="text-primary-200 text-[11px] font-bold uppercase tracking-normal leading-normal whitespace-nowrap truncate opacity-80">HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG</span>
             </div>
           )}
         </div>
-        
-        <button 
-          onClick={() => setCollapsed(!collapsed)} 
+
+        <button
+          onClick={() => setCollapsed(!collapsed)}
           className="hidden md:flex p-1.5 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors shrink-0"
         >
           <Menu size={20} />
@@ -231,7 +232,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
           )}
         </div>
       </div>
-      <div className="p-4 border-t border-primary-800/50 bg-primary-900 flex justify-center text-[10px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden">
+      <div className="p-4 border-t border-primary-800/50 bg-primary-900 flex justify-center text-[8px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden">
         {!collapsed && <span>Phiên bản v3.2.0</span>}
       </div>
     </aside>

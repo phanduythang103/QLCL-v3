@@ -349,20 +349,20 @@ export const NKVMModule: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tổng số lượt Giám sát</h4>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tổng số lượt Giám sát</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-blue-600">{totalSupervisions}</span>
-              <span className="text-table font-bold text-black/40 mb-1">ca</span>
+              <span className="text-lg font-bold text-blue-600">{totalSupervisions}</span>
+              <span className="text-table font-normal text-slate-400 mb-1">ca</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-blue-600 font-bold bg-blue-50 py-1 px-3 rounded-full w-fit">
               <CheckSquare size={14} /> Tổng số báo cáo từ các Khoa
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-red-100 shadow-sm relative overflow-hidden">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tổng số NKVM</h4>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tổng số NKVM</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-red-600">{totalCasesInMonth}</span>
-              <span className="text-table font-bold text-black/40 mb-1">ca nhiễm</span>
+              <span className="text-lg font-bold text-red-600">{totalCasesInMonth}</span>
+              <span className="text-table font-normal text-slate-400 mb-1">ca nhiễm</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-red-600 font-bold bg-red-50 py-1 px-3 rounded-full w-fit">
               <AlertCircle size={14} /> Ghi nhận mắc mới
@@ -372,9 +372,9 @@ export const NKVMModule: React.FC = () => {
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tỷ lệ NKVM</h4>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tỷ lệ NKVM</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-amber-600">{ssiRate}%</span>
+              <span className="text-lg font-bold text-amber-600">{ssiRate}%</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 font-bold bg-amber-50 py-1 px-3 rounded-full w-fit">
               <TrendingUp size={14} /> Chiếm % trên tổng ca giám sát
@@ -550,8 +550,8 @@ export const NKVMModule: React.FC = () => {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-xs text-left">
-          <thead className="bg-[#009900] text-white font-black uppercase">
+        <table className="w-full text-xs text-left table-standardized">
+          <thead className="bg-[#009900] text-white font-bold uppercase text-table">
             <tr>
               <th className="p-3">Ngày GS</th>
               <th className="p-3">Người GS</th>
@@ -562,7 +562,7 @@ export const NKVMModule: React.FC = () => {
               <th className="p-3 text-right">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 font-bold uppercase text-center">
+          <tbody className="divide-y divide-slate-100 font-normal uppercase text-center text-table">
             {records.map((r, idx) => (
               <tr key={r.id || idx} className="hover:bg-slate-50 transition-colors">
                 <td className="p-3 text-black/40 text-left">{r.ngay_giam_sat ? new Date(r.ngay_giam_sat).toLocaleDateString('vi-VN') : '-'}</td>
@@ -662,7 +662,7 @@ export const NKVMModule: React.FC = () => {
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm mt-4">
         {/* Desktop View */}
         <table className="w-full text-xs text-left hidden md:table">
-          <thead className="bg-[#009900] text-white font-black uppercase text-center">
+          <thead className="bg-[#009900] text-white font-bold uppercase text-center text-table">
             <tr>
               <th className="p-3 text-left">Ngày tháng</th>
               <th className="p-3 text-left">Khoa</th>
@@ -675,9 +675,9 @@ export const NKVMModule: React.FC = () => {
               <th className="p-3 text-right">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 font-bold text-center">
+          <tbody className="divide-y divide-slate-100 font-normal text-center text-table uppercase">
             {dsRecords.map((item, idx) => (
-              <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors uppercase">
+              <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors">
                 <td className="p-3 text-left text-black/60">{item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : '-'}</td>
                 <td className="p-3 text-left text-[#009900]">{item.khoa}</td>
                 <td className="p-3 font-mono">{item.tong_so_ca_pt}</td>
@@ -723,7 +723,7 @@ export const NKVMModule: React.FC = () => {
               <div key={item.id || idx} className="p-4 bg-white space-y-3">
                 <div className="flex justify-between items-start border-b border-slate-100 pb-2">
                   <div className="flex flex-col">
-                    <span className="text-table font-black text-[#009900] uppercase truncate">
+                    <span className="text-table font-bold text-[#009900] uppercase truncate">
                       {item.khoa}
                     </span>
                     <span className="text-[10px] font-bold text-slate-500">
@@ -800,7 +800,7 @@ export const NKVMModule: React.FC = () => {
               <TrendingUp size={28} />
             </div>
             <div>
-              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tỷ lệ Nhiễm khuẩn vết mổ</h2>
+              <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Tỷ lệ Nhiễm khuẩn vết mổ</h2>
               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Kiểm soát NKVM sau phẫu thuật sạch/sạch-nhiễm</p>
             </div>
           </div>
@@ -815,10 +815,10 @@ export const NKVMModule: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as NKVMTab)}
-              className={`flex items-center gap-2 px-6 py-3 text-table font-black uppercase transition-all relative outline-none ${
+              className={`flex items-center gap-2 px-6 py-3 text-table font-bold uppercase transition-all relative outline-none ${
                 activeTab === tab.id 
                   ? 'text-[#009900] border-b-2 border-[#009900]' 
-                  : 'text-black/40 hover:text-black hover:bg-slate-50'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
               }`}
             >
               {tab.icon}
@@ -838,7 +838,7 @@ export const NKVMModule: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className={`bg-white rounded-2xl w-full ${viewOnly ? 'max-w-3xl' : 'max-w-4xl'} shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#009900] text-white">
-              <h3 className="text-table font-black uppercase flex items-center gap-2">
+              <h3 className="text-main-title font-bold uppercase flex items-center gap-2">
                 <CheckSquare size={20} />
                 {viewOnly ? 'Hồ sơ Giám sát Nhiễm khuẩn vết mổ' : isEditMode ? 'Cập nhật Giám sát' : 'Ghi nhận Giám sát'}
               </h3>
@@ -1191,7 +1191,7 @@ export const NKVMModule: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#009900] text-white">
-              <h3 className="text-table font-black uppercase flex items-center gap-2">
+              <h3 className="text-main-title font-bold uppercase flex items-center gap-2">
                 <ClipboardList size={20} />
                 {isEditMode ? 'Cập nhật' : 'Thêm mới'} Báo cáo Tổng hợp NKVM
               </h3>

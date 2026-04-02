@@ -16,12 +16,13 @@
           },
           fontSize: {
             'title': ['20px', { lineHeight: '1.25', fontWeight: '800' }],
+            'main-title': ['17.33px', { lineHeight: '1.25', fontWeight: '800' }],
             'section': ['16px', { lineHeight: '1.4', fontWeight: '700' }],
-            'subtitle': ['15px', { lineHeight: '1.5', fontWeight: '600' }],
-            'label': ['14px', { lineHeight: '1.5', fontWeight: '600' }],
+            'subtitle': ['11px', { lineHeight: '1.5', fontWeight: '700' }],
+            'label': ['13px', { lineHeight: '1.5', fontWeight: '600' }],
             'input': ['14px', { lineHeight: '1.6' }],
             'table': ['13px', { lineHeight: '1.5' }],
-            'small': ['12px', { lineHeight: '1.4' }],
+            'small': ['14px', { lineHeight: '1.4' }],
           },
           colors: {
             primary: {
@@ -63,6 +64,34 @@
 
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
+    }
+
+    /* Global Table Border Styles */
+    .table-standardized {
+      width: 100%;
+      border-collapse: collapse !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    .table-standardized thead th {
+      background-color: #009900 !important;
+      color: white !important;
+      border: 1px solid #cbd5e1 !important;
+      padding: 10px 16px !important;
+      text-align: left;
+      text-transform: uppercase !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      white-space: nowrap;
+    }
+    .table-standardized tbody td {
+      border: 1px solid #cbd5e1 !important;
+      padding: 12px 16px !important;
+      vertical-align: top;
+      font-size: 13px !important;
+      font-weight: 400 !important;
+    }
+    .table-standardized tbody tr:hover {
+      background-color: #f8fafc !important;
     }
   </style>
   <script type="importmap">

@@ -191,8 +191,8 @@ const IndicatorConfigModule: React.FC = () => {
             <Settings size={28} />
           </div>
           <div>
-            <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Cấu hình chỉ số chất lượng</h2>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Quản lý mục tiêu & phạm vi theo dõi</p>
+            <h2 className="text-main-title font-bold text-slate-800 uppercase">Cấu hình chỉ số chất lượng</h2>
+            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Quản lý mục tiêu & phạm vi theo dõi</p>
           </div>
         </div>
 
@@ -214,7 +214,7 @@ const IndicatorConfigModule: React.FC = () => {
             placeholder="Tìm theo tên chỉ số, lĩnh vực..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono" 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono" 
           />
         </div>
 
@@ -227,18 +227,18 @@ const IndicatorConfigModule: React.FC = () => {
         <div className="overflow-x-auto rounded-3xl border border-slate-50 hidden md:block">
           <table className="w-full text-left table-fixed">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-widest border-b border-green-700">
+              <tr className="bg-[#009900] text-white text-[14px] uppercase font-bold">
                 <th className="px-6 py-4 w-[5%]">
                   <button onClick={toggleSelectAll} className="text-white hover:scale-110 transition-transform">
                     {selectedIds.length === filteredConfigs.length && filteredConfigs.length > 0 ? <CheckSquare size={18} /> : <Square size={18} />}
                   </button>
                 </th>
-                <th className="px-6 py-4 font-black text-white w-[26%]">Tên chỉ số</th>
-                <th className="px-6 py-4 font-black text-white w-[10%]">Mục tiêu</th>
-                <th className="px-6 py-4 font-black text-white w-[10%]">Đơn vị</th>
-                <th className="px-6 py-4 font-black text-white w-[12%]">Đánh giá</th>
-                <th className="px-6 py-4 font-black text-white w-[15%]">Thời gian áp dụng</th>
-                <th className="px-6 py-4 font-black text-white w-[18%] text-right">Thao tác</th>
+                <th className="px-6 py-4 w-[26%]">Tên chỉ số</th>
+                <th className="px-6 py-4 w-[10%]">Mục tiêu</th>
+                <th className="px-6 py-4 w-[10%]">Đơn vị</th>
+                <th className="px-6 py-4 w-[12%]">Đánh giá</th>
+                <th className="px-6 py-4 w-[15%]">Thời gian áp dụng</th>
+                <th className="px-6 py-4 w-[18%] text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -251,8 +251,8 @@ const IndicatorConfigModule: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-xs font-black text-slate-800">{c.ten_chi_so}</span>
-                      <span className="text-[10px] text-slate-400 font-bold line-clamp-1 mt-0.5">{c.thong_tin || 'Không có mô tả'}</span>
+                      <span className="text-table font-bold text-slate-800">{c.ten_chi_so}</span>
+                      <span className="text-[11px] text-slate-400 font-medium line-clamp-1 mt-0.5">{c.thong_tin || 'Không có mô tả'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -260,34 +260,34 @@ const IndicatorConfigModule: React.FC = () => {
                       <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
                         <Target size={14} />
                       </div>
-                      <span className="text-xs font-black text-indigo-700">{c.muc_tieu ?? '---'}</span>
+                      <span className="text-table font-bold text-indigo-700">{c.muc_tieu ?? '---'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-xs font-bold text-slate-500">{c.don_vi_tinh || '---'}</span>
+                    <span className="text-table font-normal text-slate-500">{c.don_vi_tinh || '---'}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg line-clamp-1 border border-slate-200" title={c.danh_gia || ''}>
+                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg line-clamp-1 border border-slate-200" title={c.danh_gia || ''}>
                       {c.danh_gia || '---'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 text-slate-600 text-xs font-bold">
+                      <div className="flex items-center gap-1.5 text-slate-600 text-[11px] font-medium">
                         <Clock size={12} className="text-slate-400" />
                         {c.tu_ngay ? c.tu_ngay.split('-').reverse().join('/') : '---'}
                       </div>
                       <ChevronRight size={10} className="text-slate-300 ml-3.5 my-0.5" />
-                      <div className="flex items-center gap-1.5 text-slate-600 text-xs font-bold pl-3.5">
+                      <div className="flex items-center gap-1.5 text-slate-600 text-[11px] font-medium pl-3.5">
                         {c.den_ngay ? c.den_ngay.split('-').reverse().join('/') : '---'}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => setViewingConfig(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"><Eye size={14} /> Xem</button>
-                      <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit size={14} /> Sửa</button>
-                      <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={14} /> Xóa</button>
+                      <button onClick={() => setViewingConfig(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"><Eye size={14} /> Xem</button>
+                      <button onClick={() => handleEdit(c)} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit size={14} /> Sửa</button>
+                      <button onClick={() => handleDelete(c.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={14} /> Xóa</button>
                     </div>
                   </td>
                 </tr>

@@ -3,7 +3,7 @@ import {
   Plus, Search, Edit2, Trash2, ChevronDown, CheckCircle2, 
   FileText, Target, BarChart3, ArrowLeft, RefreshCw, Eye, Save,
   FileDown, Clock, MoreHorizontal, Filter, Calendar, Users,
-  AlertCircle, ArrowUpRight
+  AlertCircle, ArrowUpRight, Activity, Pause
 } from 'lucide-react';
 import { 
   Document, Packer, Paragraph, TextRun, AlignmentType, 
@@ -275,28 +275,55 @@ const KhctclReport: React.FC<{
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Stats Summary */}
       {/* Stats Summary - 1 row on desktop, 3+2 layout on mobile */}
-      <div className="grid grid-cols-6 md:grid-cols-5 gap-6">
-        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
-          <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Tổng số</span>
-          <span className="text-4xl font-black text-slate-800">{stats.total}</span>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 transition-all hover:shadow-md group">
+          <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500 shrink-0 group-hover:scale-110 transition-transform duration-300">
+            <Target size={18} />
+          </div>
+          <div>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Tổng số</span>
+            <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{stats.total}</p>
+          </div>
         </div>
-        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
-          <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Hoàn thành</span>
-          <span className="text-4xl font-black text-emerald-600">{stats.completed}</span>
+
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 transition-all hover:shadow-md group">
+          <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+            <CheckCircle2 size={18} />
+          </div>
+          <div>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Hoàn thành</span>
+            <p className="text-xl font-black text-emerald-600 leading-tight mt-0.5">{stats.completed}</p>
+          </div>
         </div>
-        <div className="col-span-2 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
-          <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Đang làm</span>
-          <span className="text-4xl font-black text-blue-600">{stats.ongoing}</span>
+
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 transition-all hover:shadow-md group">
+          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+            <Activity size={18} />
+          </div>
+          <div>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Đang làm</span>
+            <p className="text-xl font-black text-blue-600 leading-tight mt-0.5">{stats.ongoing}</p>
+          </div>
         </div>
         
-        {/* Mobile Row 2 (3 columns each for 2 items) */}
-        <div className="col-span-3 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
-          <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Tạm dừng</span>
-          <span className="text-4xl font-black text-amber-600">{stats.paused}</span>
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 transition-all hover:shadow-md group">
+          <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+            <Pause size={18} />
+          </div>
+          <div>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Tạm dừng</span>
+            <p className="text-xl font-black text-amber-600 leading-tight mt-0.5">{stats.paused}</p>
+          </div>
         </div>
-        <div className="col-span-3 md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
-          <span className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Dự thảo</span>
-          <span className="text-4xl font-black text-slate-500">{stats.draft}</span>
+
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 transition-all hover:shadow-md group">
+          <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0 group-hover:scale-110 transition-transform duration-300">
+            <FileText size={18} />
+          </div>
+          <div>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Dự thảo</span>
+            <p className="text-xl font-black text-slate-500 leading-tight mt-0.5">{stats.draft}</p>
+          </div>
         </div>
       </div>
 
@@ -897,8 +924,8 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
     <div className="space-y-8" style={{ fontFamily: 'Tahoma, sans-serif' }}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Kế hoạch Cải tiến Chất lượng (KHCTCL)</h2>
-          <p className="text-slate-500 font-bold text-sm">Quản lý và theo dõi các đề án cải tiến chất lượng bệnh viện</p>
+          <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">Kế hoạch Cải tiến Chất lượng (KHCTCL)</h2>
+          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Quản lý và theo dõi các đề án cải tiến chất lượng bệnh viện</p>
         </div>
 
         <button
@@ -938,14 +965,14 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
             <input
               type="text"
               placeholder="Tìm kiếm kế hoạch..."
-              className="w-full pl-12 pr-6 py-3 border border-slate-200 rounded-2xl text-[14pt] font-bold focus:outline-none focus:ring-4 focus:ring-[#108545]/10 focus:border-[#108545] transition-all bg-white"
+              className="w-full pl-12 pr-6 py-3 border border-slate-200 rounded-2xl text-table font-bold focus:outline-none focus:ring-4 focus:ring-[#108545]/10 focus:border-[#108545] transition-all bg-white"
             />
           </div>
         </div>
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-[#009900] text-white font-black uppercase text-[11px] tracking-widest">
+            <thead className="bg-[#009900] text-white font-bold uppercase text-[14px] tracking-widest">
               <tr>
                 <th className="px-8 py-5 w-48 rounded-tl-[2rem]">Thời gian</th>
                 <th className="px-8 py-5 min-w-[280px]">Đơn vị thực hiện</th>
@@ -982,15 +1009,15 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6 font-black text-slate-800 text-[14pt] leading-tight break-words">{item.don_vi}</td>
+                  <td className="px-8 py-6 font-bold text-slate-800 text-table leading-tight break-words">{item.don_vi}</td>
                   <td className="px-8 py-6">
-                    <p className="font-black text-slate-800 text-[14pt] line-clamp-2 group-hover:text-[#108545] transition-colors leading-snug">{item.ten_van_de}</p>
+                    <p className="font-bold text-slate-800 text-table line-clamp-2 group-hover:text-[#108545] transition-colors leading-snug">{item.ten_van_de}</p>
                   </td>
                   <td className="px-4 py-4 text-center">
                     <div className="grid grid-cols-2 gap-2 max-w-[280px] mx-auto">
                       <button 
                         onClick={() => onViewKhctcl(item)} 
-                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-slate-200/50" 
+                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-slate-200/50" 
                         title="Xem chi tiết"
                       >
                         <Eye size={16} /> Xem
@@ -998,7 +1025,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                       {canEdit(item) && (
                         <button 
                           onClick={() => onUpdateStatus(item)} 
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-emerald-200/50" 
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-emerald-200/50" 
                           title="Cập nhật trạng thái"
                         >
                           <RefreshCw size={16} /> Update
@@ -1007,7 +1034,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                       {canEdit(item) ? (
                         <button 
                           onClick={() => onEditKhctcl(item)} 
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-blue-200/50" 
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-blue-200/50" 
                           title="Chỉnh sửa nội dung"
                         >
                           <Edit2 size={16} /> Sửa
@@ -1020,7 +1047,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                       {canEdit(item) && (
                         <button 
                           onClick={() => handleDeleteKhctcl(item.id!)} 
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-tight border border-red-200/50" 
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-red-200/50" 
                           title="Xóa kế hoạch"
                         >
                           <Trash2 size={16} /> Xóa

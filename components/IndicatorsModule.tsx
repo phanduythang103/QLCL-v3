@@ -18,11 +18,11 @@ import IndicatorOverviewModule from './IndicatorOverviewModule';
 
 const ChartBar = ({ label, value, max, color, target, donVi }: { label: string, value: number, max: number, color: string, target?: number, donVi?: string }) => (
   <div className="mb-4 group">
-    <div className="flex justify-between text-label mb-1.5">
-      <span className="text-black font-black uppercase group-hover:text-[#009900] transition-colors">{label}</span>
+    <div className="flex justify-between items-center mb-1.5">
+      <span className="text-[11px] font-bold text-black uppercase group-hover:text-[#009900] transition-colors">{label}</span>
       <div className="flex items-center gap-2">
-        {target && <span className="text-table text-black/60 font-bold">Mục tiêu: {target}{donVi || '%'}</span>}
-        <span className={`text-input font-black ${target && value < target ? 'text-red-600' : 'text-black'
+        {target && <span className="text-[11px] text-black/60 font-bold">Mục tiêu: {target}{donVi || '%'}</span>}
+        <span className={`text-lg font-bold ${target && value < target ? 'text-red-600' : 'text-black'
           }`}>{value}{donVi || '%'}</span>
       </div>
     </div>
@@ -94,7 +94,7 @@ export const IndicatorsModule: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           {category && category !== 'KTCM' && category !== 'AVG_EXAM_TIME' && category !== 'AVG_STAY_TIME' && category !== 'BED_USAGE' && category !== 'OR_USAGE' && category !== 'NURSE_PATIENT_RATIO' && category !== 'HAND_HYGIENE' && category !== 'INDICATOR_CONFIG' && category !== 'SEVERE_NON_MEDICAL' && (
-            <h2 className="text-title font-black text-[#009900] uppercase animate-in fade-in slide-in-from-left-4 duration-300">
+            <h2 className="text-main-title font-bold text-[#009900] uppercase animate-in fade-in slide-in-from-left-4 duration-300">
               {getCategoryTitle(category)}
             </h2>
           )}

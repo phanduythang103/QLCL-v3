@@ -17,7 +17,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; on
     }`}
   >
     <Icon size={16} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span className="font-bold uppercase text-[11px] tracking-wider">{label}</span>
   </button>
 );
 
@@ -135,17 +135,17 @@ export const ORDowntimeModule: React.FC<{ isSubModule?: boolean }> = ({ isSubMod
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Thời gian chết TB', value: avgDowntime, unit: 'phút', icon: Clock, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Tổng số ca phân tích', value: records.length, unit: 'ca', icon: FileText, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Số phòng mổ báo cáo', value: new Set(records.map(r => r.phong_mo_so)).size, unit: 'phòng', icon: Layout, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
+          { label: 'TG chết TB', value: avgDowntime, unit: 'phút', icon: Clock, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
+          { label: 'Tổng ca', value: records.length, unit: 'ca', icon: FileText, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
+          { label: 'Số phòng mổ', value: new Set(records.map(r => r.phong_mo_so)).size, unit: 'phòng', icon: Layout, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className={`w-14 h-14 ${bg} ${color} rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
-              <Icon size={28} />
+          <div key={label} className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className={`w-10 h-10 ${bg} ${color} rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+              <Icon size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{label}</p>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">{value} <span className="text-sm font-bold text-slate-400">{unit}</span></p>
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">{label}</p>
+              <p className="text-xl font-black text-slate-800 tracking-tight">{value} <span className="text-xs font-bold text-slate-400">{unit}</span></p>
             </div>
           </div>
         ))}
@@ -219,7 +219,7 @@ export const ORDowntimeModule: React.FC<{ isSubModule?: boolean }> = ({ isSubMod
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             placeholder="Tìm theo phòng, khoa, ngày..." 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20 transition-all" 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-[#009900]/20 transition-all" 
           />
         </div>
         <button 
@@ -234,22 +234,22 @@ export const ORDowntimeModule: React.FC<{ isSubModule?: boolean }> = ({ isSubMod
       <div className="hidden md:block bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-widest border-b border-[#009900]">
-              <th className="px-6 py-4 font-black">Ngày báo cáo</th>
-              <th className="px-6 py-4 font-black">Phòng mổ</th>
-              <th className="px-6 py-4 font-black">Chuyên khoa</th>
-              <th className="px-6 py-4 font-black text-right">Tổng TG chết (Phút)</th>
-              <th className="px-6 py-4 font-black text-right w-32">Thao tác</th>
+            <tr className="bg-[#009900] text-white text-[14px] uppercase font-bold tracking-widest border-b border-[#009900]">
+              <th className="px-6 py-4">Ngày báo cáo</th>
+              <th className="px-6 py-4">Phòng mổ</th>
+              <th className="px-6 py-4">Chuyên khoa</th>
+              <th className="px-6 py-4 text-right">Tổng TG chết (Phút)</th>
+              <th className="px-6 py-4 text-right w-32">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {records.map(r => (
               <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group">
-                <td className="px-6 py-4 text-xs font-bold text-slate-600">{r.ngay_bao_cao.split('-').reverse().join('/')}</td>
-                <td className="px-6 py-4 text-xs font-black text-slate-800 uppercase tracking-tight">Phòng {r.phong_mo_so}</td>
-                <td className="px-6 py-4 text-xs font-black text-slate-500">{r.chuyen_khoa || 'Chưa phân công'}</td>
+                <td className="px-6 py-4 text-table font-bold text-slate-600">{r.ngay_bao_cao.split('-').reverse().join('/')}</td>
+                <td className="px-6 py-4 text-table font-bold text-slate-800 uppercase tracking-tight">Phòng {r.phong_mo_so}</td>
+                <td className="px-6 py-4 text-table font-bold text-slate-500">{r.chuyen_khoa || 'Chưa phân công'}</td>
                 <td className="px-6 py-4 text-right">
-                  <span className="text-sm font-black text-[#009900] font-mono">{r.total_downtime}</span>
+                  <span className="text-table font-bold text-[#009900] font-mono">{r.total_downtime}</span>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0">
@@ -302,7 +302,7 @@ export const ORDowntimeModule: React.FC<{ isSubModule?: boolean }> = ({ isSubMod
                     setSelectedRecord(r);
                     setShowDetailModal(true);
                   }}
-                  className="bg-[#009900] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm active:scale-95 transition-all"
+                  className="bg-[#009900] text-white px-4 py-2 rounded-xl text-[11px] font-bold uppercase shadow-sm active:scale-95 transition-all"
                 >
                   Xem
                 </button>
@@ -329,8 +329,8 @@ export const ORDowntimeModule: React.FC<{ isSubModule?: boolean }> = ({ isSubMod
                 <TrendingDown size={28} />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase">Phân tích thời gian chết phòng mổ</h2>
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Xác định các nguyên nhân gây lãng phí thời gian giữa các ca mổ</p>
+              <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Phân tích thời gian chết phòng mổ</h2>
+              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Xác định các nguyên nhân gây lãng phí thời gian giữa các ca mổ</p>
               </div>
             </div>
           </div>

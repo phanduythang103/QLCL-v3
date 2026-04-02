@@ -33,7 +33,7 @@ const CRITERIA = [
   { id: 'tc13_ban_giao_hoi_tinh', section: 'III', stage: 'SIGN OUT', label: 'Bàn giao hồi tỉnh: Các lưu ý đặc biệt về chăm sóc và theo dõi sau mổ.', role: 'Bác sĩ gây mê' },
 ];
 
-export const SurgerySafetyModule: React.FC = () => {
+export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [data, setData] = useState<SurgerySafety[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -613,15 +613,15 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="p-6 border-b border-slate-100 bg-slate-50/30">
-        <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+        <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
           <FileText className="text-[#009900]" size={18} />
           Phiếu tổng hợp chỉ số giám sát
         </h2>
       </div>
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="table-standardized">
           <thead>
-            <tr className="bg-[#009900] text-white text-[12pt] uppercase font-black tracking-widest border-b border-green-700">
+            <tr>
               <th className="p-6">Khoa lâm sàng</th>
               <th className="p-6 text-center">Số ca giám sát (A)</th>
               <th className="p-6 text-center">Số ca đạt 100% (B)</th>
@@ -632,11 +632,11 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
           <tbody className="divide-y divide-slate-50">
             {reportData.map((row, idx) => (
               <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                <td className="p-6 text-sm font-bold text-slate-700">{row.department}</td>
-                <td className="p-6 text-center text-sm font-bold text-slate-600">{row.a}</td>
-                <td className="p-6 text-center text-sm font-bold text-slate-600">{row.b}</td>
+                <td className="p-6 text-table font-normal text-slate-700">{row.department}</td>
+                <td className="p-6 text-center text-table font-normal text-slate-600">{row.a}</td>
+                <td className="p-6 text-center text-table font-normal text-slate-600">{row.b}</td>
                 <td className="p-6 text-center">
-                  <span className={`text-sm font-black ${row.rate >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                  <span className={`text-table font-normal ${row.rate >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
                     {row.rate.toFixed(1)}%
                   </span>
                 </td>
@@ -664,10 +664,10 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
           </tbody>
           <tfoot className="bg-[#009900] text-white font-black">
             <tr>
-              <td className="p-6 text-sm uppercase tracking-widest">Toàn viện</td>
-              <td className="p-6 text-center text-sm">{totals.a}</td>
-              <td className="p-6 text-center text-sm">{totals.b}</td>
-              <td className="p-6 text-center text-sm text-[#00ff00]">{totals.rate.toFixed(1)}%</td>
+              <td className="p-6 text-table uppercase tracking-widest">Toàn viện</td>
+              <td className="p-6 text-center text-table">{totals.a}</td>
+              <td className="p-6 text-center text-table">{totals.b}</td>
+              <td className="p-6 text-center text-table text-[#00ff00]">{totals.rate.toFixed(1)}%</td>
               <td className="p-6"></td>
             </tr>
           </tfoot>
@@ -750,9 +750,9 @@ const SurgeryList = ({ data, onView, onEdit, onDelete }: {
 
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="table-standardized">
           <thead>
-            <tr className="bg-[#009900] text-white text-[10px] uppercase font-black uppercase tracking-widest">
+            <tr>
               <th className="p-6">Ngày</th>
               <th className="p-6">Khoa</th>
               <th className="p-6">Bệnh nhân</th>
@@ -764,12 +764,12 @@ const SurgeryList = ({ data, onView, onEdit, onDelete }: {
           <tbody className="divide-y divide-slate-50">
             {filtered.map((item: SurgerySafety) => (
               <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-6 text-sm font-bold text-slate-700">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
-                <td className="p-6 text-sm text-slate-600">{item.khoa_phau_thuat}</td>
-                <td className="p-6 text-sm font-black text-slate-800 uppercase">{item.ho_ten_nguoi_benh}</td>
-                <td className="p-6 text-sm text-slate-600">Bàn {item.ban_mo_so}</td>
+                <td className="p-6 text-table font-normal text-slate-700">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
+                <td className="p-6 text-table font-normal text-slate-600">{item.khoa_phau_thuat}</td>
+                <td className="p-6 text-table font-normal text-slate-800 uppercase">{item.ho_ten_nguoi_benh}</td>
+                <td className="p-6 text-table font-normal text-slate-600">Bàn {item.ban_mo_so}</td>
                 <td className="p-6 text-center">
-                  <span className={`text-sm font-black ${Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                  <span className={`text-table font-normal ${Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
                     {Number(item.ty_le_tuan_thu).toFixed(0)}%
                   </span>
                 </td>
@@ -926,8 +926,8 @@ const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, department
              <Stethoscope size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">{item?.id ? 'Chỉnh sửa' : 'Thêm mới'} Checklist An toàn Phẫu thuật</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ghi nhận kết quả giám sát</p>
+            <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">{item?.id ? 'Chỉnh sửa' : 'Thêm mới'} Checklist An toàn Phẫu thuật</h2>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Ghi nhận kết quả giám sát</p>
           </div>
         </div>
         <button onClick={onClose} className="p-3 text-slate-400 hover:bg-slate-200 rounded-2xl transition-all active:scale-90 bg-white border border-slate-100"><X size={24}/></button>
@@ -1063,7 +1063,7 @@ const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete 
 
         {/* Traditional Form Layout */}
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-tight">
+          <h1 className="text-main-title font-bold text-slate-900 uppercase tracking-tight leading-tight">
             BẢNG KIỂM GIÁM SÁT TUÂN THỦ BẢNG KIỂM AN TOÀN PHẪU THUẬT
           </h1>
           <p className="text-slate-500 italic text-sm">(Sử dụng để giám sát đột xuất hoặc định kỳ tại phòng mổ)</p>

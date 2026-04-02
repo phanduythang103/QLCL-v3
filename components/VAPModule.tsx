@@ -242,29 +242,29 @@ export const VAPModule: React.FC = () => {
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tỷ lệ Viêm phổi máy thở</h4>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tỷ lệ Viêm phổi máy thở</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-blue-600">{vapRate}</span>
-              <span className="text-table font-bold text-black/40 mb-1">/1000 ngày máy thở</span>
+              <span className="text-lg font-bold text-blue-600">{vapRate}</span>
+              <span className="text-table font-normal text-slate-400 mb-1">/1000 ngày máy thở</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
               <TrendingUp size={14} className="rotate-180" /> Thống kê từ {casesInMonth} ca bệnh
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-green-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Tỷ lệ tuân thủ Giám sát</h4>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tỷ lệ tuân thủ Giám sát</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-green-600">{totalCompliance}%</span>
+              <span className="text-lg font-bold text-green-600">{totalCompliance}%</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
               <TrendingUp size={14} /> Trung bình {records.length} lượt giám sát
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
-            <h4 className="text-table font-black text-black/40 uppercase mb-2">Ca mắc mới (VPBV)</h4>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Ca mắc mới (VPBV)</h4>
             <div className="flex items-end gap-2">
-              <span className="text-title font-black text-amber-600">{casesInMonth < 10 ? `0${casesInMonth}` : casesInMonth}</span>
-              <span className="text-table font-bold text-black/40 mb-1">Ca ghi nhận</span>
+              <span className="text-lg font-bold text-amber-600">{casesInMonth < 10 ? `0${casesInMonth}` : casesInMonth}</span>
+              <span className="text-table font-normal text-slate-400 mb-1">Ca ghi nhận</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 font-bold">
               <AlertCircle size={14} /> Tổng {totalVentDays} ngày máy thở cộng dồn
@@ -537,7 +537,7 @@ export const VAPModule: React.FC = () => {
               <Activity size={28} />
             </div>
             <div>
-              <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Tỷ lệ Viêm phổi NKBV/Thở máy</h2>
+              <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Tỷ lệ Viêm phổi NKBV/Thở máy</h2>
               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Kiểm soát tỷ lệ VAP tại đơn vị hồi sức</p>
             </div>
           </div>
@@ -553,10 +553,10 @@ export const VAPModule: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as VAPTab)}
-              className={`flex items-center gap-2 px-6 py-3 text-table font-black uppercase transition-all relative outline-none ${
+              className={`flex items-center gap-2 px-6 py-3 text-table font-bold uppercase transition-all relative outline-none ${
                 activeTab === tab.id 
                   ? 'text-[#009900] border-b-2 border-[#009900]' 
-                  : 'text-black/40 hover:text-black hover:bg-slate-50'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
               }`}
             >
               {tab.icon}
@@ -577,7 +577,7 @@ export const VAPModule: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-table font-black uppercase text-[#009900]">
+              <h3 className="text-main-title font-bold uppercase text-[#009900]">
                 {viewOnly ? 'Chi tiết' : isEditMode ? 'Cập nhật' : 'Ghi nhận'} giám sát dự phòng VAP
               </h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-red-500 transition-colors">
