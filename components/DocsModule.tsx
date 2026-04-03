@@ -4,7 +4,7 @@ import {
   Landmark, ShieldCheck, Eye, Link, PlayCircle, GraduationCap,
   HelpCircle, CheckSquare, Youtube, Lightbulb, MessageCircle,
   BookOpen, Video, Plus, Edit2, Trash2, Heart, X, Save,
-  ThumbsUp, ThumbsDown, MessageSquare
+  ThumbsUp, ThumbsDown, MessageSquare, ChevronDown
 } from 'lucide-react';
 import { fetchThuVienVb, addThuVienVb, updateThuVienVb, deleteThuVienVb } from '../readThuVienVb';
 import { supabase } from '../supabaseClient';
@@ -100,7 +100,7 @@ const DocumentLibrary = () => {
     hieu_luc: '',
     trang_thai: 'Còn hiệu lực',
     file_van_ban: '',
-    phan_loai: 'BYT'
+    phan_loai: 'Ban Quản lý chất lượng'
   };
   const [formData, setFormData] = useState(initialFormData);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
@@ -231,17 +231,10 @@ const DocumentLibrary = () => {
     }
   };
 
-  const CATEGORIES = [
-    { id: 'ALL', label: 'Tất cả' },
-    { id: 'BYT', label: 'Bộ Y tế', icon: <ShieldCheck size={14} /> },
-    { id: 'BQP', label: 'Bộ Quốc phòng', icon: <ShieldCheck size={14} /> },
-    { id: 'CQY', label: 'Cục quân y', icon: <Building size={14} /> },
-    { id: 'BV103', label: 'BVQY103', icon: <Building size={14} /> },
-    { id: 'OTHER', label: 'Khác', icon: <FileText size={14} /> },
-  ];
+  const uniqueAgencies = Array.from(new Set(docs.map(d => d.co_quan_ban_hanh).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'vi'));
 
   const filteredDocs = docs.filter(doc =>
-    (docCategory === 'ALL' || doc.phan_loai === docCategory) &&
+    (docCategory === 'ALL' || (doc.co_quan_ban_hanh || '').trim().toLowerCase() === docCategory.toLowerCase().trim()) &&
     ((doc.ten_vb || '').toLowerCase().includes(searchTerm.toLowerCase()) || (doc.so_hieu_vb || '').toLowerCase().includes(searchTerm.toLowerCase()))
   );
   // Pagination
@@ -254,19 +247,26 @@ const DocumentLibrary = () => {
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
       <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between bg-slate-50/50">
-        <div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setDocCategory(cat.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-table font-bold border transition-colors whitespace-nowrap ${docCategory === cat.id
-                ? 'bg-[#009900] text-white border-[#009900]'
-                : 'bg-white text-black font-black border-slate-200 hover:border-slate-300'
-                }`}
+        <div className="flex items-center gap-3 w-full lg:w-auto">
+          <label className="text-xs font-black text-slate-500 uppercase whitespace-nowrap">Bộ lọc:</label>
+          <div className="relative flex-1 lg:w-64">
+            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#009900] transition-colors" />
+            <select
+              value={docCategory}
+              onChange={(e) => setDocCategory(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-black text-black outline-none focus:ring-2 focus:ring-[#009900]/20 focus:border-[#009900] transition-all appearance-none cursor-pointer"
             >
-              {cat.icon} {cat.label}
-            </button>
-          ))}
+              <option value="ALL">Tất cả cơ quan ban hành</option>
+              {uniqueAgencies.map(agency => (
+                <option key={agency} value={agency}>
+                  {agency}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={14} />
+            </div>
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
           <div className="flex gap-2">
@@ -305,15 +305,15 @@ const DocumentLibrary = () => {
             <table className="table-standardized">
               <thead>
                 <tr>
-                  <th className="px-3 py-2 w-1/4">Số hiệu</th>
-                  <th className="px-3 py-2 w-1/2">Tên văn bản</th>
-                  <th className="px-3 py-2 w-1/4 text-right">Thao tác</th>
+                  <th className="px-3 py-2 w-32">Số hiệu</th>
+                  <th className="px-3 py-2">Tên văn bản</th>
+                  <th className="px-3 py-2 w-40 text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {pagedDocs.map((doc) => (
                   <tr key={doc.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-3 py-3 font-mono text-table text-black whitespace-nowrap">{doc.so_hieu_vb}</td>
+                    <td className="px-3 py-3 font-mono text-table text-black truncate w-32" title={doc.so_hieu_vb}>{doc.so_hieu_vb}</td>
                     <td className="px-3 py-3 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
                       <div className="text-black text-table line-clamp-2 hover:text-green-700 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
                     </td>
@@ -949,11 +949,13 @@ const FormModal: React.FC<FormModalProps> = ({
                 onChange={e => setFormData({ ...formData, phan_loai: e.target.value })}
                 className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-primary-50/50"
               >
-                <option value="BYT">Bộ Y tế</option>
-                <option value="BQP">Bộ Quốc phòng</option>
-                <option value="CQY">Cục quân y</option>
-                <option value="BV103">BVQY103</option>
-                <option value="OTHER">Khác</option>
+                <option value="Bộ Y tế">BYT</option>
+                <option value="Bộ Quốc phòng">BQP</option>
+                <option value="Cục quân y">CQY</option>
+                <option value="BVQY103">BVQY103</option>
+                <option value="Học viện Quân y">HVQY</option>
+                <option value="Ban Quản lý chất lượng">QLCL</option>
+                <option value="Khác">Khác</option>
               </select>
             </div>
           </div>

@@ -226,39 +226,165 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
 const Criteria83Data83View = () => {
   const [data, setData] = useState<Data83tc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedPhan, setExpandedPhan] = useState<Record<string, boolean>>({ "PHẦN A: HƯỚNG ĐẾN NGƯỜI BỆNH": true });
+  const [expandedChuong, setExpandedChuong] = useState<Record<string, boolean>>({ "CHƯƠNG A1: CHỈ DẪN, ĐÓN TIẾP, HƯỚNG DẪN, CẤP CỨU NGƯỜI BỆNH": true });
+  const [expandedTieuChi, setExpandedTieuChi] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchData83tc().then(setData).finally(() => setLoading(false));
   }, []);
 
+  const hierarchy = useMemo(() => {
+    const tree: any = {};
+    data.forEach(item => {
+      const phan = item.phan || "Khác";
+      const chuong = item.chuong || "Khác";
+      const tieuChi = item.tieu_chi || "Khác";
+
+      if (!tree[phan]) tree[phan] = { chuongs: {} };
+      if (!tree[phan].chuongs[chuong]) tree[phan].chuongs[chuong] = { tieuChis: {} };
+      if (!tree[phan].chuongs[chuong].tieuChis[tieuChi]) tree[phan].chuongs[chuong].tieuChis[tieuChi] = { items: [] };
+
+      tree[phan].chuongs[chuong].tieuChis[tieuChi].items.push(item);
+    });
+    return tree;
+  }, [data]);
+
+  const togglePhan = (phan: string) => {
+    setExpandedPhan(prev => ({ ...prev, [phan]: !prev[phan] }));
+  };
+
+  const toggleChuong = (chuong: string) => {
+    setExpandedChuong(prev => ({ ...prev, [chuong]: !prev[chuong] }));
+  };
+
+  const toggleTieuChi = (tc: string) => {
+    setExpandedTieuChi(prev => ({ ...prev, [tc]: !prev[tc] }));
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-20 text-center shadow-sm">
+        <RefreshCw className="animate-spin inline-block text-[#009900] mb-4" size={32} />
+        <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Đang tải danh mục 83 tiêu chí...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-[#009900] text-white font-bold uppercase text-table tracking-widest h-12">
-          <tr>
-            <th className="px-6 py-4">Mã TM</th>
-            <th className="px-6 py-4">Nội dung tiểu mục</th>
-            <th className="px-6 py-4 text-center">Mức</th>
-            <th className="px-6 py-4">Phụ trách</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-50 text-[12pt]">
-          {loading ? (
-            <tr><td colSpan={4} className="px-6 py-20 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
-          ) : (
-            data.map(item => (
-              <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 font-mono font-bold text-[#009900]">{item.ma_tieu_muc}</td>
-                <td className="px-6 py-4 font-bold text-slate-700 leading-relaxed">{item.tieu_muc}</td>
-                <td className="px-6 py-4 text-center">
-                  <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[10px] font-black border border-amber-200 uppercase">{item.muc}</span>
-                </td>
-                <td className="px-6 py-4 text-slate-500 font-bold">{item.phu_trach}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      {/* Header Panel */}
+      <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <h3 className="font-black text-slate-800 uppercase text-sm tracking-tight">Danh mục chi tiết</h3>
+        <span className="text-[10px] font-bold text-slate-400 uppercase italic">Nhấn vào tiêu đề để mở rộng/thu gọn</span>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {Object.keys(hierarchy).sort(naturalSort).map(phanName => {
+          const phan = hierarchy[phanName];
+          const isPhanExpanded = expandedPhan[phanName];
+          const chuongCount = Object.keys(phan.chuongs).length;
+
+          return (
+            <div key={phanName} className="border border-slate-100 rounded-xl overflow-hidden shadow-sm transition-all duration-300">
+              {/* PHẦN Level */}
+              <button
+                onClick={() => togglePhan(phanName)}
+                className={`w-full px-5 py-4 flex items-center justify-between transition-colors ${isPhanExpanded ? 'bg-green-50/30' : 'bg-white hover:bg-slate-50'}`}
+              >
+                <div className="flex items-center gap-3">
+                  {isPhanExpanded ? <ChevronDown className="text-[#009900]" size={20} /> : <ChevronRight className="text-slate-400" size={20} />}
+                  <span className={`font-black text-sm uppercase tracking-tight ${isPhanExpanded ? 'text-[#009900]' : 'text-slate-700'}`}>
+                    {phanName}
+                  </span>
+                </div>
+                <div className="bg-slate-100 px-3 py-1 rounded-md text-[10px] font-black text-slate-500 border border-slate-200">
+                  {chuongCount} Chương
+                </div>
+              </button>
+
+              {isPhanExpanded && (
+                <div className="p-4 space-y-3 bg-white border-t border-slate-100">
+                  {Object.keys(phan.chuongs).sort(naturalSort).map(chuongName => {
+                    const chuong = phan.chuongs[chuongName];
+                    const isChuongExpanded = expandedChuong[chuongName];
+                    const tieuChis = chuong.tieuChis;
+
+                    return (
+                      <div key={chuongName} className="space-y-2">
+                        {/* CHƯƠNG Level */}
+                        <button
+                          onClick={() => toggleChuong(chuongName)}
+                          className="w-full flex items-center gap-3 pl-4 py-2 hover:bg-slate-50 rounded-lg transition-colors group"
+                        >
+                          {isChuongExpanded ? <ChevronDown className="text-[#009900]" size={16} /> : <ChevronRight className="text-slate-400 group-hover:text-[#009900]" size={16} />}
+                          <span className={`font-black italic text-xs uppercase tracking-tight text-left ${isChuongExpanded ? 'text-[#009900]' : 'text-slate-600'}`}>
+                            {chuongName}
+                          </span>
+                        </button>
+
+                        {isChuongExpanded && (
+                          <div className="pl-12 space-y-2 pb-2">
+                            {Object.keys(tieuChis).sort(naturalSort).map(tcName => {
+                              const tc = tieuChis[tcName];
+                              const isTcExpanded = expandedTieuChi[tcName];
+                              return (
+                                <div key={tcName} className="overflow-hidden">
+                                  {/* TIÊU CHÍ Level */}
+                                  <button 
+                                    onClick={() => toggleTieuChi(tcName)}
+                                    className={`w-full group relative border rounded-xl p-4 transition-all duration-200 flex items-center justify-between ${isTcExpanded ? 'bg-[#f0fff4] border-[#009900]/30 shadow-md' : 'bg-[#f8fffa] border-green-100/50 hover:border-[#009900]/30 hover:shadow-md'}`}
+                                  >
+                                    <div className="flex items-start gap-4">
+                                      <div className="mt-1 flex items-center gap-1.5 flex-shrink-0">
+                                        <div className="w-4 h-4 border-2 border-slate-300 rounded flex items-center justify-center">
+                                          {isTcExpanded && <div className="w-2 h-2 bg-[#009900] rounded-sm"></div>}
+                                        </div>
+                                        {isTcExpanded ? <ChevronDown className="text-[#009900]" size={14} /> : <ChevronRight className="text-slate-400" size={14} />}
+                                      </div>
+                                      <span className="font-black text-[13px] text-[#009900] uppercase leading-relaxed tracking-tight text-left">
+                                        {tcName}
+                                      </span>
+                                    </div>
+                                    <div className="flex-shrink-0 bg-white shadow-sm border border-slate-100 px-3 py-1.5 rounded-lg text-[10px] font-bold text-slate-400 ml-4 whitespace-nowrap">
+                                      {tc.items.length} tiểu mục
+                                    </div>
+                                  </button>
+
+                                  {/* TIỂU MỤC Level (Items) */}
+                                  {isTcExpanded && (
+                                    <div className="mt-2 ml-10 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                                      {tc.items.map((item: Data83tc) => (
+                                        <div key={item.id} className="bg-slate-50/50 border border-slate-100 rounded-lg p-3 flex justify-between items-start gap-4 hover:bg-white transition-colors group/item">
+                                          <div className="flex gap-3">
+                                            <span className="font-mono font-black text-[11px] text-[#009900] bg-white border border-green-100 px-2 py-0.5 rounded shadow-sm">
+                                              {item.ma_tieu_muc}
+                                            </span>
+                                            <p className="text-[12px] font-bold text-slate-600 leading-relaxed group-hover/item:text-black">
+                                              {item.tieu_muc}
+                                            </p>
+                                          </div>
+                                          <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-black border border-amber-200 uppercase whitespace-nowrap">
+                                            {item.muc}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

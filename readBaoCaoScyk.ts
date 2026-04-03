@@ -7,6 +7,9 @@ export interface BaoCaoScyk {
   ngay_bao_cao?: string;
   don_vi_bao_cao?: string;
   ho_ten_nb?: string;
+  so_benh_an?: string;
+  ngay_sinh?: string;
+  gioi?: string;
   mo_ta_su_co?: string;
   trang_thai?: string;
   tien_do_xu_ly?: string;
@@ -14,13 +17,23 @@ export interface BaoCaoScyk {
   khoa_phong?: string;
   doi_tuong_xay_ra_sc?: string;
   noi_xay_ra_sc?: string;
+  vi_tri_cu_the?: string;
   ngay_xay_ra_sc?: string;
   thoi_gian?: string;
   phan_loai_ban_dau?: string;
+  muc_do_anh_huong?: string;
   nhom_bao_cao?: string;
   nhom_su_co?: string;
   dieu_tri_xy_ly_ban_dau_da_thuc_hien?: string;
   de_xuat_giai_phap_ban_dau?: string;
+  thong_bao_bs_dieu_tri?: string;
+  thong_bao_nguoi_nha?: string;
+  thong_bao_nguoi_benh?: string;
+  ghi_nhan_vao_hsba?: string;
+  nguoi_bao_cao_sdt?: string;
+  nguoi_bao_cao_email?: string;
+  nguoi_bao_cao_doi_tuong?: string;
+  nguoi_bao_cao_chuc_danh_khac?: string;
   hinh_anh_minh_chung?: string[];
   created_at?: string;
 }

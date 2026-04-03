@@ -217,10 +217,10 @@ export default function BcCqyList() {
 
     const filteredItems = items.filter(item => {
         const matchesSearch = item.noi_dung_bao_cao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             item.noi_xay_ra.toLowerCase().includes(searchTerm.toLowerCase());
-        
+            item.noi_xay_ra.toLowerCase().includes(searchTerm.toLowerCase());
+
         if (isAdmin || !uDept) return matchesSearch;
-        
+
         const iDept = (item.noi_xay_ra || '').trim().toLowerCase();
         const matchesUnit = iDept !== '' && (uDept === iDept || iDept.includes(uDept) || uDept.includes(iDept));
         return matchesSearch && matchesUnit;
@@ -553,14 +553,14 @@ export default function BcCqyList() {
                     })}
                 </div>
             </div>
-        <DeleteConfirmationModal
-            isOpen={isDeleteModalOpen}
-            onClose={() => setIsDeleteModalOpen(false)}
-            onConfirm={confirmDelete}
-            title="Xác nhận xóa báo cáo"
-            message="Bạn có chắc chắn muốn xóa báo cáo Cục Quân y này không? Thao tác này không thể hoàn tác."
-            isLoading={isDeleting}
-        />
-    </div>
-);
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Xác nhận xóa báo cáo"
+                message="Bạn có chắc chắn muốn xóa báo cáo Cục Quân y này không? Thao tác này không thể hoàn tác."
+                isLoading={isDeleting}
+            />
+        </div>
+    );
 }
