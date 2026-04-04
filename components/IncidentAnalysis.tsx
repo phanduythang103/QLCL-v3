@@ -114,10 +114,14 @@ const IncidentAnalysis: React.FC = () => {
     const [aiRole, setAiRole] = useState<'SPECIALIST' | 'MANAGEMENT' | null>(null);
     const [currentVerification, setCurrentVerification] = useState<BienBanXacMinh | null>(null);
 
-    // New Dashboard states
-    const [showDashboard, setShowDashboard] = useState(false);
+    // Specialist Dashboard states
+    const [showSpecialistDashboard, setShowSpecialistDashboard] = useState(false);
     const [activeAnalysisTab, setActiveAnalysisTab] = useState<'ishikawa' | 'whys'>('ishikawa');
     const [structuredData, setStructuredData] = useState<any>(null);
+
+    // Management AI states
+    const [showMgmtDashboard, setShowMgmtDashboard] = useState(false);
+    const [mgmtStructuredData, setMgmtStructuredData] = useState<any>(null);
 
     const initialForm: AnalysisRecord = {
         scyk_id: '',
@@ -276,15 +280,13 @@ const IncidentAnalysis: React.FC = () => {
         setIsAnalyzing(true);
         setAiRole(role);
         try {
-            const prompt = `LỆNH: Phân tích RCA (5-Whys và Ishikawa) cho sự cố: [${incident.so_bc_ma_scyk}].
+            const prompt = role === 'SPECIALIST' 
+                ? `LỆNH: Phân tích RCA (5-Whys và Ishikawa) cho sự cố: [${incident.so_bc_ma_scyk}].
 DỮ LIỆU: ${incident.mo_ta_su_co}. ${currentVerification?.ket_qua_xac_minh || ''}.
 
 QUY TẮC PHÂN TÍCH 5-WHYS (BẮT BUỘC):
 1. Mỗi WHY phải gồm cặp { question, answer }.
 2. Câu hỏi của W(n) phải kế thừa trực tiếp từ nội dung câu trả lời của W(n-1).
-VÍ DỤ: 
-- W1: Question: Tại sao tiêm nhầm? -> Answer: Vì không check ID.
-- W2: Question: Tại sao không check ID? -> Answer: Vì quá tải công việc.
 3. KHÔNG đổ lỗi cá nhân đơn thuần (như "do cẩu thả"). Phải tìm ra lỗ hổng hệ thống.
 
 QUY TẮC KẾT LUẬN & GIẢI PHÁP (BẮT BUỘC):
@@ -294,22 +296,29 @@ QUY TẮC KẾT LUẬN & GIẢI PHÁP (BẮT BUỘC):
 YÊU CẦU TRẢ VỀ JSON:
 {
   "man": "...", "method": "...", "machine": "...", "management": "...", "environment": "...",
-  "whys": [
-    {"question": "Tại sao...?", "answer": "Vì..."},
-    ... (đủ 5 whys)
-  ],
-  "root": {
-    "individual": "...", 
-    "process": "...", 
-    "system": "..."
-  },
-  "solution": {
-    "shortTerm": "...", 
-    "mediumTerm": "...", 
-    "longTerm": "..."
-  },
-  "incidentTypes": ["...", "..."],
-  "causeGroups": ["...", "..."]
+  "whys": [ {"question": "...", "answer": "..."} ],
+  "root": { "individual": "...", "process": "...", "system": "..." },
+  "solution": { "shortTerm": "...", "mediumTerm": "...", "longTerm": "..." },
+  "incidentTypes": ["..."],
+  "causeGroups": ["..."]
+}`
+                : `LỆNH: Đánh giá quản lý cho sự cố y khoa: [${incident.so_bc_ma_scyk}].
+DỮ LIỆU: ${incident.mo_ta_su_co}. ${currentVerification?.ket_qua_xac_minh || ''}.
+
+YÊU CẦU CẤP QUẢN LÝ (BẮT BUỘC):
+1. KHÔNG lặp lại mô tả sự cố đã có. 
+2. PHÂN TÍCH: Tập trung vào các lỗ hổng quản lý, sai sót hệ thống dẫn đến sự cố.
+3. ĐÁNH GIÁ MỨC ĐỘ TỔN THƯƠNG: 
+   - Trên người bệnh: Gợi ý mã (A, B, C, D, E, F, G, H, I) theo tiêu chuẩn TT43/2018/TT-BYT.
+   - Trên tổ chức: Gợi ý các hạng mục (Tổn hại tài sản, Quan tâm truyền thông, Khiếu nại, Danh tiếng, Pháp luật...).
+
+YÊU CẦU TRẢ VỀ JSON:
+{
+  "managementFindings": "Mô tả kết quả phát hiện cấp quản lý (sai lệch quy trình, lỗ hổng giám sát...)",
+  "severityPatient": "Mã chữ cái (VD: D)",
+  "severityOrg": ["Hạng mục 1", "Hạng mục 2"],
+  "recommendations": "Khuyến cáo hướng xử lý cho đơn vị",
+  "isConsistent": "Có/Không"
 }`;
 
             const result = await analyzeWithAi(prompt, { 
@@ -332,34 +341,35 @@ YÊU CẦU TRẢ VỀ JSON:
                 return String(val);
             };
 
+            let parsedJson: any = null;
             // Attempt JSON parsing
             try {
                 const cleanJson = result.replace(/```json/g, '').replace(/```/g, '').trim();
-                const json = JSON.parse(cleanJson);
+                parsedJson = JSON.parse(cleanJson);
                 data = {
                     ishikawa: {
-                        man: ensureString(json.man),
-                        method: ensureString(json.method),
-                        machine: ensureString(json.machine),
-                        management: ensureString(json.management),
-                        environment: ensureString(json.environment),
+                        man: ensureString(parsedJson.man),
+                        method: ensureString(parsedJson.method),
+                        machine: ensureString(parsedJson.machine),
+                        management: ensureString(parsedJson.management),
+                        environment: ensureString(parsedJson.environment),
                     },
-                    whys: Array.isArray(json.whys) ? json.whys.map((w: any) => ({
+                    whys: Array.isArray(parsedJson.whys) ? parsedJson.whys.map((w: any) => ({
                         question: ensureString(w.question || w.q),
                         answer: ensureString(w.answer || w.a)
                     })) : [],
                     rootCause: {
-                        individual: ensureString(json.root?.individual || json.root_individual),
-                        process: ensureString(json.root?.process || json.root_process),
-                        system: ensureString(json.root?.system || json.root_system)
+                        individual: ensureString(parsedJson.root?.individual || parsedJson.root_individual),
+                        process: ensureString(parsedJson.root?.process || parsedJson.root_process),
+                        system: ensureString(parsedJson.root?.system || parsedJson.root_system)
                     },
                     solution: {
-                        shortTerm: ensureString(json.solution?.shortTerm || json.sol_short),
-                        mediumTerm: ensureString(json.solution?.mediumTerm || json.sol_medium),
-                        longTerm: ensureString(json.solution?.longTerm || json.sol_long)
+                        shortTerm: ensureString(parsedJson.solution?.shortTerm || parsedJson.sol_short),
+                        mediumTerm: ensureString(parsedJson.solution?.mediumTerm || parsedJson.sol_medium),
+                        longTerm: ensureString(parsedJson.solution?.longTerm || parsedJson.sol_long)
                     },
-                    incidentTypes: Array.isArray(json.incidentTypes) ? json.incidentTypes.map((t: any) => ensureString(t)).join(', ') : ensureString(json.incidentTypes),
-                    causeGroups: Array.isArray(json.causeGroups) ? json.causeGroups.map((c: any) => ensureString(c)).join(', ') : ensureString(json.causeGroups)
+                    incidentTypes: Array.isArray(parsedJson.incidentTypes) ? parsedJson.incidentTypes.map((t: any) => ensureString(t)).join(', ') : ensureString(parsedJson.incidentTypes),
+                    causeGroups: Array.isArray(parsedJson.causeGroups) ? parsedJson.causeGroups.map((c: any) => ensureString(c)).join(', ') : ensureString(parsedJson.causeGroups)
                 };
             } catch (jsonErr) {
                 console.warn('JSON Parse failed, falling back to Regex:', jsonErr);
@@ -400,11 +410,17 @@ YÊU CẦU TRẢ VỀ JSON:
                 };
             }
 
-            setStructuredData(data);
-            setShowDashboard(true);
+            if (role === 'SPECIALIST') {
+                setStructuredData(data);
+                setShowSpecialistDashboard(true);
+            } else {
+                setMgmtStructuredData(parsedJson || data); // Store parsed JSON for mgmt
+                setShowMgmtDashboard(true);
+            }
+
             // Scroll to dashboard
             setTimeout(() => {
-                const el = document.getElementById('ai-dashboard');
+                const el = document.getElementById(role === 'SPECIALIST' ? 'ai-dashboard' : 'mgmt-ai-dashboard');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
             }, 100);
 
@@ -416,9 +432,8 @@ YÊU CẦU TRẢ VỀ JSON:
     };
 
     const applyDashboardToForm = () => {
-        if (!structuredData || !aiRole) return;
-
         if (aiRole === 'SPECIALIST') {
+            if (!structuredData) return;
             // Map checkboxes for Incident Type
             const incidentTypeStr = structuredData.incidentTypes || '';
             const aiTypes = incidentTypeStr.split(/,|\n/).map((s: string) => s.trim().toLowerCase());
@@ -467,16 +482,21 @@ YÊU CẦU TRẢ VỀ JSON:
                 iiiii_han_dong_khac_phuc: solTextFull,
                 iiiiii_de_xuat_khuyen_cao: "Khuyến nghị quản lý hệ thống:\n" + solTextFull
             }));
+            setShowSpecialistDashboard(false);
         } else {
-            // Section B Mapping handled similarly
+            if (!mgmtStructuredData) return;
+            // Section B Mapping
             setMgmtData(prev => ({
                 ...prev,
-                findings: structuredData.rootCause.process || structuredData.rootCause.system || structuredData.ishikawa.man,
-                severityPatient: (structuredData.rootCause.system?.includes('NC2') || structuredData.rootCause.process?.includes('NC2')) ? 'E' : (structuredData.rootCause.system?.includes('NC3') ? 'G' : 'C'),
+                findings: mgmtStructuredData.managementFindings || '',
+                discussed: 'Có',
+                consistent: mgmtStructuredData.isConsistent || 'Có',
+                consistentDetails: mgmtStructuredData.recommendations || '',
+                severityPatient: mgmtStructuredData.severityPatient || 'C',
+                severityOrg: Array.isArray(mgmtStructuredData.severityOrg) ? mgmtStructuredData.severityOrg : [],
             }));
+            setShowMgmtDashboard(false);
         }
-
-        setShowDashboard(false);
     };
 
     if (viewMode === 'FORM') {
@@ -546,8 +566,8 @@ YÊU CẦU TRẢ VỀ JSON:
                         </div>
                     </div>
 
-                    {/* AI Result Dashboard */}
-                    {showDashboard && structuredData && (
+                    {/* Specialist AI Result Dashboard */}
+                    {showSpecialistDashboard && structuredData && (
                         <div id="ai-dashboard" className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-top-4 duration-500 max-w-5xl mx-auto border border-slate-700">
                             <div className="p-6 bg-gradient-to-r from-slate-900 to-indigo-950 border-b border-slate-800 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
@@ -559,7 +579,7 @@ YÊU CẦU TRẢ VỀ JSON:
                                         <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest">Sử dụng trí tuệ nhân tạo để phân tích biểu đồ xương cá & 5 Whys</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setShowDashboard(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400"><X size={20} /></button>
+                                <button onClick={() => setShowSpecialistDashboard(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400"><X size={20} /></button>
                             </div>
 
                             {/* Tabs Header */}

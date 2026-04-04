@@ -588,8 +588,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
         </div>
       )}
 
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="flex gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-80">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />

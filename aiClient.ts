@@ -39,7 +39,12 @@ export async function analyzeWithAi(prompt: string, options: AiRequestOptions = 
       
       if (!apiKey) throw new Error('Vui lòng cấu hình API Key cho AI trong Cấu hình hệ thống.');
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      // Tự động chọn version phù hợp: v1beta cho 2.0 hoặc preview, v1 cho stable 1.5
+      const apiVersion = (model.includes('2.0') || model.includes('preview')) ? 'v1beta' : 'v1';
+      
+      // Đảm bảo model name không bị lặp prefix 'models/' nếu DB đã lưu cả prefix
+      const cleanModel = model.replace(/^models\//, '');
+      const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${cleanModel}:generateContent?key=${apiKey}`;
 
       const body: any = {
         contents: [{ parts: [{ text: prompt }] }],
