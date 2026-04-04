@@ -421,10 +421,11 @@ YÊU CẦU TRẢ VỀ JSON:
         if (aiRole === 'SPECIALIST') {
             // Map checkboxes for Incident Type
             const incidentTypeStr = structuredData.incidentTypes || '';
+            const aiTypes = incidentTypeStr.split(/,|\n/).map((s: string) => s.trim().toLowerCase());
             const selectedTypes: string[] = [];
             INCIDENT_TYPES.forEach(cat => {
                 cat.options.forEach(opt => {
-                    if (incidentTypeStr.toLowerCase().includes(opt.toLowerCase())) {
+                    if (aiTypes.includes(opt.toLowerCase())) {
                         selectedTypes.push(opt);
                     }
                 });
@@ -432,11 +433,12 @@ YÊU CẦU TRẢ VỀ JSON:
 
             // Map checkboxes for Root Causes
             const rootCauseStr = structuredData.causeGroups || '';
+            const aiCauses = rootCauseStr.split(/,|\n/).map((s: string) => s.trim().toLowerCase());
             const selectedCauses: string[] = [];
             ROOT_CAUSE_GROUPS.forEach(cat => {
                 cat.options.forEach(opt => {
-                    if (rootCauseStr.toLowerCase().includes(opt.toLowerCase())) {
-                        selectedCauses.push(opt);
+                    if (aiCauses.includes(opt.toLowerCase())) {
+                        selectedCauses.push(`${cat.label}: ${opt}`);
                     }
                 });
             });
@@ -764,7 +766,7 @@ YÊU CẦU TRẢ VỀ JSON:
                                                     <label key={opt} className="flex items-start gap-2 cursor-pointer group">
                                                         <input
                                                             type="checkbox"
-                                                            checked={(formData.ii_phan_loai_theo_nhom || '').includes(opt)}
+                                                            checked={(formData.ii_phan_loai_theo_nhom || '').split('\n').includes(opt)}
                                                             onChange={() => toggleSelection('ii_phan_loai_theo_nhom', opt)}
                                                             className="mt-1 accent-primary-600 shrink-0"
                                                         />
@@ -807,8 +809,8 @@ YÊU CẦU TRẢ VỀ JSON:
                                                     <label key={opt} className="flex items-start gap-2 cursor-pointer group">
                                                         <input
                                                             type="checkbox"
-                                                            checked={(formData.iiii_phan_loai_theo_nhom_nguyen_nhan || '').includes(opt)}
-                                                            onChange={() => toggleSelection('iiii_phan_loai_theo_nhom_nguyen_nhan', opt)}
+                                                            checked={(formData.iiii_phan_loai_theo_nhom_nguyen_nhan || '').split('\n').includes(`${cat.label}: ${opt}`)}
+                                                            onChange={() => toggleSelection('iiii_phan_loai_theo_nhom_nguyen_nhan', `${cat.label}: ${opt}`)}
                                                             className="mt-1 accent-amber-600 shrink-0"
                                                         />
                                                         <span className="text-[11px] text-slate-600 group-hover:text-amber-600 leading-tight">{opt}</span>
@@ -1143,12 +1145,11 @@ YÊU CẦU TRẢ VỀ JSON:
                         </tr>
                     </table>
 
-                    <table style="margin-top: 10pt;"><tr><td class="item-title">IV. Phân loại sự cố theo nhóm nguyên nhân gây ra sự cố</td></tr></table>
                     <table style="border-top: none;">
                         ${ROOT_CAUSE_GROUPS.map((cat, idx) => `
                             <tr>
                                 <td style="width: 40%; font-weight: bold;">${idx + 1}. ${cat.label}</td>
-                                <td style="width: 60%;">${renderCheckboxes(cat.options, selectedCauseGroups, 1)}</td>
+                                <td style="width: 60%;">${renderCheckboxes(cat.options, selectedCauseGroups.filter(s => s.startsWith(cat.label)).map(s => s.replace(`${cat.label}: `, '')), 1)}</td>
                             </tr>
                         `).join('')}
                     </table>

@@ -194,6 +194,7 @@ export interface GsVst {
     moments: {
       id: number;
       name: string;
+      co_hoi: boolean;
       compliance: boolean;
       correct_technique: boolean;
       note: string;
@@ -216,21 +217,22 @@ export interface SurgerySafety {
   khoa_phau_thuat: string;
   ho_ten_nguoi_benh: string;
   kip_phau_thuat: string;
-  tc1_xac_nhan_danh_tinh: boolean;
-  tc2_xac_nhan_vi_tri: boolean;
-  tc3_cam_ket_phau_thuat: boolean;
-  tc4_kiem_tra_thiet_bi: boolean;
-  tc5_danh_gia_nguy_co: boolean;
-  tc6_gioi_thieu_nhan_su: boolean;
-  tc7_xac_nhan_lan_cuoi: boolean;
-  tc8_du_phong_nhiem_khuan: boolean;
-  tc9_cac_van_de_phat_sinh: boolean;
-  tc10_kiem_dem_dung_cu: boolean;
-  tc11_mau_benh_pham: boolean;
-  tc12_ghi_chep_ho_so: boolean;
-  tc13_ban_giao_hoi_tinh: boolean;
+  tc1_xac_nhan_danh_tinh: boolean | null;
+  tc2_xac_nhan_vi_tri: boolean | null;
+  tc3_cam_ket_phau_thuat: boolean | null;
+  tc4_kiem_tra_thiet_bi: boolean | null;
+  tc5_danh_gia_nguy_co: boolean | null;
+  tc6_gioi_thieu_nhan_su: boolean | null;
+  tc7_xac_nhan_lan_cuoi: boolean | null;
+  tc8_du_phong_nhiem_khuan: boolean | null;
+  tc9_cac_van_de_phat_sinh: boolean | null;
+  tc10_kiem_dem_dung_cu: boolean | null;
+  tc11_mau_benh_pham: boolean | null;
+  tc12_ghi_chep_ho_so: boolean | null;
+  tc13_ban_giao_hoi_tinh: boolean | null;
   tong_dat: number;
   ty_le_tuan_thu: number;
+  ghi_chu_chung?: string;
 }
 
 export interface DrugMonitoring {

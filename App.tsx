@@ -7,7 +7,7 @@ import { Incidents } from './components/Incidents';
 import { Supervision } from './components/Supervision';
 import { HRModule } from './components/HRModule';
 import { DocsModule } from './components/DocsModule';
-import { AssessmentModule } from './components/AssessmentModule';
+import { AssessmentModule } from './components/Assessment';
 import { ImprovementModule } from './components/ImprovementModule';
 import { IndicatorsModule } from './components/IndicatorsModule';
 import { ReportsModule } from './components/ReportsModule';

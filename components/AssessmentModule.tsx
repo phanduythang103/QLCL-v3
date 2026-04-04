@@ -23,8 +23,8 @@ import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 // --- Helper Functions ---
 const naturalSort = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
 
-// --- Component Modal Xem Chi Tiết ---
-const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
+// --- Component Xem Chi Tiết (Chế độ Page) ---
+const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
   phieuId: string,
   data: KqDanhGia83[],
   onClose: () => void,
@@ -81,8 +81,8 @@ const ViewSheetDetailModal = ({ phieuId, data, onClose, sheetInfo }: {
   }, [data]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-right duration-500 overflow-hidden">
-      <div className="flex-1 flex flex-col h-full">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col animate-in fade-in duration-500 min-h-[600px]">
+      <div className="flex-1 flex flex-col">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-[#009900] text-white flex justify-between items-center shadow-md print:hidden">
           <div className="flex items-center gap-3">
@@ -488,7 +488,7 @@ const BasicStandardsView = () => {
 };
 
 // --- View 3: Chấm điểm Tiêu chí CLBV (QualityAssessmentView) ---
-const QualityAssessmentView = () => {
+const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode: string) => void }) => {
   const { user } = useAuth();
   const isAdmin = !!user?.role && (
     user.role.toLowerCase().includes('quản trị') || 
@@ -498,7 +498,12 @@ const QualityAssessmentView = () => {
   const uDept = user?.department || ""; 
   const uDeptCode = uDept.split('-')[0].trim(); 
 
-  const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
+  const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
+  
+  // Notify parent of view mode changes if callback provided
+  useEffect(() => {
+    if (onViewModeChange) onViewModeChange(viewMode);
+  }, [viewMode, onViewModeChange]);
   const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -618,6 +623,7 @@ const QualityAssessmentView = () => {
     try {
       const data = await fetchKqByPhieuId(sheet.phieu_id);
       setViewingData(data);
+      setViewMode('DETAIL');
     } catch (err) {
       alert("Lỗi khi tải chi tiết.");
     }
@@ -709,6 +715,17 @@ const QualityAssessmentView = () => {
     handleScoreChange(ma, 'hinh_anh_minh_chung', urls);
   };
 
+  if (viewMode === 'DETAIL' && viewingPhieuId) {
+    return (
+      <AssessmentDetailView
+        phieuId={viewingPhieuId || ""}
+        data={viewingData}
+        onClose={() => setViewMode('LIST')}
+        sheetInfo={sheetList.find(s => s.phieu_id === viewingPhieuId)}
+      />
+    );
+  }
+
   if (viewMode === 'LIST') {
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
@@ -786,15 +803,6 @@ const QualityAssessmentView = () => {
           message="Bạn có chắc chắn muốn xóa phiếu đánh giá này không? Thao tác này không thể hoàn tác."
           isLoading={!!deletingId}
         />
-
-        {viewingPhieuId && (
-          <ViewSheetDetailModal
-            phieuId={viewingPhieuId}
-            data={viewingData}
-            onClose={() => setViewingPhieuId(null)}
-            sheetInfo={sheetList.find(s => s.phieu_id === viewingPhieuId)}
-          />
-        )}
       </div>
     );
   }
@@ -985,40 +993,44 @@ const QualityAssessmentView = () => {
 // --- Main Assessment Module ---
 export const AssessmentModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'CRITERIA_83' | 'ASSESSMENT_REPORTS' | 'QUALITY_ASSESSMENT'>('QUALITY_ASSESSMENT');
+  const [qualityViewMode, setQualityViewMode] = useState<string>('LIST');
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
-        <button 
-          onClick={() => setActiveTab('QUALITY_ASSESSMENT')} 
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-            activeTab === 'QUALITY_ASSESSMENT' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
-          }`}
-        >
-          <CheckCircle2 size={18} /> Chấm điểm 83 Tiêu chí
-        </button>
-        <button 
-          onClick={() => setActiveTab('ASSESSMENT_REPORTS')} 
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-            activeTab === 'ASSESSMENT_REPORTS' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
-          }`}
-        >
-          <FileText size={18} /> Các bộ tiêu chuẩn khác
-        </button>
-        <button 
-          onClick={() => setActiveTab('CRITERIA_83')} 
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-            activeTab === 'CRITERIA_83' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
-          }`}
-        >
-          <ListFilter size={18} /> Danh mục 83 Tiêu chí
-        </button>
-      </div>
+      {/* Chỉ hiển thị Tab nếu đang ở chế độ danh sách */}
+      {qualityViewMode === 'LIST' && (
+        <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
+          <button 
+            onClick={() => setActiveTab('QUALITY_ASSESSMENT')} 
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
+              activeTab === 'QUALITY_ASSESSMENT' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+            }`}
+          >
+            <CheckCircle2 size={18} /> Chấm điểm 83 Tiêu chí
+          </button>
+          <button 
+            onClick={() => setActiveTab('ASSESSMENT_REPORTS')} 
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
+              activeTab === 'ASSESSMENT_REPORTS' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+            }`}
+          >
+            <FileText size={18} /> Các bộ tiêu chuẩn khác
+          </button>
+          <button 
+            onClick={() => setActiveTab('CRITERIA_83')} 
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
+              activeTab === 'CRITERIA_83' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+            }`}
+          >
+            <ListFilter size={18} /> Danh mục 83 Tiêu chí
+          </button>
+        </div>
+      )}
 
       <div className="min-h-[400px]">
         {activeTab === 'CRITERIA_83' && <Criteria83Data83View />}
         {activeTab === 'ASSESSMENT_REPORTS' && <BasicStandardsView />}
-        {activeTab === 'QUALITY_ASSESSMENT' && <QualityAssessmentView />}
+        {activeTab === 'QUALITY_ASSESSMENT' && <QualityAssessmentView onViewModeChange={(mode) => setQualityViewMode(mode)} />}
       </div>
     </div>
   );

@@ -756,14 +756,14 @@ const KnowledgeSharing = () => {
             <h3 className="text-table text-black mb-2 line-clamp-2 group-hover:text-green-700 transition-colors leading-tight">{article.tieu_de}</h3>
             <p className="text-table text-black/80 line-clamp-3 mb-4 leading-relaxed">{article.noi_dung}</p>
 
-            <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+            <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 font-bold">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold overflow-hidden">
+                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold overflow-hidden uppercase">
                   {article.nguoi_dang?.[0]?.toUpperCase()}
                 </div>
-                <span className="text-black font-black text-table">{article.nguoi_dang || 'Anonymous'}</span>
+                <span className="text-black font-bold text-table capitalize">{(article.nguoi_dang || 'Anonymous').toLowerCase()}</span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 uppercase tracking-wider">
                 <div className="flex items-center gap-1">
                   <MessageSquare size={12} className="opacity-60" />
                   <span>{article.phan_loai === 'Hỏi đáp' ? 'Q&A' : ''}</span>
@@ -1251,7 +1251,7 @@ const SharingDetailModal = ({ article, onClose }: any) => {
                 <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold">
                   {article.nguoi_dang?.[0]?.toUpperCase()}
                 </div>
-                <span className="font-bold text-slate-700">{article.nguoi_dang || 'Anonymous'}</span>
+                <span className="font-bold text-slate-700 capitalize">{(article.nguoi_dang || 'Anonymous').toLowerCase()}</span>
               </div>
               <span>•</span>
               <span>{article.ngay_dang ? new Date(article.ngay_dang).toLocaleDateString('vi-VN') : '-'}</span>
@@ -1318,7 +1318,7 @@ const SharingDetailModal = ({ article, onClose }: any) => {
               {comments.map((comment, idx) => (
                 <div key={comment.id || idx} className="bg-white p-3 rounded-xl shadow-sm border border-white">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black text-slate-700">{comment.user_full_name}</span>
+                    <span className="text-[10px] font-bold text-slate-700 capitalize">{(comment.user_full_name || 'Anonymous').toLowerCase()}</span>
                     <span className="text-[8px] text-slate-400 font-mono">{new Date(comment.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed">{comment.content}</p>

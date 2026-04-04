@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2, 
-  Users, CheckCircle2, AlertTriangle, XCircle, FileText, 
+import {
+  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2,
+  Users, CheckCircle2, AlertTriangle, XCircle, FileText,
   X, LayoutDashboard, List, Filter, RotateCcw, Stethoscope,
   ClipboardCheck, Clock, UserCheck, ShieldCheck, BarChart3,
-  TrendingUp, BarChart
+  TrendingUp, BarChart, ArrowLeft, Activity, LogOut, Save, Percent, Check
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, 
-  CartesianGrid, Tooltip, Legend, Cell 
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, Cell
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { SurgerySafety } from '../types';
@@ -82,7 +82,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
     return data.filter(item => {
       const matchDept = filterConfig.department === 'Tất cả' || item.khoa_phau_thuat === filterConfig.department;
       const matchOR = filterConfig.orTable === 'Tất cả' || item.ban_mo_so === filterConfig.orTable;
-      
+
       let matchTime = true;
       const itemDate = new Date(item.ngay_giam_sat);
       const today = new Date();
@@ -125,9 +125,9 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
           if (Number(item.ty_le_tuan_thu) >= 100) groups[dept].pass100++;
           else {
             CRITERIA.forEach(c => {
-               if (!item[c.id as keyof SurgerySafety]) {
-                  groups[dept].errors[c.label] = (groups[dept].errors[c.label] || 0) + 1;
-               }
+              if (!item[c.id as keyof SurgerySafety]) {
+                groups[dept].errors[c.label] = (groups[dept].errors[c.label] || 0) + 1;
+              }
             });
           }
         });
@@ -144,7 +144,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
         ]);
 
         const title = "TỔNG HỢP GIÁM SÁT AN TOÀN PHẪU THUẬT";
-        const dateStr = filterConfig.timeRange === 'Tùy chọn' 
+        const dateStr = filterConfig.timeRange === 'Tùy chọn'
           ? `Từ ngày ${filterConfig.fromDate || '...'} đến ngày ${filterConfig.toDate || '...'}`
           : `Kỳ báo cáo: ${filterConfig.timeRange}`;
 
@@ -154,7 +154,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
           [],
           ['Khoa lâm sàng', 'Số ca giám sát (A)', 'Số ca đạt 100% (B)', 'Tỷ lệ % (B/A)', 'Lỗi thường gặp nhất']
         ];
-        
+
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         XLSX.utils.sheet_add_aoa(ws, reportRows, { origin: 'A5' });
 
@@ -178,29 +178,29 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex bg-slate-100/50 p-1.5 gap-1 rounded-[28px] border border-slate-200/50 shrink-0">
-            <TabButton 
-              active={activeTab === 'OVERVIEW'} 
-              onClick={() => { setActiveTab('OVERVIEW'); setViewMode('LIST'); }} 
-              icon={LayoutDashboard} 
-              label="Tổng quan" 
+            <TabButton
+              active={activeTab === 'OVERVIEW'}
+              onClick={() => { setActiveTab('OVERVIEW'); setViewMode('LIST'); }}
+              icon={LayoutDashboard}
+              label="Tổng quan"
             />
-            <TabButton 
-              active={activeTab === 'DANH_SACH'} 
-              onClick={() => { setActiveTab('DANH_SACH'); setViewMode('LIST'); }} 
-              icon={List} 
-              label="Danh sách" 
+            <TabButton
+              active={activeTab === 'DANH_SACH'}
+              onClick={() => { setActiveTab('DANH_SACH'); setViewMode('LIST'); }}
+              icon={List}
+              label="Danh sách"
             />
-            <TabButton 
-              active={activeTab === 'REPORT'} 
-              onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }} 
-              icon={BarChart3} 
-              label="Tổng hợp" 
+            <TabButton
+              active={activeTab === 'REPORT'}
+              onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }}
+              icon={BarChart3}
+              label="Tổng hợp"
             />
           </div>
 
           <div className="flex items-center gap-3">
             {activeTab === 'REPORT' && (
-              <button 
+              <button
                 onClick={exportToExcel}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100 active:scale-95"
               >
@@ -208,7 +208,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               </button>
             )}
             {activeTab === 'DANH_SACH' && (
-              <button 
+              <button
                 onClick={() => { setEditingItem(null); setViewMode('FORM'); }}
                 className="flex items-center gap-2 bg-[#009900] hover:bg-[#0d6e39] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-green-200 active:scale-95"
               >
@@ -222,7 +222,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Thời gian</label>
-              <select 
+              <select
                 value={filterConfig.timeRange}
                 onChange={e => setFilterConfig({ ...filterConfig, timeRange: e.target.value })}
                 className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
@@ -237,8 +237,8 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               <>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Từ ngày</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={filterConfig.fromDate}
                     onChange={e => setFilterConfig({ ...filterConfig, fromDate: e.target.value })}
                     className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
@@ -246,8 +246,8 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Đến ngày</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={filterConfig.toDate}
                     onChange={e => setFilterConfig({ ...filterConfig, toDate: e.target.value })}
                     className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
@@ -258,7 +258,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Khoa</label>
-              <select 
+              <select
                 value={filterConfig.department}
                 onChange={e => setFilterConfig({ ...filterConfig, department: e.target.value })}
                 className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
@@ -272,7 +272,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Phòng mổ</label>
-              <select 
+              <select
                 value={filterConfig.orTable}
                 onChange={e => setFilterConfig({ ...filterConfig, orTable: e.target.value })}
                 className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
@@ -297,8 +297,8 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
         ) : activeTab === 'REPORT' ? (
           <SurgeryReport data={filteredData} />
         ) : viewMode === 'LIST' ? (
-          <SurgeryList 
-            data={filteredData} 
+          <SurgeryList
+            data={filteredData}
             onView={(item: SurgerySafety) => { setEditingItem(item); setViewMode('DETAIL'); }}
             onEdit={(item: SurgerySafety) => { setEditingItem(item); setViewMode('FORM'); }}
             onDelete={async (id: string) => {
@@ -309,8 +309,8 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
             }}
           />
         ) : viewMode === 'DETAIL' && editingItem ? (
-          <SurgerySafetyDetailView 
-            item={editingItem} 
+          <SurgerySafetyDetailView
+            item={editingItem}
             currentUser={user}
             onClose={() => setViewMode('LIST')}
             onEdit={() => setViewMode('FORM')}
@@ -323,7 +323,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
             }}
           />
         ) : (
-          <SurgerySafetyFormView 
+          <SurgerySafetyFormView
             item={editingItem}
             onClose={() => setViewMode('LIST')}
             onSaved={() => { setViewMode('LIST'); loadData(); }}
@@ -339,11 +339,10 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-      active 
-        ? 'bg-white text-[#009900] shadow-lg shadow-green-100 border border-green-50' 
-        : 'text-slate-400 hover:text-slate-600'
-    }`}
+    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active
+      ? 'bg-white text-[#009900] shadow-lg shadow-green-100 border border-green-50'
+      : 'text-slate-400 hover:text-slate-600'
+      }`}
   >
     <Icon size={16} />
     {label}
@@ -354,7 +353,7 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
   const stats = useMemo(() => {
     const total = data.length;
     if (total === 0) return { total: 0, complianceRate: 0, signInRate: 0, timeOutRate: 0, signOutRate: 0 };
-    
+
     let totalSignInPass = 0;
     let totalTimeOutPass = 0;
     let totalSignOutPass = 0;
@@ -393,10 +392,10 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
 
   const chartData = useMemo(() => {
     if (data.length === 0) return [];
-    
+
     // Group by Date for trend
     const dayMap: Record<string, { date: string, count: number, pass: number }> = {};
-    
+
     // Determine date range for aggregation
     data.forEach(item => {
       const d = new Date(item.ngay_giam_sat);
@@ -410,10 +409,10 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
       }
     });
 
-    return Object.values(dayMap).sort((a,b) => {
+    return Object.values(dayMap).sort((a, b) => {
       const [d1, m1] = a.date.split('/');
       const [d2, m2] = b.date.split('/');
-      return new Date(2026, Number(m1)-1, Number(d1)).getTime() - new Date(2026, Number(m2)-1, Number(d2)).getTime();
+      return new Date(2026, Number(m1) - 1, Number(d1)).getTime() - new Date(2026, Number(m2) - 1, Number(d2)).getTime();
     }).map(d => ({
       ...d,
       rate: Number(((d.pass / d.count) * 100).toFixed(1))
@@ -453,29 +452,29 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                   dy={10}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                   domain={[0, 100]}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                   itemStyle={{ fontSize: '12px', fontWeight: 800 }}
                   labelStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: '4px' }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="rate" 
-                  stroke="#009900" 
-                  strokeWidth={4} 
+                <Line
+                  type="monotone"
+                  dataKey="rate"
+                  stroke="#009900"
+                  strokeWidth={4}
                   dot={{ r: 4, fill: '#009900', strokeWidth: 2, stroke: '#fff' }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                   name="Tỷ lệ đạt (%)"
@@ -497,27 +496,27 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                   dy={10}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                   itemStyle={{ fontSize: '12px', fontWeight: 800 }}
                   labelStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: '4px' }}
                 />
-                <Bar 
-                  dataKey="count" 
-                  fill="#009900" 
-                  radius={[6, 6, 0, 0]} 
+                <Bar
+                  dataKey="count"
+                  fill="#009900"
+                  radius={[6, 6, 0, 0]}
                   name="Số ca giám sát"
                   opacity={0.8}
                 >
@@ -525,11 +524,11 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
                     <Cell key={`cell-${index}`} fill={entry.rate === 100 ? '#009900' : '#4ade80'} />
                   ))}
                 </Bar>
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="#6366f1" 
-                  strokeWidth={2} 
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#6366f1"
+                  strokeWidth={2}
                   dot={{ r: 3, fill: '#6366f1' }}
                   name="Xu hướng"
                 />
@@ -566,11 +565,11 @@ const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label:
 const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
   const reportData = useMemo(() => {
     const groups: Record<string, { a: number, b: number, errors: Record<string, number> }> = {};
-    
+
     data.forEach(item => {
       const dept = item.khoa_phau_thuat || 'Chưa xác định';
       if (!groups[dept]) groups[dept] = { a: 0, b: 0, errors: {} };
-      
+
       groups[dept].a++;
       if (Number(item.ty_le_tuan_thu) >= 100) {
         groups[dept].b++;
@@ -589,7 +588,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
       const allErrors = Object.entries(stats.errors)
         .sort((a, b) => b[1] - a[1])
         .map(([label, count]) => ({ label, count }));
-        
+
       return {
         department: dept,
         a: stats.a,
@@ -703,32 +702,32 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
         ))}
         {/* Mobile Total Row */}
         <div className="p-4 bg-[#009900] text-white space-y-2">
-            <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest">Toàn viện</span>
-                <span className="text-lg font-black">{totals.rate.toFixed(1)}%</span>
-            </div>
-            <div className="flex gap-6 text-[10px] font-bold opacity-90 uppercase tracking-widest">
-                <span>Tổng (A): {totals.a}</span>
-                <span>Đạt (B): {totals.b}</span>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-black uppercase tracking-widest">Toàn viện</span>
+            <span className="text-lg font-black">{totals.rate.toFixed(1)}%</span>
+          </div>
+          <div className="flex gap-6 text-[10px] font-bold opacity-90 uppercase tracking-widest">
+            <span>Tổng (A): {totals.a}</span>
+            <span>Đạt (B): {totals.b}</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const SurgeryList = ({ data, onView, onEdit, onDelete }: { 
-  data: SurgerySafety[], 
-  onView: (item: SurgerySafety) => void, 
-  onEdit: (item: SurgerySafety) => void, 
-  onDelete: (id: string) => void 
+const SurgeryList = ({ data, onView, onEdit, onDelete }: {
+  data: SurgerySafety[],
+  onView: (item: SurgerySafety) => void,
+  onEdit: (item: SurgerySafety) => void,
+  onDelete: (id: string) => void
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
-  
+
   const isAdmin = user?.role === 'ADMIN';
 
-  const filtered = data.filter((item: SurgerySafety) => 
+  const filtered = data.filter((item: SurgerySafety) =>
     item.ho_ten_nguoi_benh.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.khoa_phau_thuat.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -738,9 +737,9 @@ const SurgeryList = ({ data, onView, onEdit, onDelete }: {
       <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Tìm NB, khoa..." 
+          <input
+            type="text"
+            placeholder="Tìm NB, khoa..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10 transition-all"
@@ -809,25 +808,25 @@ const SurgeryList = ({ data, onView, onEdit, onDelete }: {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex justify-between gap-2 pt-2">
-              <button 
-                onClick={() => onView(item)} 
+              <button
+                onClick={() => onView(item)}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 text-[10px] font-black uppercase tracking-widest"
               >
                 <Eye size={14} /> Xem
               </button>
               {(isAdmin || item.nguoi_giam_sat === user?.full_name) && (
-                <button 
-                  onClick={() => onEdit(item)} 
+                <button
+                  onClick={() => onEdit(item)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest"
                 >
                   <Edit2 size={14} /> Sửa
                 </button>
               )}
               {isAdmin && (
-                <button 
-                  onClick={() => onDelete(item.id!)} 
+                <button
+                  onClick={() => onDelete(item.id!)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 text-[10px] font-black uppercase tracking-widest"
                 >
                   <Trash2 size={14} /> Xóa
@@ -855,19 +854,20 @@ const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, department
     khoa_phau_thuat: item?.khoa_phau_thuat || '',
     ho_ten_nguoi_benh: item?.ho_ten_nguoi_benh || '',
     kip_phau_thuat: item?.kip_phau_thuat || '',
-    tc1_xac_nhan_danh_tinh: item?.tc1_xac_nhan_danh_tinh ?? false,
-    tc2_xac_nhan_vi_tri: item?.tc2_xac_nhan_vi_tri ?? false,
-    tc3_cam_ket_phau_thuat: item?.tc3_cam_ket_phau_thuat ?? false,
-    tc4_kiem_tra_thiet_bi: item?.tc4_kiem_tra_thiet_bi ?? false,
-    tc5_danh_gia_nguy_co: item?.tc5_danh_gia_nguy_co ?? false,
-    tc6_gioi_thieu_nhan_su: item?.tc6_gioi_thieu_nhan_su ?? false,
-    tc7_xac_nhan_lan_cuoi: item?.tc7_xac_nhan_lan_cuoi ?? false,
-    tc8_du_phong_nhiem_khuan: item?.tc8_du_phong_nhiem_khuan ?? false,
-    tc9_cac_van_de_phat_sinh: item?.tc9_cac_van_de_phat_sinh ?? false,
-    tc10_kiem_dem_dung_cu: item?.tc10_kiem_dem_dung_cu ?? false,
-    tc11_mau_benh_pham: item?.tc11_mau_benh_pham ?? false,
-    tc12_ghi_chep_ho_so: item?.tc12_ghi_chep_ho_so ?? false,
-    tc13_ban_giao_hoi_tinh: item?.tc13_ban_giao_hoi_tinh ?? false,
+    ghi_chu_chung: item?.ghi_chu_chung || '',
+    tc1_xac_nhan_danh_tinh: item?.tc1_xac_nhan_danh_tinh ?? null,
+    tc2_xac_nhan_vi_tri: item?.tc2_xac_nhan_vi_tri ?? null,
+    tc3_cam_ket_phau_thuat: item?.tc3_cam_ket_phau_thuat ?? null,
+    tc4_kiem_tra_thiet_bi: item?.tc4_kiem_tra_thiet_bi ?? null,
+    tc5_danh_gia_nguy_co: item?.tc5_danh_gia_nguy_co ?? null,
+    tc6_gioi_thieu_nhan_su: item?.tc6_gioi_thieu_nhan_su ?? null,
+    tc7_xac_nhan_lan_cuoi: item?.tc7_xac_nhan_lan_cuoi ?? null,
+    tc8_du_phong_nhiem_khuan: item?.tc8_du_phong_nhiem_khuan ?? null,
+    tc9_cac_van_de_phat_sinh: item?.tc9_cac_van_de_phat_sinh ?? null,
+    tc10_kiem_dem_dung_cu: item?.tc10_kiem_dem_dung_cu ?? null,
+    tc11_mau_benh_pham: item?.tc11_mau_benh_pham ?? null,
+    tc12_ghi_chep_ho_so: item?.tc12_ghi_chep_ho_so ?? null,
+    tc13_ban_giao_hoi_tinh: item?.tc13_ban_giao_hoi_tinh ?? null,
     tong_dat: item?.tong_dat || 0,
     ty_le_tuan_thu: item?.ty_le_tuan_thu || 0,
   });
@@ -890,7 +890,15 @@ const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, department
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    
+
+    // Check if all criteria are answered
+    const unanswered = CRITERIA.some(c => formData[c.id as keyof SurgerySafety] === null);
+    if (unanswered) {
+      alert("Vui lòng hoàn thành đánh giá Đạt/Không đạt cho tất cả 13 tiêu chí.");
+      setSaving(false);
+      return;
+    }
+
     const dataToSend: any = {
       ngay_giam_sat: formData.ngay_giam_sat,
       nguoi_giam_sat: formData.nguoi_giam_sat,
@@ -898,6 +906,7 @@ const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, department
       khoa_phau_thuat: formData.khoa_phau_thuat,
       ho_ten_nguoi_benh: formData.ho_ten_nguoi_benh,
       kip_phau_thuat: formData.kip_phau_thuat,
+      ghi_chu_chung: formData.ghi_chu_chung,
       tong_dat: formData.tong_dat,
       ty_le_tuan_thu: formData.ty_le_tuan_thu,
     };
@@ -918,110 +927,231 @@ const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, department
     }
   };
 
-  return (
-    <div className="bg-white rounded-[40px] shadow-2xl w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300 border border-slate-200">
-      <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#009900] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200">
-             <Stethoscope size={24} />
-          </div>
-          <div>
-            <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">{item?.id ? 'Chỉnh sửa' : 'Thêm mới'} Checklist An toàn Phẫu thuật</h2>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Ghi nhận kết quả giám sát</p>
-          </div>
-        </div>
-        <button onClick={onClose} className="p-3 text-slate-400 hover:bg-slate-200 rounded-2xl transition-all active:scale-90 bg-white border border-slate-100"><X size={24}/></button>
+  const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
+    <div className={`flex items-center gap-2 p-3 ${color} text-white rounded-t-xl font-bold uppercase text-[10px] tracking-wider shadow-sm`}>
+      <Icon size={14} />
+      {title}
+    </div>
+  );
+
+  const CriteriaItem = ({ criteria, formData, setFormData }: { criteria: any, formData: SurgerySafety, setFormData: any }) => (
+    <div className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col gap-3 transition-all hover:border-indigo-100 shadow-sm">
+      <div className="flex flex-col gap-1">
+        <p className="text-[11px] font-bold leading-tight text-slate-700">{criteria.label}</p>
+        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic mt-0.5">Xác nhận: {criteria.role}</p>
       </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setFormData((prev: any) => ({ ...prev, [criteria.id]: true }))}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${formData[criteria.id as keyof SurgerySafety] === true
+            ? 'bg-emerald-600 text-white border-transparent shadow-md'
+            : 'bg-white border-slate-200 text-slate-400 hover:border-emerald-200 hover:text-emerald-600'
+            }`}
+        >
+          <Check size={14} strokeWidth={3} /> Đạt
+        </button>
+        <button
+          type="button"
+          onClick={() => setFormData((prev: any) => ({ ...prev, [criteria.id]: false }))}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${formData[criteria.id as keyof SurgerySafety] === false
+            ? 'bg-red-600 text-white border-transparent shadow-md'
+            : 'bg-white border-slate-200 text-slate-400 hover:border-red-200 hover:text-red-600'
+            }`}
+        >
+          <X size={14} strokeWidth={3} /> K.Đạt
+        </button>
+      </div>
+    </div>
+  );
 
-      <div className="p-8">
-        <form id="atpt-form" onSubmit={handleSubmit} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100">
-            <FormField label="Ngày giám sát" icon={<Calendar size={18} />}>
-              <input type="date" value={formData.ngay_giam_sat} onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})} className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-bold bg-white" />
-            </FormField>
-            <FormField label="Người giám sát" icon={<UserCheck size={18} />}>
-              <input type="text" value={formData.nguoi_giam_sat} disabled className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-bold bg-slate-100" />
-            </FormField>
-            <FormField label="Bàn mổ số" icon={<ClipboardCheck size={18} />}>
-              <input type="text" value={formData.ban_mo_so} onChange={e => setFormData({...formData, ban_mo_so: e.target.value})} className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-bold bg-white" placeholder="VD: 01" />
-            </FormField>
-            <FormField label="Khoa phẫu thuật" icon={<Building2 size={18} />}>
-              <select value={formData.khoa_phau_thuat} onChange={e => setFormData({...formData, khoa_phau_thuat: e.target.value})} className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-bold bg-white">
-                <option value="">-- Chọn khoa --</option>
-                {departmentList.map((d: string) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </FormField>
-            <FormField label="Họ tên người bệnh" icon={<Users size={18} />}>
-              <input type="text" value={formData.ho_ten_nguoi_benh} onChange={e => setFormData({...formData, ho_ten_nguoi_benh: e.target.value})} className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-bold bg-white uppercase font-black" placeholder="NGUYỄN VĂN A" />
-            </FormField>
-            <FormField label="Kíp phẫu thuật" icon={<Users size={18} />}>
-              <input type="text" value={formData.kip_phau_thuat} onChange={e => setFormData({...formData, kip_phau_thuat: e.target.value})} className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-bold bg-white" placeholder="VD: BS Bình, ĐD An..." />
-            </FormField>
+  return (
+    <div className="min-h-[calc(100vh-8rem)] bg-white animate-in fade-in duration-500">
+      <div className="w-full flex flex-col h-full">
+
+        {/* Main Header - Premium Green Layout */}
+        <div className="bg-[#009900] p-8 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+            <ShieldCheck size={160} />
           </div>
 
-          <div className="space-y-6">
-            {['I', 'II', 'III'].map(section => (
-              <div key={section} className="space-y-4">
-                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">{section}</div>
-                  GIAI ĐOẠN {section === 'I' ? '1: TRƯỚC GÂY MÊ (SIGN IN)' : section === 'II' ? '2: TRƯỚC RẠCH DA (TIME OUT)' : '3: TRƯỚC KHI RỜI PHÒNG MỔ (SIGN OUT)'}
-                </h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {CRITERIA.filter(c => c.section === section).map((c, index) => (
-                    <div key={c.id} className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-indigo-100 transition-all shadow-sm">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                           <span className="text-[10px] font-black text-slate-400 w-4">{index + 1}</span>
-                           <p className="text-sm font-bold text-slate-700 leading-tight">{c.label}</p>
-                        </div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-6">Người thực hiện: {c.role}</p>
-                      </div>
-                      <div className="flex gap-2 shrink-0 ml-6 md:ml-0">
-                        <button 
-                          type="button" 
-                          onClick={() => setFormData({...formData, [c.id]: true})}
-                          className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${formData[c.id as keyof SurgerySafety] === true ? 'bg-[#009900] text-white border-green-600 shadow-lg shadow-green-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-green-300'}`}
-                        >
-                          Đạt
-                        </button>
-                        <button 
-                          type="button" 
-                          onClick={() => setFormData({...formData, [c.id]: false})}
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${formData[c.id as keyof SurgerySafety] === false ? 'bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-100' : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-rose-300'}`}
-                        >
-                          Không đạt
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <button
+                onClick={onClose}
+                className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all active:scale-95 border border-white/10"
+              >
+                <ArrowLeft size={24} />
+              </button>
+              <div>
+                <h1 className="text-2xl font-black uppercase tracking-tight leading-tight max-w-2xl">
+                  BẢNG KIỂM GIÁM SÁT TUÂN THỦ BẢNG KIỂM ATPT
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] italic">An toàn Phẫu thuật WHO</span>
+                  <div className="w-1 h-1 bg-white/40 rounded-full" />
+                  <span className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em]">Audit Tool</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </form>
-      </div>
+            </div>
 
-      <div className="p-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/50">
-        <div className="flex gap-8">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tiêu chí đạt</span>
-            <span className="text-xl font-black text-[#009900]">{formData.tong_dat} / 13</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tỷ lệ tuân thủ</span>
-            <span className="text-xl font-black text-indigo-600">{formData.ty_le_tuan_thu.toFixed(1)}%</span>
+            <div className="bg-white/10 px-8 py-3 rounded-3xl backdrop-blur-md border border-white/20 text-center min-w-[160px] shadow-2xl">
+              <p className="text-[10px] uppercase font-black text-white/70 tracking-widest leading-none mb-1">Tỷ lệ tuân thủ</p>
+              <p className="text-4xl font-black italic">{formData.ty_le_tuan_thu.toFixed(1)}%</p>
+            </div>
           </div>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <button onClick={onClose} className="flex-1 md:flex-none px-8 py-3.5 bg-white border border-slate-200 text-slate-500 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">Hủy</button>
-          <button 
-            type="submit" 
-            form="atpt-form" 
-            disabled={saving}
-            className="flex-1 md:flex-none px-12 py-3.5 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-[#0d6e39] transition-all shadow-xl shadow-green-200 active:scale-95 disabled:opacity-50"
-          >
-            {saving ? 'Đang lưu...' : 'Lưu kết quả'}
-          </button>
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-10">
+
+          {/* Administrative Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50 p-8 rounded-[32px] border border-slate-200 shadow-inner">
+            <FormField label="Ngày giám sát" icon={<Calendar size={18} />}>
+              <input
+                type="date" required
+                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white"
+                value={formData.ngay_giam_sat}
+                onChange={(e) => setFormData({ ...formData, ngay_giam_sat: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Người giám sát" icon={<UserCheck size={18} />}>
+              <input
+                type="text" disabled
+                className="w-full p-3.5 rounded-2xl border border-slate-300 outline-none text-sm font-bold bg-slate-100 text-slate-500"
+                value={formData.nguoi_giam_sat}
+              />
+            </FormField>
+            <FormField label="Bàn mổ số" icon={<ClipboardCheck size={18} />}>
+              <input
+                type="text" placeholder="Số hiệu..."
+                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white"
+                value={formData.ban_mo_so}
+                onChange={(e) => setFormData({ ...formData, ban_mo_so: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Họ tên người bệnh" icon={<Users size={18} />}>
+              <input
+                type="text" placeholder="NGUYỄN VĂN A" required
+                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-black transition bg-white uppercase"
+                value={formData.ho_ten_nguoi_benh}
+                onChange={(e) => setFormData({ ...formData, ho_ten_nguoi_benh: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Khoa phẫu thuật" icon={<Building2 size={18} />}>
+              <select
+                value={formData.khoa_phau_thuat} required
+                onChange={(e) => setFormData({ ...formData, khoa_phau_thuat: e.target.value })}
+                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white appearance-none"
+              >
+                <option value="">-- Chọn khoa --</option>
+                {departmentList.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </FormField>
+            <FormField label="Kíp phẫu thuật" icon={<Users size={18} />}>
+              <input
+                type="text" placeholder="BS chính, kíp gây mê..."
+                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white"
+                value={formData.kip_phau_thuat}
+                onChange={(e) => setFormData({ ...formData, kip_phau_thuat: e.target.value })}
+              />
+            </FormField>
+          </div>
+
+          {/* Checklist 3 Stages - Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {/* Stage 1: SIGN IN */}
+            <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <SectionHeader icon={Clock} title="I. TRƯỚC GÂY MÊ (SI)" color="bg-orange-500" />
+              <div className="p-4 space-y-4 flex-1">
+                {CRITERIA.filter(c => c.section === 'I').map(item => (
+                  <CriteriaItem
+                    key={item.id}
+                    criteria={item}
+                    formData={formData}
+                    setFormData={setFormData}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Stage 2: TIME OUT */}
+            <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <SectionHeader icon={Activity} title="II. TRƯỚC RẠCH DA (TO)" color="bg-indigo-600" />
+              <div className="p-4 space-y-4 flex-1">
+                {CRITERIA.filter(c => c.section === 'II').map(item => (
+                  <CriteriaItem
+                    key={item.id}
+                    criteria={item}
+                    formData={formData}
+                    setFormData={setFormData}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Stage 3: SIGN OUT */}
+            <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <SectionHeader icon={LogOut} title="III. TRƯỚC RỜI PHÒNG (SO)" color="bg-emerald-600" />
+              <div className="p-4 space-y-4 flex-1">
+                {CRITERIA.filter(c => c.section === 'III').map(item => (
+                  <CriteriaItem
+                    key={item.id}
+                    criteria={item}
+                    formData={formData}
+                    setFormData={setFormData}
+                  />
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Footer Info & Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-slate-100">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-widest pl-2">
+                <AlertTriangle size={18} className="text-amber-500" /> Ghi chú đặc biệt / Kiến nghị
+              </div>
+              <textarea
+                className="w-full p-5 rounded-[28px] border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-medium transition h-32 shadow-inner bg-slate-50/30"
+                placeholder="Nhập các sự cố hoặc lỗi quy trình quan sát được..."
+                value={formData.ghi_chu_chung}
+                onChange={(e) => setFormData({ ...formData, ghi_chu_chung: e.target.value })}
+              />
+            </div>
+
+            <div className="flex flex-col justify-end space-y-6">
+              <div className="flex items-center justify-between p-6 bg-slate-900 rounded-[32px] text-white shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-indigo-500/10 to-transparent pointer-events-none" />
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="p-3 bg-white/10 rounded-2xl">
+                    <Percent size={24} className="text-indigo-400" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Tổng kết giám sát</p>
+                    <p className="text-xl font-black italic">Tuân thủ: {formData.ty_le_tuan_thu.toFixed(1)}%</p>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-2xl font-black transition active:scale-95 uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-500/40 border border-indigo-400/30 relative z-10 disabled:opacity-50"
+                >
+                  <Save size={18} className="inline mr-2" /> {saving ? 'Đang lưu...' : 'Lưu kết quả'}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </form>
+
+        <div className="bg-slate-50 px-8 py-5 border-t text-[9px] text-slate-400 flex justify-between uppercase tracking-[0.25em] font-black italic">
+          <span></span>
+          <span className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-indigo-200" />
+
+          </span>
         </div>
       </div>
     </div>
@@ -1127,14 +1257,14 @@ const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete 
 const DetailField = ({ label, value, uppercase, color }: { label: string, value: string, uppercase?: boolean, color?: string }) => (
   <div className="flex flex-col gap-1">
     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{label}</span>
-    <span className={`text-base font-black ${uppercase ? 'uppercase' : ''} ${color || 'text-slate-800'}`}>{value || '---'}</span>
+    <span className={`text-[15px] font-bold ${uppercase ? 'uppercase' : ''} ${color || 'text-slate-800'}`}>{value || '---'}</span>
   </div>
 );
 
 const FormField = ({ label, icon, children }: { label: string, icon: React.ReactElement, children: React.ReactNode }) => (
-  <div className="space-y-1.5">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-      {React.cloneElement(icon, { size: 12, className: "text-indigo-400" } as any)}
+  <div className="space-y-1.5 group">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2 transition-colors group-focus-within:text-indigo-600">
+      {React.cloneElement(icon, { size: 12 } as any)}
       {label}
     </label>
     {children}

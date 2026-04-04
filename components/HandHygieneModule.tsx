@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Plus, Search, Edit2, Trash2, Eye, Calendar, Building2, 
   Users, CheckCircle2, AlertTriangle, XCircle, FileText, Image, 
-  Upload, X, Camera, LayoutDashboard, List, Filter, RotateCcw
+  Upload, X, Camera, LayoutDashboard, List, Filter, RotateCcw,
+  ClipboardCheck, AlertCircle, Save, User, ArrowLeft
 } from 'lucide-react';
 import DateRangeFilter from './DateRangeFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
@@ -12,11 +13,11 @@ import { fetchGsVst, addGsVst, updateGsVst, deleteGsVst, uploadVstImage } from '
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 
 const MOMENTS = [
-  "Trước khi tiếp xúc với người bệnh",
-  "Trước khi làm thủ thuật vô khuẩn",
-  "Sau khi tiếp xúc với dịch tiết cơ thể",
-  "Sau khi tiếp xúc với người bệnh",
-  "Sau khi tiếp xúc với vật dụng xung quanh NB"
+  "1. Trước khi tiếp xúc người bệnh",
+  "2. Trước khi làm thủ thuật vô khuẩn",
+  "3. Sau khi tiếp xúc dịch tiết cơ thể",
+  "4. Sau khi tiếp xúc người bệnh",
+  "5. Sau khi tiếp xúc vật dụng xung quanh người bệnh"
 ];
 
 export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
@@ -26,11 +27,10 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   const [departments, setDepartments] = useState<DmDonVi[]>([]);
   const { user } = useAuth();
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [editingItem, setEditingItem] = useState<GsVst | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DANH_SACH'>('OVERVIEW');
-  const [showFilters, setShowFilters] = useState(false);
   const [filterConfig, setFilterConfig] = useState({
     type: 'thisMonth',
     startDate: '',
@@ -70,12 +70,22 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
     });
   }, [data, filterConfig]);
 
+  if (viewMode === 'FORM') {
+    return (
+      <VstForm
+        item={editingItem}
+        isReadOnly={isReadOnly}
+        onClose={() => setViewMode('LIST')}
+        onSaved={() => { setViewMode('LIST'); loadData(); }}
+        currentUser={user}
+        departmentList={departmentList}
+      />
+    );
+  }
+
   return (
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-        {/* Header Section */}
-        {/* Header Section Removed */}
-
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex bg-slate-100/50 p-1.5 gap-1 rounded-[28px] border border-slate-200/50 shrink-0">
             <TabButton 
@@ -91,7 +101,6 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
               label="Danh sách" 
             />
           </div>
-
         </div>
 
         <div className="p-4 lg:p-4 pt-0 lg:pt-0 border-t lg:border-t-0 border-slate-100">
@@ -136,9 +145,9 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
         ) : (
           <VstList 
             data={filteredData} 
-            onAdd={() => { setEditingItem(null); setIsReadOnly(false); setIsFormOpen(true); }}
-            onView={(item) => { setEditingItem(item); setIsReadOnly(true); setIsFormOpen(true); }}
-            onEdit={(item) => { setEditingItem(item); setIsReadOnly(false); setIsFormOpen(true); }}
+            onAdd={() => { setEditingItem(null); setIsReadOnly(false); setViewMode('FORM'); }}
+            onView={(item) => { setEditingItem(item); setIsReadOnly(true); setViewMode('FORM'); }}
+            onEdit={(item) => { setEditingItem(item); setIsReadOnly(false); setViewMode('FORM'); }}
             onDelete={async (id) => {
               if (window.confirm('Bạn có chắc muốn xóa bản ghi giám sát này?')) {
                 await deleteGsVst(id!);
@@ -148,17 +157,6 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
           />
         )}
       </div>
-
-      {isFormOpen && (
-        <VstFormModal 
-          item={editingItem}
-          isReadOnly={isReadOnly}
-          onClose={() => setIsFormOpen(false)}
-          onSaved={() => { setIsFormOpen(false); loadData(); }}
-          currentUser={user}
-          departmentList={departmentList}
-        />
-      )}
     </div>
   );
 };
@@ -455,7 +453,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
   );
 };
 
-const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentList }: { 
+const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentList }: { 
   item: GsVst | null, 
   isReadOnly: boolean, 
   onClose: () => void, 
@@ -473,6 +471,7 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
       moments: MOMENTS.map((name, index) => ({
         id: index + 1,
         name,
+        co_hoi: false, // New mapping to template field
         compliance: false,
         correct_technique: false,
         note: ''
@@ -488,37 +487,38 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Recalculate totals
+  // Tự động tính toán số liệu khi checklist thay đổi
   useEffect(() => {
-     if (isReadOnly) return;
-     const moments = formData.checklist_data.moments;
-     const complianceCount = moments.filter((m: any) => m.compliance).length;
-     const correctCount = moments.filter((m: any) => m.compliance && m.correct_technique).length;
-     const totalOpportunities = moments.length; // Or maybe only count if some interaction happened? The form usually has 5 rows.
-     
-     setFormData((prev: GsVst) => ({
-       ...prev,
-       so_lan_tuan_thu: complianceCount,
-       so_lan_dung_ky_thuat: correctCount,
-       tong_co_hoi: totalOpportunities
-     }));
+    if (isReadOnly) return;
+    const moments = formData.checklist_data.moments;
+    const tong_co_hoi = moments.filter((m: any) => m.co_hoi).length;
+    const so_lan_tuan_thu = moments.filter((m: any) => m.co_hoi && m.compliance).length;
+    const so_lan_dung_ky_thuat = moments.filter((m: any) => m.co_hoi && m.compliance && m.correct_technique).length;
+
+    setFormData((prev: GsVst) => ({
+      ...prev,
+      tong_co_hoi,
+      so_lan_tuan_thu,
+      so_lan_dung_ky_thuat
+    }));
   }, [formData.checklist_data.moments, isReadOnly]);
 
-  const handleToggle = (id: number, field: 'compliance' | 'correct_technique') => {
+  const handleToggle = (id: number, field: 'co_hoi' | 'compliance' | 'correct_technique') => {
     if (isReadOnly) return;
     setFormData((prev: GsVst) => {
       const newMoments = prev.checklist_data.moments.map((m: any) => {
         if (m.id === id) {
           const newVal = !m[field];
-          // If unchecking compliance, also uncheck correct_technique
-          if (field === 'compliance' && !newVal) {
-            return { ...m, compliance: newVal, correct_technique: false };
+          const updated = { ...m, [field]: newVal };
+          
+          // Ràng buộc: Nếu không tuân thủ thì không thể đúng kỹ thuật
+          if (field === 'compliance' && !newVal) updated.correct_technique = false;
+          // Ràng buộc: Nếu không có cơ hội thì không có tuân thủ/kỹ thuật
+          if (field === 'co_hoi' && !newVal) {
+            updated.compliance = false;
+            updated.correct_technique = false;
           }
-          // Cannot have correct technique if not compliant
-          if (field === 'correct_technique' && newVal && !m.compliance) {
-             return m;
-          }
-          return { ...m, [field]: newVal };
+          return updated;
         }
         return m;
       });
@@ -569,117 +569,165 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-300">
-        {/* Modal Header */}
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-               <Camera size={24} />
+    <div className="bg-white min-h-[calc(100vh-8rem)]">
+      <div className="w-full flex flex-col h-full animate-in fade-in duration-500">
+        <div className="flex flex-col h-full bg-white">
+          
+          {/* Form Header - Emerald Theme */}
+          <div className="bg-emerald-600 p-8 text-white flex justify-between items-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+            <div className="flex items-center gap-5 relative z-10">
+              <button 
+                onClick={onClose}
+                className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner hover:bg-white/30 transition-all active:scale-90"
+              >
+                 <ArrowLeft size={24} className="text-white" />
+              </button>
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tight leading-none mb-1">
+                  {isReadOnly ? 'Chi tiết Giám sát' : item ? 'Cập nhật bản ghi' : 'Thêm phiếu Giám sát'}
+                </h2>
+                <p className="text-emerald-100 text-[11px] font-bold uppercase tracking-widest opacity-80">Giám sát vệ sinh tay</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">
-                {isReadOnly ? 'Chi tiết giám sát' : item ? 'Cập nhật giám sát' : 'Phiếu giám sát VST'}
-              </h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Cơ hội và tuân thủ kỹ thuật vệ sinh tay</p>
-            </div>
+            <button 
+              onClick={onClose} 
+              className="p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-2xl transition-all active:scale-90 relative z-10 hidden md:block"
+            >
+              <X size={28}/>
+            </button>
           </div>
-          <button onClick={onClose} className="p-3 text-slate-400 hover:bg-slate-200 rounded-2xl transition-all active:scale-90 bg-white border border-slate-100"><X size={24}/></button>
-        </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
           <form id="vst-form" onSubmit={handleSubmit} className="space-y-8">
-            {/* Info Section */}
+            {/* Section 1: Thông tin chung - Grid Layout from Template */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Ngày giám sát</label>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input type="date" value={formData.ngay_giam_sat} onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})} disabled={isReadOnly} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer" />
-                </div>
+              <div className="space-y-2 group">
+                <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
+                  <Calendar size={14} /> Ngày giám sát
+                </label>
+                <input 
+                  type="date" 
+                  value={formData.ngay_giam_sat} 
+                  onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})} 
+                  disabled={isReadOnly} 
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all cursor-pointer" 
+                />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Khoa được giám sát</label>
-                <div className="relative">
-                   <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                   <input list="khoa-list" value={formData.khoa_duoc_giam_sat} onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})} disabled={isReadOnly} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-black uppercase tracking-tight" placeholder="Chọn khoa..." />
-                   <datalist id="khoa-list">{departmentList.map((d: string) => <option key={d} value={d} />)}</datalist>
-                </div>
+              <div className="space-y-2 group">
+                <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
+                  <User size={14} /> Người giám sát
+                </label>
+                <input 
+                  type="text" 
+                  value={formData.nguoi_giam_sat} 
+                  onChange={e => setFormData({...formData, nguoi_giam_sat: e.target.value})} 
+                  disabled={isReadOnly} 
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all" 
+                  placeholder="Họ tên người GS"
+                />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Đối tượng</label>
-                <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-2xl">
-                  {['Bác sỹ', 'Điều dưỡng'].map(role => (
-                    <button 
-                      key={role}
-                      type="button"
-                      disabled={isReadOnly}
-                      onClick={() => setFormData({...formData, doi_tuong: role})}
-                      className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${formData.doi_tuong === role ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
+              <div className="space-y-2 group">
+                <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
+                  <Building2 size={14} /> Khoa giám sát
+                </label>
+                <select 
+                  value={formData.khoa_duoc_giam_sat} 
+                  onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})} 
+                  disabled={isReadOnly} 
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none"
+                >
+                   <option value="">Chọn khoa/phòng</option>
+                   {departmentList.map((d: string) => <option key={d} value={d}>{d}</option>)}
+                </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Người được giám sát</label>
-                <div className="relative">
-                   <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                   <input type="text" value={formData.nguoi_duoc_giam_sat} onChange={e => setFormData({...formData, nguoi_duoc_giam_sat: e.target.value})} disabled={isReadOnly} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Họ và tên..." />
+              <div className="space-y-2 group">
+                <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
+                  <Users size={14} /> Đối tượng được giám sát
+                </label>
+                <div className="flex gap-2">
+                  <select 
+                    value={formData.doi_tuong} 
+                    onChange={e => setFormData({...formData, doi_tuong: e.target.value})} 
+                    disabled={isReadOnly}
+                    className="w-24 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none text-center"
+                  >
+                    <option value="Bác sỹ">BS</option>
+                    <option value="Điều dưỡng">ĐD</option>
+                    <option value="Hộ lý">HL</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                  <input 
+                    type="text" 
+                    value={formData.nguoi_duoc_giam_sat} 
+                    onChange={e => setFormData({...formData, nguoi_duoc_giam_sat: e.target.value})} 
+                    disabled={isReadOnly} 
+                    className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all" 
+                    placeholder="Họ tên NVYT" 
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Checklist Section */}
+            {/* Section 2: Checklist Quan sát - Table from Template */}
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                 <FileText size={18} className="text-indigo-500 mt-0.5" />
-                 <div>
-                    <h3 className="text-xs font-black text-slate-800 uppercase tracking-normal">Nội dung giám sát</h3>
-                    <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-normal">(5 Thời điểm VST)</p>
-                 </div>
+              <div className="flex items-center border-b border-slate-100 pb-3">
+                 <h3 className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight">
+                    <CheckCircle2 size={18} className="text-emerald-600" /> Bảng quan sát chi tiết (5 Thời điểm)
+                 </h3>
               </div>
               
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto rounded-[32px] border border-slate-100 shadow-sm">
-                <table className="w-full text-[12pt] border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-100 text-table uppercase font-bold text-slate-600 tracking-wider">
-                      <th className="p-5 text-center w-16">STT</th>
-                      <th className="p-5 text-left">Thời điểm (Cơ hội)</th>
-                      <th className="p-5 text-center w-36">Tuân thủ</th>
-                      <th className="p-5 text-center w-40">Đúng KT</th>
-                      <th className="p-5 text-left">Ghi chú</th>
+              <div className="overflow-hidden rounded-[24px] border border-slate-200 shadow-sm">
+                <table className="w-full text-left border-collapse table-fixed">
+                  <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
+                    <tr>
+                      <th className="p-4 border-b w-[280px]">Thời điểm</th>
+                      <th className="p-4 border-b text-center w-20">Cơ hội</th>
+                      <th className="p-4 border-b text-center w-20">Tuân thủ</th>
+                      <th className="p-4 border-b text-center w-20">Đúng KT</th>
+                      <th className="p-4 border-b">Ghi chú chi tiết</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="text-sm">
                     {formData.checklist_data.moments.map((m: any) => (
-                      <tr key={m.id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="p-5 text-center font-normal text-slate-400">{m.id}</td>
-                        <td className="p-5 font-normal text-slate-700">{m.name}</td>
-                        <td className="p-3 text-center">
-                          <button 
-                            type="button"
-                            disabled={isReadOnly}
-                            onClick={() => handleToggle(m.id, 'compliance')}
-                            className={`w-12 h-6 rounded-full relative transition-all duration-300 ${m.compliance ? 'bg-emerald-500 shadow-inner' : 'bg-slate-200'}`}
-                          >
-                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${m.compliance ? 'left-7' : 'left-1'}`} />
-                          </button>
+                      <tr 
+                        key={m.id} 
+                        className={`transition-all border-b last:border-0 ${m.co_hoi ? 'bg-emerald-50/40' : 'hover:bg-slate-50/50'}`}
+                      >
+                        <td className="p-4 border-r border-slate-100">
+                          <span className="font-bold text-slate-700 block text-[11px] leading-tight uppercase">
+                            {m.name}
+                          </span>
                         </td>
-                        <td className="p-3 text-center">
-                          <button 
-                            type="button"
+                        <td className="p-4 border-r border-slate-100 text-center">
+                          <input 
+                            type="checkbox" 
+                            disabled={isReadOnly}
+                            className="w-5 h-5 rounded cursor-pointer accent-blue-600"
+                            checked={m.co_hoi}
+                            onChange={() => handleToggle(m.id, 'co_hoi')}
+                          />
+                        </td>
+                        <td className="p-4 border-r border-slate-100 text-center">
+                          <input 
+                            type="checkbox" 
+                            disabled={isReadOnly || !m.co_hoi}
+                            className="w-5 h-5 rounded cursor-pointer accent-emerald-600 disabled:opacity-30"
+                            checked={m.compliance}
+                            onChange={() => handleToggle(m.id, 'compliance')}
+                          />
+                        </td>
+                        <td className="p-4 border-r border-slate-100 text-center">
+                          <input 
+                            type="checkbox" 
                             disabled={isReadOnly || !m.compliance}
-                            onClick={() => handleToggle(m.id, 'correct_technique')}
-                            className={`w-12 h-6 rounded-full relative transition-all duration-300 ${m.correct_technique ? 'bg-indigo-500 shadow-inner' : 'bg-slate-200'} ${(!m.compliance && !isReadOnly) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                          >
-                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${m.correct_technique ? 'left-7' : 'left-1'}`} />
-                          </button>
+                            className="w-5 h-5 rounded cursor-pointer accent-orange-500 disabled:opacity-30"
+                            checked={m.correct_technique}
+                            onChange={() => handleToggle(m.id, 'correct_technique')}
+                          />
                         </td>
                         <td className="p-3">
                           <input 
@@ -691,7 +739,7 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
                             }}
                             disabled={isReadOnly}
                             placeholder="..."
-                            className="w-full bg-transparent border-b border-transparent focus:border-indigo-200 outline-none px-2 py-1 text-xs font-medium"
+                            className="w-full bg-transparent border-b border-transparent focus:border-emerald-300 outline-none px-2 py-1 text-xs font-bold italic text-slate-500"
                           />
                         </td>
                       </tr>
@@ -699,6 +747,7 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
                   </tbody>
                 </table>
               </div>
+            </div>
 
               {/* Mobile Card List */}
               <div className="md:hidden space-y-4">
@@ -780,7 +829,6 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
                   </div>
                 </div>
               </div>
-            </div>
 
             {/* Evidence Section */}
             <div className="space-y-4">
@@ -829,9 +877,9 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
           </form>
         </div>
 
-        {/* Modal Footer */}
+        {/* Form Footer */}
         <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 shrink-0">
-          <button onClick={onClose} className="px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-500 hover:bg-slate-200 transition-all active:scale-95 bg-white border border-slate-200">Đóng</button>
+          <button onClick={onClose} className="px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-500 hover:bg-slate-200 transition-all active:scale-95 bg-white border border-slate-200">Quay lại</button>
           {!isReadOnly && (
             <button 
               type="submit" 
@@ -842,6 +890,7 @@ const VstFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, departm
               {saving ? 'Đang lưu...' : 'Hoàn tất Giám sát'}
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>
