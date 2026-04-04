@@ -80,86 +80,92 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
         {Object.keys(groupedCriteria).sort().map(phan => {
           const isPhanOpen = expandedPhan === phan;
           return (
-            <div key={phan} className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden transition-all">
+            <div key={phan} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all mb-4">
               <button 
                 onClick={() => setExpandedPhan(isPhanOpen ? null : phan)}
-                className={`w-full text-left px-8 py-5 flex items-center justify-between transition-colors ${isPhanOpen ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-900'}`}
+                className="w-full text-left bg-slate-50/80 hover:bg-slate-100/80 px-6 py-4 flex items-center gap-3 transition-colors border-b border-slate-100"
               >
-                <div className="flex items-center gap-4">
-                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${isPhanOpen ? 'bg-[#009900]' : 'bg-slate-100 text-slate-400'}`}>
-                     {phan.split(' ')[1]}
-                   </div>
-                   <h2 className="text-sm font-black uppercase tracking-widest">{phan}</h2>
+                <div className={isPhanOpen ? 'text-[#009900]' : 'text-slate-400'}>
+                  {isPhanOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                 </div>
-                {isPhanOpen ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
+                <h2 className="text-sm font-black uppercase text-slate-800 tracking-tight flex-1">{phan}</h2>
+                <div className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">{Object.keys(groupedCriteria[phan].chuongs).length} Chương</div>
               </button>
 
               {isPhanOpen && (
-                <div className="p-8 space-y-8 animate-in slide-in-from-top-4 duration-500">
+                <div className="bg-white divide-y divide-slate-50">
                   {Object.keys(groupedCriteria[phan].chuongs).sort().map(chuong => {
                     const isChuongOpen = expandedChuong === chuong;
                     return (
-                      <div key={chuong} className="space-y-4">
+                      <div key={chuong} className="ml-4 border-l-2 border-slate-100">
                         <button 
                           onClick={() => setExpandedChuong(isChuongOpen ? null : chuong)}
-                          className="flex items-center gap-3 group"
+                          className="px-6 py-3 flex items-center gap-3 w-full hover:bg-slate-50 transition-colors text-left"
                         >
-                          <div className={`w-2 h-8 rounded-full transition-all ${isChuongOpen ? 'bg-[#009900]' : 'bg-slate-200'}`} />
-                          <h3 className="text-xs font-black uppercase tracking-widest text-[#009900] group-hover:translate-x-1 transition-transform">{chuong}</h3>
-                          {isChuongOpen ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
+                          <div className={isChuongOpen ? 'text-[#009900]' : 'text-slate-400'}>
+                            {isChuongOpen ? <ChevronDown size={16}/> : <ChevronRight size={16}/>}
+                          </div>
+                          <h3 className="text-xs font-black text-slate-600 uppercase italic leading-relaxed flex-1">{chuong}</h3>
                         </button>
 
                         {isChuongOpen && (
-                          <div className="pl-5 space-y-4 animate-in slide-in-from-left-2 duration-300">
+                          <div className="divide-y divide-slate-50">
                             {Object.keys(groupedCriteria[phan].chuongs[chuong].tieuChis).sort().map(tieuChi => {
                               const isTCOpen = expandedTieuChi === tieuChi;
                               const tieuChiData = groupedCriteria[phan].chuongs[chuong].tieuChis[tieuChi];
                               return (
-                                <div key={tieuChi} className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden">
+                                <div key={tieuChi} className="ml-6 mb-2">
                                   <button 
                                     onClick={() => setExpandedTieuChi(isTCOpen ? null : tieuChi)}
-                                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-100 transition-colors"
+                                    className="w-full flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors"
                                   >
-                                    <span className="font-black text-[11px] text-slate-600 uppercase tracking-tight text-left">{tieuChi}</span>
-                                    {isTCOpen ? <ChevronDown size={18}/> : <ChevronRight size={18}/>}
+                                    <div className={isTCOpen ? 'text-[#009900]' : 'text-slate-400'}>
+                                      {isTCOpen ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
+                                    </div>
+                                    <span className="font-bold text-xs text-[#009900] uppercase tracking-wide text-left">{tieuChi}</span>
                                   </button>
 
                                   {isTCOpen && (
-                                    <div className="p-6 pt-0 overflow-x-auto">
-                                      <table className="w-full text-xs">
-                                        <thead>
-                                          <tr className="text-slate-400 font-bold uppercase tracking-widest text-[9px] border-b border-slate-100">
-                                            <th className="pb-4 text-left w-16">Mức</th>
-                                            <th className="pb-4 text-left">Tiêu chí con (Tiêu mục)</th>
-                                            <th className="pb-4 text-center w-64">Đánh giá</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                          {tieuChiData.map((tc: Data83tc) => {
-                                            const currentRes = results[tc.ma_tieu_muc!];
-                                            const isSelected = !!currentRes?.dat_muc;
-                                            const isNotMet = currentRes?.dat_muc === "Chưa đạt";
-                                            return (
-                                              <React.Fragment key={tc.ma_tieu_muc}>
-                                                <tr className={`group transition-all ${isSelected ? 'bg-white' : ''}`}>
-                                                  <td className="py-4 font-black text-[#009900]">{tc.muc}</td>
-                                                  <td className="py-4 pr-10">
-                                                    <p className="font-bold text-slate-700 leading-relaxed mb-1">{tc.tieu_muc}</p>
-                                                    <p className="text-[10px] text-slate-400 italic">Mã: {tc.ma_tieu_muc}</p>
-                                                  </td>
-                                                  <td className="py-4">
-                                                    <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+                                    <div className="animate-in slide-in-from-top-2 duration-300">
+                                      <div className="bg-slate-50/80 px-10 py-3 border-y border-slate-100 flex items-center">
+                                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Mã & Nội dung tiểu mục</span>
+                                      </div>
+                                      
+                                      <div className="divide-y divide-slate-100">
+                                        {tieuChiData.map((tc: Data83tc) => {
+                                          const currentRes = results[tc.ma_tieu_muc!];
+                                          const isSelected = !!currentRes?.dat_muc;
+                                          const isNotMet = currentRes?.dat_muc === "Chưa đạt";
+                                          
+                                          return (
+                                            <div key={tc.ma_tieu_muc} className={`p-6 pl-10 group transition-all ${isSelected ? 'bg-emerald-50/30' : 'hover:bg-slate-50'}`}>
+                                              <div className="flex items-start gap-4">
+                                                <input 
+                                                  type="checkbox" 
+                                                  checked={isSelected && !isNotMet}
+                                                  onChange={(e) => onScoreChange(tc.ma_tieu_muc!, 'dat_muc', e.target.checked ? 'Đạt' : 'Chưa đạt')}
+                                                  className="mt-1 w-5 h-5 rounded border-slate-300 text-[#009900] focus:ring-[#009900] cursor-pointer"
+                                                />
+                                                
+                                                <div className="flex-1 space-y-1">
+                                                  <span className="block text-[11px] font-bold text-slate-400 font-mono">{tc.ma_tieu_muc}</span>
+                                                  <p className="font-bold text-[14px] text-slate-800 leading-snug">
+                                                    {tc.tieu_muc}
+                                                  </p>
+                                                  
+                                                  <div className="pt-4 flex flex-wrap items-center gap-6">
+                                                    <div className="flex bg-white shadow-sm border border-slate-200 p-1 rounded-xl gap-1">
                                                       {[
-                                                        { label: "Đạt", value: "Đạt", icon: <CheckCircle2 size={14}/>, color: "hover:bg-emerald-500 hover:text-white" },
-                                                        { label: "Không đạt", value: "Chưa đạt", icon: <XCircle size={14}/>, color: "hover:bg-red-500 hover:text-white" },
-                                                        { label: "K.ĐG", value: "Không đánh giá", icon: <Minus size={14}/>, color: "hover:bg-slate-400 hover:text-white" }
+                                                        { label: "Đạt", value: "Đạt", icon: <CheckCircle2 size={12}/>, color: "hover:bg-emerald-500 hover:text-white" },
+                                                        { label: "Không đạt", value: "Chưa đạt", icon: <XCircle size={12}/>, color: "hover:bg-red-500 hover:text-white" },
+                                                        { label: "K.ĐG", value: "Không đánh giá", icon: <Minus size={12}/>, color: "hover:bg-slate-400 hover:text-white" }
                                                       ].map((btn) => (
                                                         <button
                                                           key={btn.value}
                                                           onClick={() => onScoreChange(tc.ma_tieu_muc!, 'dat_muc', btn.value)}
-                                                          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-black text-[10px] uppercase transition-all ${
+                                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase transition-all ${
                                                             currentRes?.dat_muc === btn.value
-                                                            ? (btn.value === 'Đạt' ? 'bg-emerald-500 text-white shadow-md' : btn.value === 'Chưa đạt' ? 'bg-red-500 text-white shadow-md' : 'bg-slate-400 text-white shadow-md')
+                                                            ? (btn.value === 'Đạt' ? 'bg-emerald-500 text-white' : btn.value === 'Chưa đạt' ? 'bg-red-500 text-white' : 'bg-slate-400 text-white')
                                                             : `text-slate-400 ${btn.color}`
                                                           }`}
                                                         >
@@ -167,38 +173,34 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                                                         </button>
                                                       ))}
                                                     </div>
-                                                  </td>
-                                                </tr>
-                                                {(isSelected || isNotMet) && (
-                                                  <tr className="bg-white">
-                                                    <td colSpan={3} className="px-6 pb-6 pt-0 space-y-4">
-                                                       <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                                          <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Ghi chú / Minh chứng</p>
+
+                                                    {(isSelected || isNotMet) && (
+                                                      <div className="flex items-center gap-4 flex-1">
+                                                        <div className="flex-1 flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2">
                                                           <textarea 
-                                                            rows={2}
+                                                            rows={1}
                                                             value={currentRes?.ghi_chu || ""}
                                                             onChange={(e) => onScoreChange(tc.ma_tieu_muc!, 'ghi_chu', e.target.value)}
-                                                            placeholder="Nhập ghi chú hoặc liệt kê minh chứng..."
-                                                            className="w-full bg-transparent border-none text-xs text-slate-600 focus:ring-0 placeholder:italic p-0"
+                                                            placeholder="Ghi chú minh chứng..."
+                                                            className="flex-1 bg-transparent border-none text-[11px] text-slate-600 focus:ring-0 placeholder:italic p-0 resize-none"
                                                           />
-                                                       </div>
-                                                       {/* Image Upload Simulation */}
-                                                       <div className="flex gap-2">
-                                                         <button className="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-bold hover:bg-slate-200 transition-all">
-                                                           <Camera size={14} /> Chụp ảnh / Tải lên
-                                                         </button>
-                                                         {currentRes?.hinh_anh_minh_chung?.map((img: string, idx: number) => (
-                                                           <div key={idx} className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-[10px]">Img</div>
-                                                         ))}
-                                                       </div>
-                                                    </td>
-                                                  </tr>
-                                                )}
-                                              </React.Fragment>
-                                            );
-                                          })}
-                                        </tbody>
-                                      </table>
+                                                        </div>
+                                                        <button className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-[#009900] transition-colors">
+                                                          <Camera size={16} />
+                                                        </button>
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                                
+                                                <div className="text-[14px] font-black text-[#009900] bg-slate-100 px-2 py-1 rounded-md">
+                                                  {tc.muc}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
                                     </div>
                                   )}
                                 </div>
