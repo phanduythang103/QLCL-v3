@@ -84,21 +84,7 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 relative min-h-[600px]">
-      {/* Header for Title */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#009900]/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-        <div className="flex items-center gap-4 relative">
-          <div className="w-12 h-12 bg-emerald-50 text-[#009900] rounded-2xl flex items-center justify-center shadow-inner border border-emerald-100">
-            <ClipboardList size={24} />
-          </div>
-          <div>
-            <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight">Tiêu chuẩn chất lượng cơ bản</h1>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-              Dựa trên danh sách tiêu chí Nghị định Luật khám chữa bệnh
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {viewMode === 'LIST' ? (
         <TieuChiCoBanList 

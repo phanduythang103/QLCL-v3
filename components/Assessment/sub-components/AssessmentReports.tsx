@@ -28,13 +28,13 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2">
+      <div className="space-y-6">
+        <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2 px-2">
           <ClipboardList className="text-[#009900]" size={24} />
-          Các bộ tiêu chuẩn đánh giá khác
+          Đánh giá chất lượng
         </h3>
-        <p className="text-slate-500 font-bold uppercase text-[10px]">Danh sách các tiêu chuẩn đánh giá chuyên biệt</p>
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
