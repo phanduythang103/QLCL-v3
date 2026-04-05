@@ -74,7 +74,7 @@ export const AssessmentModule: React.FC = () => {
       <div className={viewMode === 'LIST' ? "min-h-[400px]" : ""}>
         {activeTab === 'CRITERIA_83' && <Criteria83DataView />}
         
-        {activeTab === 'ASSESSMENT_REPORTS' && <AssessmentReports />}
+        {activeTab === 'ASSESSMENT_REPORTS' && <AssessmentReports setViewMode={setViewMode} />}
 
         {activeTab === 'QUALITY_ASSESSMENT' && (
           <>

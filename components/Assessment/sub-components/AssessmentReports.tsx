@@ -1,7 +1,31 @@
-import React from 'react';
-import { FileText, ChevronRight, ClipboardList } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, ChevronRight, ClipboardList, ArrowLeft } from 'lucide-react';
+import { TieuChiCoBanModule } from './TieuChiCoBanModule';
 
-export const AssessmentReports: React.FC = () => {
+interface AssessmentReportsProps {
+  setViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
+}
+
+export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMode }) => {
+  const [activeSubModule, setActiveSubModule] = useState<string | null>(null);
+
+  if (activeSubModule === 'standard-1') {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <button 
+          onClick={() => {
+            setActiveSubModule(null);
+            setViewMode('LIST');
+          }}
+          className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4"
+        >
+          <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
+        </button>
+        <TieuChiCoBanModule setParentViewMode={setViewMode} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -18,7 +42,11 @@ export const AssessmentReports: React.FC = () => {
           { id: 'standard-2', title: 'Tiêu chuẩn mức đo lường', desc: 'Đo lường mức độ hài lòng người bệnh' },
           { id: 'standard-3', title: 'Tiêu chuẩn kiểm soát nhiễm khuẩn', desc: 'Đánh giá công tác kiểm soát nhiễm khuẩn' }
         ].map(item => (
-          <div key={item.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer">
+          <div 
+            key={item.id} 
+            onClick={() => setActiveSubModule(item.id)}
+            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer"
+          >
             <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#009900] mb-4 group-hover:bg-[#009900] group-hover:text-white transition-colors">
               <FileText size={24} />
             </div>

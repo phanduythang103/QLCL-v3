@@ -1,0 +1,269 @@
+{
+    "f": [
+        {
+            "k": "dt",
+            "t": "dt",
+            "l": "Ngày đánh giá"
+        },
+        {
+            "k": "usr",
+            "t": "txt",
+            "l": "Người đánh giá"
+        },
+        {
+            "k": "dv",
+            "t": "txt",
+            "l": "Đơn vị đánh giá"
+        },
+        {
+            "k": "I",
+            "t": "grp",
+            "l": "Tiêu chuẩn về cơ sở vật chất",
+            "i": [
+                {
+                    "k": "1.1",
+                    "t": "bl",
+                    "l": "Bệnh viện phải có địa điểm cố định.*"
+                },
+                {
+                    "k": "1.2",
+                    "t": "bl",
+                    "l": "Bệnh viện phải có lối đi cho xe cứu thương ra vào khu vực cấp cứu.*"
+                },
+                {
+                    "k": "1.3.1",
+                    "t": "bl",
+                    "l": "Khoa, phòng, bộ phận chuyên môn: Được bố trí phù hợp với chức năng của từng bộ phận *"
+                },
+                {
+                    "k": "1.3.2",
+                    "t": "bl",
+                    "l": "Bảo đảm kết nối về hạ tầng giao thông giữa các bộ phận thuận tiện, an toàn cho NB và NVYT.*"
+                },
+                {
+                    "k": "1.4",
+                    "t": "bl",
+                    "l": "Có biển hiệu, sơ đồ và biển chỉ dẫn đến các khoa, phòng, bộ phận.*"
+                },
+                {
+                    "k": "1.5",
+                    "t": "bl",
+                    "l": "Có phương tiện vận chuyển cấp cứu trong và ngoài bệnh viện.*"
+                },
+                {
+                    "k": "1.6.1",
+                    "t": "bl",
+                    "l": "Tiêu chuẩn môi trường: Có biện pháp xử lý chất thải sinh hoạt."
+                },
+                {
+                    "k": "1.6.2",
+                    "t": "bl",
+                    "l": "Tiêu chuẩn môi trường: Có biện pháp xử lý chất thải y tế."
+                },
+                {
+                    "k": "1.7.1",
+                    "t": "bl",
+                    "l": "An toàn bức xạ: Có Giấy phép tiến hành công việc bức xạ."
+                },
+                {
+                    "k": "1.7.2",
+                    "t": "bl",
+                    "l": "An toàn bức xạ: Có văn bản phân công người chịu trách nhiệm."
+                },
+                {
+                    "k": "1.7.3",
+                    "t": "bl",
+                    "l": "An toàn bức xạ: Nhân viên thực hiện có Chứng chỉ nhân viên bức xạ."
+                },
+                {
+                    "k": "1.7.4",
+                    "t": "bl",
+                    "l": "An toàn bức xạ: Có trang bị liều kế cho nhân viên bức xạ."
+                },
+                {
+                    "k": "1.8",
+                    "t": "bl",
+                    "l": "Có điện, nước phục vụ hoạt động của cơ sở khám bệnh, chữa bệnh."
+                }
+            ]
+        },
+        {
+            "k": "II",
+            "t": "grp",
+            "l": "Tiêu chuẩn về quy mô và cơ cấu tổ chức",
+            "i": [
+                {
+                    "k": "2.1",
+                    "t": "bl",
+                    "l": "Cơ cấu tổ chức gồm các khoa: khám bệnh, lâm sàng, cận lâm sàng, khoa dược và các bộ phận phụ trợ."
+                },
+                {
+                    "k": "2.2",
+                    "t": "bl",
+                    "l": "Khoa khám bệnh phải có nơi tiếp đón, phòng cấp cứu, lưu, khám, phòng thực hiện kỹ thuật."
+                },
+                {
+                    "k": "2.3",
+                    "t": "bl",
+                    "l": "Khoa lâm sàng: Đảm bảo số lượng khoa tối thiểu theo loại hình bệnh viện đa khoa/chuyên khoa."
+                },
+                {
+                    "k": "2.4",
+                    "t": "bl",
+                    "l": "Khoa cận lâm sàng: Có tối thiểu một phòng xét nghiệm và một phòng chẩn đoán hình ảnh."
+                },
+                {
+                    "k": "2.5",
+                    "t": "bl",
+                    "l": "Khoa dược: Có đủ bộ phận nghiệp vụ, kho, thống kê, thông tin thuốc và dược lâm sàng."
+                },
+                {
+                    "k": "2.6",
+                    "t": "bl",
+                    "l": "Khoa dinh dưỡng: Có bộ phận dinh dưỡng lâm sàng và nhân sự phụ trách đúng quy định."
+                },
+                {
+                    "k": "2.7",
+                    "t": "bl",
+                    "l": "Khoa KSNK: Có bộ phận kiểm soát nhiễm khuẩn và người làm công tác chuyên trách."
+                },
+                {
+                    "k": "2.8",
+                    "t": "bl",
+                    "l": "Các bộ phận chuyên môn khác phù hợp với phạm vi hoạt động chuyên môn."
+                },
+                {
+                    "k": "2.9",
+                    "t": "bl",
+                    "l": "Có đủ các phòng chức năng: KHTH, TCNS, QLCL, Điều dưỡng, Tài chính, CNTT, Thiết bị y tế."
+                }
+            ]
+        },
+        {
+            "k": "III",
+            "t": "grp",
+            "l": "Tiêu chuẩn về nhân sự",
+            "i": [
+                {
+                    "k": "3.1",
+                    "t": "bl",
+                    "l": "Người hành nghề được phân công công việc phù hợp với phạm vi hành nghề được phê duyệt."
+                },
+                {
+                    "k": "3.2",
+                    "t": "bl",
+                    "l": "Người hành nghề được cập nhật kiến thức y khoa liên tục."
+                }
+            ]
+        },
+        {
+            "k": "IV",
+            "t": "grp",
+            "l": "Tiêu chuẩn về thiết bị y tế",
+            "i": [
+                {
+                    "k": "4.1",
+                    "t": "bl",
+                    "l": "Thiết bị y tế thực hiện kỹ thuật có đầy đủ hồ sơ quản lý và được cấp phép."
+                },
+                {
+                    "k": "4.2",
+                    "t": "bl",
+                    "l": "Quy chế quản lý, sử dụng, bảo dưỡng, sửa chữa thiết bị y tế đầy đủ."
+                },
+                {
+                    "k": "4.3",
+                    "t": "bl",
+                    "l": "Quy trình vận hành, sửa chữa đảm bảo chất lượng thiết bị y tế."
+                },
+                {
+                    "k": "4.4",
+                    "t": "bl",
+                    "l": "Thiết bị thuộc danh mục phải kiểm định, hiệu chuẩn được thực hiện theo quy định."
+                },
+                {
+                    "k": "4.5",
+                    "t": "bl",
+                    "l": "Có bộ phận và nhân sự thực hiện nhiệm vụ quản lý và kiểm tra thiết bị y tế."
+                }
+            ]
+        },
+        {
+            "k": "V",
+            "t": "grp",
+            "l": "Tiêu chuẩn về chuyên môn",
+            "i": [
+                {
+                    "k": "5.1",
+                    "t": "bl",
+                    "l": "Điều trị nội trú, tổ chức trực chuyên môn 24/24 giờ của tất cả các ngày."
+                },
+                {
+                    "k": "5.2",
+                    "t": "bl",
+                    "l": "Quy trình khám bệnh, chữa bệnh ngoại trú được ban hành và thực hiện."
+                },
+                {
+                    "k": "5.3.1",
+                    "t": "bl",
+                    "l": "Phổ biến các quy trình kỹ thuật chuyên môn do Bộ Y tế hoặc bệnh viện ban hành."
+                },
+                {
+                    "k": "5.3.2",
+                    "t": "bl",
+                    "l": "Phổ biến các hướng dẫn chẩn đoán và điều trị (Phác đồ)."
+                },
+                {
+                    "k": "5.3.3",
+                    "t": "bl",
+                    "l": "Áp dụng thực tế các quy trình kỹ thuật khám bệnh, chữa bệnh."
+                },
+                {
+                    "k": "5.3.4",
+                    "t": "bl",
+                    "l": "Áp dụng thực tế các hướng dẫn chẩn đoán và điều trị."
+                },
+                {
+                    "k": "5.3.5",
+                    "t": "bl",
+                    "l": "Tập huấn hoặc phổ biến về việc tuân thủ các quy định trong kê đơn thuốc."
+                },
+                {
+                    "k": "5.4.1",
+                    "t": "bl",
+                    "l": "Quản lý chất lượng: Thành lập hệ thống quản lý chất lượng."
+                },
+                {
+                    "k": "5.4.2",
+                    "t": "bl",
+                    "l": "Quản lý chất lượng: Quy chế hoạt động của Hội đồng quản lý chất lượng."
+                },
+                {
+                    "k": "5.4.3",
+                    "t": "bl",
+                    "l": "Quản lý chất lượng: Có kế hoạch/đề án cải tiến chất lượng hàng năm/giai đoạn."
+                },
+                {
+                    "k": "5.4.4",
+                    "t": "bl",
+                    "l": "Quản lý chất lượng: Có chỉ số chất lượng bệnh viện và kết quả đo lường."
+                },
+                {
+                    "k": "5.4.5",
+                    "t": "bl",
+                    "l": "Quản lý chất lượng xét nghiệm: Kế hoạch, quy trình, tập huấn và đánh giá thực hiện."
+                },
+                {
+                    "k": "5.4.6",
+                    "t": "bl",
+                    "l": "Quản lý chất lượng: Thực hiện báo cáo sự cố y khoa đầy đủ."
+                },
+                {
+                    "k": "5.5",
+                    "t": "bl",
+                    "l": "Kiểm soát nhiễm khuẩn: Tổ chức phân công nhiệm vụ và xây dựng quy trình."
+                }
+            ]
+        }
+    ]
+}

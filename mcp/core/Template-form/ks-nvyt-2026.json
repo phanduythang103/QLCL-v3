@@ -1,0 +1,217 @@
+{
+    "formId": "staff_satisfaction_2026",
+    "title": "Khảo sát hài lòng NVYT",
+    "type": "internal_hr_survey",
+    "anonymous": true,
+    "scale": {
+        "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "labels": {
+            "1": "Rất không hài lòng",
+            "5": "Rất hài lòng"
+        }
+    },
+    "sections": [
+        {
+            "id": "info",
+            "title": "Thông tin chung",
+            "fields": [
+                {
+                    "id": "block",
+                    "label": "Khối",
+                    "type": "radio",
+                    "options": [
+                        {
+                            "value": "clinical",
+                            "label": "Lâm sàng"
+                        },
+                        {
+                            "value": "subclinical",
+                            "label": "Cận lâm sàng"
+                        },
+                        {
+                            "value": "admin",
+                            "label": "Hành chính"
+                        }
+                    ]
+                },
+                {
+                    "id": "position",
+                    "label": "Vị trí",
+                    "type": "radio",
+                    "options": [
+                        {
+                            "value": "doctor",
+                            "label": "Bác sĩ"
+                        },
+                        {
+                            "value": "nurse",
+                            "label": "Điều dưỡng/KTV"
+                        },
+                        {
+                            "value": "contract",
+                            "label": "Hợp đồng"
+                        }
+                    ]
+                },
+                {
+                    "id": "years",
+                    "label": "Thâm niên (năm)",
+                    "type": "number"
+                }
+            ]
+        },
+        {
+            "id": "evaluation",
+            "title": "Đánh giá",
+            "type": "matrix",
+            "groups": [
+                {
+                    "id": "A",
+                    "title": "Thu nhập & phúc lợi",
+                    "questions": [
+                        {
+                            "id": "Q1",
+                            "text": "Thu nhập tương xứng công việc"
+                        },
+                        {
+                            "id": "Q2",
+                            "text": "Minh bạch thu nhập tăng thêm"
+                        },
+                        {
+                            "id": "Q3",
+                            "text": "Phụ cấp trực, thưởng"
+                        },
+                        {
+                            "id": "Q4",
+                            "text": "Chăm sóc đời sống NVYT"
+                        }
+                    ]
+                },
+                {
+                    "id": "B",
+                    "title": "Áp lực công việc",
+                    "questions": [
+                        {
+                            "id": "Q5",
+                            "text": "Nhân lực đủ"
+                        },
+                        {
+                            "id": "Q6",
+                            "text": "Tần suất trực hợp lý"
+                        },
+                        {
+                            "id": "Q7",
+                            "text": "Phân công công bằng"
+                        }
+                    ]
+                },
+                {
+                    "id": "C",
+                    "title": "Điều kiện làm việc",
+                    "questions": [
+                        {
+                            "id": "Q8",
+                            "text": "Hệ thống CNTT"
+                        },
+                        {
+                            "id": "Q9",
+                            "text": "Trang thiết bị"
+                        },
+                        {
+                            "id": "Q10",
+                            "text": "Hậu cần (ăn, nghỉ)"
+                        }
+                    ]
+                },
+                {
+                    "id": "D",
+                    "title": "Lãnh đạo & phát triển",
+                    "questions": [
+                        {
+                            "id": "Q11",
+                            "text": "BGĐ lắng nghe"
+                        },
+                        {
+                            "id": "Q12",
+                            "text": "Cơ hội đào tạo"
+                        },
+                        {
+                            "id": "Q13",
+                            "text": "Đoàn kết nội bộ"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "root_cause",
+            "title": "Phân tích nguyên nhân",
+            "logic": "only_if_score <= 3",
+            "fields": [
+                {
+                    "id": "pressure",
+                    "label": "Áp lực chính",
+                    "type": "checkbox",
+                    "options": [
+                        {
+                            "value": "low_income",
+                            "label": "Thu nhập thấp"
+                        },
+                        {
+                            "value": "too_many_shifts",
+                            "label": "Trực nhiều"
+                        },
+                        {
+                            "value": "system_slow",
+                            "label": "Phần mềm chậm"
+                        },
+                        {
+                            "value": "unfair",
+                            "label": "Thiếu công bằng"
+                        },
+                        {
+                            "value": "other",
+                            "label": "Khác",
+                            "hasInput": true
+                        }
+                    ]
+                },
+                {
+                    "id": "financial_suggestion",
+                    "label": "Đề xuất tài chính",
+                    "type": "textarea"
+                },
+                {
+                    "id": "stay_intent",
+                    "label": "Ý định gắn bó",
+                    "type": "radio",
+                    "options": [
+                        {
+                            "value": "stay",
+                            "label": "Ở lại"
+                        },
+                        {
+                            "value": "consider",
+                            "label": "Cân nhắc"
+                        },
+                        {
+                            "value": "leave",
+                            "label": "Rời đi"
+                        }
+                    ]
+                },
+                {
+                    "id": "suggestion",
+                    "label": "Đề xuất cải tiến",
+                    "type": "textarea"
+                }
+            ]
+        }
+    ]
+}
