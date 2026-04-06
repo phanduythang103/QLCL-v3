@@ -5,19 +5,28 @@ import { StandardMeasurementModule } from './StandardMeasurementModule';
 
 interface AssessmentReportsProps {
   setViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
+  onSubModuleChange: (active: boolean) => void;
 }
 
-export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMode }) => {
+export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMode, onSubModuleChange }) => {
   const [activeSubModule, setActiveSubModule] = useState<string | null>(null);
+
+  const handleSubModuleSelect = (id: string) => {
+    setActiveSubModule(id);
+    onSubModuleChange(true);
+  };
+
+  const handleBack = () => {
+    setActiveSubModule(null);
+    onSubModuleChange(false);
+    setViewMode('LIST');
+  };
 
   if (activeSubModule === 'standard-1') {
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
         <button
-          onClick={() => {
-            setActiveSubModule(null);
-            setViewMode('LIST');
-          }}
+          onClick={handleBack}
           className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4"
         >
           <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
@@ -31,10 +40,7 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
         <button
-          onClick={() => {
-            setActiveSubModule(null);
-            setViewMode('LIST');
-          }}
+          onClick={handleBack}
           className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4"
         >
           <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
@@ -57,7 +63,7 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
           <button
             key={item.id}
             type="button"
-            onClick={() => setActiveSubModule(item.id)}
+            onClick={() => handleSubModuleSelect(item.id)}
             className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer flex flex-col items-start justify-center"
           >
             <div className="flex items-center gap-2">

@@ -15,6 +15,7 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
   const [loading, setLoading] = useState(true);
   const [selectedSurvey, setSelectedSurvey] = useState<InpatientSurveyResponse | undefined>();
   const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSurveys();
@@ -23,11 +24,14 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
   const loadSurveys = async () => {
     try {
       setLoading(true);
+      setFetchError(null);
+      console.log('Fetching surveys from ksnb_noi_tru...');
       const data = await inpatientSatisfactionService.fetchInpatientSurveys();
+      console.log('Successfully loaded surveys:', data.length);
       setSurveys(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load surveys:', err);
-      alert('Không thể tải danh sách khảo sát');
+      setFetchError(err.message || 'Lỗi không xác định khi tải dữ liệu');
     } finally {
       setLoading(false);
     }
@@ -94,10 +98,12 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
         <InpatientSatisfactionList 
           surveys={surveys}
           loading={loading}
+          error={fetchError}
           onEdit={handleEdit}
           onView={handleView}
           onDelete={handleDelete}
           onAddNew={handleAddNew}
+          onRetry={loadSurveys}
         />
       ) : viewMode === 'DETAIL' ? (
         <InpatientSatisfactionDetail

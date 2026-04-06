@@ -3,32 +3,46 @@ import { StaffSatisfactionSurvey } from '../types/staffSatisfaction';
 
 export const staffSatisfactionService = {
   async fetchSurveys(): Promise<StaffSatisfactionSurvey[]> {
-    const { data, error } = await supabase
-      .from('staff_satisfaction_2026_responses')
-      .select('*')
-      .order('ngay_khao_sat', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('staff_satisfaction_2026_responses')
+        .select('*')
+        .order('ngay_khao_sat', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching surveys:', error);
-      throw error;
+      if (error) {
+        console.error('Error fetching staff surveys:', error);
+        throw new Error(`Không thể tải dữ liệu: ${error.message}`);
+      }
+      return data || [];
+    } catch (err: any) {
+      console.error('Staff service fetch error:', err);
+      throw err;
     }
-
-    return data || [];
   },
 
   async saveSurvey(survey: StaffSatisfactionSurvey): Promise<StaffSatisfactionSurvey> {
-    const { data, error } = await supabase
-      .from('staff_satisfaction_2026_responses')
-      .insert([survey])
-      .select()
-      .single();
+    try {
+      // Remove id and timestamps if they exist to let Supabase handle them
+      const { id, created_at, ngay_khao_sat, ...insertData } = survey as any;
 
-    if (error) {
-      console.error('Error saving survey:', error);
-      throw error;
+      const { data, error } = await supabase
+        .from('staff_satisfaction_2026_responses')
+        .insert([insertData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving staff survey:', error);
+        if (error.code === '42501') {
+          throw new Error('Lỗi phân quyền: Bạn không có quyền thêm dữ liệu vào bảng này.');
+        }
+        throw new Error(`Lỗi gửi phiếu: ${error.message}`);
+      }
+      return data;
+    } catch (err: any) {
+      console.error('Staff service creation error:', err);
+      throw err;
     }
-
-    return data;
   },
 
   async updateSurvey(id: string, survey: StaffSatisfactionSurvey): Promise<StaffSatisfactionSurvey> {

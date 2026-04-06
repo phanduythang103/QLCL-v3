@@ -28,6 +28,8 @@ export const AssessmentModule: React.FC = () => {
     handleAddNew, handleEditSheet, handleViewSheet, handleSaveAssessment
   } = useAssessment();
 
+  const [isSubModuleActive, setIsSubModuleActive] = React.useState(false);
+
   const handleScoreChange = (ma: string, field: any, value: any) => {
     setResults(prev => ({
       ...prev,
@@ -40,8 +42,8 @@ export const AssessmentModule: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Navigation Tabs - Hidden in Form or Detail mode */}
-      {viewMode === 'LIST' && (
+      {/* Navigation Tabs - Hidden in Form/Detail mode OR when a sub-module is active */}
+      {viewMode === 'LIST' && !isSubModuleActive && (
         <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
           <button 
             onClick={() => setActiveTab('QUALITY_ASSESSMENT')} 
@@ -74,7 +76,12 @@ export const AssessmentModule: React.FC = () => {
       <div className={viewMode === 'LIST' ? "min-h-[400px]" : ""}>
         {activeTab === 'CRITERIA_83' && <Criteria83DataView />}
         
-        {activeTab === 'ASSESSMENT_REPORTS' && <AssessmentReports setViewMode={setViewMode} />}
+        {activeTab === 'ASSESSMENT_REPORTS' && (
+          <AssessmentReports 
+            setViewMode={setViewMode} 
+            onSubModuleChange={setIsSubModuleActive}
+          />
+        )}
 
         {activeTab === 'QUALITY_ASSESSMENT' && (
           <>

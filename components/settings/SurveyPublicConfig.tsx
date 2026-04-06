@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Globe, QrCode, Link2, Copy, Check, Save, Unlink, Loader2, AlertCircle, 
-  ExternalLink, MousePointer2, RefreshCw
+  ExternalLink, MousePointer2, RefreshCw, Printer
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
@@ -102,6 +102,94 @@ export const SurveyPublicConfig: React.FC = () => {
   const getQrUrl = (slug: string) => {
     const fullUrl = encodeURIComponent(`${publicBaseUrl}/${slug}`);
     return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${fullUrl}&margin=10`;
+  };
+  
+  const handlePrint = (config: SurveyConfig) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const qrUrl = getQrUrl(config.slug);
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>In mã QR - ${config.survey_name}</title>
+          <style>
+            @page { size: auto; margin: 0mm; }
+            body { 
+              font-family: system-ui, -apple-system, sans-serif; 
+              display: flex; 
+              justify-content: center; 
+              align-items: center; 
+              height: 100vh; 
+              margin: 0; 
+              background: #f8fafc;
+            }
+            .card {
+              background: white;
+              border: 3px solid #009900;
+              border-radius: 50px;
+              padding: 50px;
+              width: 350px;
+              text-align: center;
+              box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.1);
+            }
+            .hospital {
+              font-weight: 900;
+              text-transform: uppercase;
+              font-size: 18px;
+              margin-bottom: 30px;
+              color: #0f172a;
+              letter-spacing: -0.025em;
+            }
+            .qr-container {
+              background: white;
+              padding: 15px;
+              border-radius: 24px;
+              display: inline-block;
+              border: 1px solid #f1f5f9;
+            }
+            .qr-img {
+              width: 250px;
+              height: 250px;
+              display: block;
+            }
+            .survey-name {
+              font-weight: 900;
+              text-transform: uppercase;
+              font-size: 14px;
+              margin-top: 30px;
+              color: #009900;
+              line-height: 1.5;
+              letter-spacing: 0.025em;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="hospital">Bệnh viện Quân y 103</div>
+            <div class="qr-container">
+              <img src="${qrUrl}" class="qr-img" />
+            </div>
+            <div class="survey-name">${config.survey_name}</div>
+          </div>
+          <script>
+            // Wait for image to load before printing
+            const img = document.querySelector('img');
+            if (img.complete) {
+              window.print();
+              setTimeout(() => window.close(), 500);
+            } else {
+              img.onload = () => {
+                window.print();
+                setTimeout(() => window.close(), 500);
+              };
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   if (loading) {
@@ -208,36 +296,66 @@ export const SurveyPublicConfig: React.FC = () => {
               </div>
             </div>
 
-            {/* Right QR Section */}
-            <div className="p-8 bg-slate-50/50 w-full md:w-64 flex flex-col items-center justify-center gap-4 text-center">
+            {/* Right QR Section (QR Card) */}
+            <div className="p-8 bg-slate-50/50 w-full md:w-72 flex flex-col items-center justify-center gap-6 text-center">
               <div className="relative group">
-                <div className="absolute inset-0 bg-[#009900]/10 rounded-3xl blur-xl group-hover:bg-[#009900]/20 transition-all duration-500" />
-                <div className="relative bg-white p-3 rounded-[2rem] border border-slate-100 shadow-2xl transition-transform hover:scale-105 duration-500">
-                  <img 
-                    src={getQrUrl(config.slug)} 
-                    alt="Survey QR Code" 
-                    className="w-40 h-40 object-contain"
-                  />
+                {/* Visual Glow */}
+                <div className="absolute inset-x-0 -inset-y-4 bg-[#009900]/10 rounded-[3rem] blur-2xl group-hover:bg-[#009900]/15 transition-all duration-500" />
+                
+                {/* The QR Card */}
+                <div id={`qr-card-${config.id}`} className="relative bg-white p-6 rounded-[2.5rem] border-2 border-slate-200 shadow-2xl transition-all hover:shadow-emerald-100 duration-500 flex flex-col items-center gap-4 w-56">
+                  {/* Hospital Name (Top) */}
+                  <div className="text-[10px] font-black text-slate-900 uppercase tracking-tighter text-center leading-tight bg-slate-50 py-2 px-3 rounded-xl w-full border border-slate-100">
+                    Bệnh viện Quân y 103
+                  </div>
+                  
+                  {/* QR Image (Middle) */}
+                  <div className="p-2 border border-slate-50 rounded-2xl bg-white shadow-inner">
+                    <img 
+                      src={getQrUrl(config.slug)} 
+                      alt="Survey QR Code" 
+                      className="w-32 h-32 object-contain"
+                    />
+                  </div>
+                  
+                  {/* Survey Name (Bottom) */}
+                  <div className="text-[9px] font-black text-[#009900] uppercase tracking-tight text-center leading-[1.3] px-2 min-h-[32px] flex items-center justify-center">
+                    {config.survey_name}
+                  </div>
+
                   {!config.is_public && (
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm rounded-[2rem] flex flex-col items-center justify-center text-white p-4">
-                      <Unlink size={24} className="mb-2" />
-                      <span className="text-[9px] font-black uppercase tracking-widest leading-tight">Mã QR vô hiệu khi chưa Public</span>
+                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm rounded-[2.5rem] flex flex-col items-center justify-center text-white p-6 z-10">
+                      <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-3">
+                        <Unlink size={20} />
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-center leading-relaxed opacity-90">Mã QR vô hiệu khi chưa Public</span>
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className="space-y-1">
-                <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Mã QR Khảo sát</p>
-                <a 
-                  href={getQrUrl(config.slug)} 
-                  download={`${config.survey_type}_qr.png`}
-                  className={`inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all ${
-                    config.is_public ? 'text-[#009900] hover:underline' : 'text-slate-300 pointer-events-none'
-                  }`}
-                >
-                  Tải ảnh QR <MousePointer2 size={10} />
-                </a>
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã QR Khảo sát</p>
+                <div className="flex flex-col gap-2">
+                  <a 
+                    href={getQrUrl(config.slug)} 
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                      config.is_public ? 'text-[#009900] hover:bg-emerald-50 hover:border-[#009900]' : 'text-slate-300 pointer-events-none'
+                    }`}
+                  >
+                    Mở ảnh QR <ExternalLink size={10} />
+                  </a>
+                  <button 
+                    onClick={() => handlePrint(config)}
+                    className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${
+                      config.is_public ? '' : 'opacity-50 pointer-events-none'
+                    }`}
+                  >
+                    In thẻ QR <Printer size={10} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

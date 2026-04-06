@@ -1,17 +1,21 @@
 import React from 'react';
-import { Calendar, User, Eye, Edit2, Trash2, Plus, BarChart3, Home } from 'lucide-react';
+import { Calendar, User, Eye, Edit2, Trash2, Plus, BarChart3, Home, AlertTriangle } from 'lucide-react';
 import { InpatientSurveyResponse } from '../types/inpatientSatisfaction';
 
 interface Props {
   surveys: InpatientSurveyResponse[];
   loading: boolean;
+  error: string | null;
   onEdit: (data: InpatientSurveyResponse) => void;
   onView: (data: InpatientSurveyResponse) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  onRetry: () => void;
 }
 
-export const InpatientSatisfactionList: React.FC<Props> = ({ surveys, loading, onEdit, onView, onDelete, onAddNew }) => {
+export const InpatientSatisfactionList: React.FC<Props> = ({ 
+  surveys, loading, error, onEdit, onView, onDelete, onAddNew, onRetry 
+}) => {
   const getScoreColor = (percent: number) => {
     if (percent >= 90) return 'text-emerald-600 bg-emerald-50';
     if (percent >= 70) return 'text-amber-600 bg-amber-50';
@@ -23,6 +27,34 @@ export const InpatientSatisfactionList: React.FC<Props> = ({ surveys, loading, o
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
         <div className="w-12 h-12 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin"></div>
         <p className="text-slate-500 font-black text-xs uppercase tracking-widest animate-pulse">Đang tải danh sách khảo sát người bệnh...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-rose-50 border border-rose-100 rounded-[2rem] p-10 flex flex-col items-center justify-center text-center space-y-6">
+        <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
+          <AlertTriangle size={32} />
+        </div>
+        <div className="space-y-2">
+          <h4 className="text-lg font-black text-rose-900 uppercase">Lỗi kết nối cơ sở dữ liệu</h4>
+          <p className="text-sm text-rose-700 font-medium max-w-md mx-auto">{error}</p>
+        </div>
+        <div className="bg-white/50 p-4 rounded-2xl border border-rose-200 text-left space-y-2 max-w-md w-full">
+           <p className="text-[10px] font-black text-rose-800 uppercase tracking-widest">Gợi ý sửa lỗi:</p>
+           <ul className="text-[10px] text-rose-700 font-bold uppercase tracking-tight list-disc pl-4 space-y-1">
+             <li>Kiểm tra xem đã chạy SQL RLS policies chưa?</li>
+             <li>Kiểm tra quyền truy cập (Role) của tài khoản hiện tại</li>
+             <li>Đảm bảo bảng <code className="bg-rose-100 px-1 rounded">ksnb_noi_tru</code> đã tồn tại trong Supabase</li>
+           </ul>
+        </div>
+        <button 
+          onClick={onRetry}
+          className="px-8 py-3 bg-rose-600 text-white rounded-xl font-black text-xs uppercase shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all"
+        >
+          Thử tải lại dữ liệu
+        </button>
       </div>
     );
   }
@@ -62,6 +94,14 @@ export const InpatientSatisfactionList: React.FC<Props> = ({ surveys, loading, o
                     <div className="flex flex-col items-center gap-2 opacity-20">
                       <BarChart3 size={48} />
                       <p className="text-sm font-black uppercase">Chưa có dữ liệu khảo sát</p>
+                    </div>
+                    <div className="mt-4 flex flex-col items-center gap-2">
+                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">
+                         Gợi ý: Thử nhấn "Khảo sát mới" để tạo dữ liệu test.
+                       </p>
+                       <p className="text-[9px] text-slate-300 font-medium max-w-xs mx-auto">
+                         Nếu đã có dữ liệu thực tế nhưng không hiển thị, có thể do chính sách bảo mật RLS đang chặn quyền xem.
+                       </p>
                     </div>
                   </td>
                 </tr>
