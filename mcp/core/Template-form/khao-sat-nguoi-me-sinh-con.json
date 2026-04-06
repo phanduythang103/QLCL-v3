@@ -1,0 +1,332 @@
+{
+  "formId": "mother_survey_v1",
+  "title": "Phiếu Khảo Sát Ý Kiến Người Mẹ Sinh Con",
+  "version": 1,
+  "meta": {
+    "description": "Khảo sát trải nghiệm người mẹ sinh con tại bệnh viện",
+    "anonymous": true
+  },
+  "sections": [
+    {
+      "id": "admin_info",
+      "title": "Thông tin hành chính",
+      "fields": [
+        {
+          "id": "hospital_name",
+          "label": "Tên bệnh viện",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "survey_date",
+          "label": "Ngày điền phiếu",
+          "type": "date",
+          "required": true
+        },
+        {
+          "id": "departments",
+          "label": "Các khoa đã điều trị",
+          "type": "textarea"
+        },
+        {
+          "id": "department_code",
+          "label": "Mã khoa",
+          "type": "text"
+        },
+        {
+          "id": "mother_id",
+          "label": "Mã số người mẹ",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "patient_info",
+      "title": "Thông tin người bệnh",
+      "fields": [
+        {
+          "id": "age",
+          "label": "Tuổi",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "phone",
+          "label": "Số điện thoại",
+          "type": "tel"
+        },
+        {
+          "id": "days_in_hospital",
+          "label": "Số ngày nằm viện",
+          "type": "number"
+        },
+        {
+          "id": "visit_count",
+          "label": "Lần nhập viện",
+          "type": "number"
+        },
+        {
+          "id": "bhyt",
+          "label": "Sử dụng BHYT",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Có"
+            },
+            {
+              "value": 2,
+              "label": "Không"
+            }
+          ]
+        },
+        {
+          "id": "birth_method",
+          "label": "Cách sinh",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Đẻ thường"
+            },
+            {
+              "value": 2,
+              "label": "Mổ cấp cứu"
+            },
+            {
+              "value": 3,
+              "label": "Mổ có chuẩn bị"
+            },
+            {
+              "value": 4,
+              "label": "Khác",
+              "hasInput": true
+            }
+          ]
+        },
+        {
+          "id": "prenatal_check",
+          "label": "Khám thai",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Có khám",
+              "hasInput": true
+            },
+            {
+              "value": 2,
+              "label": "Chỉ đến sinh"
+            },
+            {
+              "value": 3,
+              "label": "Không nhớ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evaluation",
+      "title": "Đánh giá dịch vụ",
+      "type": "matrix",
+      "scale": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "scaleLabel": {
+        "1": "Rất kém",
+        "5": "Rất tốt"
+      },
+      "groups": [
+        {
+          "id": "EA",
+          "title": "Khả năng tiếp cận",
+          "questions": [
+            {
+              "id": "EA1",
+              "text": "Biển chỉ dẫn rõ ràng"
+            },
+            {
+              "id": "EA2",
+              "text": "Dễ gọi nhân viên khi cần"
+            }
+          ]
+        },
+        {
+          "id": "EB",
+          "title": "Quy trình khám",
+          "questions": [
+            {
+              "id": "EB1",
+              "text": "Thủ tục dễ dàng"
+            },
+            {
+              "id": "EB2",
+              "text": "Thời gian chờ hợp lý"
+            }
+          ]
+        },
+        {
+          "id": "EC",
+          "title": "Tư vấn",
+          "questions": [
+            {
+              "id": "EC1",
+              "text": "Thông tin trước sinh đầy đủ"
+            },
+            {
+              "id": "EC2",
+              "text": "Tư vấn nguy cơ"
+            },
+            {
+              "id": "EC3",
+              "text": "Hướng dẫn chăm sóc sau sinh"
+            }
+          ]
+        },
+        {
+          "id": "ED",
+          "title": "Cơ sở vật chất",
+          "questions": [
+            {
+              "id": "ED1",
+              "text": "Giường sạch, không nằm ghép"
+            },
+            {
+              "id": "ED2",
+              "text": "Chăn ga sạch"
+            },
+            {
+              "id": "ED3",
+              "text": "Nhà vệ sinh sạch"
+            },
+            {
+              "id": "ED4",
+              "text": "Buồng bệnh thoáng"
+            },
+            {
+              "id": "ED5",
+              "text": "Đảm bảo riêng tư"
+            },
+            {
+              "id": "ED6",
+              "text": "Dịch vụ tiện ích tốt"
+            }
+          ]
+        },
+        {
+          "id": "EE",
+          "title": "Thái độ nhân viên",
+          "questions": [
+            {
+              "id": "EE1",
+              "text": "Bác sĩ giao tiếp tốt"
+            },
+            {
+              "id": "EE2",
+              "text": "Điều dưỡng giao tiếp tốt"
+            },
+            {
+              "id": "EE3",
+              "text": "Nhân viên phục vụ tốt"
+            },
+            {
+              "id": "EE4",
+              "text": "Không gợi ý bồi dưỡng"
+            }
+          ]
+        },
+        {
+          "id": "EG",
+          "title": "Chuyên môn",
+          "questions": [
+            {
+              "id": "EG1",
+              "text": "Bác sĩ chuyên môn tốt"
+            },
+            {
+              "id": "EG2",
+              "text": "Điều dưỡng chăm sóc tốt"
+            },
+            {
+              "id": "EG3",
+              "text": "Phối hợp tốt"
+            }
+          ]
+        },
+        {
+          "id": "EH",
+          "title": "Kết quả",
+          "questions": [
+            {
+              "id": "EH1",
+              "text": "Sinh an toàn"
+            },
+            {
+              "id": "EH2",
+              "text": "Hướng dẫn thuốc đầy đủ"
+            },
+            {
+              "id": "EH3",
+              "text": "Chi phí hợp lý"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overall",
+      "title": "Đánh giá chung",
+      "fields": [
+        {
+          "id": "satisfaction_percent",
+          "label": "Mức đáp ứng (%)",
+          "type": "number",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "id": "return_intent",
+          "label": "Quay lại bệnh viện",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Không quay lại"
+            },
+            {
+              "value": 2,
+              "label": "Ít lựa chọn"
+            },
+            {
+              "value": 3,
+              "label": "Chuyển viện khác"
+            },
+            {
+              "value": 4,
+              "label": "Có thể quay lại"
+            },
+            {
+              "value": 5,
+              "label": "Chắc chắn quay lại"
+            },
+            {
+              "value": 6,
+              "label": "Khác",
+              "hasInput": true
+            }
+          ]
+        },
+        {
+          "id": "note",
+          "label": "Ý kiến thêm",
+          "type": "textarea"
+        }
+      ]
+    }
+  ]
+}

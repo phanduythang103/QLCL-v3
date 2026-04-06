@@ -1,0 +1,412 @@
+{
+  "formId": "breastfeeding_survey_v1",
+  "title": "Phiếu Khảo Sát Nuôi Con Bằng Sữa Mẹ",
+  "version": 1,
+  "sections": [
+    {
+      "id": "admin",
+      "title": "Thông tin hành chính",
+      "fields": [
+        {
+          "id": "hospital",
+          "label": "Tên bệnh viện",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date",
+          "label": "Ngày khảo sát",
+          "type": "date"
+        },
+        {
+          "id": "department",
+          "label": "Tên khoa",
+          "type": "text"
+        },
+        {
+          "id": "department_code",
+          "label": "Mã khoa",
+          "type": "text"
+        },
+        {
+          "id": "patient_id",
+          "label": "Mã người bệnh",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "patient",
+      "title": "Thông tin người bệnh",
+      "fields": [
+        {
+          "id": "age",
+          "label": "Tuổi",
+          "type": "number"
+        },
+        {
+          "id": "phone",
+          "label": "Số điện thoại",
+          "type": "tel"
+        },
+        {
+          "id": "visit_count",
+          "label": "Lần nhập viện",
+          "type": "number"
+        },
+        {
+          "id": "days_in_hospital",
+          "label": "Số ngày nằm viện",
+          "type": "number"
+        },
+        {
+          "id": "birth_count",
+          "label": "Số lần sinh",
+          "type": "number"
+        },
+        {
+          "id": "delivery_type",
+          "label": "Hình thức sinh",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Đẻ thường"
+            },
+            {
+              "value": 2,
+              "label": "Mổ đẻ"
+            }
+          ]
+        },
+        {
+          "id": "baby_birth_date",
+          "label": "Ngày sinh của trẻ",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "id": "breastfeeding",
+      "title": "Thực hành nuôi con bằng sữa mẹ",
+      "fields": [
+        {
+          "id": "see_policy",
+          "label": "Thấy quy định nuôi con bằng sữa mẹ",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "Khoa khám"
+            },
+            {
+              "value": 2,
+              "label": "Phòng chờ sinh"
+            },
+            {
+              "value": 3,
+              "label": "Khoa sau sinh"
+            },
+            {
+              "value": 4,
+              "label": "Phòng tư vấn"
+            },
+            {
+              "value": 5,
+              "label": "Nơi khác",
+              "hasInput": true
+            },
+            {
+              "value": 6,
+              "label": "Không thấy"
+            }
+          ]
+        },
+        {
+          "id": "see_media",
+          "label": "Thấy tài liệu truyền thông",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "Khoa khám"
+            },
+            {
+              "value": 2,
+              "label": "Phòng chờ sinh"
+            },
+            {
+              "value": 3,
+              "label": "Khoa sau sinh"
+            },
+            {
+              "value": 4,
+              "label": "Buồng bệnh"
+            },
+            {
+              "value": 5,
+              "label": "Phòng tư vấn"
+            },
+            {
+              "value": 6,
+              "label": "Khác",
+              "hasInput": true
+            },
+            {
+              "value": 7,
+              "label": "Không thấy"
+            }
+          ]
+        },
+        {
+          "id": "consultation_time",
+          "label": "Được tư vấn khi nào",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "Không tư vấn"
+            },
+            {
+              "value": 2,
+              "label": "Khám thai"
+            },
+            {
+              "value": 3,
+              "label": "Trước sinh"
+            },
+            {
+              "value": 4,
+              "label": "Sau sinh"
+            },
+            {
+              "value": 5,
+              "label": "Khác",
+              "hasInput": true
+            }
+          ]
+        },
+        {
+          "id": "reason_no_consult",
+          "label": "Lý do không được tư vấn",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Không khám tại BV"
+            },
+            {
+              "value": 2,
+              "label": "Sinh cấp cứu"
+            },
+            {
+              "value": 3,
+              "label": "NVYT bỏ qua"
+            },
+            {
+              "value": 4,
+              "label": "Khác"
+            },
+            {
+              "value": 5,
+              "label": "Có tư vấn"
+            }
+          ]
+        },
+        {
+          "id": "cord_cut",
+          "label": "Cắt dây rốn",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Cắt ngay"
+            },
+            {
+              "value": 2,
+              "label": "Cắt chậm",
+              "hasInput": true
+            },
+            {
+              "value": 3,
+              "label": "Không nhớ"
+            }
+          ]
+        },
+        {
+          "id": "skin_to_skin",
+          "label": "Da kề da",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Có",
+              "hasInput": true
+            },
+            {
+              "value": 2,
+              "label": "Không",
+              "hasInput": true
+            }
+          ]
+        },
+        {
+          "id": "first_breastfeed",
+          "label": "Thời điểm bú đầu tiên",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Ngay sau sinh"
+            },
+            {
+              "value": 2,
+              "label": "< 30 phút"
+            },
+            {
+              "value": 3,
+              "label": "< 1 giờ"
+            },
+            {
+              "value": 4,
+              "label": "< 2 giờ"
+            },
+            {
+              "value": 5,
+              "label": "2–24 giờ"
+            },
+            {
+              "value": 6,
+              "label": "> 1 ngày"
+            },
+            {
+              "value": 7,
+              "label": "Không bú mẹ"
+            },
+            {
+              "value": 8,
+              "label": "Khác",
+              "hasInput": true
+            }
+          ]
+        },
+        {
+          "id": "support_person",
+          "label": "Ai hỗ trợ bú",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "Điều dưỡng/hộ sinh"
+            },
+            {
+              "value": 2,
+              "label": "Bác sĩ"
+            },
+            {
+              "value": 3,
+              "label": "Người nhà"
+            },
+            {
+              "value": 4,
+              "label": "Khác"
+            },
+            {
+              "value": 5,
+              "label": "Không hỗ trợ"
+            }
+          ]
+        },
+        {
+          "id": "support_type",
+          "label": "Hình thức hỗ trợ",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "Hướng dẫn bú"
+            },
+            {
+              "value": 2,
+              "label": "Mát-xa vú"
+            },
+            {
+              "value": 3,
+              "label": "Vắt sữa"
+            },
+            {
+              "value": 4,
+              "label": "Thông tắc tia sữa"
+            },
+            {
+              "value": 5,
+              "label": "Khác"
+            }
+          ]
+        },
+        {
+          "id": "other_food",
+          "label": "Cho ăn thêm",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Chỉ bú mẹ"
+            },
+            {
+              "value": 2,
+              "label": "Nước"
+            },
+            {
+              "value": 3,
+              "label": "Sữa mẹ khác"
+            },
+            {
+              "value": 4,
+              "label": "Sữa công thức"
+            },
+            {
+              "value": 5,
+              "label": "Khác"
+            }
+          ]
+        },
+        {
+          "id": "suggest_formula",
+          "label": "Gợi ý sữa công thức",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "Có"
+            },
+            {
+              "value": 2,
+              "label": "Không"
+            }
+          ]
+        },
+        {
+          "id": "benefits",
+          "label": "Lợi ích sữa mẹ",
+          "type": "textarea"
+        },
+        {
+          "id": "exclusive_months",
+          "label": "Bú hoàn toàn (tháng)",
+          "type": "number"
+        },
+        {
+          "id": "total_months",
+          "label": "Tổng thời gian bú (tháng)",
+          "type": "number"
+        },
+        {
+          "id": "suggestions",
+          "label": "Kiến nghị",
+          "type": "textarea"
+        }
+      ]
+    }
+  ]
+}

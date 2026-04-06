@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Users, Building, Briefcase, Award, FileBadge,
   Layout, Bell, CalendarClock, ChevronRight, Plus, Edit2, Trash2,
-  ShieldCheck, Save, Check, Eye, Pencil, Trash, Loader2, Copy, Search, CheckCircle2, X, BrainCircuit
+  ShieldCheck, Save, Check, Eye, Pencil, Trash, Loader2, Copy, Search, CheckCircle2, X, BrainCircuit, QrCode
 } from 'lucide-react';
 import { ModuleType } from '../types';
 import UsersTable from './settings/UsersTable';
@@ -15,14 +15,15 @@ import AuthorityTable from './settings/AuthorityTable';
 import ThemeSettings from './settings/ThemeSettings';
 import NotificationTable from './settings/NotificationTable';
 import AiConfigTable from './settings/AiConfigTable';
-import Criteria83Config from './Criteria83Config'; // Import the new component
+import Criteria83Config from './Criteria83Config'; 
+import { SurveyPublicConfig } from './settings/SurveyPublicConfig';
 import { useNavigation } from '../contexts/NavigationContext';
 import { fetchPermissionsByRole, upsertPermissionsForUser, Permission, SUB_MODULES } from '../readPhanQuyen';
 import { ChevronDown } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 
-type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'RANK' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE' | 'AI' | 'CRITERIA83';
+type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'RANK' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE' | 'AI' | 'CRITERIA83' | 'SURVEY_PUBLIC';
 
 export const SettingsModule: React.FC = () => {
   const { activeSettingsTab: activeTab, setSettingsTab: setActiveTab } = useNavigation();
@@ -45,6 +46,7 @@ export const SettingsModule: React.FC = () => {
     { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} /> },
     { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} /> },
     { id: 'CRITERIA83', label: 'Cấu hình 83 TC', icon: <CheckCircle2 size={18} /> },
+    { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public', icon: <QrCode size={18} /> },
     { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} /> },
   ];
 
@@ -75,6 +77,8 @@ export const SettingsModule: React.FC = () => {
         return <AiConfigTable />;
       case 'CRITERIA83':
         return <Criteria83Config />;
+      case 'SURVEY_PUBLIC':
+        return <SurveyPublicConfig />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-slate-400 py-12">

@@ -1,0 +1,175 @@
+{
+  "formId": "inpatientSurvey2026",
+  "title": "Phiếu Khảo Sát Hài Lòng Người Bệnh Nội Trú 2026",
+  "sections": [
+    {
+      "id": "general_info",
+      "title": "Thông tin chung",
+      "fields": [
+        {
+          "type": "text",
+          "name": "full_name",
+          "label": "Họ và tên"
+        },
+        {
+          "type": "tel",
+          "name": "phone",
+          "label": "Số điện thoại"
+        },
+        {
+          "type": "text",
+          "name": "department",
+          "label": "Khoa điều trị"
+        },
+        {
+          "type": "date_split",
+          "name": "survey_date",
+          "label": "Ngày điền phiếu",
+          "year": 2026
+        },
+        {
+          "type": "number",
+          "name": "hospital_days",
+          "label": "Số ngày nằm viện"
+        },
+        {
+          "type": "radio",
+          "name": "respondent",
+          "label": "Đối tượng trả lời",
+          "options": [
+            {
+              "value": "patient",
+              "label": "Người bệnh"
+            },
+            {
+              "value": "relative",
+              "label": "Người nhà"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "service_evaluation",
+      "title": "Đánh giá dịch vụ",
+      "ratingScale": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        0
+      ],
+      "categories": [
+        {
+          "name": "A. Khả năng tiếp cận và di chuyển",
+          "questions": [
+            {
+              "id": 1,
+              "text": "Thời gian chờ đợi và mật độ sử dụng thang máy"
+            },
+            {
+              "id": 2,
+              "text": "Sự hỗ trợ di chuyển bệnh nhân giữa các khu vực"
+            }
+          ]
+        },
+        {
+          "name": "B. Minh bạch thông tin và thủ tục",
+          "questions": [
+            {
+              "id": 3,
+              "text": "Thời gian thực hiện thủ tục ra viện"
+            },
+            {
+              "id": 4,
+              "text": "Bác sĩ giải thích tình trạng bệnh rõ ràng"
+            }
+          ]
+        },
+        {
+          "name": "C. Cơ sở vật chất",
+          "questions": [
+            {
+              "id": 5,
+              "text": "Wifi/Internet tại buồng bệnh"
+            },
+            {
+              "id": 6,
+              "text": "Vệ sinh buồng bệnh và nhà vệ sinh"
+            },
+            {
+              "id": 7,
+              "text": "Đảm bảo sự riêng tư"
+            },
+            {
+              "id": 8,
+              "text": "Tình trạng giường bệnh"
+            }
+          ]
+        },
+        {
+          "name": "D. Thái độ nhân viên",
+          "questions": [
+            {
+              "id": 9,
+              "text": "Nhân viên không sử dụng điện thoại khi làm việc"
+            },
+            {
+              "id": 10,
+              "text": "Thái độ bảo vệ, hành chính, phát cơm"
+            }
+          ]
+        },
+        {
+          "name": "E. Kết quả dịch vụ",
+          "questions": [
+            {
+              "id": 11,
+              "text": "Cung ứng thuốc/vật tư"
+            },
+            {
+              "id": 12,
+              "text": "Chất lượng chế độ ăn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overall",
+      "title": "Đánh giá chung",
+      "fields": [
+        {
+          "type": "number",
+          "name": "satisfaction_percent",
+          "label": "Mức độ hài lòng (%)"
+        },
+        {
+          "type": "radio",
+          "name": "return_intent",
+          "label": "Quay lại/giới thiệu",
+          "options": [
+            {
+              "value": "no",
+              "label": "Chắc chắn không"
+            },
+            {
+              "value": "maybe",
+              "label": "Có thể"
+            },
+            {
+              "value": "yes",
+              "label": "Chắc chắn"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "name": "feedback",
+          "label": "Ý kiến đóng góp"
+        }
+      ]
+    }
+  ]
+}

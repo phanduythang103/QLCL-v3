@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, ChevronRight, ClipboardList, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ClipboardList, ArrowLeft, ClipboardCheck, Smile } from 'lucide-react';
 import { TieuChiCoBanModule } from './TieuChiCoBanModule';
+import { StandardMeasurementModule } from './StandardMeasurementModule';
 
 interface AssessmentReportsProps {
   setViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
@@ -12,7 +13,7 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
   if (activeSubModule === 'standard-1') {
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-        <button 
+        <button
           onClick={() => {
             setActiveSubModule(null);
             setViewMode('LIST');
@@ -26,36 +27,45 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
     );
   }
 
+  if (activeSubModule === 'standard-2') {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <button
+          onClick={() => {
+            setActiveSubModule(null);
+            setViewMode('LIST');
+          }}
+          className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4"
+        >
+          <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
+        </button>
+        <StandardMeasurementModule setParentViewMode={setViewMode} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="space-y-6">
-        <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2 px-2">
-          <ClipboardList className="text-[#009900]" size={24} />
-          Đánh giá chất lượng
-        </h3>
-      </div>
+      <div className="space-y-6"></div>
 
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
-          { id: 'standard-1', title: 'Tiêu chuẩn chất lượng cơ bản', desc: 'Đánh giá các tiêu chí cơ bản của bệnh viện' },
-          { id: 'standard-2', title: 'Tiêu chuẩn mức đo lường', desc: 'Đo lường mức độ hài lòng người bệnh' },
-          { id: 'standard-3', title: 'Tiêu chuẩn kiểm soát nhiễm khuẩn', desc: 'Đánh giá công tác kiểm soát nhiễm khuẩn' }
+          { id: 'standard-1', title: 'Tiêu chuẩn chất lượng cơ bản', desc: '' },
+          { id: 'standard-2', title: 'Mức độ hài lòng', desc: '' }
         ].map(item => (
-          <div 
-            key={item.id} 
+          <button
+            key={item.id}
+            type="button"
             onClick={() => setActiveSubModule(item.id)}
-            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer"
+            className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer flex flex-col items-start justify-center"
           >
-            <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#009900] mb-4 group-hover:bg-[#009900] group-hover:text-white transition-colors">
-              <FileText size={24} />
+            <div className="flex items-center gap-2">
+              {item.id === 'standard-1' ? <ClipboardCheck size={20} className="text-[#009900]" /> : <Smile size={20} className="text-[#009900]" />}
+              <h4 className="font-black text-slate-800 uppercase text-xs mb-2">{item.title}</h4>
             </div>
-            <h4 className="font-black text-slate-800 uppercase text-xs mb-2">{item.title}</h4>
             <p className="text-slate-500 text-[10px] uppercase font-bold leading-relaxed">{item.desc}</p>
-            <div className="mt-6 flex items-center text-[#009900] font-black text-[10px] uppercase gap-2 group-hover:gap-4 transition-all">
-              Truy cập đánh giá <ChevronRight size={14} />
-            </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

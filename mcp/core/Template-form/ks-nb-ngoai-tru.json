@@ -1,0 +1,210 @@
+{
+  "formId": "outpatientSurvey2026",
+  "title": "Phiếu Khảo Sát Hài Lòng Người Bệnh Ngoại Trú 2026",
+  "sections": [
+    {
+      "id": "general_info",
+      "title": "Thông tin chung",
+      "fields": [
+        {
+          "type": "text",
+          "name": "full_name",
+          "label": "Họ và tên"
+        },
+        {
+          "type": "tel",
+          "name": "phone",
+          "label": "Số điện thoại"
+        },
+        {
+          "type": "radio",
+          "name": "area",
+          "label": "Khu vực khám",
+          "options": [
+            {
+              "value": "kham_dan",
+              "label": "K. Khám bệnh (Dân)"
+            },
+            {
+              "value": "kham_quan",
+              "label": "Khám Quân"
+            },
+            {
+              "value": "bhyt",
+              "label": "Khám BHYT"
+            },
+            {
+              "value": "yeu_cau",
+              "label": "KKB theo yêu cầu"
+            },
+            {
+              "value": "pk232",
+              "label": "PK232"
+            }
+          ]
+        },
+        {
+          "type": "datetime_split",
+          "name": "visit_time",
+          "label": "Thời điểm khám",
+          "year": 2026,
+          "extra": {
+            "shift": [
+              "Sáng",
+              "Chiều"
+            ]
+          }
+        },
+        {
+          "type": "radio",
+          "name": "respondent",
+          "label": "Đối tượng trả lời",
+          "options": [
+            {
+              "value": "patient",
+              "label": "Người bệnh"
+            },
+            {
+              "value": "relative",
+              "label": "Người nhà"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "service_evaluation",
+      "title": "Đánh giá quy trình và dịch vụ",
+      "ratingScale": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        0
+      ],
+      "categories": [
+        {
+          "name": "A. Tiếp cận và chỉ dẫn",
+          "questions": [
+            {
+              "id": 1,
+              "text": "Sự thuận tiện tại khu vực gửi xe"
+            },
+            {
+              "id": 2,
+              "text": "Phân luồng Quân - Dân rõ ràng"
+            },
+            {
+              "id": 3,
+              "text": "Biển báo và hướng dẫn tại sảnh"
+            }
+          ]
+        },
+        {
+          "name": "B. Thời gian chờ đợi",
+          "questions": [
+            {
+              "id": 4,
+              "text": "Thời gian đăng ký và thanh toán"
+            },
+            {
+              "id": 5,
+              "text": "Chờ siêu âm, chiếu chụp"
+            },
+            {
+              "id": 6,
+              "text": "Thời gian trả kết quả xét nghiệm"
+            }
+          ]
+        },
+        {
+          "name": "C. Cơ sở vật chất",
+          "questions": [
+            {
+              "id": 7,
+              "text": "Ghế ngồi chờ"
+            },
+            {
+              "id": 8,
+              "text": "Nhà vệ sinh"
+            },
+            {
+              "id": 9,
+              "text": "Wifi"
+            }
+          ]
+        },
+        {
+          "name": "D. Nhân viên",
+          "questions": [
+            {
+              "id": 10,
+              "text": "Thái độ nhân viên hành chính"
+            },
+            {
+              "id": 11,
+              "text": "Bác sĩ tư vấn, lắng nghe"
+            },
+            {
+              "id": 12,
+              "text": "Thực hiện kỹ thuật của học viên"
+            },
+            {
+              "id": 13,
+              "text": "Không dùng điện thoại khi làm việc"
+            }
+          ]
+        },
+        {
+          "name": "E. Kết quả và chi phí",
+          "questions": [
+            {
+              "id": 14,
+              "text": "Tin tưởng kết quả chẩn đoán"
+            },
+            {
+              "id": 15,
+              "text": "Minh bạch chi phí"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "root_cause",
+      "title": "Truy vấn nguyên nhân",
+      "fields": [
+        {
+          "type": "checkbox",
+          "name": "waiting_issues",
+          "label": "Nguyên nhân chờ đợi",
+          "options": [
+            "Đăng ký khám",
+            "Chờ bác sĩ",
+            "Chờ siêu âm/X-quang",
+            "Thanh toán",
+            "Lấy thuốc"
+          ],
+          "other": true
+        },
+        {
+          "type": "radio",
+          "name": "priority",
+          "label": "Ưu tiên cải tiến",
+          "options": [
+            "Tăng máy siêu âm",
+            "Mở thêm quầy thanh toán",
+            "Wifi mạnh hơn",
+            "Thay đổi bảo vệ"
+          ]
+        },
+        {
+          "type": "textarea",
+          "name": "feedback",
+          "label": "Ý kiến khác"
+        }
+      ]
+    }
+  ]
+}
