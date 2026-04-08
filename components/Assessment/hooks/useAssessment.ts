@@ -67,8 +67,19 @@ export const useAssessment = () => {
       let data;
       if (activeTab === 'TEAM_ASSESSMENT') {
           data = await teamAssessment83Service.fetchSheets();
+          // Non-admins only see sheets for their teams
+          if (!isAdmin) {
+              data = data.filter(s => userTeams.includes(s.nhom || ''));
+          }
       } else {
           data = await assessmentService.fetchSheets();
+          // Non-admins only see sheets for their department
+          if (!isAdmin) {
+              data = data.filter(s => {
+                  const sheetDeptCode = (s.don_vi_duoc_danh_gia || "").split('-')[0].trim();
+                  return sheetDeptCode === uDeptCode;
+              });
+          }
       }
       setSheetList(data);
     } catch (err) {
@@ -76,7 +87,7 @@ export const useAssessment = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, isAdmin, uDeptCode, userTeams]);
 
   useEffect(() => {
     loadSheets();

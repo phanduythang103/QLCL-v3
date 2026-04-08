@@ -64,22 +64,26 @@ export const AssessmentModule: React.FC = () => {
           >
             <FileText size={18} /> Các bộ tiêu chuẩn khác
           </button>
-          <button 
-            onClick={() => setActiveTab('TEAM_ASSESSMENT')} 
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-              activeTab === 'TEAM_ASSESSMENT' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
-            }`}
-          >
-            <Users2 size={18} /> Chấm điểm theo tổ
-          </button>
-          <button 
-            onClick={() => setActiveTab('CRITERIA_83')} 
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-              activeTab === 'CRITERIA_83' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
-            }`}
-          >
-            <ListFilter size={18} /> Danh mục 83 Tiêu chí
-          </button>
+          {(isAdmin || userTeams.length > 0) && (
+            <button 
+              onClick={() => setActiveTab('TEAM_ASSESSMENT')} 
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
+                activeTab === 'TEAM_ASSESSMENT' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+              }`}
+            >
+              <Users2 size={18} /> Chấm điểm theo tổ
+            </button>
+          )}
+          {isAdmin && (
+            <button 
+              onClick={() => setActiveTab('CRITERIA_83')} 
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
+                activeTab === 'CRITERIA_83' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+              }`}
+            >
+              <ListFilter size={18} /> Danh mục 83 Tiêu chí
+            </button>
+          )}
         </div>
       )}
 

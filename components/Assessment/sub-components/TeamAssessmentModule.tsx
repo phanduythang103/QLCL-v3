@@ -63,16 +63,18 @@ export const TeamAssessmentModule: React.FC<Props> = ({
         >
           <ListChecks size={14} /> Danh sách đánh giá
         </button>
-        <button
-          onClick={() => setActiveSubTab('CONFIG')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            activeSubTab === 'CONFIG' 
-              ? 'bg-white text-[#009900] shadow-sm' 
-              : 'text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          <Settings size={14} /> Cấu hình chấm điểm
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setActiveSubTab('CONFIG')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeSubTab === 'CONFIG' 
+                ? 'bg-white text-[#009900] shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <Settings size={14} /> Cấu hình chấm điểm
+          </button>
+        )}
       </div>
 
       {activeSubTab === 'OVERVIEW' && <OverviewView selectedTeam={selectedTeam} />}
