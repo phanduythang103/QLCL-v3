@@ -20,6 +20,7 @@ export interface KqDanhGia83 {
     ma_tieu_muc: string;
     tieu_muc?: string;
     nhom?: string;
+    to_danh_gia?: string; // New field for team assessments
 
     // Kết quả
     dat: boolean;

@@ -7,15 +7,115 @@ import {
 } from 'lucide-react';
 import { fetchData83tc, batchUpdateData83tc, Data83tc } from '../readData83tc';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
+import { supabase } from '../supabaseClient';
 
 const naturalSort = (a: string, b: string) => {
     return (a || '').localeCompare(b || '', undefined, { numeric: true, sensitivity: 'base' });
 };
 
-// --- Sub-component: MultiSelect (used in Tab 1 batch modal) ---
+// --- Specialized Component: Unit Detail Modal ---
+const UnitDetailModal: React.FC<{ 
+    unitCode: string; 
+    data: { phan: string; chuong: string; tieu_chi: string; items: Data83tc[] }[];
+    onClose: () => void;
+    onRemoveChapter: (phan: string, chuong: string) => void;
+}> = ({ unitCode, data, onClose, onRemoveChapter }) => {
+    // Re-group for green hierarchical display
+    const byPhan: Record<string, Record<string, Record<string, Data83tc[]>>> = {};
+    data.forEach(g => {
+        if (!byPhan[g.phan]) byPhan[g.phan] = {};
+        if (!byPhan[g.phan][g.chuong]) byPhan[g.phan][g.chuong] = {};
+        byPhan[g.phan][g.chuong][g.tieu_chi] = g.items;
+    });
+
+    const totalItems = data.reduce((acc, g) => acc + g.items.length, 0);
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+                {/* Header Section */}
+                <div className="bg-gradient-to-r from-[#009900] to-[#007700] p-8 text-white relative shrink-0">
+                    <button 
+                        onClick={onClose} 
+                        className="absolute right-5 top-5 bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all"
+                    >
+                        <X size={20} />
+                    </button>
+                    <div className="flex items-center gap-5">
+                        <div className="bg-white/20 p-4 rounded-2xl">
+                            <LayoutList size={32} />
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-black text-white/70 uppercase tracking-[0.2em] mb-1 leading-none">Chi tiết cấu hình đơn vị</p>
+                            <h3 className="text-3xl font-black uppercase tracking-tight">{unitCode}</h3>
+                            <div className="flex gap-4 mt-3">
+                                <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase">{Object.keys(byPhan).length} Phần</span>
+                                <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase">{totalItems} Tiểu mục được phân công</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content - Heirarchy */}
+                <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
+                    <div className="space-y-6">
+                        {Object.keys(byPhan).sort(naturalSort).map(phan => (
+                            <div key={phan} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                                <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-3">
+                                    <ChevronDown size={18} className="text-[#009900]" />
+                                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{phan}</span>
+                                </div>
+                                <div className="p-4 space-y-4">
+                                    {Object.keys(byPhan[phan]).sort(naturalSort).map(chuong => (
+                                        <div key={chuong} className="ml-2 border-l-2 border-slate-50 pl-4 py-1 group/chuong relative">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <p className="text-[11px] font-black text-slate-400 uppercase italic leading-relaxed">{chuong}</p>
+                                                <button 
+                                                    onClick={() => onRemoveChapter(phan, chuong)}
+                                                    className="opacity-0 group-hover/chuong:opacity-100 flex items-center gap-1.5 bg-red-50 text-red-600 px-2 py-1 rounded-lg text-[9px] font-black uppercase hover:bg-red-100 transition-all border border-red-100"
+                                                    title="Gỡ đơn vị khỏi chương này"
+                                                >
+                                                    <X size={10} /> Xóa chương
+                                                </button>
+                                            </div>
+                                            <div className="space-y-4">
+                                                {Object.keys(byPhan[phan][chuong]).sort(naturalSort).map(tieuChi => (
+                                                    <div key={tieuChi} className="flex gap-4">
+                                                        <div className="mt-1 shrink-0 bg-green-50 p-1.5 rounded-lg text-[#009900]">
+                                                            <CheckCircle2 size={14} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-black text-[#009900] uppercase tracking-tight mb-1">{tieuChi}</p>
+                                                            <p className="text-[10px] font-bold text-slate-400 italic">
+                                                                {byPhan[phan][chuong][tieuChi].length} tiểu mục phụ trách trực tiếp
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 border-t border-slate-100 shrink-0 bg-white text-center">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase italic tabular-nums">
+                        Dữ liệu được cập nhật từ hệ thống quản lý chất lượng 83 tiêu chí
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Sub-component: MultiSelect (Generic version) ---
 const MultiSelect: React.FC<{
     label: string;
-    options: DmDonVi[];
+    options: { value: string; label: string }[];
     selectedValues: string[];
     onChange: (values: string[]) => void;
     placeholder?: string;
@@ -25,8 +125,8 @@ const MultiSelect: React.FC<{
     const [search, setSearch] = useState('');
 
     const filteredOptions = options.filter(opt => 
-        opt.ten_don_vi.toLowerCase().includes(search.toLowerCase()) || 
-        opt.ma_don_vi.toLowerCase().includes(search.toLowerCase())
+        opt.label.toLowerCase().includes(search.toLowerCase()) || 
+        opt.value.toLowerCase().includes(search.toLowerCase())
     );
 
     const toggleOption = (val: string) => {
@@ -45,13 +145,13 @@ const MultiSelect: React.FC<{
                 onClick={() => !disabled && setIsOpen(!isOpen)}
             >
                 {selectedValues.length === 0 ? (
-                    <span className="text-slate-400 text-sm font-bold ml-2 py-1">{placeholder || 'Chọn đơn vị...'}</span>
+                    <span className="text-slate-400 text-sm font-bold ml-2 py-1">{placeholder || 'Chọn...'}</span>
                 ) : (
                     selectedValues.map(val => {
-                        const unit = options.find(o => o.ma_don_vi === val);
+                        const opt = options.find(o => o.value === val);
                         return (
                             <div key={val} className="bg-green-100 text-[#008800] px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 border border-green-200 uppercase">
-                                {unit?.ten_don_vi || val}
+                                {opt?.label || val}
                                 <X 
                                     size={12} 
                                     className="cursor-pointer hover:text-red-500" 
@@ -80,15 +180,15 @@ const MultiSelect: React.FC<{
                         ) : (
                             filteredOptions.map(opt => (
                                 <div 
-                                    key={opt.ma_don_vi}
-                                    onClick={(e) => { e.stopPropagation(); toggleOption(opt.ma_don_vi); }}
-                                    className={`px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors ${selectedValues.includes(opt.ma_don_vi) ? 'bg-green-50' : ''}`}
+                                    key={opt.value}
+                                    onClick={(e) => { e.stopPropagation(); toggleOption(opt.value); }}
+                                    className={`px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors ${selectedValues.includes(opt.value) ? 'bg-green-50' : ''}`}
                                 >
                                     <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-slate-800 uppercase">{opt.ten_don_vi}</span>
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase">{opt.ma_don_vi}</span>
+                                        <span className="text-[11px] font-black text-slate-800 uppercase">{opt.label}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase">{opt.value}</span>
                                     </div>
-                                    {selectedValues.includes(opt.ma_don_vi) && <CheckCircle2 size={16} className="text-[#009900]" />}
+                                    {selectedValues.includes(opt.value) && <CheckCircle2 size={16} className="text-[#009900]" />}
                                 </div>
                             ))
                         )}
@@ -112,9 +212,16 @@ const Criteria83Config: React.FC = () => {
     const [expandedTieuChi, setExpandedTieuChi] = useState<string[]>([]);
 
     const [showBatchModal, setShowBatchModal] = useState(false);
-    const [batchForm, setBatchForm] = useState<{ phu_trach: string[]; don_vi_phoi_hop: string[] }>({ phu_trach: [], don_vi_phoi_hop: [] });
+    const [configTarget, setConfigTarget] = useState<'KHOA' | 'TO'>('KHOA'); // Toggle selection
+    const [batchForm, setBatchForm] = useState<{ phu_trach: string[]; to_cham_diem: string[]; don_vi_phoi_hop: string[] }>({ 
+        phu_trach: [], 
+        to_cham_diem: [], 
+        don_vi_phoi_hop: [] 
+    });
     const [isClearPhuTrach, setIsClearPhuTrach] = useState(false);
+    const [isClearToChamDiem, setIsClearToChamDiem] = useState(false);
     const [isClearDonViPhoiHop, setIsClearDonViPhoiHop] = useState(false);
+    const [teams, setTeams] = useState<string[]>([]);
 
     const [activeTab, setActiveTab] = useState<'config' | 'summary'>('config');
     const [searchTerm, setSearchTerm] = useState('');
@@ -132,9 +239,16 @@ const Criteria83Config: React.FC = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [data, unitData] = await Promise.all([fetchData83tc(), fetchDmDonVi()]);
+            const [data, unitData, teamsRes] = await Promise.all([
+                fetchData83tc(), 
+                fetchDmDonVi(),
+                supabase.from('assessment_team_members').select('team_name')
+            ]);
             setDataList(data);
             setUnits(unitData);
+            
+            const uniqueTeams = Array.from(new Set((teamsRes.data || []).map((t: any) => t.team_name))).filter(Boolean);
+            setTeams(uniqueTeams as string[]);
         } catch (err) {
             console.error('Lỗi tải dữ liệu 83tc:', err);
         } finally {
@@ -172,19 +286,25 @@ const Criteria83Config: React.FC = () => {
     }, [dataList, searchTerm]);
 
     const unitGroupedData = useMemo(() => {
-        const configured = dataList.filter(item => item.phu_trach);
-        const byUnit: Record<string, Data83tc[]> = {};
+        const configured = dataList.filter(item => item.phu_trach || item.to_cham_diem);
+        const byTarget: Record<string, Data83tc[]> = {};
+        
         configured.forEach(item => {
-            const codes = (item.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
-            codes.forEach(code => {
-                if (!byUnit[code]) byUnit[code] = [];
-                byUnit[code].push(item);
+            const depts = (item.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
+            const teams = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
+            
+            // Collect all unique targets for this item
+            const allTargets = Array.from(new Set([...depts, ...teams]));
+            allTargets.forEach(target => {
+                if (!byTarget[target]) byTarget[target] = [];
+                byTarget[target].push(item);
             });
         });
+
         const result: Record<string, { phan: string; chuong: string; tieu_chi: string; items: Data83tc[] }[]> = {};
-        Object.keys(byUnit).sort(naturalSort).forEach(code => {
+        Object.keys(byTarget).sort(naturalSort).forEach(target => {
             const grouped: Record<string, Record<string, Record<string, Data83tc[]>>> = {};
-            byUnit[code].forEach(item => {
+            byTarget[target].forEach(item => {
                 const p = item.phan || 'Khác';
                 const c = item.chuong || 'Khác';
                 const tc = item.tieu_chi || 'Khác';
@@ -193,11 +313,11 @@ const Criteria83Config: React.FC = () => {
                 if (!grouped[p][c][tc]) grouped[p][c][tc] = [];
                 grouped[p][c][tc].push(item);
             });
-            result[code] = [];
+            result[target] = [];
             Object.keys(grouped).sort(naturalSort).forEach(p => {
                 Object.keys(grouped[p]).sort(naturalSort).forEach(c => {
                     Object.keys(grouped[p][c]).sort(naturalSort).forEach(tc => {
-                        result[code].push({ phan: p, chuong: c, tieu_chi: tc, items: grouped[p][c][tc] });
+                        result[target].push({ phan: p, chuong: c, tieu_chi: tc, items: grouped[p][c][tc] });
                     });
                 });
             });
@@ -250,27 +370,138 @@ const Criteria83Config: React.FC = () => {
         }
     };
 
+    const handleRemoveEntireTarget = async (targetCode: string) => {
+        if (!confirm(`Bạn có chắc chắn muốn xóa toàn bộ cấu hình phân công cho "${targetCode}"?`)) return;
+        setUpdating(true);
+        try {
+            const allItemsForTarget: Data83tc[] = [];
+            Object.values(unitGroupedData[targetCode] || []).forEach(group => {
+                group.items.forEach(item => allItemsForTarget.push(item));
+            });
+
+            const tasks = allItemsForTarget.map(item => {
+                const updates: any = {};
+                // Remove from phu_trach
+                const pts = (item.phu_trach || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
+                updates.phu_trach = pts.length > 0 ? pts.join(', ') : null;
+                
+                // Remove from to_cham_diem
+                const tos = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
+                updates.to_cham_diem = tos.length > 0 ? tos.join(', ') : null;
+
+                return supabase.from('data83tc').update(updates).eq('id', item.id);
+            });
+
+            await Promise.all(tasks);
+            await loadData();
+            alert(`Đã xóa toàn bộ cấu hình cho ${targetCode}`);
+        } catch (err) {
+            console.error('Lỗi khi xóa cấu hình:', err);
+            alert('Có lỗi xảy ra khi xóa cấu hình.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleRemoveChapterTarget = async (targetCode: string, phan: string, chuong: string) => {
+        if (!confirm(`Bạn có chắc chắn muốn xóa "${targetCode}" khỏi chương "${chuong}"?`)) return;
+        setUpdating(true);
+        try {
+            const chapterItems = (unitGroupedData[targetCode] || [])
+                .filter(g => g.phan === phan && g.chuong === chuong)
+                .flatMap(g => g.items);
+
+            const tasks = chapterItems.map(item => {
+                const updates: any = {};
+                const pts = (item.phu_trach || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
+                updates.phu_trach = pts.length > 0 ? pts.join(', ') : null;
+                
+                const tos = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
+                updates.to_cham_diem = tos.length > 0 ? tos.join(', ') : null;
+
+                return supabase.from('data83tc').update(updates).eq('id', item.id);
+            });
+
+            await Promise.all(tasks);
+            await loadData();
+            // Refresh modal data if it's open
+            if (viewingUnitDetail === targetCode) {
+                // The unitGroupedData will naturally update since it depends on dataList
+            }
+        } catch (err) {
+            console.error('Lỗi khi xóa chương:', err);
+            alert('Có lỗi xảy ra khi xóa.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     const handleBatchUpdate = async () => {
         if (selectedIds.length === 0) return;
         setUpdating(true);
         try {
-            const updates: any = {};
-            if (isClearPhuTrach) { updates.phu_trach = null; }
-            else if (batchForm.phu_trach.length > 0) { updates.phu_trach = batchForm.phu_trach.join(', '); }
-            if (isClearDonViPhoiHop) { updates.don_vi_phoi_hop = null; }
-            else if (batchForm.don_vi_phoi_hop.length > 0) { updates.don_vi_phoi_hop = batchForm.don_vi_phoi_hop.join(', '); }
-            if (Object.keys(updates).length > 0) {
-                await batchUpdateData83tc(selectedIds, updates);
+            // Need unique updates for each record if appending
+            const tasks: Promise<any>[] = [];
+            
+            for (const id of selectedIds) {
+                const item = dataList.find(d => d.id === id);
+                if (!item) continue;
+
+                const updates: any = {};
+                
+                if (configTarget === 'KHOA') {
+                    if (isClearPhuTrach) { 
+                        updates.phu_trach = null; 
+                    } else if (batchForm.phu_trach.length > 0) { 
+                        const existing = (item.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const merged = Array.from(new Set([...existing, ...batchForm.phu_trach]));
+                        updates.phu_trach = merged.join(', ');
+                    }
+                } else {
+                    if (isClearToChamDiem) { 
+                        updates.to_cham_diem = null; 
+                        updates.phu_trach = null; 
+                    } else if (batchForm.to_cham_diem.length > 0) { 
+                        // Update to_cham_diem
+                        const existingTo = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const mergedTo = Array.from(new Set([...existingTo, ...batchForm.to_cham_diem]));
+                        updates.to_cham_diem = mergedTo.join(', ');
+
+                        // ALSO update phu_trach as requested by user
+                        const existingPT = (item.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const mergedPT = Array.from(new Set([...existingPT, ...batchForm.to_cham_diem]));
+                        updates.phu_trach = mergedPT.join(', ');
+                    }
+                }
+
+                if (isClearDonViPhoiHop) { 
+                    updates.don_vi_phoi_hop = null; 
+                } else if (batchForm.don_vi_phoi_hop.length > 0) { 
+                    const existing = (item.don_vi_phoi_hop || '').split(',').map(s => s.trim()).filter(Boolean);
+                    const merged = Array.from(new Set([...existing, ...batchForm.don_vi_phoi_hop]));
+                    updates.don_vi_phoi_hop = merged.join(', ');
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    tasks.push(supabase.from('data83tc').update(updates).eq('id', id));
+                }
+            }
+            
+            if (tasks.length > 0) {
+                await Promise.all(tasks);
                 await loadData();
             }
+            
             setSelectedIds([]);
             setShowBatchModal(false);
-            setBatchForm({ phu_trach: [], don_vi_phoi_hop: [] });
+            setBatchForm({ phu_trach: [], to_cham_diem: [], don_vi_phoi_hop: [] });
             setIsClearPhuTrach(false);
+            setIsClearToChamDiem(false);
             setIsClearDonViPhoiHop(false);
-        } catch (err) {
-            console.error('Lỗi cập nhật hàng loạt:', err);
-            alert('Có lỗi xảy ra khi cập nhật.');
+        } catch (err: any) {
+            console.error('❌ Lỗi cập nhật hàng loạt:', err);
+            const detailedError = err?.message || err?.details || 'Lỗi không xác định';
+            alert(`Có lỗi xảy ra khi cập nhật: ${detailedError}\n\nVui lòng đảm bảo cột 'to_cham_diem' đã được thêm vào database.`);
         } finally {
             setUpdating(false);
         }
@@ -359,10 +590,29 @@ const Criteria83Config: React.FC = () => {
                                             <div className="bg-white divide-y divide-slate-50">
                                                 {Object.keys(groupedData[phan]).sort(naturalSort).map(chuong => (
                                                     <div key={chuong} className="ml-4 border-l-2 border-slate-100">
-                                                        <div onClick={() => setExpandedChuong(prev => prev.includes(chuong) ? prev.filter(c => c !== chuong) : [...prev, chuong])}
-                                                            className="px-6 py-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
-                                                            {expandedChuong.includes(chuong) ? <ChevronDown size={16} className="text-[#009900]" /> : <ChevronRight size={16} className="text-slate-400" />}
-                                                            <span className="text-xs font-black text-slate-600 uppercase italic leading-relaxed">{chuong}</span>
+                                                        <div className="px-6 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer group"
+                                                            onClick={() => setExpandedChuong(prev => prev.includes(chuong) ? prev.filter(c => c !== chuong) : [...prev, chuong])}>
+                                                            <div className="flex items-center gap-3">
+                                                                <div onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const allChuongIds = Object.values(groupedData[phan][chuong]).flat().map((i: any) => i.id).filter(Boolean);
+                                                                    const isChuongSelected = allChuongIds.every((id: any) => selectedIds.includes(id));
+                                                                    toggleSelectAll(allChuongIds, !isChuongSelected);
+                                                                }} className={`p-1 rounded transition-all ${
+                                                                    (() => {
+                                                                        const allChuongIds = Object.values(groupedData[phan][chuong]).flat().map((i: any) => i.id).filter(Boolean);
+                                                                        return allChuongIds.every((id: any) => selectedIds.includes(id)) ? 'text-[#009900]' : 'text-slate-300 hover:text-slate-400';
+                                                                    })()
+                                                                }`}>
+                                                                    {(() => {
+                                                                        const allChuongIds = Object.values(groupedData[phan][chuong]).flat().map((i: any) => i.id).filter(Boolean);
+                                                                        return allChuongIds.every((id: any) => selectedIds.includes(id)) ? <CheckSquare size={16} /> : <Square size={16} />;
+                                                                    })()}
+                                                                </div>
+                                                                {expandedChuong.includes(chuong) ? <ChevronDown size={16} className="text-[#009900]" /> : <ChevronRight size={16} className="text-slate-400" />}
+                                                                <span className="text-xs font-black text-slate-600 uppercase italic leading-relaxed">{chuong}</span>
+                                                            </div>
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase opacity-0 group-hover:opacity-100 transition-opacity">Chọn nhanh theo Chương</span>
                                                         </div>
                                                         {expandedChuong.includes(chuong) && (
                                                             <div className="divide-y divide-slate-50">
@@ -391,7 +641,8 @@ const Criteria83Config: React.FC = () => {
                                                                                             <tr>
                                                                                                 <th className="w-10 px-4"></th>
                                                                                                 <th className="px-4 py-2">Mã & Nội dung tiểu mục</th>
-                                                                                                <th className="px-4 py-2 w-48">Đơn vị phụ trách (Chủ trì)</th>
+                                                                                                <th className="px-4 py-2 w-48">Đơn vị chủ trì</th>
+                                                                                                <th className="px-4 py-2 w-48">Tổ chấm điểm</th>
                                                                                                 <th className="px-4 py-2 w-48">Đơn vị phối hợp</th>
                                                                                             </tr>
                                                                                         </thead>
@@ -417,7 +668,17 @@ const Criteria83Config: React.FC = () => {
                                                                                                                 <span className="font-black text-[10px] uppercase truncate max-w-[150px]">{item.phu_trach}</span>
                                                                                                             </div>
                                                                                                         ) : (
-                                                                                                            <span className="text-slate-300 italic font-bold text-[10px]">Chưa phân công</span>
+                                                                                                            <span className="text-slate-300 italic font-bold text-[10px]">Chưa chọn</span>
+                                                                                                        )}
+                                                                                                    </td>
+                                                                                                    <td className="px-4 py-3">
+                                                                                                        {item.to_cham_diem ? (
+                                                                                                            <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-2 py-1 rounded-lg border border-blue-100">
+                                                                                                                <LayoutList size={12} />
+                                                                                                                <span className="font-black text-[10px] uppercase truncate max-w-[150px]">{item.to_cham_diem}</span>
+                                                                                                            </div>
+                                                                                                        ) : (
+                                                                                                            <span className="text-slate-300 italic font-bold text-[10px]">Chưa chọn</span>
                                                                                                         )}
                                                                                                     </td>
                                                                                                     <td className="px-4 py-3">
@@ -427,7 +688,7 @@ const Criteria83Config: React.FC = () => {
                                                                                                                 <span className="font-black text-[10px] uppercase truncate max-w-[150px]">{item.don_vi_phoi_hop}</span>
                                                                                                             </div>
                                                                                                         ) : (
-                                                                                                            <span className="text-slate-300 italic font-bold text-[10px]">Chưa xác định</span>
+                                                                                                            <span className="text-slate-300 italic font-bold text-[10px]">Chưa chọn</span>
                                                                                                         )}
                                                                                                     </td>
                                                                                                 </tr>
@@ -505,7 +766,7 @@ const Criteria83Config: React.FC = () => {
                                     <tr>
                                         <td colSpan={4} className="p-20 text-center text-slate-400">
                                             <AlertCircle className="mx-auto mb-3 opacity-20" size={48} />
-                                            <p className="font-bold italic">Chưa có tiêu chí nào được phân công đơn vị phụ trách</p>
+                                            <p className="font-bold italic">Chưa có tiêu chí nào được phân công cấu hình</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -533,11 +794,20 @@ const Criteria83Config: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-green-50 text-[#009900]'}`}>
-                                                            <Building2 size={16} />
+                                                        <div className={`p-2 rounded-lg ${
+                                                            isSelected 
+                                                                ? 'bg-blue-100 text-blue-600' 
+                                                                : units.some(u => u.ma_don_vi === unitCode) ? 'bg-green-50 text-[#009900]' : 'bg-blue-50 text-blue-600'
+                                                        }`}>
+                                                            {units.some(u => u.ma_don_vi === unitCode) ? <Building2 size={16} /> : <Users size={16} />}
                                                         </div>
                                                         <div>
-                                                            <p className="font-black text-xs uppercase tracking-tight text-slate-800">{unitCode}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-black text-xs uppercase tracking-tight text-slate-800">{unitCode}</p>
+                                                                {!units.some(u => u.ma_don_vi === unitCode) && (
+                                                                    <span className="bg-blue-100 text-blue-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">Tổ chấm điểm</span>
+                                                                )}
+                                                            </div>
                                                             <p className="text-[10px] font-bold text-slate-400 uppercase">{unitName}</p>
                                                         </div>
                                                     </div>
@@ -559,13 +829,33 @@ const Criteria83Config: React.FC = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => setViewingUnitDetail(unitCode)}
-                                                        className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-200 font-black text-[10px] uppercase transition-all shadow-sm group"
-                                                    >
-                                                        <Eye size={14} className="text-[#009900]" />
-                                                        Xem chi tiết
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                const ids = groups.flatMap(g => g.items.map(i => i.id)).filter(Boolean) as number[];
+                                                                setSelectedIds(ids);
+                                                                setActiveTab('config');
+                                                            }}
+                                                            className="p-2 bg-white hover:bg-slate-50 text-blue-600 rounded-xl border border-slate-200 transition-all shadow-sm"
+                                                            title="Sửa cấu hình (Chọn tất cả tiêu chí của đơn vị này)"
+                                                        >
+                                                            <Copy size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRemoveEntireTarget(unitCode)}
+                                                            className="p-2 bg-white hover:bg-red-50 text-red-600 rounded-xl border border-slate-200 transition-all shadow-sm"
+                                                            title="Xóa toàn bộ cấu hình đơn vị này"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setViewingUnitDetail(unitCode)}
+                                                            className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-200 font-black text-[10px] uppercase transition-all shadow-sm group"
+                                                        >
+                                                            <Eye size={14} className="text-[#009900]" />
+                                                            Chi tiết
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -588,32 +878,87 @@ const Criteria83Config: React.FC = () => {
                             <p className="text-white/70 text-xs font-bold italic mt-1 uppercase">Đang tác động {selectedIds.length} bản ghi</p>
                         </div>
                         <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between mb-1">
-                                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Đơn vị Phụ trách (Chủ trì)</h4>
-                                    <label className="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" className="hidden" checked={isClearPhuTrach} onChange={(e) => { setIsClearPhuTrach(e.target.checked); if (e.target.checked) setBatchForm(f => ({ ...f, phu_trach: [] })); }} />
-                                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${isClearPhuTrach ? 'bg-red-500 border-red-500 text-white' : 'border-slate-300 group-hover:border-red-400'}`}>{isClearPhuTrach && <CheckCircle2 size={12} />}</div>
-                                        <span className={`text-[10px] font-black uppercase ${isClearPhuTrach ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
-                                    </label>
-                                </div>
-                                <MultiSelect label="" options={units} selectedValues={batchForm.phu_trach} onChange={(vals) => setBatchForm(prev => ({ ...prev, phu_trach: vals }))} disabled={isClearPhuTrach} placeholder="Chọn đơn vị chủ trì..." />
+                            {/* Toggle switch between Khoa and Tổ */}
+                            <div className="flex p-1 bg-slate-100 rounded-xl">
+                                <button 
+                                    onClick={() => setConfigTarget('KHOA')}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase transition-all ${configTarget === 'KHOA' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                    <Building2 size={14} /> Các Khoa/Phòng
+                                </button>
+                                <button 
+                                    onClick={() => setConfigTarget('TO')}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase transition-all ${configTarget === 'TO' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                    <Users size={14} /> Các Tổ chấm điểm
+                                </button>
                             </div>
-                            <div className="h-px bg-slate-100" />
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between mb-1">
-                                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Đơn vị phối hợp</h4>
-                                    <label className="flex items-center gap-2 cursor-pointer group">
-                                        <input type="checkbox" className="hidden" checked={isClearDonViPhoiHop} onChange={(e) => { setIsClearDonViPhoiHop(e.target.checked); if (e.target.checked) setBatchForm(f => ({ ...f, don_vi_phoi_hop: [] })); }} />
-                                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${isClearDonViPhoiHop ? 'bg-red-500 border-red-500 text-white' : 'border-slate-300 group-hover:border-red-400'}`}>{isClearDonViPhoiHop && <CheckCircle2 size={12} />}</div>
-                                        <span className={`text-[10px] font-black uppercase ${isClearDonViPhoiHop ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
-                                    </label>
+
+                            {configTarget === 'KHOA' ? (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Đơn vị Chủ trì</h4>
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <input type="checkbox" className="hidden" checked={isClearPhuTrach} onChange={(e) => { setIsClearPhuTrach(e.target.checked); if (e.target.checked) setBatchForm(f => ({ ...f, phu_trach: [] })); }} />
+                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${isClearPhuTrach ? 'bg-red-500 border-red-500 text-white' : 'border-slate-300 group-hover:border-red-400'}`}>{isClearPhuTrach && <CheckCircle2 size={12} />}</div>
+                                            <span className={`text-[10px] font-black uppercase ${isClearPhuTrach ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
+                                        </label>
+                                    </div>
+                                    <MultiSelect 
+                                        label="" 
+                                        options={units.map(u => ({ value: u.ma_don_vi, label: u.ten_don_vi }))} 
+                                        selectedValues={batchForm.phu_trach} 
+                                        onChange={(vals) => setBatchForm(prev => ({ ...prev, phu_trach: vals }))} 
+                                        disabled={isClearPhuTrach} 
+                                        placeholder="Chọn đơn vị chủ trì..." 
+                                    />
                                 </div>
-                                <MultiSelect label="" options={units} selectedValues={batchForm.don_vi_phoi_hop} onChange={(vals) => setBatchForm(prev => ({ ...prev, don_vi_phoi_hop: vals }))} disabled={isClearDonViPhoiHop} placeholder="Chọn các đơn vị phối hợp..." />
-                            </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Tổ phụ trách</h4>
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <input type="checkbox" className="hidden" checked={isClearToChamDiem} onChange={(e) => { setIsClearToChamDiem(e.target.checked); if (e.target.checked) setBatchForm(f => ({ ...f, to_cham_diem: [] })); }} />
+                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${isClearToChamDiem ? 'bg-red-500 border-red-500 text-white' : 'border-slate-300 group-hover:border-red-400'}`}>{isClearToChamDiem && <CheckCircle2 size={12} />}</div>
+                                            <span className={`text-[10px] font-black uppercase ${isClearToChamDiem ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
+                                        </label>
+                                    </div>
+                                    <MultiSelect 
+                                        label="" 
+                                        options={teams.map(t => ({ value: t, label: t }))} 
+                                        selectedValues={batchForm.to_cham_diem} 
+                                        onChange={(vals) => setBatchForm(prev => ({ ...prev, to_cham_diem: vals }))} 
+                                        disabled={isClearToChamDiem} 
+                                        placeholder="Chọn tổ chấm điểm..." 
+                                    />
+                                </div>
+                            )}
+
+                            {configTarget === 'KHOA' && (
+                                <>
+                                    <div className="h-px bg-slate-100" />
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Đơn vị phối hợp</h4>
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                                <input type="checkbox" className="hidden" checked={isClearDonViPhoiHop} onChange={(e) => { setIsClearDonViPhoiHop(e.target.checked); if (e.target.checked) setBatchForm(f => ({ ...f, don_vi_phoi_hop: [] })); }} />
+                                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${isClearDonViPhoiHop ? 'bg-red-50 border-red-500 text-white' : 'border-slate-300 group-hover:border-red-400'}`}>{isClearDonViPhoiHop && <CheckCircle2 size={12} />}</div>
+                                                <span className={`text-[10px] font-black uppercase ${isClearDonViPhoiHop ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
+                                            </label>
+                                        </div>
+                                        <MultiSelect 
+                                            label="" 
+                                            options={units.map(u => ({ value: u.ma_don_vi, label: u.ten_don_vi }))} 
+                                            selectedValues={batchForm.don_vi_phoi_hop} 
+                                            onChange={(vals) => setBatchForm(prev => ({ ...prev, don_vi_phoi_hop: vals }))} 
+                                            disabled={isClearDonViPhoiHop} 
+                                            placeholder="Chọn các đơn vị phối hợp..." 
+                                        />
+                                    </div>
+                                </>
+                            )}
+
                             <div className="flex items-center gap-3 pt-6">
                                 <button onClick={() => setShowBatchModal(false)} className="flex-1 px-6 py-4 border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase hover:bg-slate-50 transition-all">Hủy bỏ</button>
-                                <button onClick={handleBatchUpdate} disabled={updating || (!isClearPhuTrach && !isClearDonViPhoiHop && batchForm.phu_trach.length === 0 && batchForm.don_vi_phoi_hop.length === 0)}
+                                <button onClick={handleBatchUpdate} disabled={updating || (configTarget === 'KHOA' && !isClearPhuTrach && !isClearDonViPhoiHop && batchForm.phu_trach.length === 0 && batchForm.don_vi_phoi_hop.length === 0) || (configTarget === 'TO' && !isClearToChamDiem && batchForm.to_cham_diem.length === 0)}
                                     className="flex-[2] bg-[#009900] hover:bg-[#008800] text-white px-6 py-4 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none">
                                     {updating ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                                     Xác nhận cập nhật
@@ -755,99 +1100,13 @@ const Criteria83Config: React.FC = () => {
                     unitCode={viewingUnitDetail} 
                     data={unitGroupedData[viewingUnitDetail] || []} 
                     onClose={() => setViewingUnitDetail(null)} 
+                    onRemoveChapter={(phan, chuong) => handleRemoveChapterTarget(viewingUnitDetail, phan, chuong)}
                 />
             )}
         </div>
     );
 };
 
-// --- Specialized Component: Unit Detail Modal ---
-const UnitDetailModal: React.FC<{ 
-    unitCode: string; 
-    data: { phan: string; chuong: string; tieu_chi: string; items: Data83tc[] }[];
-    onClose: () => void;
-}> = ({ unitCode, data, onClose }) => {
-    // Re-group for green hierarchical display
-    const byPhan: Record<string, Record<string, Record<string, Data83tc[]>>> = {};
-    data.forEach(g => {
-        if (!byPhan[g.phan]) byPhan[g.phan] = {};
-        if (!byPhan[g.phan][g.chuong]) byPhan[g.phan][g.chuong] = {};
-        byPhan[g.phan][g.chuong][g.tieu_chi] = g.items;
-    });
-
-    const totalItems = data.reduce((acc, g) => acc + g.items.length, 0);
-
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
-                {/* Header Section */}
-                <div className="bg-gradient-to-r from-[#009900] to-[#007700] p-8 text-white relative shrink-0">
-                    <button 
-                        onClick={onClose} 
-                        className="absolute right-5 top-5 bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all"
-                    >
-                        <X size={20} />
-                    </button>
-                    <div className="flex items-center gap-5">
-                        <div className="bg-white/20 p-4 rounded-2xl">
-                            <LayoutList size={32} />
-                        </div>
-                        <div>
-                            <p className="text-[11px] font-black text-white/70 uppercase tracking-[0.2em] mb-1 leading-none">Chi tiết cấu hình đơn vị</p>
-                            <h3 className="text-3xl font-black uppercase tracking-tight">{unitCode}</h3>
-                            <div className="flex gap-4 mt-3">
-                                <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase">{Object.keys(byPhan).length} Phần</span>
-                                <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase">{totalItems} Tiểu mục được phân công</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Content - Heirarchy */}
-                <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
-                    <div className="space-y-6">
-                        {Object.keys(byPhan).sort(naturalSort).map(phan => (
-                            <div key={phan} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-                                    <ChevronDown size={18} className="text-[#009900]" />
-                                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{phan}</span>
-                                </div>
-                                <div className="p-4 space-y-4">
-                                    {Object.keys(byPhan[phan]).sort(naturalSort).map(chuong => (
-                                        <div key={chuong} className="ml-2 border-l-2 border-slate-50 pl-4 py-1">
-                                            <p className="text-[11px] font-black text-slate-400 uppercase italic mb-3 leading-relaxed">{chuong}</p>
-                                            <div className="space-y-4">
-                                                {Object.keys(byPhan[phan][chuong]).sort(naturalSort).map(tieuChi => (
-                                                    <div key={tieuChi} className="flex gap-4">
-                                                        <div className="mt-1 shrink-0 bg-green-50 p-1.5 rounded-lg text-[#009900]">
-                                                            <CheckCircle2 size={14} />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs font-black text-[#009900] uppercase tracking-tight mb-1">{tieuChi}</p>
-                                                            <p className="text-[10px] font-bold text-slate-400 italic">
-                                                                {byPhan[phan][chuong][tieuChi].length} tiểu mục phụ trách trực tiếp
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-6 border-t border-slate-100 shrink-0 bg-white text-center">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase italic tabular-nums">
-                        Dữ liệu được cập nhật từ hệ thống quản lý chất lượng 83 tiêu chí
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-};
+// Placeholder for movement - will delete old location below
 
 export default Criteria83Config;

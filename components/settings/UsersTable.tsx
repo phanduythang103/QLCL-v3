@@ -98,6 +98,16 @@ export default function UsersTable() {
       let userId = editingId;
 
       if (editingId) {
+        // Kiểm tra xem username có trùng với người khác không (nếu thay đổi username)
+        const isDuplicate = users.some(u => 
+          u.id !== editingId && 
+          u.username.toLowerCase() === form.username.toLowerCase()
+        );
+        if (isDuplicate) {
+          setMessage('Lỗi: Tên đăng nhập đã tồn tại!');
+          return;
+        }
+
         // Nếu không nhập mật khẩu mới, bỏ qua trường password khi update
         const updateData = form.password
           ? { ...form, username: form.username.toLowerCase() }
@@ -105,6 +115,12 @@ export default function UsersTable() {
         await updateUser(editingId, updateData);
         setMessage('Cập nhật thành công!');
       } else {
+        // Kiểm tra xem username đã tồn tại chưa
+        if (users.some(u => u.username.toLowerCase() === form.username.toLowerCase())) {
+          setMessage('Lỗi: Tên đăng nhập đã tồn tại!');
+          return;
+        }
+
         const newUser = await addUser({ ...form, username: form.username.toLowerCase() });
         userId = newUser.id;
         setMessage('Thêm mới thành công!');

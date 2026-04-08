@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 import {
   Users, Building, Briefcase, Award, FileBadge,
-  Layout, Bell, CalendarClock, ChevronRight, Plus, Edit2, Trash2,
+  Layout, Bell, CalendarClock, ChevronRight, Plus, Edit2, Trash2, Users2,
   ShieldCheck, Save, Check, Eye, Pencil, Trash, Loader2, Copy, Search, CheckCircle2, X, BrainCircuit, QrCode
 } from 'lucide-react';
 import { ModuleType } from '../types';
@@ -17,13 +18,13 @@ import NotificationTable from './settings/NotificationTable';
 import AiConfigTable from './settings/AiConfigTable';
 import Criteria83Config from './Criteria83Config'; 
 import { SurveyPublicConfig } from './settings/SurveyPublicConfig';
-import { useNavigation } from '../contexts/NavigationContext';
+import { AssessmentTeamConfig } from './settings/AssessmentTeamConfig';
+import { useNavigation, SettingTab } from '../contexts/NavigationContext';
 import { fetchPermissionsByRole, upsertPermissionsForUser, Permission, SUB_MODULES } from '../readPhanQuyen';
 import { ChevronDown } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 
-type SettingTab = 'USER' | 'DEPT' | 'POSITION' | 'RANK' | 'ROLE' | 'PERMISSIONS' | 'AUTHORITY' | 'THEME' | 'NOTI' | 'SCHEDULE' | 'AI' | 'CRITERIA83' | 'SURVEY_PUBLIC';
 
 export const SettingsModule: React.FC = () => {
   const { activeSettingsTab: activeTab, setSettingsTab: setActiveTab } = useNavigation();
@@ -46,6 +47,7 @@ export const SettingsModule: React.FC = () => {
     { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} /> },
     { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} /> },
     { id: 'CRITERIA83', label: 'Cấu hình 83 TC', icon: <CheckCircle2 size={18} /> },
+    { id: 'TEAM_CONFIG', label: 'Danh sách tổ chấm điểm', icon: <Users2 size={18} /> },
     { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public', icon: <QrCode size={18} /> },
     { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} /> },
   ];
@@ -79,6 +81,8 @@ export const SettingsModule: React.FC = () => {
         return <Criteria83Config />;
       case 'SURVEY_PUBLIC':
         return <SurveyPublicConfig />;
+      case 'TEAM_CONFIG':
+        return <AssessmentTeamConfig />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-slate-400 py-12">
@@ -201,24 +205,40 @@ const PermissionManager = () => {
   const getPerm = (module: string, subModule?: string | null) => {
     const key = subModule ?? null;
     const found = permissions.find(p => p.module === module && (p.sub_module ?? null) === key);
-    return found || { can_view: false, can_create: false, can_update: false, can_delete: false };
+    // Default: all users can view everything unless explicitly denied
+    return found || { can_view: true, can_create: false, can_update: false, can_delete: false };
   };
 
   const setPerm = (module: string, subModule: string | null, field: keyof Pick<Permission, 'can_view'|'can_create'|'can_update'|'can_delete'>, value: boolean) => {
     setPermissions(prev => {
-      const idx = prev.findIndex(p => p.module === module && (p.sub_module ?? null) === subModule);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = { ...next[idx], [field]: value };
-        return next;
+      // Update the target row (module or sub-module)
+      const updateRow = (arr: Permission[], mod: string, sub: string | null): Permission[] => {
+        const idx = arr.findIndex(p => p.module === mod && (p.sub_module ?? null) === sub);
+        if (idx >= 0) {
+          const next = [...arr];
+          next[idx] = { ...next[idx], [field]: value };
+          return next;
+        }
+        return [...arr, {
+          id: '', role_id: selectedUserId!, module: mod, sub_module: sub,
+          can_view: field === 'can_view' ? value : true,
+          can_create: field === 'can_create' ? value : false,
+          can_update: field === 'can_update' ? value : false,
+          can_delete: field === 'can_delete' ? value : false,
+        }];
+      };
+
+      let updated = updateRow(prev, module, subModule);
+
+      // If changing a parent module (subModule === null), cascade to all sub-modules
+      if (subModule === null) {
+        const subs = SUB_MODULES[module] || [];
+        subs.forEach(sub => {
+          updated = updateRow(updated, module, sub.id);
+        });
       }
-      return [...prev, {
-        id: '', role_id: selectedUserId!, module, sub_module: subModule,
-        can_view: field === 'can_view' ? value : false,
-        can_create: field === 'can_create' ? value : false,
-        can_update: field === 'can_update' ? value : false,
-        can_delete: field === 'can_delete' ? value : false,
-      }];
+
+      return updated;
     });
   };
 
@@ -248,17 +268,63 @@ const PermissionManager = () => {
     if (!selectedUserId || targetUserIds.length === 0) return;
     setCopying(true);
     try {
-      const toCopy: any[] = [];
-      allModules.forEach(module => {
-        toCopy.push({ module, sub_module: null, ...getPerm(module, null) });
-        (SUB_MODULES[module] || []).forEach(sub => {
-          toCopy.push({ module, sub_module: sub.id, ...getPerm(module, sub.id) });
-        });
+      // 1. Lấy quyền của người nguồn (đã có trong state 'permissions')
+      // 2. Lấy toàn bộ quyền hiện tại của các người dùng đích để merge
+      const { data: targetPermsData, error: fetchError } = await supabase
+        .from('phan_quyen')
+        .select('*')
+        .in('role_id', targetUserIds);
+
+      if (fetchError) throw fetchError;
+
+      // Nhóm quyền theo người dùng để xử lý từng người
+      const permsByUser: Record<string, Permission[]> = {};
+      targetPermsData?.forEach((p: Permission) => {
+        if (!permsByUser[p.role_id]) permsByUser[p.role_id] = [];
+        permsByUser[p.role_id].push(p);
       });
 
-      await Promise.all(targetUserIds.map(uid => upsertPermissionsForUser(uid, toCopy)));
+      // Hàm merge logic: Giữ nguyên quyền cũ, nếu quyền mới là TRUE thì ghi đè thành TRUE
+      const merge = (oldVal: boolean, newVal: boolean) => oldVal || newVal;
+
+      await Promise.all(targetUserIds.map(async (uid) => {
+        const userExistingPerms = permsByUser[uid] || [];
+        const toSave: any[] = [];
+
+        allModules.forEach(module => {
+          // Xử lý module cha
+          const sourceMPerm = getPerm(module, null); // Lấy từ state 'permissions' của người đang chọn
+          const targetMPermRow = userExistingPerms.find(p => p.module === module && !p.sub_module);
+          
+          toSave.push({
+            module,
+            sub_module: null,
+            can_view: merge(targetMPermRow?.can_view ?? true, sourceMPerm.can_view), // Mặc định view là true
+            can_create: merge(targetMPermRow?.can_create ?? false, sourceMPerm.can_create),
+            can_update: merge(targetMPermRow?.can_update ?? false, sourceMPerm.can_update),
+            can_delete: merge(targetMPermRow?.can_delete ?? false, sourceMPerm.can_delete)
+          });
+
+          // Xử lý sub-modules
+          (SUB_MODULES[module] || []).forEach(sub => {
+            const sourceSPerm = getPerm(module, sub.id);
+            const targetSPermRow = userExistingPerms.find(p => p.module === module && p.sub_module === sub.id);
+
+            toSave.push({
+              module,
+              sub_module: sub.id,
+              can_view: merge(targetSPermRow?.can_view ?? true, sourceSPerm.can_view),
+              can_create: merge(targetSPermRow?.can_create ?? false, sourceSPerm.can_create),
+              can_update: merge(targetSPermRow?.can_update ?? false, sourceSPerm.can_update),
+              can_delete: merge(targetSPermRow?.can_delete ?? false, sourceSPerm.can_delete)
+            });
+          });
+        });
+
+        await upsertPermissionsForUser(uid, toSave);
+      }));
       
-      setMessage(`Đã sao chép quyền cho ${targetUserIds.length} người dùng!`);
+      setMessage(`Đã ghi thêm quyền cho ${targetUserIds.length} người dùng!`);
       setIsCopyModalOpen(false);
     } catch (err) {
       console.error('Error copying permissions:', err);

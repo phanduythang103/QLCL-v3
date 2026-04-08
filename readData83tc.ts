@@ -10,6 +10,7 @@ export interface Data83tc {
     tieu_muc: string | null;
     phu_trach: string | null;
     don_vi_phoi_hop: string | null;
+    to_cham_diem: string | null;
     created_at?: string;
 }
 

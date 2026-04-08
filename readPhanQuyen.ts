@@ -30,6 +30,18 @@ export enum ModuleType {
 
 // Sub-module definitions for each module
 export const SUB_MODULES: Record<string, { id: string, label: string }[]> = {
+  [ModuleType.ASSESSMENT]: [
+    { id: 'QUALITY_ASSESSMENT', label: 'Chấm điểm 83 Tiêu chí' },
+    { id: 'ASSESSMENT_REPORTS', label: 'Các bộ tiêu chuẩn khác' },
+    { id: 'TEAM_ASSESSMENT', label: 'Chấm điểm theo tổ' },
+    { id: 'CRITERIA_83', label: 'Danh mục 83 Tiêu chí' },
+    { id: 'STANDARD_1', label: 'Tiêu chuẩn chất lượng cơ bản' },
+    { id: 'STANDARD_2_SATISFACTION', label: 'Mức độ hài lòng - Nội trú' },
+    { id: 'STANDARD_2_OUTPATIENT', label: 'Mức độ hài lòng - Ngoại trú' },
+    { id: 'STANDARD_2_STAFF', label: 'Mức độ hài lòng - Nhân viên' },
+    { id: 'STANDARD_2_KS_NUOI_CON', label: 'Khảo sát Nuôi con bằng sữa mẹ' },
+    { id: 'STANDARD_2_KS_ME_SINH_CON', label: 'Khảo sát Người mẹ sinh con' },
+  ],
   [ModuleType.IMPROVEMENT]: [
     { id: 'PLAN', label: 'Kế hoạch CTCL' },
     { id: 'REPORT', label: 'Báo cáo tiến độ' },
@@ -64,6 +76,7 @@ export const SUB_MODULES: Record<string, { id: string, label: string }[]> = {
   ],
   [ModuleType.SETTINGS]: [
     { id: 'USER', label: 'Người dùng' },
+    { id: 'AI', label: 'Cấu hình AI' },
     { id: 'NOTI', label: 'Thông báo' },
     { id: 'PERMISSIONS', label: 'Phân quyền' },
     { id: 'DEPT', label: 'Đơn vị' },
@@ -71,6 +84,9 @@ export const SUB_MODULES: Record<string, { id: string, label: string }[]> = {
     { id: 'RANK', label: 'Cấp bậc' },
     { id: 'AUTHORITY', label: 'Cơ quan BH' },
     { id: 'SCHEDULE', label: 'Lịch giám sát' },
+    { id: 'CRITERIA83', label: 'Cấu hình 83 TC' },
+    { id: 'TEAM_CONFIG', label: 'Danh sách tổ chấm điểm' },
+    { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public' },
     { id: 'THEME', label: 'Giao diện' },
   ],
 };

@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { assessmentService } from '../services';
+import { teamAssessment83Service } from '../services/teamAssessment83Service';
 import { 
   ViewMode, ActiveTab, AssessmentSheet, 
   KqDanhGia83, Data83tc, DmDonVi 
 } from '../types';
+import { supabase } from '../../../supabaseClient';
 
 const naturalSort = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
 
@@ -31,6 +33,9 @@ export const useAssessment = () => {
   const [viewingData, setViewingData] = useState<KqDanhGia83[]>([]);
   const [units, setUnits] = useState<DmDonVi[]>([]);
   const [fontSize, setFontSize] = useState(12);
+  const [userTeams, setUserTeams] = useState<string[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [showTeamSelect, setShowTeamSelect] = useState(false);
 
   // Form State
   const [ngayDanhGia, setNgayDanhGia] = useState(new Date().toISOString().split('T')[0]);
@@ -59,21 +64,19 @@ export const useAssessment = () => {
   const loadSheets = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await assessmentService.fetchSheets();
-      if (isAdmin) {
-        setSheetList(data);
+      let data;
+      if (activeTab === 'TEAM_ASSESSMENT') {
+          data = await teamAssessment83Service.fetchSheets();
       } else {
-        setSheetList(data.filter(s => {
-          const sheetDeptCode = (s.don_vi_duoc_danh_gia || "").split('-')[0].trim();
-          return sheetDeptCode === uDeptCode;
-        }));
+          data = await assessmentService.fetchSheets();
       }
+      setSheetList(data);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, uDeptCode]);
+  }, [activeTab]);
 
   useEffect(() => {
     loadSheets();
@@ -83,31 +86,92 @@ export const useAssessment = () => {
     if (isAdmin) {
       assessmentService.fetchUnits().then(setUnits);
     }
-  }, [isAdmin]);
+    
+    // Fetch user teams
+    if (user?.id) {
+        let query = supabase.from('assessment_team_members').select('team_name');
+        
+        // If not admin, only fetch teams the user is part of
+        if (!isAdmin) {
+            query = query.eq('user_id', user.id);
+        }
 
-  const loadCriteriaForAssessment = async (phieuIdToEdit?: string) => {
+        query.then((res: { data: any[] | null }) => {
+            const teams = Array.from(new Set((res.data || []).map((t: any) => t.team_name))).filter(Boolean);
+            setUserTeams(teams as string[]);
+        });
+    }
+  }, [isAdmin, user?.id]);
+
+  const handleEditSheet = async (sheet: AssessmentSheet) => {
+    setLoading(true);
+    try {
+      setEditingPhieuId(sheet.phieu_id);
+      setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
+      setNgayDanhGia(sheet.ngay_danh_gia);
+      setNguoiDanhGia(sheet.nguoi_danh_gia);
+      setSelectedTeam(sheet.nhom || null); // Team name is stored in nhom for sheets
+
+      const all = await assessmentService.fetchCriteria();
+      const filtered = isAdmin ? all : all.filter(c => {
+        const itemPhuTrach = (c.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
+        const itemTeams = (c.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
+
+        // Match by Dept
+        const matchDept = itemPhuTrach.includes(uDeptCode);
+        
+        // Match by ANY of user's teams
+        const matchAnyTeam = itemTeams.some(t => userTeams.includes(t));
+        
+        return matchDept || matchAnyTeam;
+      });
+      setCriteria(filtered);
+
+      let kq;
+      if (activeTab === 'TEAM_ASSESSMENT') {
+          kq = await teamAssessment83Service.fetchResultsByPhieuId(sheet.phieu_id);
+      } else {
+          kq = await assessmentService.fetchResultsByPhieuId(sheet.phieu_id);
+      }
+      const newResults: Record<string, Partial<KqDanhGia83>> = {};
+      kq.forEach(r => {
+        newResults[r.ma_tieu_muc] = {
+          dat_muc: r.dat_muc,
+          ghi_chu: r.ghi_chu,
+          hinh_anh_minh_chung: r.hinh_anh_minh_chung || []
+        };
+      });
+      setResults(newResults);
+      setViewMode('FORM');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartAssessment = async (teamName?: string) => {
+    setEditingPhieuId(null);
+    setResults({});
+    setNgayDanhGia(new Date().toISOString().split('T')[0]);
+    setDonViDuocDanhGia(uDept);
+    setSelectedTeam(teamName || null);
+    setShowTeamSelect(false);
+    
     setLoading(true);
     try {
       const all = await assessmentService.fetchCriteria();
       const filtered = isAdmin ? all : all.filter(c => {
-        if (!c.phu_trach) return false;
-        const assignmentCodes = c.phu_trach.split(',').map(s => s.trim()).filter(Boolean);
-        return assignmentCodes.includes(uDeptCode);
+        const itemPhuTrach = (c.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
+        const itemTeams = (c.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
+
+        const matchDept = itemPhuTrach.includes(uDeptCode);
+        const matchAnyTeam = itemTeams.some(t => userTeams.includes(t));
+        
+        return matchDept || matchAnyTeam;
       });
       setCriteria(filtered);
-
-      if (phieuIdToEdit) {
-        const kq = await assessmentService.fetchResultsByPhieuId(phieuIdToEdit);
-        const newResults: Record<string, Partial<KqDanhGia83>> = {};
-        kq.forEach(r => {
-          newResults[r.ma_tieu_muc] = {
-            dat_muc: r.dat_muc,
-            ghi_chu: r.ghi_chu,
-            hinh_anh_minh_chung: r.hinh_anh_minh_chung || []
-          };
-        });
-        setResults(newResults);
-      }
+      setViewMode('FORM');
     } catch (err) {
       console.error(err);
     } finally {
@@ -116,31 +180,51 @@ export const useAssessment = () => {
   };
 
   const handleAddNew = async () => {
-    setEditingPhieuId(null);
-    setResults({});
-    setNgayDanhGia(new Date().toISOString().split('T')[0]);
-    setDonViDuocDanhGia(uDept);
-    await loadCriteriaForAssessment();
-    setViewMode('FORM');
+    if (activeTab === 'TEAM_ASSESSMENT') {
+        if (userTeams.length === 1 && !isAdmin) {
+            handleStartAssessment(userTeams[0]);
+        } else if (userTeams.length > 0) {
+            setShowTeamSelect(true);
+        } else {
+            handleStartAssessment();
+        }
+    } else {
+        // Standard assessment tab logic
+        if (userTeams.length === 1 && !isAdmin) {
+            handleStartAssessment(userTeams[0]);
+        } else if (userTeams.length > 0) {
+            setShowTeamSelect(true);
+        } else {
+            handleStartAssessment();
+        }
+    }
   };
 
-  const handleEditSheet = async (sheet: AssessmentSheet) => {
-    setEditingPhieuId(sheet.phieu_id);
-    setNgayDanhGia(sheet.ngay_danh_gia);
-    setNguoiDanhGia(sheet.nguoi_danh_gia);
-    setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
-    await loadCriteriaForAssessment(sheet.phieu_id);
-    setViewMode('FORM');
+  const handleDeleteSheet = async (phieuId: string) => {
+    if (activeTab === 'TEAM_ASSESSMENT') {
+        await teamAssessment83Service.deleteSheet(phieuId);
+    } else {
+        await assessmentService.deleteSheet(phieuId);
+    }
+    loadSheets();
   };
 
   const handleViewSheet = async (sheet: AssessmentSheet) => {
-    setViewingPhieuId(sheet.phieu_id);
+    setLoading(true);
     try {
-      const data = await assessmentService.fetchResultsByPhieuId(sheet.phieu_id);
+      let data;
+      if (activeTab === 'TEAM_ASSESSMENT') {
+          data = await teamAssessment83Service.fetchResultsByPhieuId(sheet.phieu_id);
+      } else {
+          data = await assessmentService.fetchResultsByPhieuId(sheet.phieu_id);
+      }
+      setViewingPhieuId(sheet.phieu_id);
       setViewingData(data);
       setViewMode('DETAIL');
     } catch (err) {
-      alert("Lỗi khi tải chi tiết.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -173,12 +257,24 @@ export const useAssessment = () => {
             khong_danh_gia: res.dat_muc === "Không đánh giá",
             ghi_chu: res.ghi_chu || "",
             hinh_anh_minh_chung: res.hinh_anh_minh_chung || [],
+            to_danh_gia: selectedTeam || "",
             muc_dat_duoc: itemLevel
           };
         });
 
-      if (editingPhieuId) await assessmentService.deleteSheet(editingPhieuId);
-      await assessmentService.saveResultsBulk(payload);
+      if (editingPhieuId) {
+          if (selectedTeam) {
+              await teamAssessment83Service.deleteSheet(editingPhieuId);
+          } else {
+              await assessmentService.deleteSheet(editingPhieuId);
+          }
+      }
+      
+      if (selectedTeam) {
+          await teamAssessment83Service.saveResultsBulk(payload);
+      } else {
+          await assessmentService.saveResultsBulk(payload);
+      }
       alert("Đã lưu phiếu chấm điểm thành công!");
       setViewMode('LIST');
       loadSheets();
@@ -203,7 +299,9 @@ export const useAssessment = () => {
     expandedPhan, setExpandedPhan,
     expandedChuong, setExpandedChuong,
     expandedTieuChi, setExpandedTieuChi,
+    userTeams, selectedTeam, setSelectedTeam,
+    showTeamSelect, setShowTeamSelect,
     loadSheets, handleAddNew, handleEditSheet, handleViewSheet, handleSaveAssessment,
-    naturalSort
+    handleStartAssessment, handleDeleteSheet
   };
 };
