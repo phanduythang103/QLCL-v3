@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  CheckCircle2, FileText, ListFilter 
+  CheckCircle2, FileText, ListFilter
 } from 'lucide-react';
 import { useAssessment } from './hooks/useAssessment';
 import { AssessmentList } from './sub-components/AssessmentList';
@@ -75,7 +75,7 @@ export const AssessmentModule: React.FC = () => {
       {/* Main Content Area */}
       <div className={viewMode === 'LIST' ? "min-h-[400px]" : ""}>
         {activeTab === 'CRITERIA_83' && <Criteria83DataView />}
-        
+
         {activeTab === 'ASSESSMENT_REPORTS' && (
           <AssessmentReports 
             setViewMode={setViewMode} 

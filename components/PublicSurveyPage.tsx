@@ -5,12 +5,16 @@ import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { StaffSatisfactionForm } from './Assessment/sub-components/StaffSatisfactionForm';
 import { InpatientSatisfactionForm } from './Assessment/sub-components/InpatientSatisfactionForm';
 import { OutpatientSatisfactionForm } from './Assessment/sub-components/OutpatientSatisfactionForm';
+import { KsNuoiConForm } from './Assessment/sub-components/KsNuoiConForm';
+import { KsMeSinhConForm } from './Assessment/sub-components/KsMeSinhConForm';
 import { staffSatisfactionService } from './Assessment/services/staffSatisfactionService';
 import { inpatientSatisfactionService } from './Assessment/services/inpatientSatisfactionService';
 import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
+import { ksNuoiConService } from './Assessment/services/ksNuoiConService';
+import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
 
 interface PublicConfig {
-  survey_type: 'staff' | 'inpatient' | 'outpatient';
+  survey_type: 'staff' | 'inpatient' | 'outpatient' | 'ks_nuoi_con' | 'ks_me_sinh_con';
   is_public: boolean;
   survey_name: string;
 }
@@ -66,6 +70,10 @@ export const PublicSurveyPage: React.FC = () => {
         await inpatientSatisfactionService.createInpatientSurvey(data);
       } else if (config.survey_type === 'outpatient') {
         await outpatientSatisfactionService.createOutpatientSurvey(data);
+      } else if (config.survey_type === 'ks_nuoi_con') {
+        await ksNuoiConService.create(data);
+      } else if (config.survey_type === 'ks_me_sinh_con') {
+        await ksMeSinhConService.create(data);
       }
       setSubmitted(true);
     } catch (err) {
@@ -148,6 +156,22 @@ export const PublicSurveyPage: React.FC = () => {
       )}
       {config.survey_type === 'outpatient' && (
         <OutpatientSatisfactionForm 
+          onSave={handleSave} 
+          onCancel={() => {}} 
+          saving={saving} 
+          isPublic={true}
+        />
+      )}
+      {config.survey_type === 'ks_nuoi_con' && (
+        <KsNuoiConForm 
+          onSave={handleSave} 
+          onCancel={() => {}} 
+          saving={saving} 
+          isPublic={true}
+        />
+      )}
+      {config.survey_type === 'ks_me_sinh_con' && (
+        <KsMeSinhConForm 
           onSave={handleSave} 
           onCancel={() => {}} 
           saving={saving} 

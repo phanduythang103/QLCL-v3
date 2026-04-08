@@ -19,6 +19,7 @@ export const SurveyPublicConfig: React.FC = () => {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+  const [showQrIds, setShowQrIds] = useState<Set<string>>(new Set());
   
   // Domain configuration as requested
   const publicBaseUrl = 'https://qlcl103.pro.vn/khao-sat';
@@ -90,6 +91,15 @@ export const SurveyPublicConfig: React.FC = () => {
       setSavingId(null);
       setTimeout(() => setMessage(null), 3000);
     }
+  };
+
+  const toggleQr = (id: string) => {
+    setShowQrIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const copyToClipboard = (slug: string) => {
@@ -294,70 +304,87 @@ export const SurveyPublicConfig: React.FC = () => {
                   </a>
                 </div>
               </div>
+
+              {/* Toggle QR Button */}
+              <div className="pt-4 flex justify-between items-center border-t border-slate-50">
+                <button 
+                  onClick={() => toggleQr(config.id)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    showQrIds.has(config.id) 
+                      ? 'bg-slate-800 text-white shadow-lg' 
+                      : 'bg-emerald-50 text-[#009900] hover:bg-emerald-100'
+                  }`}
+                >
+                  <QrCode size={14} />
+                  {showQrIds.has(config.id) ? 'Ẩn mã QR' : 'Hiện mã QR & In'}
+                </button>
+              </div>
             </div>
 
-            {/* Right QR Section (QR Card) */}
-            <div className="p-8 bg-slate-50/50 w-full md:w-72 flex flex-col items-center justify-center gap-6 text-center">
-              <div className="relative group">
-                {/* Visual Glow */}
-                <div className="absolute inset-x-0 -inset-y-4 bg-[#009900]/10 rounded-[3rem] blur-2xl group-hover:bg-[#009900]/15 transition-all duration-500" />
-                
-                {/* The QR Card */}
-                <div id={`qr-card-${config.id}`} className="relative bg-white p-6 rounded-[2.5rem] border-2 border-slate-200 shadow-2xl transition-all hover:shadow-emerald-100 duration-500 flex flex-col items-center gap-4 w-56">
-                  {/* Hospital Name (Top) */}
-                  <div className="text-[10px] font-black text-slate-900 uppercase tracking-tighter text-center leading-tight bg-slate-50 py-2 px-3 rounded-xl w-full border border-slate-100">
-                    Bệnh viện Quân y 103
-                  </div>
+            {/* Right QR Section (QR Card) - Conditionally Visible */}
+            {showQrIds.has(config.id) && (
+              <div className="p-8 bg-slate-50/50 w-full md:w-72 flex flex-col items-center justify-center gap-6 text-center animate-in slide-in-from-right-4 duration-500">
+                <div className="relative group">
+                  {/* Visual Glow */}
+                  <div className="absolute inset-x-0 -inset-y-4 bg-[#009900]/10 rounded-[3rem] blur-2xl group-hover:bg-[#009900]/15 transition-all duration-500" />
                   
-                  {/* QR Image (Middle) */}
-                  <div className="p-2 border border-slate-50 rounded-2xl bg-white shadow-inner">
-                    <img 
-                      src={getQrUrl(config.slug)} 
-                      alt="Survey QR Code" 
-                      className="w-32 h-32 object-contain"
-                    />
-                  </div>
-                  
-                  {/* Survey Name (Bottom) */}
-                  <div className="text-[9px] font-black text-[#009900] uppercase tracking-tight text-center leading-[1.3] px-2 min-h-[32px] flex items-center justify-center">
-                    {config.survey_name}
-                  </div>
-
-                  {!config.is_public && (
-                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm rounded-[2.5rem] flex flex-col items-center justify-center text-white p-6 z-10">
-                      <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-3">
-                        <Unlink size={20} />
-                      </div>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-center leading-relaxed opacity-90">Mã QR vô hiệu khi chưa Public</span>
+                  {/* The QR Card */}
+                  <div id={`qr-card-${config.id}`} className="relative bg-white p-6 rounded-[2.5rem] border-2 border-slate-200 shadow-2xl transition-all hover:shadow-emerald-100 duration-500 flex flex-col items-center gap-4 w-56">
+                    {/* Hospital Name (Top) */}
+                    <div className="text-[10px] font-black text-slate-900 uppercase tracking-tighter text-center leading-tight bg-slate-50 py-2 px-3 rounded-xl w-full border border-slate-100">
+                      Bệnh viện Quân y 103
                     </div>
-                  )}
+                    
+                    {/* QR Image (Middle) */}
+                    <div className="p-2 border border-slate-50 rounded-2xl bg-white shadow-inner">
+                      <img 
+                        src={getQrUrl(config.slug)} 
+                        alt="Survey QR Code" 
+                        className="w-32 h-32 object-contain"
+                      />
+                    </div>
+                    
+                    {/* Survey Name (Bottom) */}
+                    <div className="text-[9px] font-black text-[#009900] uppercase tracking-tight text-center leading-[1.3] px-2 min-h-[32px] flex items-center justify-center">
+                      {config.survey_name}
+                    </div>
+
+                    {!config.is_public && (
+                      <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm rounded-[2.5rem] flex flex-col items-center justify-center text-white p-6 z-10">
+                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-3">
+                          <Unlink size={20} />
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-center leading-relaxed opacity-90">Mã QR vô hiệu khi chưa Public</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã QR Khảo sát</p>
+                  <div className="flex flex-col gap-2">
+                    <a 
+                      href={getQrUrl(config.slug)} 
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                        config.is_public ? 'text-[#009900] hover:bg-emerald-50 hover:border-[#009900]' : 'text-slate-300 pointer-events-none'
+                      }`}
+                    >
+                      Mở ảnh QR <ExternalLink size={10} />
+                    </a>
+                    <button 
+                      onClick={() => handlePrint(config)}
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${
+                        config.is_public ? '' : 'opacity-50 pointer-events-none'
+                      }`}
+                    >
+                      In thẻ QR <Printer size={10} />
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              <div className="space-y-3">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã QR Khảo sát</p>
-                <div className="flex flex-col gap-2">
-                  <a 
-                    href={getQrUrl(config.slug)} 
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                      config.is_public ? 'text-[#009900] hover:bg-emerald-50 hover:border-[#009900]' : 'text-slate-300 pointer-events-none'
-                    }`}
-                  >
-                    Mở ảnh QR <ExternalLink size={10} />
-                  </a>
-                  <button 
-                    onClick={() => handlePrint(config)}
-                    className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${
-                      config.is_public ? '' : 'opacity-50 pointer-events-none'
-                    }`}
-                  >
-                    In thẻ QR <Printer size={10} />
-                  </button>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         ))}
       </div>

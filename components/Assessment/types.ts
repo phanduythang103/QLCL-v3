@@ -3,7 +3,7 @@ import { AssessmentSheet, KqDanhGia83 } from '../../readKqDanhGia83';
 import { DmDonVi } from '../../readDmDonVi';
 
 export type ViewMode = 'LIST' | 'FORM' | 'DETAIL';
-export type ActiveTab = 'CRITERIA_83' | 'ASSESSMENT_REPORTS' | 'QUALITY_ASSESSMENT';
+export type ActiveTab = 'CRITERIA_83' | 'ASSESSMENT_REPORTS' | 'QUALITY_ASSESSMENT' | 'KS_NUOI_CON';
 
 export interface AssessmentState {
   viewMode: ViewMode;

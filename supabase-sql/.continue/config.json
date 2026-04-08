@@ -1,0 +1,11 @@
+{
+  "models": [
+    {
+      "title": "Gemini Pro",
+      "provider": "gemini",
+      "model": "gemini-1.5-pro",
+      "apiKey": "${env:GEMINI_API_KEY}"
+    }
+  ],
+  "defaultModel": "Gemini Pro"
+}
