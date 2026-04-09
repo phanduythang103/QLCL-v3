@@ -24,7 +24,7 @@ export const teamAssessment83Service = {
      */
     fetchSheets: async (teamName?: string): Promise<AssessmentSheet[]> => {
         let query = supabase.from('kq_danh_gia_83tc_to').select('*');
-        
+
         if (teamName) {
             query = query.eq('to_danh_gia', teamName);
         }
@@ -46,7 +46,7 @@ export const teamAssessment83Service = {
         const sheets: AssessmentSheet[] = Object.keys(sheetsMap).map(phieuId => {
             const rows = sheetsMap[phieuId];
             const first = rows[0];
-            
+
             // Logic similar to readKqDanhGia83 but tailored for team reporting
             return {
                 phieu_id: phieuId,
@@ -87,5 +87,51 @@ export const teamAssessment83Service = {
             .delete()
             .eq('phieu_id', phieuId);
         if (error) throw error;
+    },
+
+    /**
+     * Aggregates multiple assessment forms for a team/unit/date
+     * into a single result following the "lowest score wins" rule.
+     */
+    aggregateResultsByTeam: async (teamName: string, unitName: string, date: string): Promise<KqDanhGia83[]> => {
+        const { data: rawData, error } = await supabase
+            .from('kq_danh_gia_83tc_to')
+            .select('*')
+            .eq('to_danh_gia', teamName)
+            .eq('don_vi_duoc_danh_gia', unitName)
+            .eq('ngay_danh_gia', date);
+
+        if (error) throw error;
+        if (!rawData || rawData.length === 0) return [];
+
+        // Group results by ma_tieu_muc
+        const grouped: Record<string, KqDanhGia83[]> = {};
+        rawData.forEach((item: KqDanhGia83) => {
+            if (!grouped[item.ma_tieu_muc]) grouped[item.ma_tieu_muc] = [];
+            grouped[item.ma_tieu_muc].push(item);
+        });
+
+        // Compute lowest result for each ma_tieu_muc
+        const aggregated: KqDanhGia83[] = Object.keys(grouped).map(ma => {
+            const items = grouped[ma];
+
+            // Check if any item is "Chưa đạt"
+            const hasFail = items.some(i => i.dat_muc === "Chưa đạt");
+            const lowestMuc = Math.min(...items.map(i => i.muc_dat_duoc || 1));
+
+            // Representative item for metadata (phan, chuong, etc.)
+            const rep = items[0];
+
+            return {
+                ...rep,
+                dat_muc: hasFail ? "Chưa đạt" : (items.every(i => i.dat_muc === "Không đánh giá") ? "Không đánh giá" : "Đạt"),
+                dat: !hasFail && items.some(i => i.dat_muc === "Đạt"),
+                khong_dat: hasFail,
+                muc_dat_duoc: lowestMuc,
+                ghi_chu: `[TỔNG HỢP TỪ ${items.length} PHIẾU] ` + items.map(i => i.ghi_chu).filter(Boolean).join('; ')
+            } as KqDanhGia83;
+        });
+
+        return aggregated;
     }
 };

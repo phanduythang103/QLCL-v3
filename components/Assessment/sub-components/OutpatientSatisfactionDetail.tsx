@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Printer, CheckCircle2, User, Phone, MapPin, Clock, Info } from 'lucide-react';
+import { ArrowLeft, Printer, CheckCircle2, User, Phone, MapPin, Clock, Info, Star, AlertCircle } from 'lucide-react';
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
 
 interface Props {
@@ -10,50 +10,63 @@ interface Props {
 const CATEGORIES = [
   {
     stt: 'A',
-    name: "TIẾP CẬN VÀ CHỈ DẪN",
+    name: "Tiếp cận và chỉ dẫn",
     questions: [
-      { id: 1, text: "Sự thuận tiện và an toàn tại khu vực gửi xe" },
-      { id: 2, text: "Hiệu quả của việc phân luồng Quân - Dân (có rõ ràng, tránh chồng chéo không?)" },
-      { id: 3, text: "Sơ đồ biển báo và sự hướng dẫn của nhân viên tại sảnh chính/khu đón tiếp" }
+      { id: 1, text: "Sự thuận tiện tại khu vực gửi xe" },
+      { id: 2, text: "Phân luồng Quân - Dân rõ ràng" },
+      { id: 3, text: "Biển báo và hướng dẫn tại sảnh" }
     ]
   },
   {
     stt: 'B',
-    name: "THỜI GIAN CHỜ ĐỢI (NÚT THẮT QUY TRÌNH)",
+    name: "Thời gian chờ đợi",
     questions: [
-      { id: 4, text: "Thời gian chờ làm thủ tục đăng ký và thanh toán viện phí" },
-      { id: 5, text: "Thời gian chờ Siêu âm, Chiếu chụp (có quá lâu so với mong đợi không?)" },
-      { id: 6, text: "Thời gian từ lúc lấy mẫu đến khi có kết quả Xét nghiệm" }
+      { id: 4, text: "Thời gian đăng ký và thanh toán" },
+      { id: 5, text: "Chờ siêu âm, chiếu chụp" },
+      { id: 6, text: "Thời gian trả kết quả xét nghiệm" }
     ]
   },
   {
     stt: 'C',
-    name: "CƠ SỞ VẬT CHẤT TẠI KHU KHÁM BỆNH",
+    name: "Cơ sở vật chất",
     questions: [
-      { id: 7, text: "Ghế ngồi chờ tại các phòng khám và khu vực cận lâm sàng (đủ chỗ, sạch sẽ)" },
-      { id: 8, text: "Vệ sinh và tiện nghi tại Nhà vệ sinh khu vực khám bệnh (giấy, nước, mùi hôi)" },
-      { id: 9, text: "Hệ thống Wifi miễn phí phục vụ người bệnh trong lúc chờ đợi kết quả" }
+      { id: 7, text: "Ghế ngồi chờ" },
+      { id: 8, text: "Nhà vệ sinh" },
+      { id: 9, text: "Wifi" }
     ]
   },
   {
     stt: 'D',
-    name: "THÁI ĐỘ VÀ NĂNG LỰC NHÂN VIÊN",
+    name: "Nhân viên",
     questions: [
-      { id: 10, text: "Thái độ của nhân viên thanh toán/hành chính (có nhã nhặn, giải thích rõ không?)" },
-      { id: 11, text: "Bác sĩ khám bệnh: Dành thời gian tư vấn, lắng nghe (không khám sơ sài/hời hợt)" },
-      { id: 12, text: "Mức độ hài lòng khi được học viên thực hiện kỹ thuật dưới sự giám sát của bác sĩ chính (Ông/Bà có hài lòng khi học viên thực hiện không?)" },
-      { id: 13, text: "Tác phong nhân viên: Không làm việc riêng, không sử dụng điện thoại khi đang tiếp bệnh" }
+      { id: 10, text: "Thái độ nhân viên hành chính" },
+      { id: 11, text: "Bác sĩ tư vấn, lắng nghe" },
+      { id: 12, text: "Thực hiện kỹ thuật của học viên" },
+      { id: 13, text: "Không dùng điện thoại khi làm việc" }
     ]
   },
   {
     stt: 'E',
-    name: "KẾT QUẢ VÀ CHI PHÍ",
+    name: "Kết quả và chi phí",
     questions: [
-      { id: 14, text: "Mức độ tin tưởng vào kết quả chẩn đoán và điều trị" },
-      { id: 15, text: "Sự công khai, minh bạch trong các khoản thu/chi phí dịch vụ" }
+      { id: 14, text: "Tin tưởng kết quả chẩn đoán" },
+      { id: 15, text: "Minh bạch chi phí" }
     ]
   }
 ];
+
+const AREA_LABELS: Record<string, string> = {
+  'kham_dan': 'K. Khám bệnh (Dân)',
+  'kham_quan': 'Khám Quân',
+  'bhyt': 'Khám BHYT',
+  'yeu_cau': 'KKB theo yêu cầu',
+  'pk232': 'PK232'
+};
+
+const RESPONDENT_LABELS: Record<string, string> = {
+  'patient': 'Người bệnh',
+  'relative': 'Người nhà'
+};
 
 export const OutpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
   if (!data) return null;
@@ -62,233 +75,161 @@ export const OutpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) 
     window.print();
   };
 
-  const renderScore = (qId: number, currentScore: number) => {
-    const scores1 = [1, 2, 3];
-    const scores2 = [4, 5, 0];
-
-    const ScoreIcon = ({ val }: { val: number }) => (
-      <span
-        key={val}
-        className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full border border-slate-300 text-[9px] md:text-[11px] font-bold transition-all
-          ${currentScore === val ? 'bg-[#009900] text-white border-[#009900] ring-2 ring-[#009900]/20 scale-110 md:scale-125' : 'text-slate-400 opacity-60'}`}
-      >
+  const renderScore = (val: number) => {
+    if (val === 0) return <span className="text-slate-300 font-black italic">N/A</span>;
+    return (
+      <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shadow-sm border ${val >= 4 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+          val >= 3 ? 'bg-amber-50 text-amber-600 border-amber-100' :
+            'bg-rose-50 text-rose-600 border-rose-100'
+        }`}>
         {val}
       </span>
     );
-
-    return (
-      <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 font-sans py-1">
-        <div className="flex items-center gap-2 md:gap-4">
-          {scores1.map(val => <ScoreIcon key={val} val={val} />)}
-        </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          {scores2.map(val => <ScoreIcon key={val} val={val} />)}
-        </div>
-      </div>
-    );
-  };
-
-  const isSelected = (field: string[] | undefined, value: string) => {
-    return field?.includes(value);
   };
 
   return (
-    <div className="w-full h-full bg-slate-100/50 p-4 md:p-8 animate-in fade-in zoom-in-95 duration-500">
+    <div className="w-full h-full bg-slate-50 p-4 md:p-8 animate-in fade-in duration-500 font-sans">
       <div className="max-w-4xl mx-auto space-y-6">
-
         {/* Navigation Actions */}
-        <div className="flex items-center justify-start no-print">
+        <div className="flex items-center justify-between no-print">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-xs uppercase p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
+            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase p-3 hover:bg-emerald-50 rounded-2xl transition-all"
           >
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Quay lại
+            <ArrowLeft size={16} /> Quay lại danh sách
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 bg-slate-800 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase shadow-lg hover:bg-slate-900 transition-all"
+          >
+            <Printer size={16} /> In phiếu khảo sát
           </button>
         </div>
 
         {/* Paper Container */}
-        <div className="bg-white p-10 md:p-16 shadow-2xl rounded-sm border border-slate-200 min-h-[1200px] font-sans relative">
+        <div className="bg-white p-8 md:p-14 shadow-2xl rounded-3xl border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#009900]/5 rounded-full -mr-32 -mt-32 blur-3xl no-print" />
 
           {/* Header Title */}
-          <div className="text-center mb-10">
-            <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight uppercase">
-              PHIẾU KHẢO SÁT HÀI LÒNG NGƯỜI BỆNH NGOẠI TRÚ
+          <div className="text-center mb-12 relative z-10">
+            <h1 className="text-2xl font-black text-slate-900 leading-tight uppercase tracking-tight">
+              KẾT QUẢ KHẢO SÁT HÀI LÒNG NGƯỜI BỆNH
             </h1>
-            {data.ngay_khao_sat && (() => {
-              const d = new Date(data.ngay_khao_sat);
-              const pad = (n: number) => String(n).padStart(2, '0');
-              const code = `NGOAITRU-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-              return (
-                <p className="mt-2 text-[11px] md:text-xs text-slate-500 font-bold tracking-wide">
-                  (Mã khảo sát: {code})
-                </p>
-              );
-            })()}
+            <p className="text-sm font-bold text-[#009900] uppercase tracking-widest mt-1">Khám bệnh Ngoại trú Năm 2026</p>
+            <div className="w-24 h-1 bg-[#009900] mx-auto mt-6 rounded-full" />
           </div>
 
-          {/* Section 1: Thông tin chung */}
-          <div className="space-y-6 mb-12">
-            <h3 className="font-black text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">1. THÔNG TIN CHUNG</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 text-sm">
-              <div className="flex gap-2">
-                <span className="font-bold whitespace-nowrap">1.1. Họ và tên:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#009900] uppercase tracking-wide">
-                  {data.full_name || '...........................................'}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <span className="font-bold whitespace-nowrap">Số điện thoại:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold">
-                  {data.phone || '...........................................'}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-3 md:col-span-2">
-                <span className="font-bold">1.2. Khu vực khám:</span>
-                <div className="flex flex-wrap gap-x-6 gap-y-2 pl-4">
-                  {[
-                    { val: 'kham_dan', label: 'Khám Dân' },
-                    { val: 'kham_quan', label: 'Khám Quân' },
-                    { val: 'bhyt', label: 'Khám BHYT' },
-                    { val: 'yeu_cau', label: 'KKB Theo yêu cầu' },
-                    { val: 'pk232', label: 'PK232' }
-                  ].map(opt => (
-                    <div key={opt.val} className="flex items-center gap-2">
-                      <div className={`w-4 h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.area === opt.val ? 'bg-[#009900] border-[#009900]' : ''}`}>
-                        {data.area === opt.val && <CheckCircle2 size={12} className="text-white" />}
-                      </div>
-                      <span className={data.area === opt.val ? 'font-bold text-[#009900]' : 'text-slate-600'}>{opt.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2 md:col-span-2">
-                <span className="font-bold whitespace-nowrap">1.3. Thời điểm khảo sát:</span>
-                <span className="border-b border-dotted border-slate-400 px-2 font-bold">
-                  {data.visit_time || '..../..../2026'}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-3 md:col-span-2">
-                <span className="font-bold">1.4. Đối tượng trả lời:</span>
-                <div className="flex gap-8 pl-4">
-                  {[
-                    { val: 'patient', label: 'Người bệnh' },
-                    { val: 'relative', label: 'Người nhà' }
-                  ].map(opt => (
-                    <div key={opt.val} className="flex items-center gap-2">
-                      <div className={`w-4 h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.respondent === opt.val ? 'bg-[#009900] border-[#009900]' : ''}`}>
-                        {data.respondent === opt.val && <CheckCircle2 size={12} className="text-white" />}
-                      </div>
-                      <span className={data.respondent === opt.val ? 'font-bold text-[#009900]' : 'text-slate-600'}>{opt.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Đánh giá quy trình */}
-          <div className="space-y-4 mb-12">
-            <div className="flex flex-col gap-2">
-              <h3 className="font-black text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">
-                2. ĐÁNH GIÁ QUY TRÌNH VÀ DỊCH VỤ KHÁM BỆNH
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 mb-12">
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-50 pb-2">
+                <User size={12} /> Thông tin cá nhân
               </h3>
+              <div className="space-y-3 pl-4">
+                <div className="flex justify-between items-center bg-slate-50/50 p-3 rounded-2xl">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Họ và tên:</span>
+                  <span className="text-sm font-black text-slate-800 uppercase">{data.full_name || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between items-center bg-slate-50/50 p-3 rounded-2xl">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Số điện thoại:</span>
+                  <span className="text-sm font-black text-slate-800">{data.phone || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between items-center bg-slate-50/50 p-3 rounded-2xl">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Đối tượng:</span>
+                  <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{RESPONDENT_LABELS[data.respondent || 'patient']}</span>
+                </div>
+              </div>
             </div>
 
-            <div className="border border-slate-900 overflow-hidden text-[11px] md:text-[13px]">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50">
-                    <th className="border border-slate-900 px-1 md:px-3 py-2 md:py-3 w-8 md:w-12 text-center uppercase font-black">STT</th>
-                    <th className="border border-slate-900 px-2 md:px-4 py-2 md:py-3 text-left uppercase font-black tracking-tight">Nội dung khảo sát</th>
-                    <th className="border border-slate-900 px-2 md:px-6 py-2 md:py-3 w-28 md:w-48 text-center uppercase font-black">Mức độ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {CATEGORIES.map(cat => (
-                    <React.Fragment key={cat.stt}>
-                      {/* Category Header Row */}
-                      <tr>
-                        <td className="border border-slate-900 bg-slate-50 font-black text-center px-1 py-2 md:py-3">{cat.stt}</td>
-                        <td className="border border-slate-900 bg-slate-50 font-black px-2 md:px-4 py-2 md:py-3 uppercase tracking-tight">{cat.name}</td>
-                        <td className="border border-slate-900 bg-slate-50"></td>
-                      </tr>
-                      {/* Questions Rows */}
-                      {cat.questions.map(q => (
-                        <tr key={q.id}>
-                          <td className="border border-slate-900 text-center px-1 py-3 md:py-4 text-slate-600 font-bold">{q.id}</td>
-                          <td className="border border-slate-900 px-2 md:px-4 py-3 md:py-4 leading-relaxed font-medium text-slate-800">{q.text}</td>
-                          <td className="border border-slate-900 px-2 md:px-6 py-3 md:py-4">
-                            <div className="flex justify-center">
-                              {renderScore(q.id, (data as any)[`q${q.id}`])}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-50 pb-2">
+                <MapPin size={12} /> Chi tiết đợt khám
+              </h3>
+              <div className="space-y-3 pl-4">
+                <div className="flex flex-col gap-1 bg-slate-50/50 p-3 rounded-2xl">
+                  <span className="text-[9px] font-black text-slate-400 uppercase">Khu vực khám</span>
+                  <span className="text-sm font-black text-slate-800">{AREA_LABELS[data.area || ''] || data.area || 'N/A'}</span>
+                </div>
+                <div className="flex flex-col gap-1 bg-slate-50/50 p-3 rounded-2xl">
+                  <span className="text-[9px] font-black text-slate-400 uppercase">Thời điểm khám</span>
+                  <span className="text-sm font-black text-slate-800">{data.visit_time || 'N/A'}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Section 3: Câu hỏi truy vấn */}
-          <div className="space-y-8 mb-12">
-            <h3 className="font-black text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">
-              3. CÂU HỎI TRUY VẤN NGUYÊN NHÂN (Dành cho mức điểm 1, 2, 3)
+          {/* Section 2: Evaluation */}
+          <div className="space-y-6 mb-12">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Star size={12} /> Đánh giá chi tiết (Thang điểm 1-5)
             </h3>
 
-            <div className="space-y-8 pl-4 text-sm leading-relaxed">
-              {/* 3.1: Waiting Issues */}
-              <div className="space-y-4">
-                <span className="font-bold">3.1. Nếu Ông/Bà không hài lòng về thời gian chờ đợi, công đoạn nào khiến Ông/Bà mệt mỏi nhất?</span>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-8 pl-6">
-                  {["Đăng ký khám", "Chờ bác sĩ gọi", "Chờ siêu âm/chụp X-quang", "Thanh toán", "Lấy thuốc", "Khác"].map(issue => (
-                    <div key={issue} className="flex items-center gap-3">
-                      <div className={`w-4 h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${isSelected(data.waiting_issues, issue) ? 'bg-amber-500 border-amber-500' : ''}`}>
-                        {isSelected(data.waiting_issues, issue) && <CheckCircle2 size={12} className="text-white" />}
+            <div className="space-y-10">
+              {CATEGORIES.map(cat => (
+                <div key={cat.stt} className="space-y-3">
+                  <h4 className="text-[11px] font-black text-white bg-[#009900] px-4 py-1.5 rounded-full inline-block shadow-sm">
+                    {cat.stt}. {cat.name}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {cat.questions.map(q => (
+                      <div key={q.id} className="p-4 bg-white border border-slate-100 rounded-3xl flex items-center justify-between shadow-sm hover:border-[#009900]/30 transition-colors">
+                        <span className="text-[11px] font-bold text-slate-600 flex-1 pr-4 line-clamp-2 leading-relaxed">
+                          <span className="text-[10px] opacity-30 mr-1">{q.id}.</span> {q.text}
+                        </span>
+                        {renderScore((data as any)[`q${q.id}`])}
                       </div>
-                      <span className={isSelected(data.waiting_issues, issue) ? 'font-bold text-amber-700' : 'text-slate-600'}>{issue}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 3: Issues & Feedback */}
+          <div className="space-y-8 bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 relative">
+            <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-2">
+              <AlertCircle size={14} /> Nguyên nhân & Đề xuất cải tiến
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Nguyên nhân mệt mỏi/chờ đợi:</p>
+                <div className="flex flex-wrap gap-2">
+                  {data.waiting_issues && data.waiting_issues.length > 0 ? (
+                    data.waiting_issues.map(issue => (
+                      <span key={issue} className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase rounded-lg border border-amber-200">
+                        {issue}
+                      </span>
+                    ))
+                  ) : <span className="text-slate-400 italic text-xs">Không phản ánh</span>}
                 </div>
               </div>
 
-              {/* 3.2: Additional Detail */}
-              <div className="space-y-2">
-                <span className="font-bold">3.2. Nếu Ông/Bà không hài lòng về thái độ, vui lòng cho biết đặc điểm nhân viên đó (Ví dụ: tên, vị trí trực, mô tả ngoại hình):</span>
-                <div className="border-b border-dotted border-slate-400 min-h-[60px] py-1 font-bold italic text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {data.feedback ? data.feedback : "................................................................................................................................"}
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Ưu tiên cải tiến ngay:</p>
+                <div className="flex flex-wrap gap-2">
+                  {data.priority_improvement && data.priority_improvement.length > 0 ? (
+                    data.priority_improvement.map(item => (
+                      <span key={item} className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded-lg border border-emerald-200">
+                        {item}
+                      </span>
+                    ))
+                  ) : <span className="text-slate-400 italic text-xs">Không phản ánh</span>}
                 </div>
               </div>
 
-              {/* 3.3: Priority */}
-              <div className="space-y-4">
-                <span className="font-bold">3.3. Đề xuất ưu tiên nhất để Bệnh viện thay đổi ngay trong tháng tới là gì?</span>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 pl-6">
-                  {["Tăng thêm máy siêu âm", "Mở thêm cửa thanh toán", "Wifi mạnh hơn", "Thay đổi bảo vệ", "Khác"].map(opt => (
-                    <div key={opt} className="flex items-center gap-3">
-                      <div className={`w-4 h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${isSelected(data.priority_improvement, opt) ? 'bg-[#009900] border-[#009900]' : ''}`}>
-                        {isSelected(data.priority_improvement, opt) && <CheckCircle2 size={12} className="text-white" />}
-                      </div>
-                      <span className={isSelected(data.priority_improvement, opt) ? 'font-bold text-[#009900]' : 'text-slate-600'}>{opt}</span>
-                    </div>
-                  ))}
+              <div className="md:col-span-2 space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Ý kiến khác / Chi tiết phản ánh:</p>
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-inner text-sm italic font-medium text-slate-600 leading-relaxed whitespace-pre-wrap min-h-[100px]">
+                  {data.feedback || "Không có ý kiến cụ thể."}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="text-center mt-20 pt-10">
-            <p className="font-black text-xl tracking-widest uppercase text-slate-800">
-              XIN TRÂN TRỌNG CẢM ƠN Ý KIẾN CỦA ÔNG/BÀ!
-            </p>
+          {/* Footer Info */}
+          <div className="mt-16 text-center border-t border-slate-100 pt-8 no-print">
+            <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Hệ thống khảo sát 2026 - QLCL-v3</p>
           </div>
-
         </div>
       </div>
 
@@ -296,11 +237,13 @@ export const OutpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) 
         __html: `
         @media print {
           .no-print { display: none !important; }
-          body { background-color: white !important; }
-          .animate-in { animation: none !important; }
-          .max-w-4xl { max-width: 100% !important; margin: 0 !important; }
-          .shadow-2xl { shadow: none !important; border: none !important; }
-          .p-4, .p-10, .p-16 { padding: 0 !important; }
+          body { background-color: white !important; margin: 0 !important; padding: 0 !important; }
+          .max-w-4xl { max-width: 100% !important; border: none !important; }
+          .shadow-2xl, .shadow-xl, .shadow-sm { box-shadow: none !important; }
+          .rounded-3xl, .rounded-[2.5rem] { border-radius: 0 !important; border-bottom: 1px solid #eee !important; }
+          .p-8, .p-14 { padding: 2rem !important; }
+          .bg-slate-50 { background-color: transparent !important; }
+          .bg-slate-50\/50 { background-color: transparent !important; border-bottom: 1px solid #f8f8f8; }
         }
       `}} />
     </div>

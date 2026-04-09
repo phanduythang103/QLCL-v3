@@ -82,6 +82,32 @@ CREATE POLICY "Staff: Public Select" ON public.staff_satisfaction_2026_responses
 CREATE POLICY "Staff: Admin Full Access" ON public.staff_satisfaction_2026_responses FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 
+-- --- 2.4 Nuôi con bằng sữa mẹ (ks_nuoi_con) ---
+ALTER TABLE public.ks_nuoi_con ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "KsNuoiCon: Anonymous Insert" ON public.ks_nuoi_con;
+DROP POLICY IF EXISTS "KsNuoiCon: Public Select" ON public.ks_nuoi_con;
+DROP POLICY IF EXISTS "KsNuoiCon: Admin Full Access" ON public.ks_nuoi_con;
+DROP POLICY IF EXISTS "anon_full_access" ON public.ks_nuoi_con;
+
+CREATE POLICY "KsNuoiCon: Anonymous Insert" ON public.ks_nuoi_con FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "KsNuoiCon: Public Select" ON public.ks_nuoi_con FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "KsNuoiCon: Admin Full Access" ON public.ks_nuoi_con FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+
+-- --- 2.5 Người mẹ sinh con (ks_me_sinh_con) ---
+ALTER TABLE public.ks_me_sinh_con ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "KsMeSinhCon: Anonymous Insert" ON public.ks_me_sinh_con;
+DROP POLICY IF EXISTS "KsMeSinhCon: Public Select" ON public.ks_me_sinh_con;
+DROP POLICY IF EXISTS "KsMeSinhCon: Admin Full Access" ON public.ks_me_sinh_con;
+DROP POLICY IF EXISTS "anon_full_access" ON public.ks_me_sinh_con;
+
+CREATE POLICY "KsMeSinhCon: Anonymous Insert" ON public.ks_me_sinh_con FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "KsMeSinhCon: Public Select" ON public.ks_me_sinh_con FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "KsMeSinhCon: Admin Full Access" ON public.ks_me_sinh_con FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+
 -- 3. PERMISSIONS SYNCHRONIZATION
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
 GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO anon, authenticated;

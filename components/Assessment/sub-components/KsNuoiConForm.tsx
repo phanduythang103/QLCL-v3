@@ -19,79 +19,79 @@ const DELIVERY_TYPES = [
 
 const OPTIONS = {
   see_policy: [
-    'Quy định về nuôi con bằng sữa mẹ',
-    'Lợi ích của việc cho trẻ bú sớm trong vòng 1 giờ đầu',
-    'Tầm quan trọng của việc nuôi con hoàn toàn bằng sữa mẹ trong 6 tháng đầu',
-    'Tác hại của việc cho trẻ ăn thêm sữa công thức, nước, thức ăn khác trước 6 tháng',
-    'Cách giữ sữa khi bà mẹ phải đi làm hoặc ở xa con',
-    'Không dùng bình bú, vú ngậm nhân tạo'
+    'Khoa khám',
+    'Phòng chờ sinh',
+    'Khoa sau sinh',
+    'Phòng tư vấn',
+    'Nơi khác',
+    'Không thấy'
   ],
   see_media: [
-    'Bảng biểu/Poster',
-    'Tờ rơi/Sách hướng dẫn',
-    'Video/Clip truyền thông',
-    'Phát thanh nội bộ',
-    'Trò chuyện trực tiếp với nhân viên y tế',
-    'Trang web/Mạng xã hội bệnh viện',
-    'Khác'
+    'Khoa khám',
+    'Phòng chờ sinh',
+    'Khoa sau sinh',
+    'Buồng bệnh',
+    'Phòng tư vấn',
+    'Khác',
+    'Không thấy'
   ],
   consultation_time: [
-    'Khi khám thai',
-    'Khi nhập viện chờ sinh',
-    'Trong khi sinh',
-    'Sau khi sinh tại khoa Hồi sức/Hậu sản',
-    'Khi chuẩn bị ra viện'
-  ],
-  reason_no_consult: [
-    'Nhân viên y tế quá bận',
-    'Bản thân mệt, không muốn nghe',
-    'Đã biết hết các thông tin này',
-    'Không có nhân viên y tế nào tư vấn',
+    'Không tư vấn',
+    'Khám thai',
+    'Trước sinh',
+    'Sau sinh',
     'Khác'
   ],
+  reason_no_consult: [
+    'Không khám tại BV',
+    'Sinh cấp cứu',
+    'NVYT bỏ qua',
+    'Khác',
+    'Có tư vấn'
+  ],
   cord_cut: [
-    'Cắt ngay sau khi sinh (dưới 1 phút)',
-    'Cắt dây rốn muộn (sau 1-3 phút hoặc khi dây rốn ngừng đập)',
-    'Không rõ'
+    'Cắt ngay',
+    'Cắt chậm',
+    'Không nhớ'
   ],
   skin_to_skin: [
-    'Có (ngay sau sinh và liên tục ít nhất 90 phút)',
+    'Có',
     'Không'
   ],
   first_breastfeed: [
-    'Trong vòng 1 giờ đầu sau sinh',
-    'Từ 1 đến 6 giờ sau sinh',
-    'Từ 6 đến 12 giờ sau sinh',
-    'Sau 24 giờ sau sinh',
-    'Khi về nhà mới cho bú',
-    'Chưa cho con bú',
-    'Không có sữa/Tắc sữa',
-    'Trẻ bị bệnh/Phải nằm hồi sức'
+    'Ngay sau sinh',
+    '< 30 phút',
+    '< 1 giờ',
+    '< 2 giờ',
+    '2–24 giờ',
+    '> 1 ngày',
+    'Không bú mẹ',
+    'Khác'
   ],
   support_person: [
-    'Bác sĩ sản khoa',
-    'Nữ hộ sinh',
-    'Bác sĩ nhi khoa',
-    'Điều dưỡng nhi',
-    'Người nhà'
+    'Điều dưỡng/hộ sinh',
+    'Bác sĩ',
+    'Người nhà',
+    'Khác',
+    'Không hỗ trợ'
   ],
   support_type: [
-    'Hướng dẫn cách bế trẻ',
-    'Hướng dẫn cách trẻ ngậm bắt vú đúng',
-    'Hướng dẫn cách vắt sữa bằng tay',
-    'Duy trì nguồn sữa mẹ khi con chưa thể bú',
-    'Giải đáp các thắc mắc về nuôi con bằng sữa mẹ'
+    'Hướng dẫn bú',
+    'Mát-xa vú',
+    'Vắt sữa',
+    'Thông tắc tia sữa',
+    'Khác'
   ],
   other_food: [
-    'Không cho ăn gì khác ngoài sữa mẹ',
-    'Nước chín/Nước cam cảm',
+    'Chỉ bú mẹ',
+    'Nước',
+    'Sữa mẹ khác',
     'Sữa công thức',
-    'Nước đường',
     'Khác'
   ],
   suggest_formula: [
-    'Có được gợi ý/khuyên dùng',
-    'Không được gợi ý'
+    'Có',
+    'Không'
   ]
 };
 
@@ -222,6 +222,18 @@ export const KsNuoiConForm: React.FC<Props> = ({
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Clock size={12} /> Mã khoa
+              </label>
+              <input
+                type="text"
+                value={formData.department_code}
+                onChange={(e) => handleChange('department_code', e.target.value)}
+                placeholder="Mã khoa..."
+                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <User size={12} /> Mã người bệnh
               </label>
               <input
@@ -285,8 +297,8 @@ export const KsNuoiConForm: React.FC<Props> = ({
                     type="button"
                     onClick={() => handleChange('delivery_type', opt.value)}
                     className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${formData.delivery_type === opt.value
-                        ? 'bg-[#009900] text-white shadow-md'
-                        : 'text-slate-500 hover:bg-slate-100'
+                      ? 'bg-[#009900] text-white shadow-md'
+                      : 'text-slate-500 hover:bg-slate-100'
                       }`}
                   >
                     {opt.label}
@@ -324,19 +336,19 @@ export const KsNuoiConForm: React.FC<Props> = ({
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">III. Thực hành nuôi con bằng sữa mẹ</h3>
           </div>
 
-          {/* CHECKBOX ARRAYS */}
-          <div className="space-y-8">
+          <div className="space-y-12">
+            {/* 1. see_policy */}
             <div className="space-y-4">
               <p className="text-sm font-black text-slate-800">1. Anh/Chị đã được nghe/thấy quy định nào về NCBSM tại bệnh viện? (Chọn nhiều)</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {OPTIONS.see_policy.map((label, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleToggleArray('see_policy', idx + 1)}
                     className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all flex items-start gap-3 ${formData.see_policy?.includes(idx + 1)
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900] ring-1 ring-[#009900]'
-                        : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-emerald-200'
+                      ? 'border-[#009900] bg-emerald-50 text-[#009900] ring-1 ring-[#009900]'
+                      : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-emerald-200'
                       }`}
                   >
                     <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.see_policy?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
@@ -348,6 +360,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* 2. see_media */}
             <div className="space-y-4">
               <p className="text-sm font-black text-slate-800">2. Anh/Chị thấy các tài liệu truyền thông về NCBSM ở đâu? (Chọn nhiều)</p>
               <div className="flex flex-wrap gap-2">
@@ -357,8 +370,8 @@ export const KsNuoiConForm: React.FC<Props> = ({
                     type="button"
                     onClick={() => handleToggleArray('see_media', idx + 1)}
                     className={`px-4 py-2 rounded-full border text-[10px] font-black uppercase transition-all ${formData.see_media?.includes(idx + 1)
-                        ? 'border-[#009900] bg-[#009900] text-white shadow-md'
-                        : 'border-slate-200 bg-white text-slate-500 hover:border-emerald-300'
+                      ? 'border-[#009900] bg-[#009900] text-white shadow-md'
+                      : 'border-slate-200 bg-white text-slate-500 hover:border-emerald-300'
                       }`}
                   >
                     {label}
@@ -367,9 +380,53 @@ export const KsNuoiConForm: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* 3 & 4. consultation_time & reason_no_consult */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <p className="text-sm font-black text-slate-800">3. Thời điểm cắt dây rốn?</p>
+                <p className="text-sm font-black text-slate-800">3. Anh/Chị được hướng dẫn/tư vấn về NCBSM khi nào? (Chọn nhiều)</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {OPTIONS.consultation_time.map((label, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleToggleArray('consultation_time', idx + 1)}
+                      className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all flex items-center gap-3 ${formData.consultation_time?.includes(idx + 1)
+                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        : 'border-slate-100 bg-slate-50 text-slate-600'
+                        }`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.consultation_time?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                        {formData.consultation_time?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      </div>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm font-black text-slate-800">4. Nếu không được hướng dẫn/tư vấn, lý do là gì?</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {OPTIONS.reason_no_consult.map((label, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleChange('reason_no_consult', idx + 1)}
+                      className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all ${formData.reason_no_consult === idx + 1
+                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        : 'border-slate-100 bg-slate-50 text-slate-600'
+                        }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 5 & 6. cord_cut & skin_to_skin */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-sm font-black text-slate-800">5. Thời điểm cắt dây rốn?</p>
                 <div className="flex flex-col gap-2">
                   {OPTIONS.cord_cut.map((label, idx) => (
                     <button
@@ -377,8 +434,8 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('cord_cut', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all ${formData.cord_cut === idx + 1
-                          ? 'border-[#009900] bg-emerald-50 text-[#009900]'
-                          : 'border-slate-100 bg-slate-50 text-slate-600'
+                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
                       {label}
@@ -387,7 +444,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                 </div>
               </div>
               <div className="space-y-4">
-                <p className="text-sm font-black text-slate-800">4. Tiếp xúc Da kề da ngay sau sinh?</p>
+                <p className="text-sm font-black text-slate-800">6. Tiếp xúc Da kề da ngay sau sinh?</p>
                 <div className="flex flex-col gap-2">
                   {OPTIONS.skin_to_skin.map((label, idx) => (
                     <button
@@ -395,8 +452,8 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('skin_to_skin', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all ${formData.skin_to_skin === idx + 1
-                          ? 'border-[#009900] bg-emerald-50 text-[#009900]'
-                          : 'border-slate-100 bg-slate-50 text-slate-600'
+                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
                       {label}
@@ -406,17 +463,18 @@ export const KsNuoiConForm: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* 7. first_breastfeed */}
             <div className="space-y-4">
-              <p className="text-sm font-black text-slate-800">5. Thời điểm cho trẻ bú lần đầu tiên?</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <p className="text-sm font-black text-slate-800">7. Thời điểm cho trẻ bú lần đầu tiên?</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {OPTIONS.first_breastfeed.map((label, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleChange('first_breastfeed', idx + 1)}
                     className={`p-4 rounded-2xl border text-left text-[11px] font-black uppercase transition-all ${formData.first_breastfeed === idx + 1
-                        ? 'border-[#009900] bg-[#009900] text-white shadow-lg'
-                        : 'border-slate-100 bg-slate-50 text-slate-500'
+                      ? 'border-[#009900] bg-[#009900] text-white shadow-lg'
+                      : 'border-slate-100 bg-slate-50 text-slate-500'
                       }`}
                   >
                     {label}
@@ -425,22 +483,90 @@ export const KsNuoiConForm: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-sm font-black text-slate-800">6. Anh/Chị có cho trẻ ăn thêm gì ngoài sữa mẹ không?</p>
-              <div className="flex flex-wrap gap-2">
-                {OPTIONS.other_food.map((label, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleChange('other_food', idx + 1)}
-                    className={`px-6 py-3 rounded-2xl border text-xs font-black uppercase transition-all ${formData.other_food === idx + 1
+            {/* 8 & 9. support_person & support_type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-sm font-black text-slate-800">8. Ai là người hỗ trợ Anh/Chị cho trẻ bú? (Chọn nhiều)</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {OPTIONS.support_person.map((label, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleToggleArray('support_person', idx + 1)}
+                      className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all flex items-center gap-3 ${formData.support_person?.includes(idx + 1)
+                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        : 'border-slate-100 bg-slate-50 text-slate-600'
+                        }`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.support_person?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                        {formData.support_person?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      </div>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-sm font-black text-slate-800">9. Anh/Chị được hỗ trợ bằng hình thức nào? (Chọn nhiều)</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {OPTIONS.support_type.map((label, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleToggleArray('support_type', idx + 1)}
+                      className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all flex items-center gap-3 ${formData.support_type?.includes(idx + 1)
+                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        : 'border-slate-100 bg-slate-50 text-slate-600'
+                        }`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.support_type?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                        {formData.support_type?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      </div>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 10 & 11. other_food & suggest_formula */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-sm font-black text-slate-800">10. Anh/Chị có cho trẻ ăn thêm gì ngoài sữa mẹ không?</p>
+                <div className="flex flex-wrap gap-2">
+                  {OPTIONS.other_food.map((label, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleChange('other_food', idx + 1)}
+                      className={`px-6 py-3 rounded-2xl border text-xs font-black uppercase transition-all ${formData.other_food === idx + 1
                         ? 'bg-[#009900] border-[#009900] text-white'
                         : 'bg-white border-slate-200 text-slate-500'
-                      }`}
-                  >
-                    {label}
-                  </button>
-                ))}
+                        }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm font-black text-slate-800">11. Được gợi ý/khuyên dùng sữa công thức?</p>
+                <div className="flex gap-2">
+                  {OPTIONS.suggest_formula.map((label, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleChange('suggest_formula', idx + 1)}
+                      className={`flex-1 py-3 rounded-2xl border text-xs font-black uppercase transition-all ${formData.suggest_formula === idx + 1
+                        ? 'bg-[#009900] border-[#009900] text-white shadow-md'
+                        : 'bg-white border-slate-200 text-slate-500'
+                        }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

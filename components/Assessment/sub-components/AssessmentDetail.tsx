@@ -20,10 +20,10 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
 
   const hierarchyData = useMemo(() => {
     const hierarchy: any = {};
-    const evaluatedData = data.filter(item => 
+    const evaluatedData = data.filter(item =>
       item.dat_muc && (
-        item.dat_muc === 'Đạt' || 
-        item.dat_muc === 'Chưa đạt' || 
+        item.dat_muc === 'Đạt' ||
+        item.dat_muc === 'Chưa đạt' ||
         item.dat_muc === 'Không đánh giá'
       )
     );
@@ -50,8 +50,15 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
           <div className="flex items-center gap-3">
             <Printer size={24} />
             <div>
-               <h3 className="font-black uppercase text-sm tracking-widest">Chi tiết chấm điểm tiêu chí</h3>
-               <p className="text-[10px] opacity-80 font-bold uppercase">{sheetInfo?.don_vi_duoc_danh_gia} - {sheetInfo?.ngay_danh_gia}</p>
+              <h3 className="font-black uppercase text-sm tracking-widest flex items-center gap-2">
+                Chi tiết chấm điểm tiêu chí
+                {sheetInfo?.nhom && (
+                  <span className="bg-yellow-400 text-slate-900 text-[10px] px-2 py-0.5 rounded-full font-black animate-pulse">
+                    KẾT QUẢ TỔNG HỢP (LOWEST SCORE)
+                  </span>
+                )}
+              </h3>
+              <p className="text-[10px] opacity-80 font-bold uppercase">{sheetInfo?.don_vi_duoc_danh_gia} - {sheetInfo?.ngay_danh_gia}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
@@ -91,14 +98,14 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                             const isExpanded = expandedTCs[tc];
                             return (
                               <div key={tc} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
-                                <button 
+                                <button
                                   onClick={() => toggleTC(tc)}
                                   className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-100 transition-colors"
                                 >
                                   <span className="font-black text-slate-700 text-xs uppercase text-left">{tc}</span>
-                                  {isExpanded ? <ChevronDown size={18}/> : <ChevronRight size={18}/>}
+                                  {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                                 </button>
-                                
+
                                 {isExpanded && (
                                   <div className="px-5 pb-5 animate-in slide-in-from-top-2 duration-300">
                                     <table className="w-full text-[11px]">
@@ -116,16 +123,16 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                                             <td className="py-3 font-black text-[#009900]">{item.nhom}</td>
                                             <td className="py-3 font-bold text-slate-600 pr-4">{item.tieu_muc}</td>
                                             <td className="py-3 text-center">
-                                              {item.dat_muc === 'Đạt' && <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black text-[9px] uppercase"><CheckCircle2 size={10}/> Đạt</span>}
-                                              {item.dat_muc === 'Chưa đạt' && <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-black text-[9px] uppercase"><XIcon size={10}/> Chưa đạt</span>}
-                                              {item.dat_muc === 'Không đánh giá' && <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-black text-[9px] uppercase"><Minus size={10}/> K.ĐG</span>}
+                                              {item.dat_muc === 'Đạt' && <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black text-[9px] uppercase"><CheckCircle2 size={10} /> Đạt</span>}
+                                              {item.dat_muc === 'Chưa đạt' && <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-black text-[9px] uppercase"><XIcon size={10} /> Chưa đạt</span>}
+                                              {item.dat_muc === 'Không đánh giá' && <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-black text-[9px] uppercase"><Minus size={10} /> K.ĐG</span>}
                                             </td>
                                             <td className="py-3 text-slate-500 italic text-[10px]">
                                               {item.ghi_chu || '-'}
                                               {item.hinh_anh_minh_chung && item.hinh_anh_minh_chung.length > 0 && (
                                                 <div className="flex gap-1 mt-1">
                                                   {item.hinh_anh_minh_chung.map((img: string, idx: number) => (
-                                                    <span key={idx} className="text-[8px] bg-blue-50 text-blue-600 px-1 rounded border border-blue-100">Ảnh {idx+1}</span>
+                                                    <span key={idx} className="text-[8px] bg-blue-50 text-blue-600 px-1 rounded border border-blue-100">Ảnh {idx + 1}</span>
                                                   ))}
                                                 </div>
                                               )}

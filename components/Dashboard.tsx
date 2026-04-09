@@ -41,6 +41,7 @@ import { NotificationDashboard } from './NotificationDashboard';
 import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
 import { fetchThuVienVb } from '../readThuVienVb';
 import { supabase } from '../supabaseClient';
+import DateRangeFilter from './DateRangeFilter';
 
 // Tách StatCard ra ngoài để tránh re-render không cần thiết
 const StatCard = React.memo<{
@@ -82,16 +83,56 @@ export const Dashboard: React.FC = () => {
     loading: true
   });
 
-  // Memoize first day of month để tránh tính toán lại
-  const firstDayOfMonth = useMemo(() => {
+  const [dateFilter, setDateFilter] = React.useState({
+    type: 'thisMonth',
+    startDate: '',
+    endDate: ''
+  });
+
+  const [selectedTeam, setSelectedTeam] = React.useState<string>('all');
+  const [teams, setTeams] = React.useState<string[]>([]);
+
+  // Calculate start/end dates based on filter type
+  const activeDateRange = React.useMemo(() => {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
+    let start = new Date(now.getFullYear(), now.getMonth(), 1);
+    let end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    if (dateFilter.type === 'custom') {
+      if (dateFilter.startDate) start = new Date(dateFilter.startDate);
+      if (dateFilter.endDate) end = new Date(dateFilter.endDate);
+    } else if (dateFilter.type === 'all') {
+      return { start: null, end: null };
+    } else {
+      // Simple mapping for this demo, usually would use a utility
+      const d = new Date();
+      if (dateFilter.type === 'thisWeek') {
+        const first = d.getDate() - d.getDay();
+        start = new Date(d.setDate(first));
+        end = new Date(d.setDate(first + 6));
+      } else if (dateFilter.type === 'lastMonth') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0);
+      }
+      // ... more cases can be added
+    }
+    return { start, end };
+  }, [dateFilter]);
+
+  React.useEffect(() => {
+    // Fetch unique teams
+    supabase.from('assessment_team_members').select('team_name')
+      .then(({ data }: { data: { team_name: string }[] | null }) => {
+        const unique = Array.from(new Set((data || []).map((t: { team_name: string }) => t.team_name))).filter(Boolean);
+        setTeams(unique as string[]);
+      });
   }, []);
 
   React.useEffect(() => {
     let isMounted = true;
 
     const loadStats = async () => {
+      setStats(s => ({ ...s, loading: true }));
       try {
         // Parallel fetch với caching từ API
         const [nhanSuData, vanBanData] = await Promise.all([
@@ -101,16 +142,34 @@ export const Dashboard: React.FC = () => {
 
         if (!isMounted) return;
 
-        // Calculate personnel stats
-        const nsTotal = nhanSuData.length;
-        const nsCertified = nhanSuData.filter(i => i.co_chung_chi).length;
+        // Apply filters locally for now to demonstrate, 
+        // in production these would be Supabase query filters
+        let filteredNS = nhanSuData;
+        let filteredVB = vanBanData || [];
 
-        // Calculate document stats
-        const vbTotal = vanBanData?.length || 0;
-        const vbMonthly = vanBanData?.filter(i => {
+        if (activeDateRange.start) {
+          filteredNS = filteredNS.filter(i => new Date(i.created_at || '') >= activeDateRange.start!);
+          filteredVB = filteredVB.filter(i => new Date(i.created_at || '') >= activeDateRange.start!);
+        }
+
+        if (activeDateRange.end) {
+          const endDate = new Date(activeDateRange.end);
+          endDate.setHours(23, 59, 59, 999);
+          filteredNS = filteredNS.filter(i => new Date(i.created_at || '') <= endDate);
+          filteredVB = filteredVB.filter(i => new Date(i.created_at || '') <= endDate);
+        }
+
+        // Personnel stats
+        const nsTotal = filteredNS.length;
+        const nsCertified = filteredNS.filter(i => i.co_chung_chi).length;
+
+        // Document stats
+        const vbTotal = filteredVB.length;
+        const vbMonthly = filteredVB.filter(i => {
           const createdAt = new Date(i.created_at || i.hieu_luc || '');
-          return createdAt >= firstDayOfMonth;
-        }).length || 0;
+          const now = new Date();
+          return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
+        }).length;
 
         setStats({
           nhanSu: { total: nsTotal, certified: nsCertified },
@@ -139,10 +198,42 @@ export const Dashboard: React.FC = () => {
       supabase.removeChannel(nsChannel);
       supabase.removeChannel(vbChannel);
     };
-  }, [firstDayOfMonth]);
+  }, [activeDateRange, selectedTeam]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-700">
+      {/* Filters Header */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-50 rounded-xl text-[#009900]">
+            <Activity size={20} />
+          </div>
+          <div>
+            <h2 className="text-sm font-black text-slate-800 uppercase tracking-tight">Bảng điều khiển quản lý</h2>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Thống kê dữ liệu chất lượng toàn bệnh viện</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+            <Users size={14} className="text-slate-400" />
+            <select
+              value={selectedTeam}
+              onChange={(e) => setSelectedTeam(e.target.value)}
+              className="bg-transparent text-[11px] font-black uppercase tracking-tight outline-none cursor-pointer"
+            >
+              <option value="all">TẤT CẢ TỔ</option>
+              {teams.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+
+          <DateRangeFilter
+            filter={dateFilter}
+            onChange={setDateFilter}
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           title="Nhân sự QLCL"
