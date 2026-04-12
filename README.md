@@ -23,14 +23,17 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Te3uirMh_b_H51agy2fxtX
 
 Ứng dụng web quản lý chất lượng, sử dụng Supabase làm backend lưu trữ dữ liệu.
 
-## Cấu hình Supabase
-1. Tạo tài khoản và dự án Supabase tại https://supabase.com.
-2. Lấy thông tin `SUPABASE_URL` và `SUPABASE_ANON_KEY` từ dự án Supabase.
-3. Thay thế các giá trị này trong file `supabaseConfig.ts`:
-    ```ts
-    export const SUPABASE_URL = "<YOUR_SUPABASE_URL>";
-    export const SUPABASE_ANON_KEY = "<YOUR_SUPABASE_ANON_KEY>";
+## Cấu hình Supabase & API
+Project này sử dụng Supabase làm backend và Gemini AI. Để chạy được ứng dụng, bạn cần cấu hình các biến môi trường trong file `.env.local` ở thư mục gốc:
+
+1. Tạo file `.env.local` nếu chưa có.
+2. Thêm các nội dung sau vào file:
+    ```env
+    VITE_SUPABASE_URL=https://your-project.supabase.co
+    VITE_SUPABASE_ANON_KEY=your-anon-key
+    GEMINI_API_KEY=your-gemini-api-key
     ```
+3. Lưu ý: Không bao giờ commit file `.env.local` lên GitHub. File này đã được đưa vào `.gitignore`.
 
 ## Cài đặt
 Chạy lệnh sau để cài đặt các thư viện cần thiết:
