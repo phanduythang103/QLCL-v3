@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Printer, CheckCircle2, User, UserCheck, Briefcase, Calendar, Info, Star } from 'lucide-react';
+import { ArrowLeft, Printer, CheckCircle2, User, UserCheck, Briefcase, Calendar, Info, Star, ClipboardList } from 'lucide-react';
 import { StaffSatisfactionSurvey } from '../types/staffSatisfaction';
 
 interface Props {
@@ -72,8 +72,8 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
 
   const renderScore = (val: number) => (
     <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs border shadow-sm ${val >= 4 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-        val >= 3 ? 'bg-amber-50 text-amber-600 border-amber-100' :
-          'bg-rose-50 text-rose-600 border-rose-100'
+      val >= 3 ? 'bg-amber-50 text-amber-600 border-amber-100' :
+        'bg-rose-50 text-rose-600 border-rose-100'
       }`}>
       {val}
     </span>
