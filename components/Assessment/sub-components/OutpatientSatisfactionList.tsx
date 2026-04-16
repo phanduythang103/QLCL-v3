@@ -1,6 +1,8 @@
 import React from 'react';
-import { Plus, Edit2, Eye, Trash2, Calendar, User, BarChart3 } from 'lucide-react';
+import { Plus, Edit2, Eye, Trash2, Calendar, User, BarChart3, Download, Trophy, Users } from 'lucide-react';
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
+import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
+import * as XLSX from 'xlsx';
 
 interface Props {
   surveys: OutpatientSurveyResponse[];
@@ -9,15 +11,20 @@ interface Props {
   onView: (survey: OutpatientSurveyResponse) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  dateFilter: DateFilterState;
+  setDateFilter: (filter: DateFilterState) => void;
+  areaFilter: string;
+  setAreaFilter: (area: string) => void;
+  respondentFilter: string;
+  setRespondentFilter: (r: string) => void;
+  totalSurveys: number;
+  avgSatisfaction: number;
 }
 
 export const OutpatientSatisfactionList: React.FC<Props> = ({
-  surveys,
-  loading,
-  onEdit,
-  onView,
-  onDelete,
-  onAddNew,
+  surveys, loading, onEdit, onView, onDelete, onAddNew,
+  dateFilter, setDateFilter, areaFilter, setAreaFilter,
+  respondentFilter, setRespondentFilter, totalSurveys, avgSatisfaction
 }) => {
   const calculatePercentage = (s: OutpatientSurveyResponse) => {
     let totalScore = 0;
@@ -39,6 +46,53 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
     return 'text-rose-600 bg-rose-50';
   };
 
+  const getAreaLabel = (area?: string) => {
+    switch (area) {
+      case 'kham_dan': return 'K. Khám bệnh (Dân)';
+      case 'kham_quan': return 'Khám Quân';
+      case 'bhyt': return 'Khám BHYT';
+      case 'yeu_cau': return 'KKB theo yêu cầu';
+      case 'pk232': return 'PK232';
+      default: return area || 'N/A';
+    }
+  };
+
+  const handleExportExcel = () => {
+    if (surveys.length === 0) {
+      alert('Không có dữ liệu để xuất.');
+      return;
+    }
+
+    const data = surveys.map((s, index) => {
+      const d = s.ngay_khao_sat ? new Date(s.ngay_khao_sat) : new Date();
+      return {
+        'STT': index + 1,
+        'Ngày khảo sát': d.toLocaleDateString('vi-VN'),
+        'Khu vực': getAreaLabel(s.area),
+        'Đối tượng': s.respondent === 'patient' ? 'Người bệnh' : 'Người nhà',
+        'Tỷ lệ hài lòng (%)': calculatePercentage(s),
+        'Vấn đề chờ đợi': (s.waiting_issues || []).join(', '),
+        'Cần cải thiện': (s.priority_improvement || []).join(', '),
+        'Góp ý': s.feedback || '',
+        ...Array.from({ length: 15 }, (_, i) => ({
+          [`Câu ${i + 1}`]: (s as any)[`q${i + 1}`] || 0
+        })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Khảo sát Ngoại trú');
+
+    const maxWidths = Object.keys(data[0] || {}).map((key: string) => {
+      const lengths = data.map((row: any) => String(row[key as keyof typeof row]).length);
+      return { wch: Math.max(key.length, ...lengths) + 2 };
+    });
+    worksheet['!cols'] = maxWidths;
+
+    XLSX.writeFile(workbook, `Khao_sat_Ngoai_tru_${new Date().getTime()}.xlsx`);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -50,28 +104,82 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Danh sách khảo sát ngoại trú</h3>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Tổng số: {surveys.length} phiếu</p>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 gap-3 md:gap-6">
+        <div className="bg-white p-3 md:p-6 rounded-[1rem] md:rounded-[2rem] border border-slate-100 shadow-xl flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-6 group hover:-translate-y-1 transition-all">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-emerald-50 rounded-lg md:rounded-2xl flex items-center justify-center text-[#009900] group-hover:scale-110 transition-transform shrink-0">
+            <Users size={20} className="md:w-8 md:h-8" />
+          </div>
+          <div className="text-center md:text-left">
+            <p className="text-[7px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest">Số phiếu</p>
+            <h3 className="text-lg md:text-3xl font-black text-slate-800 leading-tight">{totalSurveys}</h3>
+          </div>
         </div>
-        <button
-          onClick={onAddNew}
-          className="flex items-center gap-2 px-6 py-3 bg-[#009900] text-white rounded-2xl font-black text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
-        >
-          <Plus size={18} /> Thêm phiếu mới
-        </button>
+        <div className="bg-white p-3 md:p-6 rounded-[1rem] md:rounded-[2rem] border border-slate-100 shadow-xl flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-6 group hover:-translate-y-1 transition-all">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-amber-50 rounded-lg md:rounded-2xl flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform shrink-0">
+            <Trophy size={20} className="md:w-8 md:h-8" />
+          </div>
+          <div className="text-center md:text-left">
+            <p className="text-[7px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest">Hài lòng TB</p>
+            <h3 className="text-lg md:text-3xl font-black text-slate-800 leading-tight">{avgSatisfaction}%</h3>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
+      {/* Header Summary & Filter */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full lg:w-auto">
+          <h3 className="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight hidden md:block shrink-0">Bộ lọc:</h3>
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
+            <select
+              value={areaFilter}
+              onChange={(e) => setAreaFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#009900] transition-all"
+            >
+              <option value="all">Tất cả Khu vực</option>
+              <option value="kham_dan">K. Khám bệnh (Dân)</option>
+              <option value="kham_quan">Khám Quân</option>
+              <option value="bhyt">Khám BHYT</option>
+              <option value="yeu_cau">KKB theo yêu cầu</option>
+              <option value="pk232">PK232</option>
+            </select>
+            <select
+              value={respondentFilter}
+              onChange={(e) => setRespondentFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#009900] transition-all"
+            >
+              <option value="all">Tất cả Đối tượng</option>
+              <option value="patient">Người bệnh</option>
+              <option value="relative">Người nhà</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <button
+            onClick={handleExportExcel}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-blue-600 text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+          >
+            <Download size={16} /><span className="md:inline">Xuất Excel</span>
+          </button>
+          <button
+            onClick={onAddNew}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+          >
+            <Plus size={16} /><span className="md:inline">Thêm phiếu mới</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100 font-black text-[10px] text-slate-500 uppercase tracking-wider">
-                <th className="px-4 md:px-6 py-5">Ngày khảo sát</th>
+                <th className="px-4 md:px-6 py-5 hidden md:table-cell">Ngày khảo sát</th>
                 <th className="px-4 md:px-6 py-5">Mã khảo sát</th>
-                <th className="px-4 md:px-6 py-5 text-center">Mức độ hài lòng (%)</th>
-                <th className="px-4 md:px-6 py-5 text-right uppercase">Thao tác</th>
+                <th className="px-4 md:px-6 py-5 text-center">Hài lòng (%)</th>
+                <th className="px-4 md:px-6 py-5 text-right uppercase hidden md:table-cell">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -80,7 +188,7 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
                   <td colSpan={4} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2 opacity-20">
                       <BarChart3 size={48} />
-                      <p className="text-sm font-black uppercase">Chưa có dữ liệu khảo sát</p>
+                      <p className="text-sm font-black uppercase">Chưa có dữ liệu</p>
                     </div>
                   </td>
                 </tr>
@@ -90,11 +198,15 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
                   const d = s.ngay_khao_sat ? new Date(s.ngay_khao_sat) : new Date();
                   const pad = (n: number) => String(n).padStart(2, '0');
                   const dateStr = d.toLocaleDateString('vi-VN');
-                  const fullCode = `NGOAITRU-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-                  
+                  const fullCode = `NGOAITRU-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+
                   return (
-                    <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-4 md:px-6 py-5">
+                    <tr
+                      key={s.id}
+                      onClick={() => onView(s)}
+                      className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                    >
+                      <td className="px-4 md:px-6 py-5 hidden md:table-cell">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-emerald-50 rounded-lg text-[#009900]">
                             <Calendar size={16} />
@@ -102,26 +214,28 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
                           <span className="text-sm font-bold text-slate-700">{dateStr}</span>
                         </div>
                       </td>
-                      <td className="px-4 md:px-6 py-5">
-                        <span className="text-[10px] md:text-xs font-black text-[#009900] tracking-tight bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                          {fullCode}
-                        </span>
+                      <td className="px-4 md:px-6 py-4 md:py-5">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] md:text-xs font-black text-[#009900] tracking-tight bg-emerald-50 px-2 md:px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+                            {fullCode}
+                          </span>
+                          <span className="text-[9px] font-bold text-slate-400 md:hidden">{dateStr}</span>
+                        </div>
                       </td>
-                      <td className="px-4 md:px-6 py-5 text-center">
+                      <td className="px-4 md:px-6 py-5 text-center font-black">
                         <div className="flex justify-center">
-                          <div className={`px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black ring-1 ring-inset ${getScoreColor(percent)} ring-current/20`}>
+                          <div className={`px-2 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black ring-1 ring-inset ${getScoreColor(percent)} ring-current/20`}>
                             {percent}%
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 md:px-6 py-5 text-right">
+                      <td className="px-4 md:px-6 py-5 text-right hidden md:table-cell">
                         <button
-                          onClick={() => onView(s)}
                           className="inline-flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-[#009900] hover:bg-emerald-50 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
                           title="Xem chi tiết"
                         >
                           <Eye size={18} />
-                          <span className="hidden md:inline">Chi tiết</span>
+                          <span>Chi tiết</span>
                         </button>
                       </td>
                     </tr>

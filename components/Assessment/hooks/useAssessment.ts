@@ -21,7 +21,7 @@ export const useAssessment = () => {
   const uDeptCode = uDept.split('-')[0].trim();
 
   // State
-  const [activeTab, setActiveTab] = useState<ActiveTab>('QUALITY_ASSESSMENT');
+  const [activeTab, setActiveTab] = useState<ActiveTab | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('LIST');
   const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
   const [loading, setLoading] = useState(true);

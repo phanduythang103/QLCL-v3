@@ -1,8 +1,8 @@
 import React from 'react';
-import { 
-  Plus, Search, FileText, Edit2, Trash2, Calendar, MapPin, User, Star
-} from 'lucide-react';
+import { Plus, Edit2, Eye, Trash2, Calendar, User, Star, Download, Trophy, Users, BarChart3, Activity } from 'lucide-react';
 import { KsMeSinhConRecord } from '../types/ksMeSinhCon';
+import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
+import * as XLSX from 'xlsx';
 
 interface Props {
   records: KsMeSinhConRecord[];
@@ -12,88 +12,203 @@ interface Props {
   onEdit: (rec: KsMeSinhConRecord) => void;
   onView: (rec: KsMeSinhConRecord) => void;
   onDelete: (id: string) => void;
+  dateFilter: DateFilterState;
+  setDateFilter: (filter: DateFilterState) => void;
+  birthMethodFilter: string;
+  setBirthMethodFilter: (method: string) => void;
+  totalRecords: number;
+  avgSatisfaction: number;
 }
 
 export const KsMeSinhConList: React.FC<Props> = ({
-  records, loading, error, onAddNew, onEdit, onView, onDelete
+  records, loading, error, onAddNew, onEdit, onView, onDelete,
+  dateFilter, setDateFilter,
+  birthMethodFilter, setBirthMethodFilter,
+  totalRecords, avgSatisfaction
 }) => {
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center p-20 space-y-4">
-      <div className="w-12 h-12 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
-      <p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Đang tải dữ liệu...</p>
-    </div>
-  );
+  const getBirthMethodLabel = (method?: number) => {
+    switch (method) {
+      case 1: return 'Đẻ thường';
+      case 2: return 'Mổ cấp cứu';
+      case 3: return 'Mổ chuẩn bị';
+      case 4: return 'Khác';
+      default: return 'N/A';
+    }
+  };
 
-  if (error) return (
-    <div className="p-10 bg-red-50 text-red-600 rounded-3xl border border-red-100 text-center">
-      <p className="font-black uppercase text-xs">Lỗi: {error}</p>
-    </div>
-  );
+  const handleExportExcel = () => {
+    if (records.length === 0) {
+      alert('Không có dữ liệu để xuất.');
+      return;
+    }
+
+    const data = records.map((r, index) => {
+      return {
+        'STT': index + 1,
+        'Ngày khảo sát': r.survey_date || '',
+        'Mã người mẹ': r.mother_id || '',
+        'Khoa': r.departments || '',
+        'Tuổi': r.age || 0,
+        'Sử dụng BHYT': r.bhyt === 1 ? 'Có' : 'Không',
+        'Cách sinh': getBirthMethodLabel(r.birth_method),
+        'Mức hài lòng chung': r.overall_satisfaction || 5,
+        'Tỷ lệ hài lòng (%)': r.satisfaction_percent || 0,
+        'Ý kiến thêm': r.note || ''
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'MeSinhCon');
+    XLSX.writeFile(workbook, `MeSinhCon_${new Date().getTime()}.xlsx`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="w-12 h-12 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin" />
+        <p className="text-slate-500 font-bold animate-pulse uppercase text-xs">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-10 bg-red-50 text-red-600 rounded-3xl border border-red-100 text-center">
+        <p className="font-black uppercase text-xs">Lỗi: {error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase">Khảo sát người mẹ sinh con</h2>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Danh sách các bản khảo sát đã thực hiện</p>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 gap-3 md:gap-6">
+        <div className="bg-white p-3 md:p-6 rounded-[1rem] md:rounded-[2rem] border border-slate-100 shadow-xl flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-6 group hover:-translate-y-1 transition-all">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-emerald-50 rounded-lg md:rounded-2xl flex items-center justify-center text-[#009900] group-hover:scale-110 transition-transform shrink-0">
+            <Users size={20} className="md:w-8 md:h-8" />
+          </div>
+          <div className="text-center md:text-left">
+            <p className="text-[7px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest">Số phiếu</p>
+            <h3 className="text-lg md:text-3xl font-black text-slate-800 leading-tight">{totalRecords}</h3>
+          </div>
         </div>
-        <button 
-          onClick={onAddNew}
-          className="flex items-center gap-2 bg-[#009900] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-lg shadow-emerald-100 hover:scale-105 transition-all active:scale-95"
-        >
-          <Plus size={18} /> Thêm khảo sát mới
-        </button>
+        <div className="bg-white p-3 md:p-6 rounded-[1rem] md:rounded-[2rem] border border-slate-100 shadow-xl flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-6 group hover:-translate-y-1 transition-all">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-amber-50 rounded-lg md:rounded-2xl flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform shrink-0">
+            <Trophy size={20} className="md:w-8 md:h-8" />
+          </div>
+          <div className="text-center md:text-left">
+            <p className="text-[7px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest">Hài lòng TB</p>
+            <h3 className="text-lg md:text-3xl font-black text-slate-800 leading-tight">{avgSatisfaction}%</h3>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {records.length === 0 ? (
-          <div className="col-span-full py-20 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-200">
-            <p className="text-slate-400 font-black text-xs uppercase italic">Chưa có dữ liệu khảo sát</p>
-          </div>
-        ) : (
-          records.map((rec) => (
-            <div 
-              key={rec.id}
-              className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group"
+      {/* Header Summary & Filter */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full lg:w-auto">
+          <h3 className="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight hidden md:block shrink-0">Bộ lọc:</h3>
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
+            <select
+              value={birthMethodFilter}
+              onChange={(e) => setBirthMethodFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#009900] transition-all"
             >
-              <div className="flex justify-between items-start mb-6">
-                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-[#009900] group-hover:text-white transition-colors">
-                  <User size={20} />
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => onView(rec)} className="p-2 text-slate-400 hover:text-emerald-600 transition-colors"><FileText size={18} /></button>
-                  <button onClick={() => onEdit(rec)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><Edit2 size={18} /></button>
-                  <button onClick={() => rec.id && onDelete(rec.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 size={18} /></button>
-                </div>
-              </div>
+              <option value="all">Hình thức sinh</option>
+              <option value="1">Đẻ thường</option>
+              <option value="2">Mổ cấp cứu</option>
+              <option value="3">Mổ chuẩn bị</option>
+              <option value="4">Khác</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <button
+            onClick={handleExportExcel}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-blue-600 text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+          >
+            <Download size={16} /><span className="md:inline">Xuất Excel</span>
+          </button>
+          <button
+            onClick={onAddNew}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+          >
+            <Plus size={16} /><span className="md:inline">Thêm phiếu mới</span>
+          </button>
+        </div>
+      </div>
 
-              <div className="space-y-4">
-                <h4 className="font-black text-slate-800 uppercase text-xs line-clamp-1">
-                  Mẹ: {rec.mother_id || 'N/A'}
-                </h4>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <Calendar size={14} className="shrink-0" />
-                    <span className="text-[10px] font-bold uppercase tracking-tight">{rec.survey_date}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <MapPin size={14} className="shrink-0" />
-                    <span className="text-[10px] font-bold uppercase tracking-tight truncate">{rec.hospital}</span>
-                  </div>
-                </div>
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50 border-b border-slate-100 font-black text-[10px] text-slate-500 uppercase tracking-wider">
+                <th className="px-4 md:px-6 py-5 hidden md:table-cell">Ngày khảo sát</th>
+                <th className="px-4 md:px-6 py-5">Mã người mẹ / Khoa</th>
+                <th className="px-4 md:px-6 py-5 text-center font-black">Hài lòng (%)</th>
+                <th className="px-4 md:px-6 py-5 text-right uppercase hidden md:table-cell">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {records.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-2 opacity-20">
+                      <BarChart3 size={48} />
+                      <p className="text-sm font-black uppercase">Chưa có dữ liệu</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                records.map((rec) => {
+                  const percent = rec.satisfaction_percent || 0;
+                  const getScoreColor = (p: number) => {
+                    if (p >= 90) return 'text-emerald-600 bg-emerald-50';
+                    if (p >= 70) return 'text-amber-600 bg-amber-50';
+                    return 'text-rose-600 bg-rose-50';
+                  };
 
-                <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                   <div className="flex items-center gap-1">
-                      <Star size={14} className="text-amber-400 fill-amber-400" />
-                      <span className="text-xs font-black text-slate-700">{rec.satisfaction_percent}% hài lòng</span>
-                   </div>
-                   <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">Hoàn thành</span>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+                  return (
+                    <tr
+                      key={rec.id}
+                      onClick={() => onView(rec)}
+                      className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                    >
+                      <td className="px-4 md:px-6 py-5 hidden md:table-cell">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-emerald-50 rounded-lg text-[#009900]"><Calendar size={16} /></div>
+                          <span className="text-sm font-bold text-slate-700">{rec.survey_date}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 md:px-6 py-4 md:py-5">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-bold text-slate-800 uppercase tracking-tight">Mẹ: {rec.mother_id}</span>
+                          <span className="text-[10px] font-black text-[#009900] uppercase tracking-wider">{rec.departments}</span>
+                          <span className="text-[9px] font-bold text-slate-400 md:hidden">{rec.survey_date}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 md:px-6 py-5 text-center">
+                        <div className="flex justify-center">
+                          <div className={`px-2 md:px-4 py-1.5 rounded-full text-[10px] font-black ring-1 ring-inset ${getScoreColor(percent)} ring-current/20`}>
+                            {percent}%
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 md:px-6 py-5 text-right hidden md:table-cell">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={(e) => { e.stopPropagation(); onView(rec); }} className="p-2 text-slate-400 hover:text-[#009900] transition-colors"><Eye size={18} /></button>
+                          <button onClick={(e) => { e.stopPropagation(); onEdit(rec); }} className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><Edit2 size={18} /></button>
+                          <button onClick={(e) => { e.stopPropagation(); onDelete(rec.id!); }} className="p-2 text-slate-400 hover:text-rose-600 transition-colors"><Trash2 size={18} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

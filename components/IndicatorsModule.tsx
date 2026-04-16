@@ -15,28 +15,11 @@ import { NurseRatioModule } from './NurseRatioModule';
 import { HandHygieneModule } from './HandHygieneModule';
 import IndicatorConfigModule from './IndicatorConfigModule';
 import IndicatorOverviewModule from './IndicatorOverviewModule';
-
-const ChartBar = ({ label, value, max, color, target, donVi }: { label: string, value: number, max: number, color: string, target?: number, donVi?: string }) => (
-  <div className="mb-4 group">
-    <div className="flex justify-between items-center mb-1.5">
-      <span className="text-[11px] font-bold text-black uppercase group-hover:text-[#009900] transition-colors">{label}</span>
-      <div className="flex items-center gap-2">
-        {target && <span className="text-[11px] text-black/60 font-bold">Mục tiêu: {target}{donVi || '%'}</span>}
-        <span className={`text-lg font-bold ${target && value < target ? 'text-red-600' : 'text-black'
-          }`}>{value}{donVi || '%'}</span>
-      </div>
-    </div>
-    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-      <div className={`h-2.5 rounded-full ${color} transition-all duration-500 ease-out`} style={{ width: `${(value / max) * 100}%` }}></div>
-    </div>
-  </div>
-);
-
 import { useIndicators } from './IndicatorsContext';
 import { IndicatorCategory } from '../types';
 
 export const IndicatorsModule: React.FC = () => {
-  const { category } = useIndicators();
+  const { category, setCategory } = useIndicators();
   const [indicators, setIndicators] = useState<ChiSoQlcl[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,44 +63,47 @@ export const IndicatorsModule: React.FC = () => {
     loadData();
   }, []);
 
-  // Separate indicators by group
-  const safetyIndicators = indicators.filter(i => i.nhom_chi_so === 'Chuyên môn & An toàn');
-  const satisfactionIndicators = indicators.filter(i => i.nhom_chi_so === 'Hài lòng & Quản lý');
-
-  // Calculate stats
-  const totalIndicators = indicators.length;
-  const achievedCount = indicators.filter(i => i.trang_thai === 'Đạt').length;
-  const warningIndicators = indicators.filter(i => i.trang_thai === 'Chưa đạt' || i.trang_thai === 'Cảnh báo');
-
   return (
     <div className="space-y-6">
+      {/* Header & Back Button */}
+      {category && (
+        <div className="md:hidden animate-in slide-in-from-left-4 duration-500 mb-2">
+          <button
+            onClick={() => setCategory(null)}
+            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm"
+          >
+            <BarChart2 size={14} className="rotate-180" /> Quay lại Tổng quan Chỉ số
+          </button>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           {category && category !== 'KTCM' && category !== 'AVG_EXAM_TIME' && category !== 'AVG_STAY_TIME' && category !== 'BED_USAGE' && category !== 'OR_USAGE' && category !== 'NURSE_PATIENT_RATIO' && category !== 'HAND_HYGIENE' && category !== 'INDICATOR_CONFIG' && category !== 'SEVERE_NON_MEDICAL' && (
-            <h2 className="text-main-title font-bold text-[#009900] uppercase animate-in fade-in slide-in-from-left-4 duration-300">
+            <h2 className="hidden md:block text-main-title font-bold text-[#009900] uppercase animate-in fade-in slide-in-from-left-4 duration-300">
               {getCategoryTitle(category)}
             </h2>
           )}
         </div>
         {!category && (
-           <div className="flex gap-2">
-           <button
-             onClick={loadData}
-             className="p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50"
-             title="Làm mới dữ liệu"
-           >
-             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-           </button>
-           <select
-             value={selectedPeriod}
-             onChange={(e) => setSelectedPeriod(e.target.value)}
-             className="bg-white border border-slate-200 text-black text-input font-bold rounded-lg p-2.5 focus:ring-green-500 focus:border-green-500"
-           >
-             <option value="06/2024">Tháng 6/2024</option>
-             <option value="05/2024">Tháng 5/2024</option>
-             <option value="Q1/2024">Quý 1/2024</option>
-           </select>
-         </div>
+          <div className="flex gap-2">
+            <button
+              onClick={loadData}
+              className="p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50"
+              title="Làm mới dữ liệu"
+            >
+              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="bg-white border border-slate-200 text-black text-input font-bold rounded-lg p-2.5 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="06/2024">Tháng 6/2024</option>
+              <option value="05/2024">Tháng 5/2024</option>
+              <option value="Q1/2024">Quý 1/2024</option>
+            </select>
+          </div>
         )}
       </div>
 

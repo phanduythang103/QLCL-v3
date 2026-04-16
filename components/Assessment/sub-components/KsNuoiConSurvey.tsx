@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { KsNuoiConRecord } from '../types/ksNuoiCon';
+import React, { useState, useEffect, useMemo } from 'react';
+import { KsNuoiConRecord as RecordType } from '../types/ksNuoiCon';
 import { ksNuoiConService } from '../services/ksNuoiConService';
 import { KsNuoiConList } from './KsNuoiConList';
 import { KsNuoiConForm } from './KsNuoiConForm';
 import { KsNuoiConDetail } from './KsNuoiConDetail';
+import { DateFilterState } from '../../DateRangeFilter';
 
 interface Props {
   setParentViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
@@ -11,15 +12,18 @@ interface Props {
 
 export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
-  const [records, setRecords] = useState<KsNuoiConRecord[]>([]);
+  const [records, setRecords] = useState<RecordType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<KsNuoiConRecord | undefined>(undefined);
+  const [selected, setSelected] = useState<RecordType | undefined>(undefined);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    loadRecords();
-  }, []);
+  // Filters
+  const [dateFilter, setDateFilter] = useState<DateFilterState>({
+    type: 'all', startDate: '', endDate: ''
+  });
+  const [deptFilter, setDeptFilter] = useState<string>('all');
+  const [deliveryFilter, setDeliveryFilter] = useState<string>('all');
 
   const loadRecords = async () => {
     try {
@@ -35,17 +39,97 @@ export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
     }
   };
 
+  useEffect(() => {
+    loadRecords();
+  }, []);
+
+  // Get unique departments for filter
+  const departments = useMemo(() => {
+    const sets = new Set<string>();
+    records.forEach(r => { if (r.department) sets.add(r.department); });
+    return Array.from(sets).sort();
+  }, [records]);
+
+  const filteredRecords = useMemo(() => {
+    return records.filter(r => {
+      // 1. Filter by date
+      let dateMatch = true;
+      if (dateFilter.type !== 'all' && r.survey_date) {
+        const surveyDate = new Date(r.survey_date);
+        const now = new Date();
+
+        switch (dateFilter.type) {
+          case 'thisWeek': {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+            dateMatch = surveyDate >= startOfWeek;
+            break;
+          }
+          case 'lastWeek': {
+            const startOfLastWeek = new Date(now);
+            startOfLastWeek.setDate(now.getDate() - now.getDay() - 7);
+            startOfLastWeek.setHours(0, 0, 0, 0);
+            const endOfLastWeek = new Date(startOfLastWeek);
+            endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+            endOfLastWeek.setHours(23, 59, 59, 999);
+            dateMatch = surveyDate >= startOfLastWeek && surveyDate <= endOfLastWeek;
+            break;
+          }
+          case 'thisMonth': {
+            dateMatch = surveyDate.getMonth() === now.getMonth() && surveyDate.getFullYear() === now.getFullYear();
+            break;
+          }
+          case 'lastMonth': {
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            dateMatch = surveyDate.getMonth() === lastMonth.getMonth() && surveyDate.getFullYear() === lastMonth.getFullYear();
+            break;
+          }
+          case 'custom': {
+            const start = dateFilter.startDate ? new Date(dateFilter.startDate) : null;
+            const end = dateFilter.endDate ? new Date(dateFilter.endDate) : null;
+            if (start) start.setHours(0, 0, 0, 0);
+            if (end) end.setHours(23, 59, 59, 999);
+            if (start && end) dateMatch = surveyDate >= start && surveyDate <= end;
+            else if (start) dateMatch = surveyDate >= start;
+            else if (end) dateMatch = surveyDate <= end;
+            break;
+          }
+          default: dateMatch = true;
+        }
+      } else if (dateFilter.type !== 'all' && !r.survey_date) dateMatch = false;
+
+      // 2. Filter by Dept
+      const deptMatch = deptFilter === 'all' || r.department === deptFilter;
+
+      // 3. Filter by Delivery Type
+      const deliveryMatch = deliveryFilter === 'all' || String(r.delivery_type) === deliveryFilter;
+
+      return dateMatch && deptMatch && deliveryMatch;
+    });
+  }, [records, dateFilter, deptFilter, deliveryFilter]);
+
+  const stats = useMemo(() => {
+    const total = filteredRecords.length;
+    if (total === 0) return { total: 0, normalBirthPercent: 0 };
+    const normalBirths = filteredRecords.filter(r => r.delivery_type === 1).length;
+    return {
+      total,
+      normalBirthPercent: Math.round((normalBirths / total) * 100)
+    };
+  }, [filteredRecords]);
+
   const handleAddNew = () => {
     setSelected(undefined);
     setViewMode('FORM');
   };
 
-  const handleEdit = (rec: KsNuoiConRecord) => {
+  const handleEdit = (rec: RecordType) => {
     setSelected(rec);
     setViewMode('FORM');
   };
 
-  const handleView = (rec: KsNuoiConRecord) => {
+  const handleView = (rec: RecordType) => {
     setSelected(rec);
     setViewMode('DETAIL');
   };
@@ -54,22 +138,19 @@ export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
     if (!window.confirm('Bạn có chắc muốn xóa bản khảo sát này?')) return;
     try {
       await ksNuoiConService.delete(id);
-      alert('Đã xóa bản khảo sát');
       setRecords(prev => prev.filter(r => r.id !== id));
     } catch (err) {
       alert('Lỗi khi xóa bản khảo sát');
     }
   };
 
-  const handleSave = async (payload: KsNuoiConRecord) => {
+  const handleSave = async (payload: RecordType) => {
     try {
       setSaving(true);
       if (selected?.id) {
         await ksNuoiConService.update(selected.id, payload);
-        alert('Cập nhật thành công');
       } else {
         await ksNuoiConService.create(payload);
-        alert('Tạo mới thành công');
       }
       await loadRecords();
       setViewMode('LIST');
@@ -86,16 +167,25 @@ export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
   };
 
   return (
-    <div className="w-full p-4">
+    <div className="w-full">
       {viewMode === 'LIST' && (
         <KsNuoiConList
-          records={records}
+          records={filteredRecords}
           loading={loading}
           error={error}
           onAddNew={handleAddNew}
           onEdit={handleEdit}
           onView={handleView}
           onDelete={handleDelete}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          deptFilter={deptFilter}
+          setDeptFilter={setDeptFilter}
+          deliveryFilter={deliveryFilter}
+          setDeliveryFilter={setDeliveryFilter}
+          departments={departments}
+          totalRecords={stats.total}
+          normalBirthPercent={stats.normalBirthPercent}
         />
       )}
       {viewMode === 'FORM' && (

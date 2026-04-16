@@ -53,6 +53,7 @@ export interface KsMeSinhConRecord {
   eh3?: number;
 
   // Section: Đánh giá chung
+  overall_satisfaction?: number; // Mức hài lòng chung (1-5)
   satisfaction_percent?: number; // Mức đáp ứng (%)
   return_intent?: number;        // Quay lại bệnh viện (1-6)
   return_intent_other?: string;

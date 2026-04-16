@@ -89,14 +89,14 @@ type EvalStatus = 'SUCCESS' | 'EXCEEDED' | 'WARNING' | 'FAILED' | 'NONE';
 
 function getEvaluationStatus(value: number | undefined, target: number | null | undefined, evaluationRule: string | null | undefined, unit: string | null | undefined): EvalStatus {
   if (value === undefined || value === null || target === undefined || target === null) return 'NONE';
-  
+
   const rule = (evaluationRule || '').toLowerCase();
   const isPercent = unit === '%';
-  
+
   // Detect direction: default is higher-is-better (>=)
   // Symbols meaning lower-is-better: <=, <, "thấp hơn", "tối đa", "không quá"
   const isLowerIsBetter = rule.includes('≤') || rule.includes('<') || rule.includes('thấp hơn') || rule.includes('tối đa') || rule.includes('không quá');
-  
+
   if (isLowerIsBetter) {
     if (isPercent && value < target * 0.9) return 'EXCEEDED'; // Significantly lower (better) - only for %
     if (value <= target) return 'SUCCESS';
@@ -171,12 +171,11 @@ const ChartRow = ({
             </span>
           )}
           {hasData ? (
-            <span className={`text-lg font-bold whitespace-nowrap ${
-              status === 'EXCEEDED' ? 'text-indigo-600' :
-              status === 'SUCCESS' ? 'text-[#009900]' : 
-              status === 'WARNING' ? 'text-amber-600' : 
-              status === 'FAILED' ? 'text-red-600' : 'text-slate-700'
-            }`}>
+            <span className={`text-lg font-bold whitespace-nowrap ${status === 'EXCEEDED' ? 'text-indigo-600' :
+              status === 'SUCCESS' ? 'text-[#009900]' :
+                status === 'WARNING' ? 'text-amber-600' :
+                  status === 'FAILED' ? 'text-red-600' : 'text-slate-700'
+              }`}>
               {value}{unit}
             </span>
           ) : (
@@ -222,15 +221,15 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
   const statusBadge = !hasData
     ? { label: 'Chờ dữ liệu', cls: 'bg-slate-100 text-slate-400 border-slate-200' }
     : status === 'EXCEEDED'
-    ? { label: 'Vượt chỉ tiêu', cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' }
-    : status === 'SUCCESS'
-    ? { label: 'Đạt', cls: 'bg-emerald-100 text-[#009900] border-emerald-200' }
-    : status === 'WARNING'
-    ? { label: 'Cảnh báo', cls: 'bg-amber-100 text-amber-700 border-amber-200' }
-    : { label: 'Không đạt', cls: 'bg-red-100 text-red-700 border-red-200' };
+      ? { label: 'Vượt chỉ tiêu', cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' }
+      : status === 'SUCCESS'
+        ? { label: 'Đạt', cls: 'bg-emerald-100 text-[#009900] border-emerald-200' }
+        : status === 'WARNING'
+          ? { label: 'Cảnh báo', cls: 'bg-amber-100 text-amber-700 border-amber-200' }
+          : { label: 'Không đạt', cls: 'bg-red-100 text-red-700 border-red-200' };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className={`bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-all group ${onClick ? 'cursor-pointer hover:border-[#009900]/30 active:scale-[0.98]' : ''}`}
     >
@@ -257,11 +256,10 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
             : 'Chưa đặt mục tiêu'}
         </span>
         {hasData ? (
-          <span className={`text-lg font-bold ${
-            status === 'EXCEEDED' ? 'text-indigo-600' :
-            status === 'SUCCESS' ? 'text-[#009900]' : 
-            status === 'WARNING' ? 'text-amber-600' : 'text-red-600'
-          }`}>
+          <span className={`text-lg font-bold ${status === 'EXCEEDED' ? 'text-indigo-600' :
+            status === 'SUCCESS' ? 'text-[#009900]' :
+              status === 'WARNING' ? 'text-amber-600' : 'text-red-600'
+            }`}>
             {giaTri}{unit}
           </span>
         ) : (
@@ -272,11 +270,10 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
       {/* Progress bar — always visible */}
       <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
         <div
-          className={`h-2 rounded-full ${
-            status === 'EXCEEDED' ? 'bg-indigo-600' : 
-            status === 'SUCCESS' ? 'bg-[#009900]' : 
-            'bg-red-500'
-          } transition-all duration-700 ease-out`}
+          className={`h-2 rounded-full ${status === 'EXCEEDED' ? 'bg-indigo-600' :
+            status === 'SUCCESS' ? 'bg-[#009900]' :
+              'bg-red-500'
+            } transition-all duration-700 ease-out`}
           style={{ width: hasData ? `${Math.max(pct, 3)}%` : '3%', opacity: hasData ? 1 : 0.2 }}
         />
       </div>
@@ -366,7 +363,7 @@ const IndicatorOverviewModule: React.FC = () => {
 
       // 2. Fetch all specific source data for live calculation
       const [
-        bedUsage, orUsage, nonMedical, medical, examTime, los, 
+        bedUsage, orUsage, nonMedical, medical, examTime, los,
         ssi, surgery2, ktcm, handHygiene, vap, nurseRatio
       ] = await Promise.all([
         fetchCongSuatGiuong(), fetchHieuSuatPhongMo(), fetchBcScnyknt(), fetchScykNghiemTrong(),
@@ -386,41 +383,41 @@ const IndicatorOverviewModule: React.FC = () => {
         const khoaMatch = (khoa: string | null | undefined) => !filterKhoa || khoa === filterKhoa;
 
         // ── Aggregation Logic ──
-        
+
         // 1. BED_USAGE
         const filteredBed = bedUsage.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi));
         if (filteredBed.length) live['BED_USAGE'] = Math.round(filteredBed.reduce((s, r) => s + (r.cong_suat || 0), 0) / filteredBed.length * 10) / 10;
-        
+
         // 2. OR_USAGE
         const filteredOR = orUsage.filter(r => inRange(r.ngay_bao_cao)); // Usually clinic wide
         if (filteredOR.length) live['OR_USAGE'] = Math.round(filteredOR.reduce((s, r) => s + (r.hieu_suat || 0), 0) / filteredOR.length * 10) / 10;
-        
+
         // 3. SEVERE_NON_MEDICAL
         live['SEVERE_NON_MEDICAL'] = nonMedical.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi)).length;
-        
+
         // 4. SEVERE_INCIDENT
         live['SEVERE_INCIDENT'] = medical.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi)).length;
-        
+
         // 5. AVG_EXAM_TIME
         const filteredExam = examTime.filter(r => inRange(r.ngay_giam_sat));
         if (filteredExam.length) live['AVG_EXAM_TIME'] = Math.round(filteredExam.reduce((s, r) => s + (r.tong_thoi_gian || 0), 0) / filteredExam.length);
-        
+
         // 6. AVG_STAY_TIME
         const filteredLOS = los.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.don_vi));
         if (filteredLOS.length) live['AVG_STAY_TIME'] = Math.round(filteredLOS.reduce((s, r) => s + (r.ngay_tb || 0), 0) / filteredLOS.length * 10) / 10;
-        
+
         // 7. SSI (NKVM)
         const filteredSSI = ssi.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa));
         if (filteredSSI.length) live['SSI'] = Math.round(filteredSSI.reduce((s, r) => s + (r.ty_le_nkvm || 0), 0) / filteredSSI.length * 10) / 10;
-        
+
         // 8. SURGERY_II
         const filteredSurg = surgery2.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa));
         if (filteredSurg.length) live['SURGERY_II'] = Math.round(filteredSurg.reduce((s, r) => s + (r.ty_le || 0), 0) / filteredSurg.length * 10) / 10;
-        
+
         // 9. KTCM
         const filteredKtcm = ktcm.filter(r => inRange(r.ngay_bao_cao));
         if (filteredKtcm.length) live['KTCM'] = Math.round(filteredKtcm.reduce((s, r) => s + (r.ty_le || 0), 0) / filteredKtcm.length * 10) / 10;
-        
+
         // 10. HAND_HYGIENE
         const filteredVst = handHygiene.filter(r => inRange(r.ngay_giam_sat) && khoaMatch(r.khoa_duoc_giam_sat));
         if (filteredVst.length) {
@@ -428,10 +425,10 @@ const IndicatorOverviewModule: React.FC = () => {
           const totalTuanThu = filteredVst.reduce((s, r) => s + (r.so_lan_tuan_thu || 0), 0);
           live['HAND_HYGIENE'] = totalCoHoi > 0 ? Math.round((totalTuanThu / totalCoHoi) * 100 * 10) / 10 : 0;
         }
-        
+
         // 11. VAP
         live['VAP'] = vap.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa)).length;
-        
+
         // 12. NURSE_PATIENT_RATIO
         const filteredNurse = nurseRatio.filter(r => inRange(r.ngay_bao_cao) && khoaMatch(r.khoa));
         if (filteredNurse.length) live['NURSE_PATIENT_RATIO'] = Math.round(filteredNurse.reduce((s, r) => s + (r.ty_so_dd_nb || 0), 0) / filteredNurse.length * 100) / 100;
@@ -460,7 +457,7 @@ const IndicatorOverviewModule: React.FC = () => {
         if (searchTerm) {
           const q = searchTerm.toLowerCase();
           if (!cfg.ten_chi_so.toLowerCase().includes(q) &&
-              !(cfg.linh_vuc_ap_dung || '').toLowerCase().includes(q)) return false;
+            !(cfg.linh_vuc_ap_dung || '').toLowerCase().includes(q)) return false;
         }
         // Date range overlap: cfg is active if it overlaps the selected period
         if (selectedRange && (cfg.tu_ngay || cfg.den_ngay)) {
@@ -475,7 +472,7 @@ const IndicatorOverviewModule: React.FC = () => {
         const lowerName = cfg.ten_chi_so.toLowerCase();
         // 1. Try to find mapping to specific module
         const mapped = Object.entries(INDICATOR_MAPPING).find(([key]) => lowerName.includes(key));
-        
+
         let giaTri: number | undefined = undefined;
         let category: IndicatorCategory | undefined = undefined;
 
@@ -534,9 +531,9 @@ const IndicatorOverviewModule: React.FC = () => {
   const canhBaoCount = (statusCounts['WARNING'] || 0);
   const chuaDatCount = (statusCounts['FAILED'] || 0);
   const noDataCount = total - withData.length;
-  
-  const overallRate = withData.length > 0 
-    ? Math.round(((datCount + vuotCount + canhBaoCount) / withData.length) * 100) 
+
+  const overallRate = withData.length > 0
+    ? Math.round(((datCount + vuotCount + canhBaoCount) / withData.length) * 100)
     : 0;
 
   // Assign color index globally across all indicators
@@ -546,12 +543,51 @@ const IndicatorOverviewModule: React.FC = () => {
     rows: rows.map(r => ({ ...r, colorIdx: colorCounter++ })),
   }));
 
+  const indicatorMenuItems: { id: IndicatorCategory; name: string; icon: React.ReactNode; color: string; bgColor: string }[] = [
+    { id: 'KTCM', name: 'KTCM', icon: <Microscope />, color: '#0d9488', bgColor: '#f0fdfa' },
+    { id: 'SURGERY_II', name: 'PT LOẠI II', icon: <Syringe />, color: '#e11d48', bgColor: '#fff1f2' },
+    { id: 'SSI', name: 'NKVM', icon: <Shield />, color: '#0891b2', bgColor: '#ecfeff' },
+    { id: 'VAP', name: 'VP-NKBV', icon: <HeartPulse />, color: '#4f46e5', bgColor: '#eef2ff' },
+    { id: 'SEVERE_INCIDENT', name: 'SCYK', icon: <AlertCircle />, color: '#dc2626', bgColor: '#fef2f2' },
+    { id: 'SEVERE_NON_MEDICAL', name: 'SC-NGOÀI', icon: <Shield />, color: '#d97706', bgColor: '#fffbeb' },
+    { id: 'AVG_EXAM_TIME', name: 'TG KHÁM', icon: <Clock />, color: '#2563eb', bgColor: '#eff6ff' },
+    { id: 'AVG_STAY_TIME', name: 'TG NẰM VIỆN', icon: <Calendar />, color: '#ea580c', bgColor: '#fff7ed' },
+    { id: 'BED_USAGE', name: 'CS GIƯỜNG', icon: <BedDouble />, color: '#16a34a', bgColor: '#f0fdf4' },
+    { id: 'OR_USAGE', name: 'SD PHÒNG MỔ', icon: <Activity />, color: '#7c3aed', bgColor: '#f5f3ff' },
+    { id: 'NURSE_PATIENT_RATIO', name: 'ĐD/NB', icon: <Users />, color: '#0284c7', bgColor: '#f0f9ff' },
+    { id: 'HAND_HYGIENE', name: 'VỆ SINH TAY', icon: <Hand />, color: '#059669', bgColor: '#ecfdf5' },
+    { id: 'INDICATOR_CONFIG', name: 'CẤU HÌNH', icon: <ClipboardList />, color: '#475569', bgColor: '#f8fafc' },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* ── Mobile Navigation Grid ── */}
+      <div className="md:hidden bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-50 mb-8">
+        <div className="grid grid-cols-3 gap-y-10 gap-x-2">
+          {indicatorMenuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setCategory(item.id)}
+              className="flex flex-col items-center gap-3 active:scale-95 transition-all group"
+            >
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300"
+                style={{ backgroundColor: item.bgColor, color: item.color }}
+              >
+                {React.cloneElement(item.icon as any, { size: 26 })}
+              </div>
+              <span className="text-[9px] font-black text-slate-600 uppercase tracking-tighter text-center leading-tight">
+                {item.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-main-title font-bold text-slate-800 uppercase">Tổng quan Chỉ số QLCL</h2>
+          <h2 className="hidden md:block text-main-title font-bold text-slate-800 uppercase">Tổng quan Chỉ số QLCL</h2>
           <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">So sánh mục tiêu – kết quả</p>
         </div>
         <button
@@ -589,11 +625,10 @@ const IndicatorOverviewModule: React.FC = () => {
               <button
                 key={val}
                 onClick={() => setTimePeriod(val)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${
-                  timePeriod === val
-                    ? 'bg-[#009900] text-white shadow-sm'
-                    : 'text-slate-500 hover:bg-white hover:shadow-sm'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${timePeriod === val
+                  ? 'bg-[#009900] text-white shadow-sm'
+                  : 'text-slate-500 hover:bg-white hover:shadow-sm'
+                  }`}
               >
                 {label}
               </button>

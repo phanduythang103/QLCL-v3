@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  ArrowLeft, Save, User, Phone, MapPin, Calendar, Info, Star, ChevronRight
+  ArrowLeft, Save, User, Phone, MapPin, Calendar, Info, Star, Activity
 } from 'lucide-react';
 import { KsMeSinhConRecord } from '../types/ksMeSinhCon';
 
@@ -56,14 +56,38 @@ export const KsMeSinhConForm: React.FC<Props> = ({
       bhyt: 1,
       birth_method: 1,
       prenatal_check: 1,
+      overall_satisfaction: 5,
       satisfaction_percent: 100,
       return_intent: 5,
       note: ''
     }
   );
 
+  const calculateSatisfaction = (newData: KsMeSinhConRecord) => {
+    // Collect all matrix questions
+    const questionKeys = SECTION_MAP.flatMap(s => s.questions.map(q => q.id));
+    const scores = questionKeys.map(k => (newData as any)[k]).filter(s => s !== undefined && s > 0);
+
+    if (scores.length === 0 && !newData.overall_satisfaction) return 0;
+
+    const avgSectionIII = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 5;
+    const overall = newData.overall_satisfaction || 5;
+
+    // Formula: (Avg III + Overall) / 2
+    // Convert to 0-100%: Score * 20 (as per user: 1 star = 20%, 5 stars = 100%)
+    const finalScore = (avgSectionIII + overall) / 2;
+    const percent = Math.round(finalScore * 20);
+
+    return percent;
+  };
+
   const handleChange = (field: keyof KsMeSinhConRecord, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      // Auto recalculate satisfaction
+      const newPercent = calculateSatisfaction(updated);
+      return { ...updated, satisfaction_percent: newPercent };
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -264,39 +288,62 @@ export const KsMeSinhConForm: React.FC<Props> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <label className="text-sm font-black text-slate-800 flex items-center gap-2">
-                <Star size={16} className="text-amber-400 fill-amber-400" /> Mức đáp ứng (%)
+            <div className="space-y-6">
+              <label className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                <Star size={18} className="text-amber-400 fill-amber-400" /> 1. Mức hài lòng đánh giá chung
               </label>
-              <input
-                type="range" min="0" max="100"
-                value={formData.satisfaction_percent}
-                onChange={e => handleChange('satisfaction_percent', parseInt(e.target.value))}
-                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#009900]"
-              />
-              <div className="text-center font-black text-2xl text-emerald-600">{formData.satisfaction_percent}%</div>
+              <div className="flex items-center gap-3">
+                {[1, 2, 3, 4, 5].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => handleChange('overall_satisfaction', val)}
+                    className={`w-14 h-14 rounded-2xl font-black text-xl transition-all ${formData.overall_satisfaction === val
+                      ? 'bg-amber-400 text-white shadow-lg scale-110 ring-4 ring-amber-100'
+                      : 'bg-slate-100 text-slate-400 hover:bg-amber-50'
+                      }`}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase italic">
+                (1: Rất không hài lòng {"->"} 5: Rất hài lòng)
+              </p>
             </div>
+
             <div className="space-y-4">
-              <label className="text-sm font-black text-slate-800">Quay lại bệnh viện</label>
-              <select value={formData.return_intent} onChange={e => handleChange('return_intent', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-bold outline-none">
-                <option value={1}>Không quay lại</option>
-                <option value={2}>Ít lựa chọn</option>
-                <option value={3}>Chuyển viện khác</option>
-                <option value={4}>Có thể quay lại</option>
-                <option value={5}>Chắc chắn quay lại</option>
-                <option value={6}>Khác</option>
+              <label className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                <Activity size={18} className="text-[#009900]" /> 2. Tỷ lệ hài lòng (%)
+              </label>
+              <div className="bg-emerald-50 p-8 rounded-[2rem] border border-emerald-100 text-center relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100/30 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+                <h4 className="text-5xl font-black text-[#009900] relative z-10">{formData.satisfaction_percent}%</h4>
+                <p className="text-[10px] font-black text-[#009900]/60 uppercase mt-2 tracking-[0.2em] relative z-10">Tự động tính toán</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 md:col-span-2">
+              <label className="text-sm font-black text-slate-800 uppercase tracking-wide">3. Quay lại bệnh viện</label>
+              <select value={formData.return_intent} onChange={e => handleChange('return_intent', parseInt(e.target.value))} className="w-full bg-slate-50 p-5 rounded-3xl border border-slate-200 text-[13px] font-black outline-none focus:border-[#009900] appearance-none">
+                <option value={1}>1. Chắc chắn không bao giờ quay lại</option>
+                <option value={2}>2. Không bao giờ quay lại</option>
+                <option value={3}>3. Có thể quay lại nhưng không ưu tiên</option>
+                <option value={4}>4. Có thể quay lại</option>
+                <option value={5}>5. Chắc chắn sẽ quay lại</option>
+                <option value={6}>6. Khác</option>
               </select>
-              {formData.return_intent === 6 && <input type="text" value={formData.return_intent_other} onChange={e => handleChange('return_intent_other', e.target.value)} placeholder="Lý do khác..." className="mt-2 w-full bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs outline-none" />}
+              {formData.return_intent === 6 && <input type="text" value={formData.return_intent_other} onChange={e => handleChange('return_intent_other', e.target.value)} placeholder="Lý do khác..." className="mt-2 w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />}
             </div>
           </div>
 
           <div className="space-y-4 pt-6">
-            <label className="text-sm font-black text-slate-800">Ý kiến thêm</label>
+            <label className="text-sm font-black text-slate-800 uppercase tracking-wide">4. Ý kiến đóng góp khác</label>
             <textarea
               value={formData.note}
               onChange={e => handleChange('note', e.target.value)}
-              placeholder="Góp ý thêm..."
-              className="w-full min-h-[120px] bg-slate-50 p-6 rounded-3xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-all shadow-inner resize-none"
+              placeholder="Xin Ông/Bà vui lòng cho biết thêm ý kiến đóng góp cụ thể cho bệnh viện..."
+              className="w-full min-h-[150px] bg-slate-50 p-6 rounded-[2.5rem] border border-slate-200 text-base font-medium outline-none focus:border-emerald-500 transition-all shadow-inner resize-none"
             />
           </div>
         </section>

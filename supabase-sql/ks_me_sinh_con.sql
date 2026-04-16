@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS public.ks_me_sinh_con (
   eh3 smallint,
   
   -- Overall section
+  overall_satisfaction smallint DEFAULT 5,
   satisfaction_percent integer,
   return_intent smallint,
   return_intent_other text,

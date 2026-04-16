@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 
-interface DateFilterState {
+export interface DateFilterState {
   type: string;
   startDate: string;
   endDate: string;

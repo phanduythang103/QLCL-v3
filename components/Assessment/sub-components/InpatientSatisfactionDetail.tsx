@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Printer, CheckCircle2, User, Phone, MapPin, Clock, Home, Star } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Star } from 'lucide-react';
 import { InpatientSurveyResponse } from '../types/inpatientSatisfaction';
 
 interface Props {
@@ -110,7 +110,7 @@ export const InpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) =
             {data.ngay_khao_sat && (() => {
               const d = new Date(data.ngay_khao_sat);
               const pad = (n: number) => String(n).padStart(2, '0');
-              const code = `NOITRU-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+              const code = `NOITRU-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
               return (
                 <p className="mt-2 text-[11px] md:text-xs text-slate-500 font-bold tracking-wide">
                   (Mã khảo sát: {code})
@@ -218,50 +218,50 @@ export const InpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) =
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs md:text-sm">
-                <div className="space-y-6">
-                    <div className="flex flex-col gap-2">
-                        <span className="font-bold uppercase tracking-tight">Mức độ hài lòng chung:</span>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-emerald-50 text-[#009900] px-4 py-2 rounded-xl border border-emerald-100 font-black text-xl tracking-tight">
-                                {data.satisfaction_percent}%
-                            </div>
-                            <div className="flex gap-0.5">
-                                {[1,2,3,4,5].map(star => (
-                                    <Star 
-                                        key={star} 
-                                        size={16} 
-                                        className={star <= (data.satisfaction_percent / 20) ? "fill-amber-400 text-amber-400" : "text-slate-200"}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+              <div className="space-y-6">
+                <div className="flex flex-col gap-2">
+                  <span className="font-bold uppercase tracking-tight">Mức độ hài lòng chung:</span>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-emerald-50 text-[#009900] px-4 py-2 rounded-xl border border-emerald-100 font-black text-xl tracking-tight">
+                      {data.satisfaction_percent}%
                     </div>
-
-                    <div className="flex flex-col gap-3 pt-2">
-                        <span className="font-bold uppercase tracking-tight">Dự định quay lại hoặc giới thiệu:</span>
-                        <div className="flex flex-col gap-2 pl-2">
-                            {[
-                                { val: 'no', label: 'Chắc chắn không' },
-                                { val: 'maybe', label: 'Có thể' },
-                                { val: 'yes', label: 'Chắc chắn' }
-                            ].map(opt => (
-                                <div key={opt.val} className="flex items-center gap-2">
-                                    <div className={`w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.return_intent === opt.val ? 'bg-[#009900] border-[#009900]' : ''}`}>
-                                        {data.return_intent === opt.val && <CheckCircle2 size={10} className="text-white" />}
-                                    </div>
-                                    <span className={data.return_intent === opt.val ? 'font-bold text-[#009900]' : 'text-slate-600'}>{opt.label}</span>
-                                </div>
-                            ))}
-                        </div>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Star
+                          key={star}
+                          size={16}
+                          className={star <= (data.satisfaction_percent / 20) ? "fill-amber-400 text-amber-400" : "text-slate-200"}
+                        />
+                      ))}
                     </div>
+                  </div>
                 </div>
 
-                <div className="space-y-3">
-                    <span className="font-bold uppercase tracking-tight">Ý kiến đóng góp:</span>
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-700 min-h-[120px] whitespace-pre-wrap leading-relaxed">
-                        {data.feedback || "Không có nội dung góp ý."}
-                    </div>
+                <div className="flex flex-col gap-3 pt-2">
+                  <span className="font-bold uppercase tracking-tight">Dự định quay lại hoặc giới thiệu:</span>
+                  <div className="flex flex-col gap-2 pl-2">
+                    {[
+                      { val: 'no', label: 'Chắc chắn không' },
+                      { val: 'maybe', label: 'Có thể' },
+                      { val: 'yes', label: 'Chắc chắn' }
+                    ].map(opt => (
+                      <div key={opt.val} className="flex items-center gap-2">
+                        <div className={`w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.return_intent === opt.val ? 'bg-[#009900] border-[#009900]' : ''}`}>
+                          {data.return_intent === opt.val && <CheckCircle2 size={10} className="text-white" />}
+                        </div>
+                        <span className={data.return_intent === opt.val ? 'font-bold text-[#009900]' : 'text-slate-600'}>{opt.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <span className="font-bold uppercase tracking-tight">Ý kiến đóng góp:</span>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-700 min-h-[120px] whitespace-pre-wrap leading-relaxed">
+                  {data.feedback || "Không có nội dung góp ý."}
+                </div>
+              </div>
             </div>
           </div>
 
