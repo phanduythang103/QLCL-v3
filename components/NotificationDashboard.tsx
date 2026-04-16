@@ -1,156 +1,275 @@
 import React, { useEffect, useState } from 'react';
 import { fetchThongBao, ThongBao } from '../readThongBao';
-import { Bell, Calendar, ChevronRight, Paperclip, Loader, X, Eye, FileText, User, Info, Building } from 'lucide-react';
-import { useNavigation } from '../contexts/NavigationContext';
-import { ModuleType } from '../types';
+import { fetchLichGiamSat, LichGiamSat } from '../readLichGiamSat';
+import { Bell, Calendar, ChevronRight, Paperclip, Loader, X, FileText, Activity, Clock, MapPin, Eye, Info, List } from 'lucide-react';
 
 export const NotificationDashboard: React.FC = () => {
-    const { navigateToModule } = useNavigation();
     const [notifications, setNotifications] = useState<ThongBao[]>([]);
+    const [schedules, setSchedules] = useState<LichGiamSat[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Modals state
     const [selectedNoti, setSelectedNoti] = useState<ThongBao | null>(null);
-    const [showModal, setShowModal] = useState(false);
+    const [showNotiDetail, setShowNotiDetail] = useState(false);
+    const [showAllNoti, setShowAllNoti] = useState(false);
+    const [showAllSchedule, setShowAllSchedule] = useState(false);
 
     useEffect(() => {
-        fetchThongBao().then(data => {
-            setNotifications(data?.slice(0, 5) || []);
-            setLoading(false);
-        }).catch(err => {
-            console.error(err);
-            setLoading(false);
-        });
+        const loadAll = async () => {
+            try {
+                const [notiData, scheduleData] = await Promise.all([
+                    fetchThongBao(),
+                    fetchLichGiamSat()
+                ]);
+                setNotifications(notiData || []);
+                setSchedules(scheduleData || []);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadAll();
     }, []);
 
-    const openDetail = (noti: ThongBao) => {
+    const openNotiDetail = (noti: ThongBao) => {
         setSelectedNoti(noti);
-        setShowModal(true);
+        setShowNotiDetail(true);
     };
 
-    if (loading) return <div className="flex justify-center p-8"><Loader className="animate-spin text-primary-600" /></div>;
-    if (notifications.length === 0) return null;
+    if (loading) return (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-full flex items-center justify-center">
+            <Loader className="animate-spin text-[#009900]" />
+        </div>
+    );
 
     return (
         <>
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
-                <div className="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                    <h3 className="text-label font-black text-black uppercase flex items-center gap-2">
-                        <Bell className="text-[#009900]" size={18} />
-                        Thông báo mới nhất
-                    </h3>
-                </div>
-                <div className="divide-y divide-slate-50 overflow-y-auto">
-                    {notifications.map((noti) => (
-                        <div
-                            key={noti.id}
-                            onClick={() => openDetail(noti)}
-                            className="p-4 hover:bg-slate-50 transition-colors group cursor-pointer"
+            <div className="flex flex-col gap-6 h-full">
+
+                {/* PART 1: TOP - LATEST NOTIFICATIONS */}
+                <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0">
+                    <div className="p-5 border-b border-slate-50 bg-white flex justify-between items-center">
+                        <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                            <Bell className="text-[#009900]" size={16} />
+                            Thông báo mới nhất
+                        </h3>
+                        <button
+                            onClick={() => setShowAllNoti(true)}
+                            className="text-[10px] font-black text-[#009900] uppercase hover:underline"
                         >
-                            <div className="flex justify-between items-start mb-1">
-                                <span className="text-table font-black text-[#009900] uppercase tracking-widest">
-                                    {noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : 'Mới'}
-                                </span>
-                                {noti.file_dinh_kem && (
-                                    <Paperclip size={12} className="text-slate-300 group-hover:text-primary-500" />
-                                )}
-                            </div>
-                            <p className="text-table font-black text-black group-hover:text-[#009900] transition-colors line-clamp-2 mb-1 uppercase">
-                                {noti.noi_dung}
-                            </p>
-                            <div className="flex items-center gap-2 text-table font-bold text-black/40 uppercase">
-                                <Calendar size={12} />
-                                <span>{noti.ngay_bat_dau ? new Date(noti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}</span>
-                                <ChevronRight size={8} />
-                                <span>{noti.ngay_ket_thuc ? new Date(noti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}</span>
-                            </div>
-                        </div>
-                    ))}
+                            Tất cả
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto divide-y divide-slate-50 scrollbar-hide">
+                        {notifications.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400 text-[10px] font-black uppercase tracking-widest">Không có thông báo</div>
+                        ) : (
+                            notifications.slice(0, 5).map((noti) => (
+                                <div
+                                    key={noti.id}
+                                    onClick={() => openNotiDetail(noti)}
+                                    className="p-5 hover:bg-slate-50 transition-all group cursor-pointer"
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                            {noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : 'Mới'}
+                                        </span>
+                                        {noti.file_dinh_kem && (
+                                            <Paperclip size={10} className="text-slate-300 group-hover:text-primary-500" />
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] font-black text-slate-700 group-hover:text-[#009900] transition-colors line-clamp-2 uppercase leading-relaxed">
+                                        {noti.noi_dung}
+                                    </p>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
-                <div className="p-3 bg-slate-50 text-center border-t border-slate-100">
-                    <button
-                        onClick={() => navigateToModule(ModuleType.SETTINGS, 'NOTI')}
-                        className="text-table font-black text-[#009900] hover:underline transition-colors flex items-center justify-center gap-1 w-full uppercase"
-                    >
-                        Xem tất cả thông báo <ChevronRight size={14} />
-                    </button>
+
+                {/* PART 2: BOTTOM - SUPERVISION SCHEDULE */}
+                <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0">
+                    <div className="p-5 border-b border-slate-50 bg-white flex justify-between items-center">
+                        <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                            <Calendar className="text-indigo-600" size={16} />
+                            Lịch giám sát
+                        </h3>
+                        <button
+                            onClick={() => setShowAllSchedule(true)}
+                            className="text-[10px] font-black text-indigo-600 uppercase hover:underline"
+                        >
+                            Chi tiết
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto divide-y divide-slate-50 scrollbar-hide">
+                        {schedules.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400 text-[10px] font-black uppercase tracking-widest">Không có lịch GS</div>
+                        ) : (
+                            schedules.slice(0, 5).map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="p-5 hover:bg-slate-50 transition-all group"
+                                >
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase rounded-md border border-indigo-100">
+                                            {item.trang_thai || 'Kế hoạch'}
+                                        </div>
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                            <Clock size={10} />
+                                            {item.tu_ngay ? new Date(item.tu_ngay).toLocaleDateString('vi-VN') : '---'}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] font-black text-slate-700 group-hover:text-indigo-600 transition-colors line-clamp-1 uppercase mb-2">
+                                        {item.nd_giam_sat}
+                                    </p>
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
+                                        <MapPin size={10} className="text-rose-500" />
+                                        <span className="truncate">{item.dv_duoc_gs || 'Toàn viện'}</span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Detail Modal */}
-            {showModal && selectedNoti && (
+            {/* MODAL: ALL NOTIFICATIONS */}
+            {showAllNoti && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
-                        <div className="p-8 border-b border-slate-50 bg-slate-50/50 relative">
-                            <button onClick={() => setShowModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full shadow-sm transition-all border border-slate-100">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
+                        <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center relative">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-[#009900] shadow-sm">
+                                    <Bell size={24} />
+                                </div>
+                                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Tất cả thông báo</h3>
+                            </div>
+                            <button onClick={() => setShowAllNoti(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full transition-all">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-4 max-h-[70vh] overflow-y-auto divide-y divide-slate-50">
+                            {notifications.map((noti) => (
+                                <div
+                                    key={noti.id}
+                                    onClick={() => { openNotiDetail(noti); setShowAllNoti(false); }}
+                                    className="p-6 hover:bg-slate-50 transition-all group cursor-pointer rounded-2xl"
+                                >
+                                    <div className="flex justify-between items-start mb-3">
+                                        <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-full">
+                                            {noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : '---'}
+                                        </span>
+                                        {noti.file_dinh_kem && <Paperclip size={14} className="text-slate-300" />}
+                                    </div>
+                                    <p className="text-sm font-black text-slate-700 group-hover:text-[#009900] uppercase transition-colors leading-relaxed">
+                                        {noti.noi_dung}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL: ALL SCHEDULES */}
+            {showAllSchedule && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
+                        <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center relative">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
+                                    <Calendar size={24} />
+                                </div>
+                                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Chi tiết lịch giám sát</h3>
+                            </div>
+                            <button onClick={() => setShowAllSchedule(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full transition-all">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">
+                            {schedules.map((item) => (
+                                <div key={item.id} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-md transition-all">
+                                    <div className="flex flex-wrap items-center gap-4 mb-4">
+                                        <span className="px-4 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-xl">
+                                            {item.trang_thai || 'KẾ HOẠCH'}
+                                        </span>
+                                        <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                            <Clock size={16} className="text-indigo-400" />
+                                            {item.tu_ngay ? new Date(item.tu_ngay).toLocaleDateString('vi-VN') : '---'}
+                                            {item.den_ngay && ` - ${new Date(item.den_ngay).toLocaleDateString('vi-VN')}`}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm font-black text-slate-800 uppercase tracking-tight mb-4">{item.nd_giam_sat}</p>
+                                    <div className="flex flex-wrap gap-x-8 gap-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <MapPin size={14} className="text-rose-500" />
+                                            <span className="text-[11px] font-black text-slate-500 uppercase">{item.dv_duoc_gs || 'TOÀN VIỆN'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Activity size={14} className="text-[#009900]" />
+                                            <span className="text-[11px] font-black text-slate-500 uppercase">Người GS: {item.nhan_vien_gs || '---'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL: NOTIFICATION DETAIL */}
+            {showNotiDetail && selectedNoti && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
+                        <div className="p-8 border-b border-slate-100 bg-slate-50/30 relative">
+                            <button onClick={() => setShowNotiDetail(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full transition-all">
                                 <X size={20} />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-white p-1 shadow-md border border-slate-100">
-                                    <div className="w-full h-full rounded-xl bg-primary-600 flex items-center justify-center text-white font-black text-xl">
-                                        {selectedNoti.nguoi_tao_name?.charAt(0) || 'U'}
-                                    </div>
+                                <div className="w-14 h-14 rounded-2xl bg-[#009900] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-900/20">
+                                    {selectedNoti.nguoi_tao_name?.charAt(0) || 'U'}
                                 </div>
                                 <div>
-                                    <p className="text-label font-black text-black uppercase">{selectedNoti.nguoi_tao_name}</p>
-                                    <p className="text-table font-black text-black/40 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
+                                    <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{selectedNoti.nguoi_tao_name}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-8 space-y-6">
+                        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                             <div className="space-y-4">
-                                <label className="flex items-center gap-2 text-table font-black text-black/40 uppercase tracking-[0.2em]">
-                                    <FileText size={14} /> Nội dung thông báo
-                                </label>
-                                <p className="text-section font-black text-black uppercase leading-relaxed bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Nội dung thông báo</label>
+                                <p className="text-sm font-black text-slate-700 uppercase leading-relaxed bg-slate-50 p-6 rounded-3xl border border-slate-100">
                                     {selectedNoti.noi_dung}
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-table font-black text-black/40 uppercase tracking-widest mb-1">Hiệu lực</p>
-                                    <p className="text-table font-black text-black uppercase flex items-center gap-1.5">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hiệu lực</p>
+                                    <p className="text-[11px] font-black text-slate-700 uppercase flex items-center gap-1.5">
                                         <Calendar size={14} className="text-[#009900]" />
-                                        {selectedNoti.ngay_bat_dau ? new Date(selectedNoti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'} - {selectedNoti.ngay_ket_thuc ? new Date(selectedNoti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}
+                                        {selectedNoti.ngay_bat_dau ? new Date(selectedNoti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}
                                     </p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ghi chú</p>
-                                    <p className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                                        <Info size={14} className="text-amber-500" />
-                                        {selectedNoti.ghi_chu || 'Không có'}
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Đến ngày</p>
+                                    <p className="text-[11px] font-black text-slate-700 uppercase">
+                                        {selectedNoti.ngay_ket_thuc ? new Date(selectedNoti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}
                                     </p>
-                                </div>
-                            </div>
-
-                             <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-table font-black text-black/40 uppercase tracking-[0.2em]">
-                                    <Building size={14} /> Đơn vị áp dụng
-                                </label>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {selectedNoti.don_vi_thuc_hien?.map((u, i) => (
-                                        <span key={i} className="px-3 py-1 bg-green-50 text-[#009900] text-table font-black uppercase rounded-full border border-green-100">
-                                            {u}
-                                        </span>
-                                    ))}
-                                    {(!selectedNoti.don_vi_thuc_hien || selectedNoti.don_vi_thuc_hien.length === 0) && (
-                                        <span className="text-table text-black/40 italic font-black uppercase">Tất cả các đơn vị.</span>
-                                    )}
                                 </div>
                             </div>
 
                             {selectedNoti.file_dinh_kem && (
-                                <div className="pt-4">
-                                    <a
-                                        href={selectedNoti.file_dinh_kem}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#009900] text-white rounded-2xl text-input font-black uppercase hover:bg-[#0d6e39] transition-all shadow-xl shadow-green-900/10 active:scale-95"
-                                    >
-                                        <Eye size={20} />
-                                        Xem tài liệu đính kèm
-                                    </a>
-                                </div>
+                                <a
+                                    href={selectedNoti.file_dinh_kem}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block w-full text-center py-4 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase hover:opacity-90 transition-all shadow-lg shadow-green-900/20"
+                                >
+                                    Xem tài liệu đính kèm
+                                </a>
                             )}
                         </div>
                     </div>

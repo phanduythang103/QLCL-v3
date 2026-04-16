@@ -335,7 +335,7 @@ export const ReportsModule: React.FC = () => {
     { id: 'GS_EMERGENCY', name: 'GS Cấp cứu', icon: <Activity />, color: '#0891b2', bgColor: '#ecfeff', fetchFn: () => fetchGsCapCuu(), dateField: 'ngay_kiem_tra' },
     { id: 'GS_ADMISSION', name: 'GS Vào/Ra viện', icon: <DoorOpen />, color: '#44403c', bgColor: '#f5f5f4', fetchFn: () => fetchGsRaVaoVien(), dateField: 'ngay_giam_sat' },
     {
-      id: 'GS_GENERAL', name: 'GS Chuyên môn', icon: <ClipboardCheck />, color: '#10b981', bgColor: '#ecfdf5',
+      id: 'GS_GENERAL', name: 'GS Chung', icon: <ClipboardCheck />, color: '#10b981', bgColor: '#ecfdf5',
       fetchFn: () => fetchGsChung(), dateField: 'ngay_giam_sat',
       fixedColumns: [
         { key: 'ngay_giam_sat', label: 'Ngày giám sát', render: (row) => formatDate(row.ngay_giam_sat) },
@@ -612,12 +612,6 @@ export const ReportsModule: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="hidden md:flex justify-between items-center">
-        <div>
-          <h2 className="text-title font-black text-black uppercase">Báo cáo Tổng hợp</h2>
-          <p className="text-table text-black/60 font-bold uppercase tracking-wider">Kết xuất báo cáo hoạt động QLCL định kỳ.</p>
-        </div>
-      </div>
 
       {/* ── Category Selection ── */}
       <div className="bg-white rounded-[2.5rem] md:rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-50 p-6 md:p-8">
