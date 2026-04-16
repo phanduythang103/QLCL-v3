@@ -3,7 +3,7 @@ import { cachedFetch, CACHE_KEYS, DEFAULT_TTL, invalidateCache } from './utils/c
 import type { Personnel } from './types';
 
 // Tối ưu: Chỉ select các trường cần thiết cho user list
-const USER_SELECT_FIELDS = 'id, username, full_name, role, department, status, avatar, created_at';
+const USER_SELECT_FIELDS = 'id, username, full_name, password, role, department, status, avatar, created_at, category, notes';
 
 /**
  * Lấy danh sách tất cả users với caching
@@ -100,4 +100,19 @@ export async function deleteAvatar(userId: string, avatarUrl: string) {
         console.error('Error deleting avatar:', error);
         throw error;
     }
+}
+
+/**
+ * Cập nhật hàng loạt người dùng
+ */
+export async function bulkUpdateUsers(ids: string[], updates: Partial<Personnel>) {
+    const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .in('id', ids)
+        .select(USER_SELECT_FIELDS);
+
+    if (error) throw error;
+    invalidateCache(CACHE_KEYS.USERS);
+    return data;
 }

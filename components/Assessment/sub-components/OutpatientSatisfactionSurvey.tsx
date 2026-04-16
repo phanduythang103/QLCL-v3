@@ -36,19 +36,16 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
   const handleAddNew = () => {
     setSelectedSurvey(undefined);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleEdit = (data: OutpatientSurveyResponse) => {
     setSelectedSurvey(data);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleView = (data: OutpatientSurveyResponse) => {
     setSelectedSurvey(data);
     setViewMode('DETAIL');
-    setParentViewMode('DETAIL');
   };
 
   const handleDelete = async (id: string) => {
@@ -71,7 +68,6 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
       }
       loadSurveys();
       setViewMode('LIST');
-      setParentViewMode('LIST');
     } catch (err) {
       console.error('Save error:', err);
       alert('Lỗi khi gửi phiếu khảo sát');
@@ -82,14 +78,13 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
 
   const handleCancel = () => {
     setViewMode('LIST');
-    setParentViewMode('LIST');
   };
 
   const renderView = () => {
     switch (viewMode) {
       case 'LIST':
         return (
-          <OutpatientSatisfactionList 
+          <OutpatientSatisfactionList
             surveys={surveys}
             loading={loading}
             onEdit={handleEdit}
@@ -100,7 +95,7 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
         );
       case 'DETAIL':
         return (
-          <OutpatientSatisfactionDetail 
+          <OutpatientSatisfactionDetail
             data={selectedSurvey}
             onBack={handleCancel}
           />
@@ -108,7 +103,7 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
       case 'FORM':
       default:
         return (
-          <OutpatientSatisfactionForm 
+          <OutpatientSatisfactionForm
             initialData={selectedSurvey}
             readOnly={false}
             onSave={handleSave}

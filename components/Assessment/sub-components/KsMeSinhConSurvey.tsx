@@ -38,19 +38,16 @@ export const KsMeSinhConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
   const handleAddNew = () => {
     setSelected(undefined);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleEdit = (rec: KsMeSinhConRecord) => {
     setSelected(rec);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleView = (rec: KsMeSinhConRecord) => {
     setSelected(rec);
     setViewMode('DETAIL');
-    setParentViewMode('DETAIL');
   };
 
   const handleDelete = async (id: string) => {
@@ -86,7 +83,6 @@ export const KsMeSinhConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
 
   const handleCancel = () => {
     setViewMode('LIST');
-    setParentViewMode('LIST');
   };
 
   return (

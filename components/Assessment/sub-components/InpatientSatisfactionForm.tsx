@@ -146,7 +146,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="space-y-3">
-              <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                 <User size={14} className="text-[#009900]" /> 1.1. Họ và tên:
               </label>
               <input
@@ -160,7 +160,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-3">
-              <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                 <Phone size={14} className="text-[#009900]" /> 1.2. Số điện thoại:
               </label>
               <input
@@ -174,7 +174,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-3">
-              <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                 <MapPin size={14} className="text-[#009900]" /> 1.3. Khoa điều trị:
               </label>
               <input
@@ -188,7 +188,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-3">
-              <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                 <Clock size={14} className="text-[#009900]" /> 1.4. Số ngày nằm viện:
               </label>
               <div className="flex items-center gap-4">
@@ -204,7 +204,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-3 lg:col-span-2">
-              <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider">1.5. Đối tượng trả lời:</label>
+              <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider">1.5. Đối tượng trả lời:</label>
               <div className="flex flex-wrap gap-3">
                 {[
                   { value: 'patient', label: 'Người bệnh' },
@@ -216,8 +216,8 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                     disabled={readOnly}
                     onClick={() => handleChange('respondent', opt.value)}
                     className={`px-10 py-4 rounded-xl border transition-all text-xs font-black uppercase ${formData.respondent === opt.value
-                        ? 'border-[#009900] bg-[#009900] text-white shadow-lg ring-1 ring-[#009900]'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'
+                      ? 'border-[#009900] bg-[#009900] text-white shadow-lg ring-1 ring-[#009900]'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'
                       }`}
                   >
                     {opt.label}
@@ -246,7 +246,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
             {CATEGORIES.map((cat, catIdx) => (
               <div key={cat.name} className="space-y-6">
                 <div className="bg-[#009900] p-4 rounded-xl shadow-md border-l-8 border-emerald-900/30">
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider">{cat.name}</h4>
+                  <h4 className="text-sm font-black text-white uppercase tracking-wider">{cat.name}</h4>
                 </div>
 
                 <div className="divide-y divide-slate-100">
@@ -256,7 +256,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                         <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-black shrink-0 border border-emerald-100">
                           {q.id}
                         </span>
-                        <p className="text-sm font-black text-black leading-relaxed">{q.text}</p>
+                        <p className="text-[17px] font-black text-black leading-relaxed">{q.text}</p>
                       </div>
 
                       <div className="flex items-center justify-between gap-2 w-full lg:w-auto overflow-x-auto no-scrollbar py-1">
@@ -267,13 +267,13 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                               disabled={readOnly}
                               onClick={() => handleScoreChange(q.id, val)}
                               className={`w-11 h-11 rounded-full border-2 transition-all flex items-center justify-center text-sm font-black ${(formData[`q${q.id}` as keyof InpatientSurveyResponse] as number) === val
-                                  ? 'bg-[#009900] border-[#009900] text-white shadow-lg scale-110'
-                                  : 'bg-white border-slate-200 text-slate-400 hover:border-emerald-400'
+                                ? 'bg-[#009900] border-[#009900] text-white shadow-lg scale-110'
+                                : 'bg-white border-slate-200 text-slate-400 hover:border-emerald-400'
                                 }`}
                             >
                               {val === 0 ? '0' : val}
                             </button>
-                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                               {val === 1 ? 'Rất kém' : val === 5 ? 'Rất tốt' : ''}
                             </span>
                           </div>
@@ -297,7 +297,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="space-y-6">
               <div className="space-y-4">
-                <label className="text-[11px] font-black text-black uppercase tracking-widest flex items-center justify-between">
+                <label className="text-[13px] font-black text-black uppercase tracking-widest flex items-center justify-between">
                   <span>Mức độ hài lòng chung:</span>
                   <span className="text-emerald-600 font-black text-base">{formData.satisfaction_percent}%</span>
                 </label>
@@ -319,7 +319,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
               </div>
 
               <div className="space-y-4 pt-4">
-                <label className="text-[11px] font-black text-black uppercase tracking-widest">Dự định quay lại hoặc giới thiệu:</label>
+                <label className="text-[13px] font-black text-black uppercase tracking-widest">Dự định quay lại hoặc giới thiệu:</label>
                 <div className="flex flex-col gap-2">
                   {[
                     { value: 'no', label: 'Chắc chắn không', color: '#ef4444' },
@@ -332,8 +332,8 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                       disabled={readOnly}
                       onClick={() => handleChange('return_intent', opt.value)}
                       className={`p-5 rounded-2xl border text-left transition-all ${formData.return_intent === opt.value
-                          ? 'border-[#009900] bg-[#009900] text-white shadow-xl'
-                          : 'border-slate-100 bg-slate-50/50 text-slate-600'
+                        ? 'border-[#009900] bg-[#009900] text-white shadow-xl'
+                        : 'border-slate-100 bg-slate-50/50 text-slate-600'
                         }`}
                     >
                       <span className="text-xs font-black uppercase">{opt.label}</span>
@@ -344,7 +344,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-4">
-              <label className="text-[11px] font-black text-black uppercase tracking-widest">Ý kiến đóng góp khác:</label>
+              <label className="text-[13px] font-black text-black uppercase tracking-widest">Ý kiến đóng góp khác:</label>
               <textarea
                 disabled={readOnly}
                 value={formData.feedback}

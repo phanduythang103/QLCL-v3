@@ -8,8 +8,14 @@ CREATE TABLE users (
   department text,               -- Khoa/phòng
   role text NOT NULL,            -- Vai trò (Quản trị viên, Người dùng)
   status text NOT NULL DEFAULT 'Hoạt động', -- Trạng thái (Hoạt động, Khóa)
+  category text DEFAULT 'Nhân viên', -- Đối tượng (Mạng lưới, Tổ chấm điểm, Quản trị, Nhân viên)
+  notes text,                    -- Ghi chú
   created_at timestamp with time zone DEFAULT now()
 );
+
+-- Cập nhật cho bảng hiện tại (nếu đã có bảng)
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS category text DEFAULT 'Nhân viên';
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS notes text;
 
 -- Policy: Cho phép tất cả người dùng đọc, admin được thêm/sửa/xóa
 CREATE POLICY "Users: Select all" ON users

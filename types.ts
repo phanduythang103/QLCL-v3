@@ -23,10 +23,10 @@ export type QARoleType = 'COUNCIL' | 'BOARD' | 'NETWORK';
 
 export type SupervisionCategory = 'SURGERY' | 'HAND_HYGIENE' | '5S' | 'RECORDS' | 'DRUGS' | 'PROFESSIONAL' | 'GENERAL' | 'NDNB' | 'PROF_DUTY' | 'PROF_EMERGENCY' | 'PROF_ADMISSION' | null;
 
-export type IndicatorCategory = 
-  | 'VAP' 
-  | 'SSI' 
-  | 'SEVERE_INCIDENT' 
+export type IndicatorCategory =
+  | 'VAP'
+  | 'SSI'
+  | 'SEVERE_INCIDENT'
   | 'SEVERE_NON_MEDICAL'
   | 'AVG_EXAM_TIME'
   | 'AVG_STAY_TIME'
@@ -82,6 +82,8 @@ export interface Personnel {
   phone?: string;      // Số điện thoại
   hasCertificate?: boolean; // Chứng chỉ đào tạo QLCL
   qaRoles?: QARoleType[]; // Thành viên: Hội đồng, Ban, hoặc Mạng lưới (Có thể nhiều vai trò)
+  category?: string;   // Đối tượng (Mạng lưới, Tổ chấm điểm, Quản trị, Nhân viên)
+  notes?: string;      // Ghi chú
 }
 
 export interface Document {
@@ -245,7 +247,7 @@ export interface DrugMonitoring {
   ho_ten_nb: string;
   nam_sinh?: number;
   ma_nb?: string;
-  
+
   tc1_phi_cong_khai_dau_giuong: boolean;
   tc2_mau_phieu_dung_quy_dinh: boolean;
   tc3_khop_y_lenh_benh_an: boolean;
@@ -256,7 +258,7 @@ export interface DrugMonitoring {
   tc8_phong_van_nb_loai_thuoc: boolean;
   tc9_nb_xac_nhan_so_thuoc: boolean;
   tc10_nb_khong_tu_mua_thuoc: boolean;
-  
+
   tc1_ghi_chu?: string;
   tc2_ghi_chu?: string;
   tc3_ghi_chu?: string;
@@ -267,7 +269,7 @@ export interface DrugMonitoring {
   tc8_ghi_chu?: string;
   tc9_ghi_chu?: string;
   tc10_ghi_chu?: string;
-  
+
   ghi_chu?: string;
   tong_dat: number;
   ty_le_tuan_thu: number;

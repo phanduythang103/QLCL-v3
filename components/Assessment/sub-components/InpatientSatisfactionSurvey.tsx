@@ -40,19 +40,16 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
   const handleAddNew = () => {
     setSelectedSurvey(undefined);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
-  const handleEdit = (data: InpatientSurveyResponse) => {
-    setSelectedSurvey(data);
+  const handleEdit = (user: any) => {
+    setSelectedSurvey(user);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
-  const handleView = (data: InpatientSurveyResponse) => {
-    setSelectedSurvey(data);
+  const handleView = (user: any) => {
+    setSelectedSurvey(user);
     setViewMode('DETAIL');
-    setParentViewMode('DETAIL');
   };
 
   const handleDelete = async (id: string) => {
@@ -78,7 +75,6 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
       }
       loadSurveys();
       setViewMode('LIST');
-      setParentViewMode('LIST');
     } catch (err) {
       console.error('Save error:', err);
       alert('Lỗi khi lưu bản khảo sát');
@@ -89,13 +85,12 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
 
   const handleCancel = () => {
     setViewMode('LIST');
-    setParentViewMode('LIST');
   };
 
   return (
     <div className="w-full">
       {viewMode === 'LIST' ? (
-        <InpatientSatisfactionList 
+        <InpatientSatisfactionList
           surveys={surveys}
           loading={loading}
           error={fetchError}
@@ -111,7 +106,7 @@ export const InpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode
           onBack={handleCancel}
         />
       ) : (
-        <InpatientSatisfactionForm 
+        <InpatientSatisfactionForm
           initialData={selectedSurvey}
           readOnly={false}
           onSave={handleSave}

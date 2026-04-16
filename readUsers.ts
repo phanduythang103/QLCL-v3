@@ -1,11 +1,11 @@
 // Re-export từ userApi để tránh duplicate code
 import { supabase } from './supabaseClient';
 import { invalidateCache, CACHE_KEYS } from './utils/cache';
-export { fetchUsers } from './userApi';
+export { fetchUsers, bulkUpdateUsers } from './userApi';
 import type { Personnel } from './types';
 
 // Tối ưu: Chỉ select các trường cần thiết
-const USER_SELECT_FIELDS = 'id, username, full_name, role, department, status, avatar, created_at';
+const USER_SELECT_FIELDS = 'id, username, full_name, password, role, department, status, avatar, created_at, category, notes';
 
 // Thêm người dùng mới
 export async function addUser(user: Omit<Personnel, 'id'>): Promise<Personnel> {

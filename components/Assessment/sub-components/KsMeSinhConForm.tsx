@@ -106,7 +106,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <MapPin size={12} /> Bệnh viện
               </label>
               <input
@@ -118,7 +118,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Calendar size={12} /> Ngày khảo sát
               </label>
               <input
@@ -129,7 +129,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <User size={12} /> Mã số người mẹ
               </label>
               <input
@@ -142,11 +142,11 @@ export const KsMeSinhConForm: React.FC<Props> = ({
             </div>
             <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Khoa điều trị</label>
+                <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Khoa điều trị</label>
                 <input type="text" value={formData.departments} onChange={e => handleChange('departments', e.target.value)} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Mã khoa</label>
+                <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Mã khoa</label>
                 <input type="text" value={formData.department_code} onChange={e => handleChange('department_code', e.target.value)} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />
               </div>
             </div>
@@ -161,36 +161,36 @@ export const KsMeSinhConForm: React.FC<Props> = ({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tuổi</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Tuổi</label>
               <input type="number" value={formData.age} onChange={e => handleChange('age', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Số điện thoại</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Số điện thoại</label>
               <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Lần nhập viện</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Lần nhập viện</label>
               <input type="number" value={formData.visit_count} onChange={e => handleChange('visit_count', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Số ngày nằm viện</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Số ngày nằm viện</label>
               <input type="number" value={formData.days_in_hospital} onChange={e => handleChange('days_in_hospital', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold outline-none" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sử dụng BHYT</p>
+              <p className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Sử dụng BHYT</p>
               <div className="flex gap-2">
                 {[1, 2].map(v => (
-                  <button key={v} type="button" onClick={() => handleChange('bhyt', v)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${formData.bhyt === v ? 'bg-[#009900] text-white shadow-md' : 'bg-slate-50 text-slate-500'}`}>
+                  <button key={v} type="button" onClick={() => handleChange('bhyt', v)} className={`flex-1 py-3 rounded-xl text-[13px] font-black uppercase transition-all ${formData.bhyt === v ? 'bg-[#009900] text-white shadow-md' : 'bg-slate-50 text-slate-500'}`}>
                     {v === 1 ? 'Có' : 'Không'}
                   </button>
                 ))}
               </div>
             </div>
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cách sinh</p>
+              <p className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Cách sinh</p>
               <select value={formData.birth_method} onChange={e => handleChange('birth_method', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-bold outline-none">
                 <option value={1}>Đẻ thường</option>
                 <option value={2}>Mổ cấp cứu</option>
@@ -200,7 +200,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
               {formData.birth_method === 4 && <input type="text" value={formData.birth_method_other} onChange={e => handleChange('birth_method_other', e.target.value)} placeholder="Mô tả cách sinh..." className="mt-2 w-full bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs outline-none" />}
             </div>
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Khám thai</p>
+              <p className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Khám thai</p>
               <select value={formData.prenatal_check} onChange={e => handleChange('prenatal_check', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-bold outline-none">
                 <option value={1}>Có khám</option>
                 <option value={2}>Chỉ đến sinh</option>
@@ -222,7 +222,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
             {SECTION_MAP.map(section => (
               <div key={section.id} className="space-y-6">
                 <div className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between">
-                  <h4 className="font-black text-slate-800 uppercase text-xs tracking-wider">{section.id}. {section.title}</h4>
+                  <h4 className="font-black text-slate-800 uppercase text-sm tracking-wider">{section.id}. {section.title}</h4>
                   <div className="flex items-center gap-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     <span>Rất kém</span>
                     <div className="w-20 h-0.5 bg-slate-200"></div>
@@ -232,14 +232,14 @@ export const KsMeSinhConForm: React.FC<Props> = ({
                 <div className="grid grid-cols-1 gap-2">
                   {section.questions.map(q => (
                     <div key={q.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white rounded-[1.5rem] border border-slate-50 hover:border-emerald-100 hover:bg-emerald-50/10 transition-all gap-4">
-                      <span className="text-xs font-bold text-slate-700">{q.text}</span>
+                      <span className="text-[17px] font-bold text-slate-700">{q.text}</span>
                       <div className="flex items-center gap-2">
                         {[1, 2, 3, 4, 5].map(val => (
                           <button
                             key={val}
                             type="button"
                             onClick={() => handleChange(q.id as any, val)}
-                            className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${(formData as any)[q.id] === val
+                            className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${(formData as any)[q.id] === val
                               ? 'bg-[#009900] text-white shadow-lg scale-110'
                               : 'bg-slate-100 text-slate-400 hover:bg-emerald-100'
                               }`}

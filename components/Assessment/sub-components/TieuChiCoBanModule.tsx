@@ -38,21 +38,18 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
     setEditingItem(null);
     setIsReadOnly(false);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleEdit = (item: TieuChiCoBan) => {
     setEditingItem(item);
     setIsReadOnly(false);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleView = (item: TieuChiCoBan) => {
     setEditingItem(item);
     setIsReadOnly(true);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleDelete = async (id: string) => {
@@ -73,7 +70,6 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
         await tieuChiCoBanService.saveAssessment(data);
       }
       setViewMode('LIST');
-      setParentViewMode('LIST');
       loadData();
     } catch (err) {
       alert('Lỗi khi lưu bản đánh giá.');
@@ -87,7 +83,7 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
 
 
       {viewMode === 'LIST' ? (
-        <TieuChiCoBanList 
+        <TieuChiCoBanList
           assessments={assessments}
           loading={loading}
           onAddNew={handleAddNew}
@@ -96,7 +92,7 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
           onDelete={handleDelete}
         />
       ) : (
-        <TieuChiCoBanForm 
+        <TieuChiCoBanForm
           initialData={editingItem || undefined}
           readOnly={isReadOnly}
           onSave={handleSave}
@@ -107,7 +103,6 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
           onDelete={handleDelete}
           onCancel={() => {
             setViewMode('LIST');
-            setParentViewMode('LIST');
           }}
           saving={saving}
         />

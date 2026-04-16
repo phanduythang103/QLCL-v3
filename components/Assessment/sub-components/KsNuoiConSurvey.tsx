@@ -38,19 +38,16 @@ export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
   const handleAddNew = () => {
     setSelected(undefined);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleEdit = (rec: KsNuoiConRecord) => {
     setSelected(rec);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleView = (rec: KsNuoiConRecord) => {
     setSelected(rec);
     setViewMode('DETAIL');
-    setParentViewMode('DETAIL');
   };
 
   const handleDelete = async (id: string) => {
@@ -76,7 +73,6 @@ export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
       }
       await loadRecords();
       setViewMode('LIST');
-      setParentViewMode('LIST');
     } catch (err: any) {
       console.error('Save error:', err);
       alert('Lỗi khi lưu dữ liệu');
@@ -87,7 +83,6 @@ export const KsNuoiConSurvey: React.FC<Props> = ({ setParentViewMode }) => {
 
   const handleCancel = () => {
     setViewMode('LIST');
-    setParentViewMode('LIST');
   };
 
   return (

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Save, X, ClipboardCheck, Calendar, User, Building, ChevronDown, ChevronRight, FileText, Edit, Activity, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Save, X, ClipboardCheck, Calendar, User, Building, ChevronDown, ChevronRight, FileText, Edit, Activity, Trash2, ArrowUp } from 'lucide-react';
 import { TieuChiCoBan } from '../types/tieuChiCoBan';
 import dataJson from '../../../mcp/core/Template-form/tieu-chi-co-ban.json';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -24,6 +24,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
   readOnly
 }) => {
   const { user } = useAuth();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState<TieuChiCoBan>(initialData || {
     ngay_danh_gia: new Date().toISOString().split('T')[0],
     nguoi_danh_gia: user?.full_name || '',
@@ -71,38 +72,106 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
     onSave(formData);
   };
 
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="absolute inset-0 z-[40] bg-slate-50 flex flex-col animate-in fade-in duration-300 overflow-hidden">
-      <div className="w-full h-full flex flex-col relative">
-        {/* SCYK Style Header */}
-        <div className="bg-[#009900] mx-4 mt-4 rounded-2xl p-5 shadow-lg shadow-emerald-900/20 flex justify-between items-center relative group">
-          <div className="flex items-center gap-4 text-white">
+    <div
+      ref={scrollRef}
+      className="absolute inset-0 z-[40] bg-slate-50 overflow-y-auto animate-in fade-in duration-300 no-scrollbar"
+    >
+      <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col p-4 md:p-8 space-y-8">
+        {/* SCYK Style Header - Now with Actions & Results */}
+        <div className="bg-[#009900] rounded-3xl p-6 shadow-xl shadow-emerald-900/20 flex flex-col lg:flex-row justify-between items-center gap-6 relative group border border-white/20">
+          <div className="flex items-center gap-4 text-white w-full lg:w-auto">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-sm">
               <ClipboardCheck size={28} />
             </div>
             <div>
-              <h2 className="font-black text-lg uppercase tracking-tight leading-none mb-1">
-                {readOnly ? 'Chi tiết đánh giá' : 'Đánh giá'} TIÊU CHUẨN CHẤT LƯỢNG CƠ BẢN
+              <h2 className="font-black text-lg md:text-xl uppercase tracking-tight leading-none mb-1">
+                {readOnly ? 'Chi tiết' : 'Đánh giá'} TIÊU CHUẨN CHẤT LƯỢNG CƠ BẢN
               </h2>
               <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest">
-                {readOnly ? 'Chế độ xem thông tin kết quả đánh giá' : '(Thông tư số 35/2024/TT-BYT)'}
+                (Thông tư số 35/2024/TT-BYT)
               </p>
             </div>
           </div>
-          <button
-            onClick={onCancel}
-            className="p-2 hover:bg-white/20 text-white rounded-full transition-transform active:scale-90"
-            title="Đóng bản đánh giá"
-          >
-            <X size={24} />
-          </button>
+
+          {/* Results Summary in Header */}
+          {(() => {
+            const totalCriteria = 43;
+            const totalMet = Object.keys(formData).filter(k => k.startsWith('c_') && (formData as any)[k] === true).length;
+            const percentage = ((totalMet / totalCriteria) * 100).toFixed(1);
+            return (
+              <div className="flex items-center gap-6 px-6 py-2 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-md">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] font-black text-emerald-100 uppercase tracking-widest opacity-70">Tiêu chí đạt</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-white">{totalMet}</span>
+                    <span className="text-emerald-200/50 text-[10px] font-bold">/ {totalCriteria}</span>
+                  </div>
+                </div>
+                <div className="w-px h-8 bg-white/20"></div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] font-black text-emerald-100 uppercase tracking-widest opacity-70">Tỷ lệ %</span>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-xl font-black text-white">{percentage}</span>
+                    <span className="text-emerald-200/50 text-[10px] font-bold">%</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Actions in Header */}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-center lg:justify-end">
+            <button
+              onClick={onCancel}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border border-white/20 flex items-center gap-2"
+            >
+              <X size={16} /> Đóng
+            </button>
+
+            {readOnly && initialData && (
+              <>
+                <button
+                  onClick={() => onEdit?.(initialData)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-all active:scale-95 border border-blue-400"
+                >
+                  <Edit size={16} /> Sửa
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm('Xác nhận xóa bản đánh giá này?')) {
+                      onDelete?.(initialData.id!);
+                      onCancel();
+                    }
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95 border border-red-400"
+                >
+                  <Trash2 size={16} /> Xóa
+                </button>
+              </>
+            )}
+
+            {!readOnly && (
+              <button
+                onClick={handleSubmit}
+                disabled={saving}
+                className="bg-white hover:bg-emerald-50 text-[#009900] px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all active:scale-95 disabled:opacity-50 border border-white"
+              >
+                {saving ? 'Đang lưu...' : <><Save size={18} /> Lưu đánh giá</>}
+              </button>
+            )}
+          </div>
         </div>
 
-        <form className="flex-1 overflow-y-auto p-4 md:p-8 space-y-10 no-scrollbar">
+        <form className="space-y-10">
           {/* Section: GENERAL INFO (Matching Scyk style) */}
-          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 relative overflow-hidden">
+          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1.5 h-full bg-[#009900]/20"></div>
-            <h3 className="text-sm font-black text-blue-700 uppercase tracking-tight flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-black text-blue-700 uppercase tracking-tight flex items-center gap-2 mb-2">
               <FileText className="text-blue-600" size={20} />
               Thông tin chung
             </h3>
@@ -237,85 +306,18 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
               className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-[#009900] outline-none transition-all resize-none"
             />
           </div>
+
+          <div className="flex justify-center pb-8">
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-[#009900] hover:border-[#009900] transition-all shadow-sm active:scale-95"
+            >
+              <ArrowUp size={14} /> Lên đầu trang
+            </button>
+          </div>
         </form>
 
-        {/* SUMMARY FOOTER (Image Style) */}
-        {(() => {
-          const totalCriteria = 43;
-          const totalMet = Object.keys(formData).filter(k => k.startsWith('c_') && (formData as any)[k] === true).length;
-          const percentage = ((totalMet / totalCriteria) * 100).toFixed(1);
-
-          return (
-            <div className="px-4 pb-4 shrink-0">
-              <div className="bg-[#0f172a] rounded-[32px] p-4 md:p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-white/5">
-                <div className="flex items-center gap-8 md:gap-16 w-full md:w-auto">
-                  <h4 className="text-slate-400 font-black text-sm uppercase tracking-widest hidden md:block">Tổng hợp kết quả</h4>
-
-                  <div className="flex items-center gap-10">
-                    <div className="flex flex-col items-center md:items-start gap-1">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Số tiêu chí đạt</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-emerald-400">{totalMet}</span>
-                        <span className="text-slate-600 font-bold">/ {totalCriteria}</span>
-                      </div>
-                    </div>
-
-                    <div className="w-px h-12 bg-slate-800 hidden md:block"></div>
-
-                    <div className="flex flex-col items-center md:items-start gap-1">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Đạt tỷ lệ %</span>
-                      <div className="flex items-baseline">
-                        <span className="text-3xl font-black text-indigo-400">{percentage}</span>
-                        <span className="text-indigo-600 font-bold ml-0.5">%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                  <button
-                    onClick={onCancel}
-                    className="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-600 px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"
-                  >
-                    Đóng
-                  </button>
-
-                  {readOnly && initialData && (
-                    <>
-                      <button
-                        onClick={() => onEdit?.(initialData)}
-                        className="flex-1 md:flex-none bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-blue-900/40 transition-all active:scale-95"
-                      >
-                        <Edit size={18} /> Sửa
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm('Xác nhận xóa bản đánh giá này?')) {
-                            onDelete?.(initialData.id!);
-                            onCancel();
-                          }
-                        }}
-                        className="flex-1 md:flex-none bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-red-900/40 transition-all active:scale-95"
-                      >
-                        <Trash2 size={18} /> Xóa
-                      </button>
-                    </>
-                  )}
-
-                  {!readOnly && (
-                    <button
-                      onClick={handleSubmit}
-                      disabled={saving}
-                      className="flex-1 md:flex-none bg-[#009900] hover:bg-[#008800] text-white px-12 py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/40 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      {saving ? 'Đang lưu...' : <><Save size={20} /> Lưu bộ đánh giá</>}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
       </div>
     </div>
   );

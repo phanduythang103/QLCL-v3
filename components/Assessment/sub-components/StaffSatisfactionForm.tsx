@@ -127,7 +127,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1.1. Khối công tác:</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-widest">1.1. Khối công tác:</label>
               <div className="grid grid-cols-1 gap-2">
                 {[
                   { value: 'clinical', label: 'Khối Lâm sàng' },
@@ -147,7 +147,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1.2. Vị trí:</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-widest">1.2. Vị trí:</label>
               <div className="grid grid-cols-1 gap-2">
                 {[
                   { value: 'doctor', label: 'Bác sĩ' },
@@ -167,7 +167,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1.3. Thâm niên (năm):</label>
+              <label className="text-[13px] font-black text-slate-400 uppercase tracking-widest">1.3. Thâm niên (năm):</label>
               <input
                 type="number"
                 min="0"
@@ -189,11 +189,11 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
           <div className="divide-y divide-slate-100">
             {Object.entries(groupedQuestions).map(([groupName, questions]) => (
               <div key={groupName} className="py-10 first:pt-0 last:pb-0 space-y-6">
-                <h4 className="text-[11px] font-black text-[#009900] uppercase tracking-[0.2em] bg-emerald-50 px-4 py-2 rounded-lg inline-block">{groupName}</h4>
+                <h4 className="text-sm font-black text-[#009900] uppercase tracking-[0.2em] bg-emerald-50 px-4 py-2 rounded-lg inline-block">{groupName}</h4>
                 <div className="grid grid-cols-1 gap-2">
                   {questions.map((q) => (
                     <div key={q.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-6 bg-slate-50/50 rounded-3xl border border-slate-50 hover:bg-white hover:border-emerald-100 transition-all gap-6">
-                      <p className="text-sm font-bold text-slate-700 leading-relaxed flex-1">{q.text}</p>
+                      <p className="text-[17px] font-bold text-slate-700 leading-relaxed flex-1">{q.text}</p>
                       <div className="flex items-center gap-2">
                         {[1, 2, 3, 4, 5].map(val => (
                           <button
@@ -223,7 +223,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-6">
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-2">Áp lực chính bạn đang gặp:</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest pl-2">Áp lực chính bạn đang gặp:</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {PRESSURE_OPTIONS.map(opt => (
                   <button
@@ -235,7 +235,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                     <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center ${formData.pressure?.includes(opt.value) ? 'bg-[#009900] border-[#009900]' : 'bg-white border-slate-200'}`}>
                       {formData.pressure?.includes(opt.value) && <Info size={12} className="text-white" />}
                     </div>
-                    <span className="text-[11px] font-black uppercase">{opt.label}</span>
+                    <span className="text-[13px] font-black uppercase">{opt.label}</span>
                   </button>
                 ))}
               </div>
@@ -251,7 +251,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-6">
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-2">Ý định gắn bó (Năm 2026):</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest pl-2">Ý định gắn bó (Năm 2026):</label>
               <div className="grid grid-cols-1 gap-2">
                 {[
                   { value: 'stay', label: 'Tôi sẽ tiếp tục gắn bó' },
@@ -271,7 +271,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="lg:col-span-2 space-y-4">
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-2">Đề xuất cụ thể để cải thiện thu nhập & môi trường:</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest pl-2">Đề xuất cụ thể để cải thiện thu nhập & môi trường:</label>
               <textarea
                 value={formData.suggestion}
                 onChange={(e) => handleChange('suggestion', e.target.value)}

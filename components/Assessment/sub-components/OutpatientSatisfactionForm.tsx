@@ -185,7 +185,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Họ và tên</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Họ và tên</label>
               <input
                 type="text"
                 required
@@ -197,7 +197,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Số điện thoại</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Số điện thoại</label>
               <input
                 type="tel"
                 placeholder="Nhập số điện thoại..."
@@ -208,7 +208,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Khu vực khám</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Khu vực khám</label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {[
                   { value: 'kham_dan', label: 'K. Khám bệnh (Dân)' },
@@ -230,7 +230,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Thời điểm khám</label>
+              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Thời điểm khám</label>
               <div className="flex gap-4">
                 <input
                   type="date"
@@ -280,14 +280,14 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
             <Star className="text-[#009900]" size={24} />
             <div className="flex flex-col">
               <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">2. Đánh giá quy trình & dịch vụ</h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(1: Rất kém {"->"} 5: Rất tốt; 0: Không sử dụng)</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">(1: Rất kém {"->"} 5: Rất tốt; 0: Không sử dụng)</p>
             </div>
           </div>
 
           <div className="space-y-12">
             {CATEGORIES.map(category => (
               <div key={category.name} className="space-y-6">
-                <h4 className="text-xs font-black text-white uppercase tracking-wider bg-[#009900] px-6 py-2 rounded-full inline-block shadow-md">
+                <h4 className="text-sm font-black text-white uppercase tracking-wider bg-[#009900] px-6 py-2 rounded-full inline-block shadow-md">
                   {category.name}
                 </h4>
 
@@ -295,8 +295,8 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                   {category.questions.map(q => (
                     <div key={q.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-6 bg-slate-50/50 rounded-3xl border border-slate-100 gap-4 hover:bg-white transition-colors group">
                       <div className="flex-1">
-                        <p className="text-sm font-bold text-slate-700">
-                          <span className="text-xs text-slate-400 font-black mr-2 opacity-50">{q.id}.</span> {q.text}
+                        <p className="text-[17px] font-bold text-slate-700">
+                          <span className="text-[13px] text-slate-400 font-black mr-2 opacity-50">{q.id}.</span> {q.text}
                         </p>
                       </div>
 
@@ -332,7 +332,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
 
           <div className="space-y-10">
             <div className="space-y-4">
-              <label className="text-[11px] font-black text-slate-600 uppercase flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-600 uppercase flex items-center gap-2">
                 Nếu có chờ đợi, khâu nào khiến Ông/Bà mệt mỏi nhất?
               </label>
               <div className="flex flex-wrap gap-2">
@@ -356,7 +356,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-4">
-              <label className="text-[11px] font-black text-slate-600 uppercase flex items-center gap-2">
+              <label className="text-[13px] font-black text-slate-600 uppercase flex items-center gap-2">
                 Ưu tiên cần cải thiện ngay:
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -379,7 +379,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
             </div>
 
             <div className="space-y-4">
-              <label className="text-[11px] font-black text-slate-600 uppercase">Ý kiến chi tiết (nhân viên, khâu cụ thể):</label>
+              <label className="text-[13px] font-black text-slate-600 uppercase">Ý kiến chi tiết (nhân viên, khâu cụ thể):</label>
               <textarea
                 rows={4}
                 value={formData.feedback}

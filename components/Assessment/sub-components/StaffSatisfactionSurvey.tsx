@@ -37,21 +37,18 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
     setEditingItem(null);
     setIsReadOnly(false);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleEdit = (item: SurveyType) => {
     setEditingItem(item);
     setIsReadOnly(false);
     setViewMode('FORM');
-    setParentViewMode('FORM');
   };
 
   const handleView = (item: SurveyType) => {
     setEditingItem(item);
     setIsReadOnly(true);
     setViewMode('DETAIL');
-    setParentViewMode('DETAIL');
   };
 
   const handleDelete = async (id: string) => {
@@ -73,7 +70,6 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
         await staffSatisfactionService.saveSurvey(data);
       }
       setViewMode('LIST');
-      setParentViewMode('LIST');
       loadData();
     } catch (err) {
       alert('Lỗi khi lưu bản khảo sát.');
@@ -84,7 +80,6 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
 
   const handleCancel = () => {
     setViewMode('LIST');
-    setParentViewMode('LIST');
   };
 
   const renderView = () => {
