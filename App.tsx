@@ -232,8 +232,8 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
           )}
         </div>
       </div>
-      <div className="p-4 border-t border-primary-800/50 bg-primary-900 flex justify-center text-[8px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden">
-        {!collapsed && <span>Phiên bản v3.2.0</span>}
+      <div className="p-4 border-t border-primary-800/50 bg-primary-900 flex justify-center text-[12px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden">
+        {!collapsed && <span>Phiên bản 16042026-01</span>}
       </div>
     </aside>
   );
