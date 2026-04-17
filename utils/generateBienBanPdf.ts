@@ -257,7 +257,11 @@ export async function exportBienBanToPdf(data: BienBanPdfData): Promise<{ fileUr
 
     const { error } = await supabase.storage
       .from('scyk')
-      .upload(filePath, pdfBlob, { contentType: 'application/pdf', upsert: true });
+      .upload(filePath, pdfBlob, {
+        contentType: 'application/pdf',
+        upsert: true,
+        cacheControl: '31536000'
+      });
     if (error) throw new Error(error.message);
 
     const { data: urlData } = supabase.storage.from('scyk').getPublicUrl(filePath);

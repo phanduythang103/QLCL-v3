@@ -113,14 +113,17 @@ export async function deleteGsRaVaoVien(id: string): Promise<void> {
   }
 }
 
+import { compressFile } from './utils/compression';
+
 export async function uploadRaVaoVienImage(file: File): Promise<string> {
-  const ext = file.name.split('.').pop();
+  const compressedFile = await compressFile(file);
+  const ext = compressedFile.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const filePath = `ra_vao_vien_monitoring/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from('gs_hsba')
-    .upload(filePath, file, { cacheControl: '3600', upsert: false });
+    .upload(filePath, compressedFile, { cacheControl: '31536000', upsert: false });
 
   if (uploadError) {
     console.error('Error uploading ra_vao_vien image:', uploadError);

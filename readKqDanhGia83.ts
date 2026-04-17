@@ -126,15 +126,15 @@ export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
             const chuongScores: number[] = [];
             Object.keys(assignmentHierarchy[p]).forEach(ch => {
                 const tcNamesInChuong = Array.from(assignmentHierarchy[p][ch] as Set<string>);
-                const tcLevels = tcNamesInChuong.map(name => resultsByTc[name] || 1); 
-                
+                const tcLevels = tcNamesInChuong.map(name => resultsByTc[name] || 1);
+
                 if (tcLevels.length > 0) {
                     const chuongAvg = tcLevels.reduce((a, b) => a + b, 0) / tcLevels.length;
                     chuongScores.push(chuongAvg);
                     console.log(`  - Chapter ${ch}: ${chuongAvg.toFixed(2)} (${tcLevels.length} items)`);
                 }
             });
-            
+
             if (chuongScores.length > 0) {
                 const phanAvg = chuongScores.reduce((a, b) => a + b, 0) / chuongScores.length;
                 phanScores.push(phanAvg);
@@ -238,17 +238,20 @@ export async function fetchKqDanhGia83(filters?: { don_vi?: string, ngay?: strin
     return allData;
 }
 
+import { compressFile } from './utils/compression';
+
 /**
  * Upload ảnh minh chứng lên bucket minh_chung_83tc
  */
 export async function uploadEvidenceImage(file: File): Promise<string> {
-    const fileExt = file.name.split('.').pop();
+    const compressedFile = await compressFile(file);
+    const fileExt = compressedFile.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
     const filePath = `83tc/${fileName}`;
 
     const { data, error } = await supabase.storage
         .from('minh_chung_83tc')
-        .upload(filePath, file);
+        .upload(filePath, compressedFile, { cacheControl: '31536000' });
 
     if (error) {
         throw error;

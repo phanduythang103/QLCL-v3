@@ -35,6 +35,8 @@ export async function updateUserAvatar(userId: string, avatarUrl: string) {
     return data?.[0];
 }
 
+import { compressFile } from './utils/compression';
+
 /**
  * Upload ảnh avatar lên storage bucket và cập nhật URL vào bảng users
  * @param file - File ảnh cần upload
@@ -43,16 +45,19 @@ export async function updateUserAvatar(userId: string, avatarUrl: string) {
  */
 export async function uploadAvatar(file: File, userId: string) {
     try {
+        // Nén file trước khi upload
+        const compressedFile = await compressFile(file);
+
         // Lấy extension của file
-        const fileExt = file.name.split('.').pop();
+        const fileExt = compressedFile.name.split('.').pop();
         const fileName = `${userId}.${fileExt}`;
         const filePath = fileName;
 
         // Upload file lên storage bucket 'avatar'
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from('avatar')
-            .upload(filePath, file, {
-                cacheControl: '3600',
+            .upload(filePath, compressedFile, {
+                cacheControl: '31536000',
                 upsert: true // Ghi đè nếu file đã tồn tại
             });
 

@@ -20,7 +20,7 @@ export async function fetchBcScnyknt(): Promise<BcScnyknt[]> {
     .from('bc_scnyknt')
     .select('*')
     .order('created_at', { ascending: false });
-  
+
   if (error) {
     console.error('Error fetching bc_scnyknt:', error);
     throw error;
@@ -34,7 +34,7 @@ export async function addBcScnyknt(report: Omit<BcScnyknt, 'id' | 'created_at'>)
     .insert([report])
     .select()
     .single();
-  
+
   if (error) {
     console.error('Error adding bc_scnyknt:', error);
     throw error;
@@ -49,7 +49,7 @@ export async function updateBcScnyknt(id: string, updates: Partial<BcScnyknt>): 
     .eq('id', id)
     .select()
     .single();
-  
+
   if (error) {
     console.error('Error updating bc_scnyknt:', error);
     throw error;
@@ -62,23 +62,28 @@ export async function deleteBcScnyknt(id: string): Promise<void> {
     .from('bc_scnyknt')
     .delete()
     .eq('id', id);
-  
+
   if (error) {
     console.error('Error deleting bc_scnyknt:', error);
     throw error;
   }
 }
 
+import { compressFile } from './utils/compression';
+
 // Function to upload multiple images to 'scyk' bucket
 export async function uploadFacilityImages(files: File[]): Promise<string[]> {
   const uploadPromises = files.map(async (file) => {
-    const fileExt = file.name.split('.').pop();
+    // Nén file trước khi upload
+    const compressedFile = await compressFile(file);
+
+    const fileExt = compressedFile.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `facility-incidents/${Date.now()}-${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('scyk')
-      .upload(filePath, file);
+      .upload(filePath, compressedFile, { cacheControl: '31536000' });
 
     if (uploadError) {
       throw uploadError;

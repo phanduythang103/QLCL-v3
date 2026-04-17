@@ -41,14 +41,17 @@ export const deleteGsVst = async (id: string) => {
   if (error) throw error;
 };
 
+import { compressFile } from './utils/compression';
+
 export const uploadVstImage = async (file: File) => {
-  const fileExt = file.name.split('.').pop();
+  const compressedFile = await compressFile(file);
+  const fileExt = compressedFile.name.split('.').pop();
   const fileName = `${Math.random()}.${fileExt}`;
   const filePath = `${fileName}`;
 
   const { error: uploadError, data } = await supabase.storage
     .from('vst')
-    .upload(filePath, file);
+    .upload(filePath, compressedFile, { cacheControl: '31536000' });
 
   if (uploadError) throw uploadError;
 

@@ -109,14 +109,17 @@ export async function deleteGsCapCuu(id: string): Promise<void> {
   }
 }
 
+import { compressFile } from './utils/compression';
+
 export async function uploadCapCuuImage(file: File): Promise<string> {
-  const ext = file.name.split('.').pop();
+  const compressedFile = await compressFile(file);
+  const ext = compressedFile.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const filePath = `cap_cuu_monitoring/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from('gs_hsba')
-    .upload(filePath, file, { cacheControl: '3600', upsert: false });
+    .upload(filePath, compressedFile, { cacheControl: '31536000', upsert: false });
 
   if (uploadError) {
     console.error('Error uploading cap_cuu image:', uploadError);

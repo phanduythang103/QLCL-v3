@@ -49,14 +49,19 @@ export const deleteThongBao = async (id: string) => {
     if (error) throw error;
 };
 
+import { compressFile } from './utils/compression';
+
 export const uploadCVFile = async (file: File) => {
-    const fileExt = file.name.split('.').pop();
+    // Compress before upload
+    const compressedFile = await compressFile(file);
+
+    const fileExt = compressedFile.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
     const filePath = `notifications/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
         .from('cv_file')
-        .upload(filePath, file);
+        .upload(filePath, compressedFile, { cacheControl: '31536000' });
 
     if (uploadError) throw uploadError;
 

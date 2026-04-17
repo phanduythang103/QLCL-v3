@@ -14,6 +14,7 @@ import {
   fetchChiaSe, addChiaSe, deleteChiaSe, updateChiaSe,
   fetchComments, addComment, fetchReactions, toggleReaction, fetchBookmarks, toggleBookmark
 } from '../readChiaSe';
+import { compressFile } from '../utils/compression';
 
 import { fetchCoQuanBanHanh, addCoQuanBanHanh } from '../readCoQuanBanHanh';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -155,11 +156,17 @@ const DocumentLibrary = () => {
     setSaving(true);
     try {
       let filePath = formData.file_van_ban; // Keep existing path by default
+
       if (fileUpload) {
+        // Nén file trước khi upload
+        const compressedFile = await compressFile(fileUpload);
+
         // Tạo tên file duy nhất
-        const ext = fileUpload.name.split('.').pop();
+        const ext = compressedFile.name.split('.').pop();
         const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const { data, error } = await supabase.storage.from('vanban').upload(uniqueName, fileUpload);
+        const { data, error } = await supabase.storage
+          .from('vanban')
+          .upload(uniqueName, compressedFile, { cacheControl: '31536000' });
         if (error) throw error;
         filePath = uniqueName;
       }
@@ -642,9 +649,14 @@ const KnowledgeSharing = () => {
     try {
       let uploadPath = '';
       if (fileUpload) {
-        const ext = fileUpload.name.split('.').pop();
+        // Nén file trước khi upload
+        const compressedFile = await compressFile(fileUpload);
+
+        const ext = compressedFile.name.split('.').pop();
         const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const { error } = await supabase.storage.from('chia_se_file').upload(uniqueName, fileUpload);
+        const { error } = await supabase.storage
+          .from('chia_se_file')
+          .upload(uniqueName, compressedFile, { cacheControl: '31536000' });
         if (error) throw error;
         uploadPath = uniqueName;
       }
@@ -886,7 +898,7 @@ const FormModal: React.FC<FormModalProps> = ({
             {/* Loại Văn Bản */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                 <label className="block text-label font-bold text-black">Loại văn bản *</label>
+                <label className="block text-label font-bold text-black">Loại văn bản *</label>
                 {!isAddingLoai && <button onClick={() => setIsAddingLoai(true)} className="text-xs text-primary-600 hover:text-primary-700 font-medium">+ Thêm mới</button>}
               </div>
               {isAddingLoai ? (
@@ -906,7 +918,7 @@ const FormModal: React.FC<FormModalProps> = ({
             {/* Cơ Quan Ban Hành */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                 <label className="block text-label font-bold text-black">Cơ quan ban hành *</label>
+                <label className="block text-label font-bold text-black">Cơ quan ban hành *</label>
                 {!isAddingCoQuan && <button onClick={() => setIsAddingCoQuan(true)} className="text-xs text-primary-600 hover:text-primary-700 font-medium">+ Thêm mới</button>}
               </div>
               {isAddingCoQuan ? (
@@ -927,13 +939,13 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
 
             <div>
-               <label className="block text-label font-bold text-black mb-1">Ngày hiệu lực *</label>
+              <label className="block text-label font-bold text-black mb-1">Ngày hiệu lực *</label>
               <input type="date" value={!isNaN(Date.parse(formData.hieu_luc)) ? new Date(formData.hieu_luc).toISOString().split('T')[0] : ''} onChange={e => setFormData({ ...formData, hieu_luc: e.target.value })}
                 className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black" />
             </div>
 
             <div>
-               <label className="block text-label font-bold text-black mb-1">Trạng thái *</label>
+              <label className="block text-label font-bold text-black mb-1">Trạng thái *</label>
               <select value={formData.trang_thai} onChange={e => setFormData({ ...formData, trang_thai: e.target.value })} className="w-full p-2 border border-slate-300 rounded-lg text-input font-bold text-black bg-white">
                 <option value="Còn hiệu lực">Còn hiệu lực</option>
                 <option value="Hết hiệu lực">Hết hiệu lực</option>
@@ -943,7 +955,7 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
 
             <div className="col-span-2">
-               <label className="block text-label font-bold text-black mb-1">Phân loại (Lọc nhanh) *</label>
+              <label className="block text-label font-bold text-black mb-1">Phân loại (Lọc nhanh) *</label>
               <select
                 value={formData.phan_loai}
                 onChange={e => setFormData({ ...formData, phan_loai: e.target.value })}
@@ -1210,10 +1222,10 @@ const SharingDetailModal = ({ article, onClose }: any) => {
   const likeCount = reactions.filter(r => r.type === 'like').length;
   const dislikeCount = reactions.filter(r => r.type === 'dislike').length;
   const userReaction = reactions.find(r => r.user_id === user?.id)?.type;
-  
+
   const getEmbedUrl = (url: string) => {
     if (!url) return null;
-    
+
     // YouTube
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const youtubeMatch = url.match(youtubeRegex);

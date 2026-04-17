@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Save, Image as ImageIcon, AlertCircle, Check, Loader } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
+import { compressFile } from '../../utils/compression';
 
 interface UISettings {
     id: string;
@@ -91,15 +92,19 @@ export default function ThemeSettings() {
 
         try {
             setUploading(true);
-            const fileExt = selectedFile.name.split('.').pop();
+
+            // Nén file trước khi upload
+            const compressedFile = await compressFile(selectedFile);
+
+            const fileExt = compressedFile.name.split('.').pop();
             const fileName = `login-bg-${Date.now()}.${fileExt}`;
             const filePath = fileName;
 
             // Upload new image
             const { error: uploadError } = await supabase.storage
                 .from('avatar')
-                .upload(filePath, selectedFile, {
-                    cacheControl: '3600',
+                .upload(filePath, compressedFile, {
+                    cacheControl: '31536000',
                     upsert: false
                 });
 

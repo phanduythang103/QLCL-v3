@@ -121,14 +121,17 @@ export const deleteGs5s = async (id: string) => {
   if (error) throw error;
 };
 
+import { compressFile } from './utils/compression';
+
 export const upload5sImage = async (file: File) => {
-  const fileExt = file.name.split('.').pop();
+  const compressedFile = await compressFile(file);
+  const fileExt = compressedFile.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
   const filePath = `5s_monitoring/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from('giam_sat')
-    .upload(filePath, file);
+    .upload(filePath, compressedFile, { cacheControl: '31536000' });
 
   if (uploadError) throw uploadError;
 
