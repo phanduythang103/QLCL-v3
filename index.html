@@ -29,6 +29,26 @@
     })();
   </script>
 
+  <script>
+    // Clean tracking parameters (Zalo, FB, Google) from URL immediately on load
+    (function () {
+      const url = new URL(window.location.href);
+      let changed = false;
+      const paramsToRemove = ['zarsrc', 'utm_source', 'utm_medium', 'utm_campaign', 'fbclid', 'gclid'];
+
+      paramsToRemove.forEach(param => {
+        if (url.searchParams.has(param)) {
+          url.searchParams.delete(param);
+          changed = true;
+        }
+      });
+
+      if (changed) {
+        window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+      }
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     // Fallback handler if Tailwind CDN fails
