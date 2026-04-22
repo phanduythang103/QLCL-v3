@@ -3,85 +3,69 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <base href="/" />
-  <!-- In-app / embedded browser detection: runs as early as possible -->
+  <title>Bệnh viện Quân y 103 - Khảo sát hài lòng</title>
+
   <script>
     (function () {
       var ua = navigator.userAgent || '';
       var isZalo = /Zalo/i.test(ua);
       var isAndroidWebView = /; wv\)/i.test(ua);
       var isInApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Viber|WeChat|MicroMessenger|KakaoTalk|Snapchat|Twitter|BytedanceWebview|TikTok|Telegram|Pinterest|Messenger|ZaloBrowser/i.test(ua);
-      var isEmbedded = isZalo || isAndroidWebView || isInApp;
 
-      if (isEmbedded) {
+      if (isZalo || isAndroidWebView || isInApp) {
         window.__INAPP_DETECTED = true;
-        var currentUrl = window.location.href;
-        var intentUrl = currentUrl.replace(/^https?:\/\//, 'intent://') +
-          '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' +
-          encodeURIComponent(currentUrl) + ';end';
+        var url = window.location.href;
 
-        document.write('<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mở bằng trình duyệt</title>' +
-          '<style>body{margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box;}' +
-          '.card{background:white;max-width:400px;width:100%;border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.15);overflow:hidden;text-align:center;}' +
-          '.header-bar{height:6px;background:#009900;}' +
-          '.content{padding:32px;}' +
-          '.icon-box{width:64px;height:64px;margin:0 auto 20px;background:#f0fdf4;border-radius:16px;display:flex;align-items:center;justify-content:center;}' +
-          'h2{font-size:20px;font-weight:900;color:#0f172a;margin:0 0 8px;text-transform:uppercase;letter-spacing:-0.025em;}' +
-          'p{font-size:14px;color:#64748b;line-height:1.6;margin:0 0 24px;}' +
-          '.instruction-box{background:#f8fafc;border-radius:16px;padding:20px;border:1px solid #e2e8f0;margin-bottom:24px;text-align:left;}' +
-          '.step{display:flex;align-items:center;gap:12px;margin-bottom:12px;}' +
-          '.step:last-child{margin-bottom:0;}' +
-          '.step-icon{width:32px;height:32px;min-width:32px;background:white;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#009900;}' +
-          '.btn-chrome{display:block;width:100%;padding:14px;background:#009900;color:white;border-radius:14px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;box-shadow:0 10px 15px -3px rgba(0,153,0,0.2);margin-bottom:12px;border:none;cursor:pointer;}' +
-          '.btn-secondary{display:block;width:100%;padding:12px;background:white;color:#009900;border:2px solid #009900;border-radius:14px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;box-sizing:border-box;}' +
-          '</style></head><body><div class="card"><div class="header-bar"></div><div class="content">' +
-          '<div class="icon-box"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#009900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>' +
-          '<h2>Mở bằng trình duyệt</h2>' +
-          '<p>Ứng dụng không hỗ trợ trình duyệt này. Vui lòng mở bằng Chrome hoặc Safari để tiếp tục.</p>' +
-          '<div class="instruction-box">' +
-          '<div class="step"><div class="step-icon">⋮</div><div><b style="color:#009900">Nhấn dấu ba chấm (⋮)</b> hoặc (...) ở góc trên cùng bên phải</div></div>' +
-          '<div class="step"><div class="step-icon">↗</div><div>Chọn <b style="color:#009900">Mở bằng trình duyệt</b> để tiếp tục</div></div>' +
-          '</div>' +
-          '<a href="' + intentUrl + '" class="btn-chrome">Mở bằng ứng dụng Chrome</a>' +
-          '<a href="' + currentUrl + '" target="_blank" rel="noopener" class="btn-secondary">Mở trình duyệt hệ thống</a>' +
-          '<p style="font-size:10px;margin-top:20px;font-weight:bold;color:#94a3b8;letter-spacing:0.1em;">BẬNH VIỆN QUÂN Y 103</p>' +
-          '</div></div></body></html>');
-        window.stop();
+        // Simple and robust intent generation
+        var intent = url.replace(/^https?:\/\//, 'intent://') +
+          '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' +
+          encodeURIComponent(url) + ';end';
+
+        // Use a hidden body + custom UI to prevent white flash first
+        document.write('<style>body{display:none!important;}</style>');
+
+        // Build a minimalist but clean UI
+        var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mở bằng trình duyệt</title>' +
+          '<style>body{margin:0;padding:24px;background:#f8fafc;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;box-sizing:border-box;}' +
+          '.box{background:white;width:100%;max-width:400px;border-radius:24px;padding:40px;box-shadow:0 20px 40px rgba(0,0,0,0.1);text-align:center;border-top:8px solid #009900;}' +
+          'h2{margin:0 0 16px;color:#0f172a;text-transform:uppercase;font-size:20px;font-weight:900;letter-spacing:-0.5px;}' +
+          'p{color:#64748b;margin:0 0 32px;font-size:15px;line-height:1.6;font-weight:500;}' +
+          '.btn{display:block;width:100%;padding:16px;border-radius:16px;font-weight:800;text-decoration:none;font-size:13px;text-transform:uppercase;letter-spacing:1px;box-sizing:border-box;}' +
+          '.btn-p{background:#009900;color:white;margin-bottom:12px;box-shadow:0 10px 20px rgba(0,153,0,0.2);}' +
+          '.btn-s{border:2px solid #009900;color:#009900;}' +
+          '.note{margin-top:24px;background:#f1fdf4;padding:16px;border-radius:16px;text-align:left;font-size:12px;color:#166534;line-height:1.5;}' +
+          '</style></head><body><div class="box">' +
+          '<h2>Vui lòng mở bằng Chrome</h2>' +
+          '<p>Trình duyệt trong ứng dụng không hỗ trợ đầy đủ khảo sát. Bạn hãy chuyển sang Chrome để có trải nghiệm tốt nhất.</p>' +
+          '<a href="' + intent + '" class="btn btn-p">NHẤN VÀO ĐÂY ĐỂ MỞ CHROME</a>' +
+          '<a href="' + url + '" target="_blank" rel="noopener" class="btn btn-s">HOẶC MỞ TRÌNH DUYỆT KHÁC</a>' +
+          '<div class="note"><b>Cách khác:</b> Nhấn vào dấu <b>(⋮)</b> hoặc <b>(...)</b> ở góc trên bên phải, sau đó chọn <b>"Mở bằng trình duyệt"</b>.</div>' +
+          '<p style="margin:30px 0 0;font-size:10px;font-weight:900;letter-spacing:2px;color:#cbd5e1;">BỆNH VIỆN QUÂN Y 103</p>' +
+          '</div></body></html>';
+
+        document.open();
+        document.write(html);
+        document.close();
+
+        // Stop current parser to prevent original app from loading
+        if (window.stop) window.stop();
       }
     })();
   </script>
-  <title>Hệ thống QLCL Bệnh viện Quân y 103</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', '"Open Sans"', '"Helvetica Neue"', 'sans-serif'],
-          },
-          fontSize: {
-            'title': ['20px', { lineHeight: '1.25', fontWeight: '800' }],
-            'main-title': ['17.33px', { lineHeight: '1.25', fontWeight: '800' }],
-            'section': ['16px', { lineHeight: '1.4', fontWeight: '700' }],
-            'subtitle': ['11px', { lineHeight: '1.5', fontWeight: '700' }],
-            'label': ['13px', { lineHeight: '1.5', fontWeight: '600' }],
-            'input': ['14px', { lineHeight: '1.6' }],
-            'table': ['13px', { lineHeight: '1.5' }],
-            'small': ['14px', { lineHeight: '1.4' }],
+            sans: ['system-ui', '-apple-system', 'sans-serif'],
           },
           colors: {
             primary: {
-              50: '#f1fdf3',
-              100: '#dcfce4',
-              200: '#bcf7ca',
-              300: '#8df0a6',
-              400: '#53e179',
-              500: '#2cc955',
-              600: '#149132',
-              700: '#137a2d',
-              800: '#146128',
-              900: '#125023',
+              50: '#f1fdf3', 100: '#dcfce4', 200: '#bcf7ca', 300: '#8df0a6', 400: '#53e179', 500: '#2cc955', 600: '#149132', 700: '#137a2d', 800: '#146128', 900: '#125023',
             }
           }
         }
@@ -90,10 +74,9 @@
   </script>
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
     }
 
-    /* Custom scrollbar for webkit */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -112,35 +95,34 @@
       background: #94a3b8;
     }
 
-    /* Global Table Border Styles */
     .table-standardized {
       width: 100%;
-      border-collapse: collapse !important;
-      border: 1px solid #cbd5e1 !important;
+      border-collapse: collapse;
+      border: 1px solid #cbd5e1;
     }
 
     .table-standardized thead th {
-      background-color: #009900 !important;
-      color: white !important;
-      border: 1px solid #cbd5e1 !important;
-      padding: 10px 16px !important;
+      background-color: #009900;
+      color: white;
+      border: 1px solid #cbd5e1;
+      padding: 10px 16px;
       text-align: left;
-      text-transform: uppercase !important;
-      font-size: 12px !important;
-      font-weight: 800 !important;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 800;
       white-space: nowrap;
     }
 
     .table-standardized tbody td {
-      border: 1px solid #cbd5e1 !important;
-      padding: 12px 16px !important;
+      border: 1px solid #cbd5e1;
+      padding: 12px 16px;
       vertical-align: top;
-      font-size: 13px !important;
-      font-weight: 400 !important;
+      font-size: 13px;
+      font-weight: 400;
     }
 
     .table-standardized tbody tr:hover {
-      background-color: #f8fafc !important;
+      background-color: #f8fafc;
     }
   </style>
 </head>
@@ -153,7 +135,7 @@
         style="width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #009900; border-radius: 50%; animation: spin 1s linear infinite;">
       </div>
       <p style="margin-top: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">
-        Đang tải hệ thống...</p>
+        Đang tải...</p>
     </div>
   </div>
   <style>
@@ -167,18 +149,14 @@
       }
     }
   </style>
-  <!-- Vite entry point: Vite will automatically transform /index.tsx into bundled assets during build -->
+
   <script type="module" src="/index.tsx"></script>
-  <!-- Safety net: if browser doesn't support ES modules at all, show fallback -->
+
   <script nomodule>
     if (!window.__INAPP_DETECTED) {
-      document.body.style.margin = '0';
-      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#f8fafc;">' +
-        '<div style="background:white;max-width:400px;width:100%;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.1);overflow:hidden;text-align:center;padding:40px;">' +
-        '<h2 style="font-size:18px;font-weight:900;color:#0f172a;margin:0 0 12px;">Trình duyệt không được hỗ trợ</h2>' +
-        '<p style="font-size:14px;color:#64748b;line-height:1.6;margin:0 0 24px;">Vui lòng mở trang này bằng <b>Chrome</b> hoặc <b>Safari</b> để tiếp tục.</p>' +
-        '<a href="' + window.location.href + '" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;background:#009900;color:white;border-radius:14px;font-size:13px;font-weight:800;text-decoration:none;">Mở trình duyệt</a>' +
-        '</div></div>';
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:sans-serif;background:#f8fafc;">' +
+        '<div style="background:white;max-width:400px;width:100%;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.1);padding:40px;text-align:center;">' +
+        '<h2>Trình duyệt không hỗ trợ</h2><p>Vui lòng mở bằng Chrome để tiếp tục.</p></div></div>';
     }
   </script>
 </body>
