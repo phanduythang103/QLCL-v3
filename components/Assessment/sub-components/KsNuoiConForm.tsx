@@ -156,7 +156,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen">
       {/* HEADER */}
-      <div className={`bg-[${themeColor}] text-white p-6 md:p-10 rounded-3xl shadow-2xl text-center space-y-4 relative overflow-hidden mb-8 mx-auto max-w-6xl mt-4`}>
+      <div className="text-white p-6 md:p-10 rounded-3xl shadow-2xl text-center space-y-4 relative overflow-hidden mb-8 mx-auto max-w-6xl mt-4" style={{ backgroundColor: themeColor }}>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
         {!isPublic && (
           <div className="flex justify-start mb-4 relative z-10">

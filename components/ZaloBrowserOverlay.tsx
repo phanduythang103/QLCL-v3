@@ -5,14 +5,13 @@ export const ZaloBrowserOverlay: React.FC = () => {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        // Detect Zalo User Agent
+        // Check session storage or detect Zalo User Agent
+        const dismissed = sessionStorage.getItem('zalo_overlay_dismissed');
         const isZalo = /Zalo/i.test(navigator.userAgent);
-        if (isZalo) {
-            // Check if user has already dismissed it in this session
-            const isDismissed = sessionStorage.getItem('zalo_overlay_dismissed');
-            if (!isDismissed) {
-                setIsVisible(true);
-            }
+        const inappDetected = sessionStorage.getItem('inapp_browser_detected');
+        
+        if ((isZalo || inappDetected) && !dismissed) {
+            setIsVisible(true);
         }
     }, []);
 
