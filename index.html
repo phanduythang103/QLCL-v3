@@ -112,7 +112,27 @@
 </head>
 
 <body class="bg-slate-50 text-slate-900">
-  <div id="root"></div>
+  <div id="root">
+    <div
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: #64748b;">
+      <div
+        style="width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #009900; border-radius: 50%; animation: spin 1s linear infinite;">
+      </div>
+      <p style="margin-top: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">
+        Đang tải hệ thống...</p>
+    </div>
+  </div>
+  <style>
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
   <script type="module" src="/index.tsx"></script>
 </body>
 

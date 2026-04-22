@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Globe, QrCode, Link2, Copy, Check, Save, Unlink, Loader2, AlertCircle, 
+import {
+  Globe, QrCode, Link2, Copy, Check, Save, Unlink, Loader2, AlertCircle,
   ExternalLink, MousePointer2, RefreshCw, Printer
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -20,7 +20,7 @@ export const SurveyPublicConfig: React.FC = () => {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const [showQrIds, setShowQrIds] = useState<Set<string>>(new Set());
-  
+
   // Domain configuration as requested
   const publicBaseUrl = 'https://qlcl103.pro.vn/khao-sat';
   const localBaseUrl = `${window.location.origin}/khao-sat`;
@@ -36,7 +36,7 @@ export const SurveyPublicConfig: React.FC = () => {
         .from('survey_public_configs')
         .select('*')
         .order('survey_type');
-      
+
       if (error) throw error;
       setConfigs(data || []);
     } catch (err) {
@@ -56,8 +56,8 @@ export const SurveyPublicConfig: React.FC = () => {
         .eq('id', config.id);
 
       if (error) throw error;
-      
-      setConfigs(prev => prev.map(c => 
+
+      setConfigs(prev => prev.map(c =>
         c.id === config.id ? { ...c, is_public: !c.is_public } : c
       ));
       setMessage({ text: `Đã ${!config.is_public ? 'mở' : 'đóng'} public cho ${config.survey_name}`, type: 'success' });
@@ -79,8 +79,8 @@ export const SurveyPublicConfig: React.FC = () => {
         .eq('id', id);
 
       if (error) throw error;
-      
-      setConfigs(prev => prev.map(c => 
+
+      setConfigs(prev => prev.map(c =>
         c.id === id ? { ...c, slug: newSlug.trim().toLowerCase() } : c
       ));
       setMessage({ text: 'Cập nhật mã link thành công!', type: 'success' });
@@ -103,23 +103,25 @@ export const SurveyPublicConfig: React.FC = () => {
   };
 
   const copyToClipboard = (slug: string) => {
-    const fullUrl = `${publicBaseUrl}/${slug}`;
+    const fullUrl = `${window.location.origin}/khao-sat/${slug.trim()}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };
 
   const getQrUrl = (slug: string) => {
-    const fullUrl = encodeURIComponent(`${publicBaseUrl}/${slug}`);
+    // Luôn sử dụng origin hiện tại (localhost hoặc domain thực) để QR quét được ngay tại môi trường đang test
+    const currentBaseUrl = `${window.location.origin}/khao-sat`;
+    const fullUrl = encodeURIComponent(`${currentBaseUrl}/${slug.trim()}`);
     return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${fullUrl}&margin=10`;
   };
-  
+
   const handlePrint = (config: SurveyConfig) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
     const qrUrl = getQrUrl(config.slug);
-    
+
     printWindow.document.write(`
       <html>
         <head>
@@ -223,7 +225,7 @@ export const SurveyPublicConfig: React.FC = () => {
             <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Quản lý link truy cập và mã QR cho các khảo sát hài lòng</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={fetchConfigs}
           className="p-3 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-[#009900]"
         >
@@ -232,9 +234,8 @@ export const SurveyPublicConfig: React.FC = () => {
       </div>
 
       {message && (
-        <div className={`p-4 rounded-xl flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
-        }`}>
+        <div className={`p-4 rounded-xl flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
+          }`}>
           {message.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
           <span className="text-xs font-black uppercase tracking-tight">{message.text}</span>
         </div>
@@ -247,24 +248,21 @@ export const SurveyPublicConfig: React.FC = () => {
             <div className="p-8 flex-1 space-y-6 border-b md:border-b-0 md:border-r border-slate-50">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                    config.is_public ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${config.is_public ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                    }`}>
                     {config.is_public ? 'Đang mở (Public)' : 'Đang đóng'}
                   </span>
                   <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight pt-2">{config.survey_name}</h3>
                 </div>
-                
+
                 <button
                   onClick={() => handleTogglePublic(config)}
                   disabled={savingId === config.id}
-                  className={`relative inline-flex h-8 w-16 items-center rounded-full transition-all focus:outline-none ${
-                    config.is_public ? 'bg-[#009900]' : 'bg-slate-300'
-                  }`}
+                  className={`relative inline-flex h-8 w-16 items-center rounded-full transition-all focus:outline-none ${config.is_public ? 'bg-[#009900]' : 'bg-slate-300'
+                    }`}
                 >
-                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${
-                    config.is_public ? 'translate-x-9' : 'translate-x-1'
-                  }`} />
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${config.is_public ? 'translate-x-9' : 'translate-x-1'
+                    }`} />
                 </button>
               </div>
 
@@ -275,7 +273,7 @@ export const SurveyPublicConfig: React.FC = () => {
                 <div className="flex gap-2">
                   <div className="flex-1 flex items-center bg-slate-50 rounded-2xl border border-slate-100 px-4 group focus-within:border-[#009900] transition-all">
                     <span className="text-slate-400 text-xs font-bold font-mono border-r border-slate-200 pr-3 mr-3 whitespace-nowrap">https://qlcl103.pro.vn/khao-sat/</span>
-                    <input 
+                    <input
                       type="text"
                       defaultValue={config.slug}
                       onBlur={(e) => {
@@ -285,7 +283,7 @@ export const SurveyPublicConfig: React.FC = () => {
                       placeholder="nhap-ma-link"
                     />
                   </div>
-                  <button 
+                  <button
                     onClick={() => copyToClipboard(config.slug)}
                     className="p-4 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#009900] hover:border-[#009900] transition-all relative group"
                   >
@@ -294,7 +292,7 @@ export const SurveyPublicConfig: React.FC = () => {
                       <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-800 text-white text-[10px] font-black rounded-lg uppercase tracking-widest animate-in fade-in zoom-in duration-200">Đã chép</span>
                     )}
                   </button>
-                  <a 
+                  <a
                     href={`${localBaseUrl}/${config.slug}`}
                     target="_blank"
                     rel="noreferrer"
@@ -307,13 +305,12 @@ export const SurveyPublicConfig: React.FC = () => {
 
               {/* Toggle QR Button */}
               <div className="pt-4 flex justify-between items-center border-t border-slate-50">
-                <button 
+                <button
                   onClick={() => toggleQr(config.id)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                    showQrIds.has(config.id) 
-                      ? 'bg-slate-800 text-white shadow-lg' 
-                      : 'bg-emerald-50 text-[#009900] hover:bg-emerald-100'
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showQrIds.has(config.id)
+                    ? 'bg-slate-800 text-white shadow-lg'
+                    : 'bg-emerald-50 text-[#009900] hover:bg-emerald-100'
+                    }`}
                 >
                   <QrCode size={14} />
                   {showQrIds.has(config.id) ? 'Ẩn mã QR' : 'Hiện mã QR & In'}
@@ -327,23 +324,23 @@ export const SurveyPublicConfig: React.FC = () => {
                 <div className="relative group">
                   {/* Visual Glow */}
                   <div className="absolute inset-x-0 -inset-y-4 bg-[#009900]/10 rounded-[3rem] blur-2xl group-hover:bg-[#009900]/15 transition-all duration-500" />
-                  
+
                   {/* The QR Card */}
                   <div id={`qr-card-${config.id}`} className="relative bg-white p-6 rounded-[2.5rem] border-2 border-slate-200 shadow-2xl transition-all hover:shadow-emerald-100 duration-500 flex flex-col items-center gap-4 w-56">
                     {/* Hospital Name (Top) */}
                     <div className="text-[10px] font-black text-slate-900 uppercase tracking-tighter text-center leading-tight bg-slate-50 py-2 px-3 rounded-xl w-full border border-slate-100">
                       Bệnh viện Quân y 103
                     </div>
-                    
+
                     {/* QR Image (Middle) */}
                     <div className="p-2 border border-slate-50 rounded-2xl bg-white shadow-inner">
-                      <img 
-                        src={getQrUrl(config.slug)} 
-                        alt="Survey QR Code" 
+                      <img
+                        src={getQrUrl(config.slug)}
+                        alt="Survey QR Code"
                         className="w-32 h-32 object-contain"
                       />
                     </div>
-                    
+
                     {/* Survey Name (Bottom) */}
                     <div className="text-[9px] font-black text-[#009900] uppercase tracking-tight text-center leading-[1.3] px-2 min-h-[32px] flex items-center justify-center">
                       {config.survey_name}
@@ -359,25 +356,23 @@ export const SurveyPublicConfig: React.FC = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã QR Khảo sát</p>
                   <div className="flex flex-col gap-2">
-                    <a 
-                      href={getQrUrl(config.slug)} 
+                    <a
+                      href={getQrUrl(config.slug)}
                       target="_blank"
                       rel="noreferrer"
-                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                        config.is_public ? 'text-[#009900] hover:bg-emerald-50 hover:border-[#009900]' : 'text-slate-300 pointer-events-none'
-                      }`}
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${config.is_public ? 'text-[#009900] hover:bg-emerald-50 hover:border-[#009900]' : 'text-slate-300 pointer-events-none'
+                        }`}
                     >
                       Mở ảnh QR <ExternalLink size={10} />
                     </a>
-                    <button 
+                    <button
                       onClick={() => handlePrint(config)}
-                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${
-                        config.is_public ? '' : 'opacity-50 pointer-events-none'
-                      }`}
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${config.is_public ? '' : 'opacity-50 pointer-events-none'
+                        }`}
                     >
                       In thẻ QR <Printer size={10} />
                     </button>

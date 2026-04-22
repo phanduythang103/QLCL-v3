@@ -12,6 +12,7 @@ import { inpatientSatisfactionService } from './Assessment/services/inpatientSat
 import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
 import { ksNuoiConService } from './Assessment/services/ksNuoiConService';
 import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
+import { ZaloBrowserOverlay } from './ZaloBrowserOverlay';
 
 interface PublicConfig {
   survey_type: 'staff' | 'inpatient' | 'outpatient' | 'ks_nuoi_con' | 'ks_me_sinh_con';
@@ -30,12 +31,13 @@ export const PublicSurveyPage: React.FC = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       if (!slug) return;
+      const cleanSlug = slug.trim().toLowerCase();
       setLoading(true);
       try {
         const { data, error } = await supabase
           .from('survey_public_configs')
           .select('survey_type, is_public, survey_name')
-          .eq('slug', slug)
+          .eq('slug', cleanSlug)
           .single();
 
         if (error || !data) {
@@ -101,9 +103,9 @@ export const PublicSurveyPage: React.FC = () => {
         </div>
         <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Thông báo</h2>
         <p className="text-slate-500 max-w-md mx-auto font-medium">{error || 'Khảo sát không khả dụng.'}</p>
-        <button 
-           onClick={() => window.location.href = window.location.origin}
-           className="mt-8 px-8 py-3 bg-slate-800 text-white rounded-xl font-bold uppercase text-xs tracking-wider hover:bg-slate-900 transition-all"
+        <button
+          onClick={() => window.location.href = window.location.origin}
+          className="mt-8 px-8 py-3 bg-slate-800 text-white rounded-xl font-bold uppercase text-xs tracking-wider hover:bg-slate-900 transition-all"
         >
           Quay lại trang chủ
         </button>
@@ -119,12 +121,12 @@ export const PublicSurveyPage: React.FC = () => {
         </div>
         <h2 className="text-3xl md:text-4xl font-black mb-4 uppercase tracking-tight">Gửi thành công!</h2>
         <p className="text-white/80 max-w-lg mx-auto text-lg font-medium leading-relaxed">
-          Xin chân thành cảm ơn ý kiến đóng góp của Anh/Chị. 
+          Xin chân thành cảm ơn ý kiến đóng góp của Anh/Chị.
           Ý kiến của Anh/Chị sẽ giúp Bệnh viện Quân y cải thiện chất lượng phục vụ tốt hơn.
         </p>
-        <button 
-           onClick={() => window.location.reload()}
-           className="mt-12 px-10 py-4 bg-white text-[#009900] rounded-2xl font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-12 px-10 py-4 bg-white text-[#009900] rounded-2xl font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
         >
           Gửi thêm phiếu mới
         </button>
@@ -138,43 +140,44 @@ export const PublicSurveyPage: React.FC = () => {
   // Render the specific form
   return (
     <div className="bg-slate-50 min-h-screen">
+      <ZaloBrowserOverlay />
       {config.survey_type === 'staff' && (
-        <StaffSatisfactionForm 
-          onSave={handleSave} 
-          onCancel={() => {}} 
-          saving={saving} 
+        <StaffSatisfactionForm
+          onSave={handleSave}
+          onCancel={() => { }}
+          saving={saving}
           isPublic={true}
         />
       )}
       {config.survey_type === 'inpatient' && (
-        <InpatientSatisfactionForm 
-          onSave={handleSave} 
-          onCancel={() => {}} 
-          saving={saving} 
+        <InpatientSatisfactionForm
+          onSave={handleSave}
+          onCancel={() => { }}
+          saving={saving}
           isPublic={true}
         />
       )}
       {config.survey_type === 'outpatient' && (
-        <OutpatientSatisfactionForm 
-          onSave={handleSave} 
-          onCancel={() => {}} 
-          saving={saving} 
+        <OutpatientSatisfactionForm
+          onSave={handleSave}
+          onCancel={() => { }}
+          saving={saving}
           isPublic={true}
         />
       )}
       {config.survey_type === 'ks_nuoi_con' && (
-        <KsNuoiConForm 
-          onSave={handleSave} 
-          onCancel={() => {}} 
-          saving={saving} 
+        <KsNuoiConForm
+          onSave={handleSave}
+          onCancel={() => { }}
+          saving={saving}
           isPublic={true}
         />
       )}
       {config.survey_type === 'ks_me_sinh_con' && (
-        <KsMeSinhConForm 
-          onSave={handleSave} 
-          onCancel={() => {}} 
-          saving={saving} 
+        <KsMeSinhConForm
+          onSave={handleSave}
+          onCancel={() => { }}
+          saving={saving}
           isPublic={true}
         />
       )}
