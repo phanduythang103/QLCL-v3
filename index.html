@@ -186,18 +186,14 @@
             '</div>' +
             '</div>' +
             '</div>';
+
+          // Critical: stop further resource loading (prevent modern scripts from crashing older WebViews)
+          window.stop();
         }
       })();
   </script>
-  <!-- Conditionally load app module only if NOT in an embedded browser -->
-  <script>
-    if (!window.__INAPP_DETECTED) {
-      var s = document.createElement('script');
-      s.type = 'module';
-      s.src = '/index.tsx';
-      document.body.appendChild(s);
-    }
-  </script>
+  <!-- Vite entry point: Vite will automatically transform /index.tsx into bundled assets during build -->
+  <script type="module" src="/index.tsx"></script>
   <!-- Safety net: if browser doesn't support ES modules at all, show fallback -->
   <script nomodule>
     if (!window.__INAPP_DETECTED) {
