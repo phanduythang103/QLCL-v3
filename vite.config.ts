@@ -13,10 +13,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: '/',
-    server: {
-      port: 3000,
-      host: '0.0.0.0',
-    },
     plugins: [
       react(),
       legacy({
@@ -24,11 +20,6 @@ export default defineConfig(({ mode }) => {
         renderLegacyChunks: true,
       }),
     ],
-    build: {
-      modulePreload: false,
-      target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
-    },
-    envPrefix: 'VITE_',
     define: {
       'process.env.API_KEY': JSON.stringify(geminiKey),
       'process.env.GEMINI_API_KEY': JSON.stringify(geminiKey),
@@ -39,6 +30,14 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
-    }
+    },
+    build: {
+      target: 'es2020',
+      minify: 'terser',
+    },
+    server: {
+      port: 3000,
+      host: '0.0.0.0',
+    },
   };
 });
