@@ -121,18 +121,38 @@
       }
     }
   </style>
-  <!-- Zalo in-app browser detection: runs as classic script BEFORE modules -->
+  <!-- In-app / embedded browser detection: runs BEFORE any module scripts -->
   <script>
       (function () {
         var ua = navigator.userAgent || '';
-        var isZalo = /Zalo/i.test(ua);
-        // Also detect other common in-app browsers that may fail
-        var isInApp = /FBAN|FBAV|Instagram|Line\//i.test(ua);
 
-        if (isZalo || isInApp) {
+        // --- Detection flags ---
+        var isZalo = /Zalo/i.test(ua);
+        // Generic Android WebView indicator: "; wv)" is added by all Android WebView instances
+        var isAndroidWebView = /; wv\)/i.test(ua);
+        // Specific in-app browsers
+        var isInApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Viber|WeChat|MicroMessenger|KakaoTalk|Snapchat|Twitter|BytedanceWebview|TikTok|Telegram|Pinterest|Messenger/i.test(ua);
+        // Samsung Internet in-app or custom tabs that may cause issues
+        var isSamsungInApp = /SamsungBrowser\/.*CrossApp/i.test(ua);
+        // Detect if running inside a WebView that is NOT a real browser
+        var isEmbedded = isZalo || isAndroidWebView || isInApp || isSamsungInApp;
+
+        if (isEmbedded) {
+          window.__INAPP_DETECTED = true;
           var currentUrl = window.location.href;
-          // Stop all further loading
-          document.getElementById('root').innerHTML = '';
+
+          // Build intent:// URL for Android to open directly in Chrome
+          var intentUrl = '';
+          try {
+            var urlObj = new URL(currentUrl);
+            intentUrl = 'intent://' + urlObj.host + urlObj.pathname + urlObj.search + urlObj.hash +
+              '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' +
+              encodeURIComponent(currentUrl) + ';end';
+          } catch (e) {
+            intentUrl = currentUrl;
+          }
+
+          // Replace body with fallback UI
           document.body.style.margin = '0';
           document.body.style.padding = '0';
           document.body.style.background = '#f8fafc';
@@ -144,7 +164,7 @@
             '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#009900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' +
             '</div>' +
             '<h2 style="font-size:20px;font-weight:900;color:#0f172a;margin:0 0 8px;text-transform:uppercase;letter-spacing:-0.025em;">Mở bằng trình duyệt</h2>' +
-            '<p style="font-size:14px;color:#64748b;line-height:1.6;margin:0 0 24px;">Trình duyệt trong ứng dụng không hỗ trợ đầy đủ. Vui lòng mở bằng trình duyệt hệ thống.</p>' +
+            '<p style="font-size:14px;color:#64748b;line-height:1.6;margin:0 0 24px;">Trình duyệt trong ứng dụng không hỗ trợ đầy đủ.<br/>Vui lòng mở bằng trình duyệt hệ thống để tiếp tục.</p>' +
 
             '<div style="background:#f8fafc;border-radius:16px;padding:20px;border:1px solid #e2e8f0;margin-bottom:24px;text-align:left;">' +
             '<p style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 12px;">HƯỚNG DẪN</p>' +
@@ -160,17 +180,36 @@
             '</div>' +
             '</div>' +
 
-            '<a href="' + currentUrl + '" target="_blank" rel="noopener" style="display:block;width:100%;padding:14px;background:#009900;color:white;border-radius:14px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-align:center;box-shadow:0 10px 15px -3px rgba(0,153,0,0.2);">Thử mở bằng trình duyệt</a>' +
+            '<a href="' + intentUrl + '" style="display:block;width:100%;padding:14px;background:#009900;color:white;border-radius:14px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-align:center;box-shadow:0 10px 15px -3px rgba(0,153,0,0.2);margin-bottom:10px;">Mở bằng Chrome</a>' +
+            '<a href="' + currentUrl + '" target="_blank" rel="noopener" style="display:block;width:100%;padding:12px;background:white;color:#009900;border:2px solid #009900;border-radius:14px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-align:center;">Hoặc nhấn vào đây</a>' +
             '<p style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;margin:20px 0 0;">Bệnh viện Quân y 103</p>' +
             '</div>' +
             '</div>' +
             '</div>';
-          // Prevent module script from loading
-          throw new Error('Zalo/InApp browser detected - showing fallback UI');
         }
       })();
   </script>
-  <script type="module" src="/index.tsx"></script>
+  <!-- Conditionally load app module only if NOT in an embedded browser -->
+  <script>
+    if (!window.__INAPP_DETECTED) {
+      var s = document.createElement('script');
+      s.type = 'module';
+      s.src = '/index.tsx';
+      document.body.appendChild(s);
+    }
+  </script>
+  <!-- Safety net: if browser doesn't support ES modules at all, show fallback -->
+  <script nomodule>
+    if (!window.__INAPP_DETECTED) {
+      document.body.style.margin = '0';
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#f8fafc;">' +
+        '<div style="background:white;max-width:400px;width:100%;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.1);overflow:hidden;text-align:center;padding:40px;">' +
+        '<h2 style="font-size:18px;font-weight:900;color:#0f172a;margin:0 0 12px;">Trình duyệt không được hỗ trợ</h2>' +
+        '<p style="font-size:14px;color:#64748b;line-height:1.6;margin:0 0 24px;">Vui lòng mở trang này bằng <b>Chrome</b> hoặc <b>Safari</b> để tiếp tục.</p>' +
+        '<a href="' + window.location.href + '" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;background:#009900;color:white;border-radius:14px;font-size:13px;font-weight:800;text-decoration:none;">Mở trình duyệt</a>' +
+        '</div></div>';
+    }
+  </script>
 </body>
 
 </html>
