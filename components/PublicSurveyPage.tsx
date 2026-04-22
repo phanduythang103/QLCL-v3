@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { StaffSatisfactionForm } from './Assessment/sub-components/StaffSatisfactionForm';
@@ -22,16 +22,27 @@ interface PublicConfig {
 
 export const PublicSurveyPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Clean up Zalo/UTM parameters if present
+  useEffect(() => {
+    if (location.search && (location.search.includes('zarsrc') || location.search.includes('utm_'))) {
+      // Redirect to clean URL without query parameters
+      navigate(`/khao-sat/${slug}`, { replace: true });
+    }
+  }, [location.search, slug, navigate]);
+
   useEffect(() => {
     const fetchConfig = async () => {
       if (!slug) return;
-      const cleanSlug = slug.trim().toLowerCase();
+      // Remove query parameters and clean up slug
+      const cleanSlug = slug.split('?')[0].trim().toLowerCase();
       setLoading(true);
       try {
         const { data, error } = await supabase
