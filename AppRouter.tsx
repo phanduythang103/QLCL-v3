@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './components/LoginPage';
@@ -8,7 +8,7 @@ import App from './App';
 
 export function AppRouter() {
     return (
-        <HashRouter>
+        <BrowserRouter>
             <AuthProvider>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
@@ -23,6 +23,6 @@ export function AppRouter() {
                     />
                 </Routes>
             </AuthProvider>
-        </HashRouter>
+        </BrowserRouter>
     );
 }
