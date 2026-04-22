@@ -44,6 +44,13 @@ export const PublicSurveyPage: React.FC = () => {
       // Remove query parameters and clean up slug
       const cleanSlug = slug.split('?')[0].trim().toLowerCase();
       setLoading(true);
+      
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        setError('Timed out loading survey. Please refresh the page.');
+        setLoading(false);
+      }, 10000);
+      
       try {
         const { data, error } = await supabase
           .from('survey_public_configs')
@@ -51,21 +58,27 @@ export const PublicSurveyPage: React.FC = () => {
           .eq('slug', cleanSlug)
           .single();
 
+        clearTimeout(timeoutId);
+
         if (error || !data) {
+          console.log('Survey not found for slug:', cleanSlug, error);
           setError('Không tìm thấy link khảo sát này hoặc link đã hết hạn.');
+          setLoading(false);
           return;
         }
 
         if (!data.is_public) {
           setError('Khảo sát này hiện đang đóng. Vui lòng quay lại sau.');
+          setLoading(false);
           return;
         }
 
         setConfig(data as PublicConfig);
+        setLoading(false);
       } catch (err) {
+        clearTimeout(timeoutId);
         console.error('Error fetching survey config:', err);
-        setError('Đã có lỗi xảy ra khi tải thông tin khảo sát.');
-      } finally {
+        setError('Đã có lỗi xảy ra khi tải thông tin khảo sát. Vui lòng kiểm tra kết nối mạng và thử lại.');
         setLoading(false);
       }
     };
@@ -99,9 +112,23 @@ export const PublicSurveyPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-        <Loader2 className="animate-spin text-[#009900] mb-4" size={40} />
-        <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Đang tải khảo sát...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: '#f1f5f9',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px'
+      }}>
+        <Loader2 className="animate-spin text-[#009900] mb-4" size={40} style={{ color: '#009900' }} />
+        <p style={{
+          color: '#64748b',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          fontSize: '14px'
+        }}>Đang tải khảo sát...</p>
       </div>
     );
   }
