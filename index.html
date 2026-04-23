@@ -9,25 +9,27 @@
 
   <script>
     /**
-     * CLEAN URL IMMEDIATELY (Zalo / Facebook / UTM)
-     * Using pure string manipulation for max compatibility with older WebViews
+     * CHUẨN HÓA URL & XÓA PARAM ZALO (PHƯƠNG PHÁP QUYẾT LIỆT)
+     * Giúp khắc phục triệt để lỗi trắng trang trên Zalo Android
      */
     (function () {
       try {
-        var h = window.location.href;
-        if (h.indexOf('zarsrc') !== -1 || h.indexOf('utm_') !== -1 || h.indexOf('fbclid') !== -1) {
-          var n = h.replace(/([\?&])zarsrc=[^&]+/g, '$1')
-                   .replace(/([\?&])utm_[^&]+=[^&]+/g, '$1')
-                   .replace(/([\?&])fbclid=[^&]+/g, '$1')
-                   .replace(/[\?&]+$/, '')
-                   .replace(/\?&/g, '?')
-                   .replace(/&&+/g, '&');
-          
-          if (n !== h && window.history && window.history.replaceState) {
-            window.history.replaceState(null, document.title, n);
-          }
+        var url = new URL(window.location.href);
+        var path = url.pathname;
+        
+        // 1. Luôn thêm dấu / nếu chưa có (trừ trang chủ) để chuẩn hóa routing
+        if (path.length > 1 && !path.endsWith('/')) {
+          window.location.replace(path + '/' + url.search + url.hash);
+          return;
         }
-      } catch (e) { }
+
+        // 2. XÓA TOÀN BỘ query params (zarsrc, utm, ...) - QUAN TRỌNG NHẤT
+        if (url.search) {
+          window.history.replaceState({}, '', path + url.hash);
+        }
+      } catch (e) {
+        console.error('URL Standardize Error:', e);
+      }
     })();
   </script>
 
