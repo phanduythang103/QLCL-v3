@@ -63,13 +63,12 @@ export const PublicSurveyPage: React.FC = () => {
     }
   }, [location.search, location.pathname, location.hash, navigate]);
 
-  const fetchConfig = async () => {
+  const fetchConfig = async (retryCount = 0) => {
     if (!slug) return;
     
-    // Explicit safety check to prevent crash if supabase is null
     if (!supabase) {
       console.error('❌ Supabase client not initialized');
-      setError('Hệ thống đang bận hoặc gặp lỗi kết nối. Vui lòng thử lại sau vài phút.');
+      setError('Hệ thống đang bận. Vui lòng thử lại sau.');
       setLoading(false);
       return;
     }
@@ -79,11 +78,9 @@ export const PublicSurveyPage: React.FC = () => {
     setError(null);
     setTimedOut(false);
 
-    console.log('📡 Fetching survey config for slug:', cleanSlug);
-
     const timeoutId = setTimeout(() => {
       setTimedOut(true);
-    }, 12000); // Increased timeout for slow 4G
+    }, 15000); // 15s timeout
 
     try {
       const { data, error } = await supabase
@@ -95,11 +92,17 @@ export const PublicSurveyPage: React.FC = () => {
       clearTimeout(timeoutId);
 
       if (error || !data) {
+        // Nếu lỗi và chưa thử lại quá 3 lần, hãy thử lại tự động
+        if (retryCount < 2) {
+          console.log(`🔄 Retrying fetch... (${retryCount + 1})`);
+          setTimeout(() => fetchConfig(retryCount + 1), 1000);
+          return;
+        }
         throw new Error('Survey not found');
       }
 
       if (!data.is_public) {
-        setError('Khảo sát này hiện đang đóng. Vui lòng quay lại sau.');
+        setError('Khảo sát này hiện đang đóng.');
         setLoading(false);
         return;
       }
@@ -108,9 +111,13 @@ export const PublicSurveyPage: React.FC = () => {
       setLoading(false);
     } catch (err) {
       clearTimeout(timeoutId);
-      console.error('Error fetching survey config:', err);
-      setError('Đã có lỗi xảy ra khi tải thông tin khảo sát. Vui lòng kiểm tra kết nối mạng.');
-      setLoading(false);
+      if (retryCount < 2) {
+        setTimeout(() => fetchConfig(retryCount + 1), 1000);
+      } else {
+        console.error('Error fetching survey config:', err);
+        setError('Không thể tải khảo sát. Vui lòng kiểm tra mạng hoặc quét lại mã.');
+        setLoading(false);
+      }
     }
   };
 
@@ -211,8 +218,9 @@ export const PublicSurveyPage: React.FC = () => {
 
   // Render the specific form
   return (
-    <div className="bg-slate-50 min-h-screen">
-      <ZaloBrowserOverlay />
+    <div className="min-h-screen bg-slate-50">
+      {/* Không chặn người dùng bằng Overlay nữa để họ có thể "vào thẳng luôn" */}
+      
       {config.survey_type === 'staff' && (
         <StaffSatisfactionForm
           onSave={handleSave}

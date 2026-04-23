@@ -4,6 +4,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './components/LoginPage';
 import { PublicSurveyPage } from './components/PublicSurveyPage';
+import { LandingPage } from './components/LandingPage';
+import { DashboardLayout } from './components/DashboardLayout';
 import App from './App';
 
 export function AppRouter() {

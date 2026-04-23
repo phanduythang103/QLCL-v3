@@ -2,29 +2,49 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabaseConfig';
 
 // Custom storage to handle cases where localStorage is blocked (e.g., Zalo Android in-app)
+const isStorageAvailable = () => {
+  try {
+    const testKey = '__storage_test__';
+    window.localStorage.setItem(testKey, testKey);
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const memoryStorage: Record<string, string> = {};
+
 const safeStorage = {
-    getItem: (key: string) => {
-        try {
-            return localStorage.getItem(key);
-        } catch (e) {
-            return (window as any).__MEM_STORAGE?.[key] || null;
-        }
-    },
-    setItem: (key: string, value: string) => {
-        try {
-            localStorage.setItem(key, value);
-        } catch (e) {
-            if (!(window as any).__MEM_STORAGE) (window as any).__MEM_STORAGE = {};
-            (window as any).__MEM_STORAGE[key] = value;
-        }
-    },
-    removeItem: (key: string) => {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            if ((window as any).__MEM_STORAGE) delete (window as any).__MEM_STORAGE[key];
-        }
+  getItem: (key: string) => {
+    try {
+      return isStorageAvailable() ? window.localStorage.getItem(key) : memoryStorage[key] || null;
+    } catch (e) {
+      return memoryStorage[key] || null;
     }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      if (isStorageAvailable()) {
+        window.localStorage.setItem(key, value);
+      } else {
+        memoryStorage[key] = value;
+      }
+    } catch (e) {
+      memoryStorage[key] = value;
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      if (isStorageAvailable()) {
+        window.localStorage.removeItem(key);
+      } else {
+        delete memoryStorage[key];
+      }
+    } catch (e) {
+      delete memoryStorage[key];
+    }
+  },
 };
 
 // Validation: Cảnh báo nếu thiếu cấu hình
