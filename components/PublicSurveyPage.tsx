@@ -34,12 +34,34 @@ export const PublicSurveyPage: React.FC = () => {
 
   // Clean up Zalo/UTM parameters if present
   useEffect(() => {
-    if (location.search && (location.search.includes('zarsrc') || location.search.includes('utm_'))) {
-      const cleanUrl = location.pathname;
-      console.log('🧹 Cleaning tracking parameters, redirecting to:', cleanUrl);
-      navigate(cleanUrl, { replace: true });
+    try {
+      const search = location.search;
+      if (search && (search.includes('zarsrc') || search.includes('utm_') || search.includes('fbclid'))) {
+        // Create a URLSearchParams object to safely manage params
+        const params = new URLSearchParams(search);
+        const paramsToRemove = ['zarsrc', 'utm_source', 'utm_medium', 'utm_campaign', 'fbclid', 'gclid'];
+        let hasChanged = false;
+
+        paramsToRemove.forEach(p => {
+          if (params.has(p)) {
+            params.delete(p);
+            hasChanged = true;
+          }
+        });
+
+        if (hasChanged) {
+          const newSearch = params.toString();
+          const cleanUrl = location.pathname + (newSearch ? `?${newSearch}` : '') + location.hash;
+          console.log('🧹 Cleaning tracking parameters, redirecting to:', cleanUrl);
+          
+          // Use replace to avoid polluting history
+          navigate(cleanUrl, { replace: true });
+        }
+      }
+    } catch (err) {
+      console.error('⚠️ URL cleaning in component failed:', err);
     }
-  }, [location.search, navigate]);
+  }, [location.search, location.pathname, location.hash, navigate]);
 
   const fetchConfig = async () => {
     if (!slug) return;

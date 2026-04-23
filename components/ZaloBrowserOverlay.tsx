@@ -5,19 +5,32 @@ export const ZaloBrowserOverlay: React.FC = () => {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        // Check session storage or detect Zalo User Agent
-        const dismissed = sessionStorage.getItem('zalo_overlay_dismissed');
-        const isZalo = /Zalo/i.test(navigator.userAgent);
-        const inappDetected = sessionStorage.getItem('inapp_browser_detected');
-        
-        if ((isZalo || inappDetected) && !dismissed) {
-            setIsVisible(true);
+        try {
+            // Check session storage or detect Zalo User Agent
+            const dismissed = sessionStorage.getItem('zalo_overlay_dismissed');
+            const isZalo = /Zalo/i.test(navigator.userAgent) || /ZaloBrowser/i.test(navigator.userAgent);
+            
+            // Look for the flag set in index.html
+            const inappDetected = sessionStorage.getItem('inapp_browser_detected') || (window as any).__INAPP_DETECTED;
+            
+            if ((isZalo || inappDetected) && !dismissed) {
+                setIsVisible(true);
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not access sessionStorage in Zalo overlay');
+            // Fallback to just UA check if storage fails
+            const isZalo = /Zalo/i.test(navigator.userAgent);
+            if (isZalo) setIsVisible(true);
         }
     }, []);
 
     const dismiss = () => {
         setIsVisible(false);
-        sessionStorage.setItem('zalo_overlay_dismissed', 'true');
+        try {
+            sessionStorage.setItem('zalo_overlay_dismissed', 'true');
+        } catch (e) {
+            console.warn('⚠️ Could not save dismissal to sessionStorage');
+        }
     };
 
     if (!isVisible) return null;
