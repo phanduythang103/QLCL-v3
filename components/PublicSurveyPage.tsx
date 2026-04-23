@@ -31,6 +31,7 @@ export const PublicSurveyPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [timedOut, setTimedOut] = useState(false);
+  const isZalo = /Zalo/i.test(navigator.userAgent);
 
   // Clean up Zalo/UTM parameters if present
   useEffect(() => {
@@ -219,7 +220,10 @@ export const PublicSurveyPage: React.FC = () => {
   // Render the specific form
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Không chặn người dùng bằng Overlay nữa để họ có thể "vào thẳng luôn" */}
+      {/* Hiển thị Overlay yêu cầu mở trình duyệt nếu là 3 loại khảo sát chưa ổn định trên Zalo */}
+      {isZalo && ['staff', 'outpatient', 'ks_nuoi_con'].includes(config.survey_type) && (
+        <ZaloBrowserOverlay />
+      )}
       
       {config.survey_type === 'staff' && (
         <StaffSatisfactionForm

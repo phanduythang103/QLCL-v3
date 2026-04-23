@@ -1,101 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { ExternalLink, Info, X, Compass, MoreVertical, Share } from 'lucide-react';
+import React from 'react';
+import { Globe, MoreVertical, Share, ExternalLink } from 'lucide-react';
 
 export const ZaloBrowserOverlay: React.FC = () => {
-    const [isVisible, setIsVisible] = useState(false);
-    const [platform, setPlatform] = useState<'android' | 'ios' | 'other'>('other');
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  
+  const handleOpenBrowser = () => {
+    // Kích hoạt mở trình duyệt hệ thống (Zalo thường sẽ gợi ý mở ngoài khi reload)
+    window.location.href = window.location.href;
+  };
 
-    useEffect(() => {
-        try {
-            const ua = navigator.userAgent || '';
-            const isZalo = /Zalo/i.test(ua) || /ZaloBrowser/i.test(ua);
-            const isAndroid = /Android/i.test(ua);
-            const isIOS = /iPhone|iPad|iPod/i.test(ua);
-            
-            setPlatform(isAndroid ? 'android' : (isIOS ? 'ios' : 'other'));
-
-            const dismissed = sessionStorage.getItem('zalo_overlay_dismissed');
-            const inappDetected = sessionStorage.getItem('inapp_browser_detected') || (window as any).__INAPP_DETECTED;
-            
-            if ((isZalo || inappDetected) && !dismissed) {
-                setIsVisible(true);
-            }
-        } catch (e) {
-            console.warn('⚠️ Zalo overlay check failed');
-            if (/Zalo/i.test(navigator.userAgent)) setIsVisible(true);
-        }
-    }, []);
-
-    const dismiss = () => {
-        setIsVisible(false);
-        try {
-            sessionStorage.setItem('zalo_overlay_dismissed', 'true');
-        } catch (e) { }
-    };
-
-    if (!isVisible) return null;
-
-    return (
-        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 animate-in slide-in-from-bottom-10 duration-500">
-                <div className="h-2 bg-[#009900]" />
-
-                <div className="p-8 space-y-6">
-                    <div className="flex justify-between items-start">
-                        <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center text-[#009900] shadow-inner">
-                            <Compass size={32} className="animate-pulse" />
-                        </div>
-                        <button onClick={dismiss} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
-                            <X size={20} />
-                        </button>
-                    </div>
-
-                    <div className="space-y-2">
-                        <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight leading-tight">
-                            Tối ưu trải nghiệm
-                        </h3>
-                        <p className="text-slate-500 font-medium leading-relaxed">
-                            Bạn đang mở khảo sát trong Zalo. Để tránh lỗi trắng trang và gửi phiếu mượt mà hơn, vui lòng mở bằng trình duyệt hệ thống.
-                        </p>
-                    </div>
-
-                    <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 space-y-4">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <Info size={12} /> Hướng dẫn cho {platform === 'android' ? 'Android' : 'iPhone'}
-                        </h4>
-
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 shadow-sm">
-                                {platform === 'ios' ? <Share size={18} /> : <MoreVertical size={20} />}
-                            </div>
-                            <p className="text-xs font-bold text-slate-700 leading-snug">
-                                Nhấn vào biểu tượng <span className="text-[#009900]">{platform === 'ios' ? 'Chia sẻ' : 'Ba chấm (⋮)'}</span> ở góc màn hình.
-                            </p>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 shadow-sm">
-                                <ExternalLink size={18} />
-                            </div>
-                            <p className="text-xs font-bold text-slate-700 leading-snug">
-                                Chọn <span className="text-[#009900]">"Mở bằng trình duyệt"</span> (hoặc Chrome/Safari).
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <button
-                            onClick={dismiss}
-                            className="w-full py-4 bg-[#009900] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        >
-                            Tôi đã hiểu & Tiếp tục
-                        </button>
-                        <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest pt-2">
-                            Bệnh viện Quân y 103 - Hệ thống QLCL
-                        </p>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center px-6 py-12 font-sans animate-in fade-in duration-500">
+      <div className="w-full max-w-sm flex flex-col items-center">
+        {/* Icon Globe */}
+        <div className="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center mb-10 shadow-sm border border-emerald-100">
+          <Globe className="text-[#009900]" size={40} />
         </div>
-    );
+
+        {/* Title */}
+        <h1 className="text-3xl font-black text-slate-800 text-center leading-tight mb-4 tracking-tight uppercase">
+          Mở bằng trình<br />duyệt
+        </h1>
+
+        {/* Description */}
+        <p className="text-slate-500 text-center font-bold text-lg leading-relaxed mb-10 px-4">
+          Trình duyệt trong ứng dụng không hỗ trợ đầy đủ. Vui lòng mở bằng trình duyệt hệ thống để tiếp tục.
+        </p>
+
+        {/* Instructions Card */}
+        <div className="w-full bg-slate-50 rounded-3xl p-8 mb-10 border border-slate-100 relative shadow-inner">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Hướng dẫn</p>
+          
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0 border border-slate-100">
+                {isAndroid ? <MoreVertical size={20} className="text-slate-600" /> : <Share size={18} className="text-slate-600" />}
+              </div>
+              <p className="text-slate-700 text-sm font-bold leading-snug pt-1">
+                Nhấn dấu <span className="text-[#009900]">{isAndroid ? "⋮" : "..."}</span> hoặc <span className="text-[#009900]">...</span> ở góc trên
+              </p>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0 border border-slate-100">
+                <ExternalLink size={18} className="text-slate-600" />
+              </div>
+              <p className="text-slate-700 text-sm font-bold leading-snug pt-1">
+                Chọn <span className="text-[#009900]">"Mở bằng trình duyệt"</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="w-full space-y-4">
+          <button
+            onClick={handleOpenBrowser}
+            className="w-full py-5 bg-[#009900] text-white rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl shadow-emerald-100 active:scale-95 transition-all"
+          >
+            Mở bằng Chrome
+          </button>
+          
+          <button
+            onClick={handleOpenBrowser}
+            className="w-full py-5 border-2 border-[#009900] text-[#009900] rounded-2xl font-black uppercase text-sm tracking-widest active:scale-95 transition-all"
+          >
+            Hoặc nhấn vào đây
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12">
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">Bệnh viện Quân y 103</p>
+        </div>
+      </div>
+    </div>
+  );
 };
