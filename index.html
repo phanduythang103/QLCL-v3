@@ -7,6 +7,30 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
+  <script>
+    /**
+     * CLEAN URL IMMEDIATELY (Zalo / Facebook / UTM)
+     * Using pure string manipulation for max compatibility with older WebViews
+     */
+    (function () {
+      try {
+        var h = window.location.href;
+        if (h.indexOf('zarsrc') !== -1 || h.indexOf('utm_') !== -1 || h.indexOf('fbclid') !== -1) {
+          var n = h.replace(/([\?&])zarsrc=[^&]+/g, '$1')
+                   .replace(/([\?&])utm_[^&]+=[^&]+/g, '$1')
+                   .replace(/([\?&])fbclid=[^&]+/g, '$1')
+                   .replace(/[\?&]+$/, '')
+                   .replace(/\?&/g, '?')
+                   .replace(/&&+/g, '&');
+          
+          if (n !== h && window.history && window.history.replaceState) {
+            window.history.replaceState(null, document.title, n);
+          }
+        }
+      } catch (e) { }
+    })();
+  </script>
+
   <title>Bệnh viện Quân y 103 - Khảo sát hài lòng</title>
 
   <!-- Preload styles for faster loading -->
@@ -17,74 +41,18 @@
 
   <script>
     /**
-     * ROBUST INITIALIZATION & ZALO OPTIMIZATION
-     * This script handles initial browser detection and URL cleaning safely.
+     * IN-APP BROWSER DETECTION
      */
     (function () {
       try {
-        console.log('🚀 SYSTEM: Initializing hospital survey app...');
-        
-        // 1. Detection
         var ua = navigator.userAgent || '';
         var isZalo = /Zalo/i.test(ua) || /ZaloBrowser/i.test(ua);
         var isAndroidWebView = /; wv\)/i.test(ua);
-        var isInApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Viber|WeChat|MicroMessenger|KakaoTalk|Snapchat|Twitter|BytedanceWebview|TikTok|Telegram|Pinterest|Messenger/i.test(ua);
-
-        console.log('📱 Browser Info:', { isZalo: isZalo, isAndroidWebView: isAndroidWebView, isInApp: isInApp });
-
-        if (isZalo || isAndroidWebView || isInApp) {
+        if (isZalo || isAndroidWebView) {
           window.__INAPP_DETECTED = true;
-          try {
-            sessionStorage.setItem('inapp_browser_detected', 'true');
-          } catch (storageErr) {
-            console.warn('⚠️ SessionStorage not available');
-          }
+          try { sessionStorage.setItem('inapp_browser_detected', 'true'); } catch (e) { }
         }
-
-        // 2. Safe URL Cleaning (Zalo/FB parameters)
-        var href = window.location.href;
-        if (href.indexOf('zarsrc') !== -1 || href.indexOf('utm_') !== -1 || href.indexOf('fbclid') !== -1) {
-          try {
-            var url = new URL(href);
-            var paramsToRemove = ['zarsrc', 'utm_source', 'utm_medium', 'utm_campaign', 'fbclid', 'gclid'];
-            var changed = false;
-
-            for (var i = 0; i < paramsToRemove.length; i++) {
-              if (url.searchParams.has(paramsToRemove[i])) {
-                url.searchParams.delete(paramsToRemove[i]);
-                changed = true;
-              }
-            }
-
-            if (changed && window.history && window.history.replaceState) {
-              window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
-              console.log('🧹 URL Cleaned');
-            }
-          } catch (urlErr) {
-            // Fallback string cleaning if URL API fails
-            console.warn('⚠️ URL API failed, using fallback cleaning');
-            var cleanHref = href.split('?')[0];
-            var search = window.location.search;
-            if (search) {
-              var params = search.substring(1).split('&');
-              var newParams = [];
-              for (var j = 0; j < params.length; j++) {
-                var p = params[j];
-                if (p.indexOf('zarsrc=') !== 0 && p.indexOf('utm_') !== 0 && p.indexOf('fbclid=') !== 0) {
-                  newParams.push(p);
-                }
-              }
-              if (newParams.length > 0) cleanHref += '?' + newParams.join('&');
-            }
-            cleanHref += window.location.hash;
-            if (cleanHref !== href && window.history && window.history.replaceState) {
-              window.history.replaceState({}, document.title, cleanHref);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('❌ Critical initialization error:', err);
-      }
+      } catch (err) { }
     })();
   </script>
 

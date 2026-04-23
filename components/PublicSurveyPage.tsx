@@ -65,7 +65,16 @@ export const PublicSurveyPage: React.FC = () => {
 
   const fetchConfig = async () => {
     if (!slug) return;
-    const cleanSlug = slug.split('?')[0].trim().toLowerCase();
+    
+    // Explicit safety check to prevent crash if supabase is null
+    if (!supabase) {
+      console.error('❌ Supabase client not initialized');
+      setError('Hệ thống đang bận hoặc gặp lỗi kết nối. Vui lòng thử lại sau vài phút.');
+      setLoading(false);
+      return;
+    }
+
+    const cleanSlug = slug.trim().toLowerCase();
     setLoading(true);
     setError(null);
     setTimedOut(false);
@@ -74,7 +83,7 @@ export const PublicSurveyPage: React.FC = () => {
 
     const timeoutId = setTimeout(() => {
       setTimedOut(true);
-    }, 10000);
+    }, 12000); // Increased timeout for slow 4G
 
     try {
       const { data, error } = await supabase
