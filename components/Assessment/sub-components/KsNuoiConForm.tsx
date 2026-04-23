@@ -109,27 +109,27 @@ export const KsNuoiConForm: React.FC<Props> = ({
       department: '',
       department_code: '',
       patient_id: '',
-      age: 25,
+      age: 0,
       phone: '',
-      visit_count: 1,
-      days_in_hospital: 3,
-      birth_count: 1,
-      delivery_type: 1,
+      visit_count: 0,
+      days_in_hospital: 0,
+      birth_count: 0,
+      delivery_type: null,
       baby_birth_date: new Date().toISOString().split('T')[0],
       see_policy: [],
       see_media: [],
       consultation_time: [],
-      reason_no_consult: 0,
-      cord_cut: 2,
-      skin_to_skin: 1,
-      first_breastfeed: 1,
+      reason_no_consult: null,
+      cord_cut: null,
+      skin_to_skin: null,
+      first_breastfeed: null,
       support_person: [],
       support_type: [],
-      other_food: 1,
-      suggest_formula: 2,
+      other_food: null,
+      suggest_formula: null,
       benefits: '',
-      exclusive_months: 6,
-      total_months: 24,
+      exclusive_months: null,
+      total_months: null,
       suggestions: ''
     }
   );
@@ -148,6 +148,34 @@ export const KsNuoiConForm: React.FC<Props> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.hospital?.trim()) return alert('Chưa nhập thông tin: Bệnh viện');
+    if (!formData.department?.trim()) return alert('Chưa nhập thông tin: Khoa');
+    if (!formData.department_code?.trim()) return alert('Chưa nhập thông tin: Mã khoa');
+    if (!formData.patient_id?.trim()) return alert('Chưa nhập thông tin: Mã người bệnh');
+    if (!formData.age) return alert('Chưa nhập thông tin: Tuổi');
+    if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: Số điện thoại');
+    if (formData.delivery_type === null) return alert('Chưa nhập thông tin: Hình thức sinh');
+
+    // Section III validation
+    if (!formData.see_policy?.length) return alert('Chưa chọn thông tin: Quy định NCBSM');
+    if (!formData.see_media?.length) return alert('Chưa chọn thông tin: Tài liệu truyền thông');
+    if (!formData.consultation_time?.length) return alert('Chưa chọn thông tin: Thời điểm được tư vấn');
+    if (formData.reason_no_consult === null) return alert('Chưa chọn thông tin: Lý do không được tư vấn');
+    if (formData.cord_cut === null) return alert('Chưa chọn thông tin: Thời điểm cắt dây rốn');
+    if (formData.skin_to_skin === null) return alert('Chưa chọn thông tin: Da kề da');
+    if (formData.first_breastfeed === null) return alert('Chưa chọn thông tin: Thời điểm bú lần đầu');
+    if (!formData.support_person?.length) return alert('Chưa chọn thông tin: Người hỗ trợ bú');
+    if (!formData.support_type?.length) return alert('Chưa chọn thông tin: Hình thức hỗ trợ');
+    if (formData.other_food === null) return alert('Chưa chọn thông tin: Ăn thêm ngoài sữa mẹ');
+    if (formData.suggest_formula === null) return alert('Chưa chọn thông tin: Gợi ý sữa công thức');
+
+    // Section IV validation
+    if (!formData.benefits?.trim()) return alert('Chưa nhập thông tin: Lợi ích của sữa mẹ');
+    if (formData.exclusive_months === null) return alert('Chưa nhập thông tin: Dự định bú mẹ hoàn toàn');
+    if (formData.total_months === null) return alert('Chưa nhập thông tin: Tổng thời gian bú');
+
     onSave(formData);
   };
 
@@ -603,11 +631,11 @@ export const KsNuoiConForm: React.FC<Props> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             <div className="space-y-2">
               <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Dự định cho trẻ bú mẹ hoàn toàn (tháng)</label>
-              <input type="number" value={formData.exclusive_months} onChange={e => handleChange('exclusive_months', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 font-black text-center text-emerald-600" />
+              <input type="number" value={formData.exclusive_months ?? ''} onChange={e => handleChange('exclusive_months', parseInt(e.target.value) || 0)} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 font-black text-center text-emerald-600" />
             </div>
             <div className="space-y-2">
               <label className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Tổng thời gian dự định cho trẻ bú (tháng)</label>
-              <input type="number" value={formData.total_months} onChange={e => handleChange('total_months', parseInt(e.target.value))} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 font-black text-center text-emerald-600" />
+              <input type="number" value={formData.total_months ?? ''} onChange={e => handleChange('total_months', parseInt(e.target.value) || 0)} className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 font-black text-center text-emerald-600" />
             </div>
           </div>
         </section>

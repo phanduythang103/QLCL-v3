@@ -75,11 +75,11 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
       full_name: '',
       phone: '',
       department: '',
-      hospital_days: 1,
+      hospital_days: 0,
       respondent: 'patient',
-      q1: 3, q2: 3, q3: 3, q4: 3, q5: 3, q6: 3, q7: 3, q8: 3, q9: 3, q10: 3, q11: 3, q12: 3,
+      q1: null, q2: null, q3: null, q4: null, q5: null, q6: null, q7: null, q8: null, q9: null, q10: null, q11: null, q12: null,
       satisfaction_percent: 80,
-      return_intent: 'yes',
+      return_intent: '' as any,
       feedback: ''
     }
   );
@@ -96,6 +96,23 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.full_name?.trim()) return alert('Chưa nhập thông tin: Họ và tên');
+    if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: Số điện thoại');
+    if (!formData.department?.trim()) return alert('Chưa nhập thông tin: Khoa điều trị');
+    if (!formData.hospital_days) return alert('Chưa nhập thông tin: Số ngày nằm viện');
+
+    for (let i = 1; i <= 12; i++) {
+      if (formData[`q${i}` as keyof InpatientSurveyResponse] === null) {
+        // Find question text
+        const qText = CATEGORIES.flatMap(c => c.questions).find(q => q.id === i)?.text || `Câu hỏi ${i}`;
+        return alert(`Chưa nhập thông tin: ${qText}`);
+      }
+    }
+
+    if (!formData.return_intent) return alert('Chưa nhập thông tin: Dự định quay lại');
+
     onSave(formData);
   };
 

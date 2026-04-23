@@ -53,14 +53,14 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
 }) => {
   const [formData, setFormData] = useState<StaffSatisfactionSurvey>(
     initialData || {
-      block: 'clinical',
-      position: 'doctor',
-      years: 1,
-      q1: 3, q2: 3, q3: 3, q4: 3, q5: 3, q6: 3, q7: 3, q8: 3, q9: 3, q10: 3, q11: 3, q12: 3, q13: 3,
+      block: '',
+      position: '',
+      years: 0,
+      q1: null, q2: null, q3: null, q4: null, q5: null, q6: null, q7: null, q8: null, q9: null, q10: null, q11: null, q12: null, q13: null,
       pressure: [],
       pressure_other: '',
       financial_suggestion: '',
-      stay_intent: 'stay',
+      stay_intent: '',
       suggestion: ''
     }
   );
@@ -82,6 +82,20 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.block) return alert('Chưa nhập thông tin: Khối công tác');
+    if (!formData.position) return alert('Chưa nhập thông tin: Vị trí công tác');
+    if (formData.years === null || formData.years === undefined) return alert('Chưa nhập thông tin: Thâm niên');
+
+    for (const q of QUESTIONS) {
+      if (formData[q.id as keyof StaffSatisfactionSurvey] === null) {
+        return alert(`Chưa nhập thông tin: ${q.text}`);
+      }
+    }
+
+    if (!formData.stay_intent) return alert('Chưa nhập thông tin: Ý định gắn bó');
+
     onSave(formData);
   };
 

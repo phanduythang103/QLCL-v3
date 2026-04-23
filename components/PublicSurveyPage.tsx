@@ -30,59 +30,60 @@ export const PublicSurveyPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [timedOut, setTimedOut] = useState(false);
+
   // Clean up Zalo/UTM parameters if present
   useEffect(() => {
     if (location.search && (location.search.includes('zarsrc') || location.search.includes('utm_'))) {
-      // Redirect to clean URL without query parameters
-      navigate(`/khao-sat/${slug}`, { replace: true });
+      const cleanUrl = location.pathname;
+      console.log('🧹 Cleaning tracking parameters, redirecting to:', cleanUrl);
+      navigate(cleanUrl, { replace: true });
     }
-  }, [location.search, slug, navigate]);
+  }, [location.search, navigate]);
+
+  const fetchConfig = async () => {
+    if (!slug) return;
+    const cleanSlug = slug.split('?')[0].trim().toLowerCase();
+    setLoading(true);
+    setError(null);
+    setTimedOut(false);
+
+    console.log('📡 Fetching survey config for slug:', cleanSlug);
+
+    const timeoutId = setTimeout(() => {
+      setTimedOut(true);
+    }, 10000);
+
+    try {
+      const { data, error } = await supabase
+        .from('survey_public_configs')
+        .select('survey_type, is_public, survey_name')
+        .eq('slug', cleanSlug)
+        .single();
+
+      clearTimeout(timeoutId);
+
+      if (error || !data) {
+        throw new Error('Survey not found');
+      }
+
+      if (!data.is_public) {
+        setError('Khảo sát này hiện đang đóng. Vui lòng quay lại sau.');
+        setLoading(false);
+        return;
+      }
+
+      setConfig(data as PublicConfig);
+      setLoading(false);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error('Error fetching survey config:', err);
+      setError('Đã có lỗi xảy ra khi tải thông tin khảo sát. Vui lòng kiểm tra kết nối mạng.');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      if (!slug) return;
-      // Remove query parameters and clean up slug
-      const cleanSlug = slug.split('?')[0].trim().toLowerCase();
-      setLoading(true);
-      
-      // Add timeout to prevent infinite loading
-      const timeoutId = setTimeout(() => {
-        setError('Timed out loading survey. Please refresh the page.');
-        setLoading(false);
-      }, 10000);
-      
-      try {
-        const { data, error } = await supabase
-          .from('survey_public_configs')
-          .select('survey_type, is_public, survey_name')
-          .eq('slug', cleanSlug)
-          .single();
-
-        clearTimeout(timeoutId);
-
-        if (error || !data) {
-          console.log('Survey not found for slug:', cleanSlug, error);
-          setError('Không tìm thấy link khảo sát này hoặc link đã hết hạn.');
-          setLoading(false);
-          return;
-        }
-
-        if (!data.is_public) {
-          setError('Khảo sát này hiện đang đóng. Vui lòng quay lại sau.');
-          setLoading(false);
-          return;
-        }
-
-        setConfig(data as PublicConfig);
-        setLoading(false);
-      } catch (err) {
-        clearTimeout(timeoutId);
-        console.error('Error fetching survey config:', err);
-        setError('Đã có lỗi xảy ra khi tải thông tin khảo sát. Vui lòng kiểm tra kết nối mạng và thử lại.');
-        setLoading(false);
-      }
-    };
-
     fetchConfig();
   }, [slug]);
 
@@ -112,23 +113,25 @@ export const PublicSurveyPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#f1f5f9',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px'
-      }}>
-        <Loader2 className="animate-spin text-[#009900] mb-4" size={40} style={{ color: '#009900' }} />
-        <p style={{
-          color: '#64748b',
-          fontWeight: 'bold',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-          fontSize: '14px'
-        }}>Đang tải khảo sát...</p>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+        {!timedOut ? (
+          <>
+            <Loader2 className="animate-spin text-[#009900] mb-4" size={40} />
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[13px]">Đang tải khảo sát...</p>
+          </>
+        ) : (
+          <>
+            <AlertCircle className="text-amber-500 mb-4" size={48} />
+            <h3 className="text-xl font-black text-slate-800 uppercase mb-2">Kết nối chậm</h3>
+            <p className="text-slate-500 mb-6 max-w-xs">Việc tải khảo sát đang mất nhiều thời gian hơn dự kiến.</p>
+            <button
+              onClick={() => fetchConfig()}
+              className="px-8 py-3 bg-[#009900] text-white rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-emerald-100"
+            >
+              Thử tải lại
+            </button>
+          </>
+        )}
       </div>
     );
   }

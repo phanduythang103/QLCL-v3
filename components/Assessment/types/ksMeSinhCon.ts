@@ -22,40 +22,40 @@ export interface KsMeSinhConRecord {
 
   // Section: Đánh giá dịch vụ (Matrix 1-5)
   // Khả năng tiếp cận
-  ea1?: number;
-  ea2?: number;
+  ea1?: number | null;
+  ea2?: number | null;
   // Quy trình khám
-  eb1?: number;
-  eb2?: number;
+  eb1?: number | null;
+  eb2?: number | null;
   // Tư vấn
-  ec1?: number;
-  ec2?: number;
-  ec3?: number;
+  ec1?: number | null;
+  ec2?: number | null;
+  ec3?: number | null;
   // Cơ sở vật chất
-  ed1?: number;
-  ed2?: number;
-  ed3?: number;
-  ed4?: number;
-  ed5?: number;
-  ed6?: number;
+  ed1?: number | null;
+  ed2?: number | null;
+  ed3?: number | null;
+  ed4?: number | null;
+  ed5?: number | null;
+  ed6?: number | null;
   // Thái độ nhân viên
-  ee1?: number;
-  ee2?: number;
-  ee3?: number;
-  ee4?: number;
+  ee1?: number | null;
+  ee2?: number | null;
+  ee3?: number | null;
+  ee4?: number | null;
   // Chuyên môn
-  eg1?: number;
-  eg2?: number;
-  eg3?: number;
+  eg1?: number | null;
+  eg2?: number | null;
+  eg3?: number | null;
   // Kết quả
-  eh1?: number;
-  eh2?: number;
-  eh3?: number;
+  eh1?: number | null;
+  eh2?: number | null;
+  eh3?: number | null;
 
   // Section: Đánh giá chung
-  overall_satisfaction?: number; // Mức hài lòng chung (1-5)
-  satisfaction_percent?: number; // Mức đáp ứng (%)
-  return_intent?: number;        // Quay lại bệnh viện (1-6)
+  overall_satisfaction?: number | null; // Mức hài lòng chung (1-5)
+  satisfaction_percent?: number | null; // Mức đáp ứng (%)
+  return_intent?: number | null;        // Quay lại bệnh viện (1-6)
   return_intent_other?: string;
   note?: string;                 // Ý kiến thêm
 }

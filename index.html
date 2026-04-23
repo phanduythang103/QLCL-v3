@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+  <base href="/" />
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
@@ -16,15 +17,21 @@
 
   <script>
     (function () {
+      console.log('🚀 SYSTEM: Initializing hospital survey app...');
       var ua = navigator.userAgent || '';
       var isZalo = /Zalo/i.test(ua);
       var isAndroidWebView = /; wv\)/i.test(ua);
       var isInApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Viber|WeChat|MicroMessenger|KakaoTalk|Snapchat|Twitter|BytedanceWebview|TikTok|Telegram|Pinterest|Messenger|ZaloBrowser/i.test(ua);
 
+      console.log('📱 Browser Info:', { isZalo: isZalo, isAndroidWebView: isAndroidWebView, isInApp: isInApp });
+
       if (isZalo || isAndroidWebView || isInApp) {
         window.__INAPP_DETECTED = true;
-        // Store flag in sessionStorage so React can show overlay
-        sessionStorage.setItem('inapp_browser_detected', 'true');
+        try {
+          sessionStorage.setItem('inapp_browser_detected', 'true');
+        } catch (e) {
+          console.warn('⚠️ SessionStorage not available');
+        }
       }
     })();
   </script>

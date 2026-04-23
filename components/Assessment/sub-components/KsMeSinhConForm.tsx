@@ -49,33 +49,39 @@ export const KsMeSinhConForm: React.FC<Props> = ({
       departments: '',
       department_code: '',
       mother_id: '',
-      age: 25,
+      age: 0,
       phone: '',
-      days_in_hospital: 3,
-      visit_count: 1,
-      bhyt: 1,
-      birth_method: 1,
-      prenatal_check: 1,
-      overall_satisfaction: 5,
-      satisfaction_percent: 100,
-      return_intent: 5,
-      note: ''
+      days_in_hospital: 0,
+      visit_count: 0,
+      bhyt: null as any,
+      birth_method: null as any,
+      prenatal_check: null as any,
+      overall_satisfaction: null,
+      satisfaction_percent: 0,
+      return_intent: null,
+      note: '',
+      ea1: null, ea2: null, eb1: null, eb2: null, ec1: null, ec2: null, ec3: null,
+      ed1: null, ed2: null, ed3: null, ed4: null, ed5: null, ed6: null,
+      ee1: null, ee2: null, ee3: null, ee4: null,
+      eg1: null, eg2: null, eg3: null,
+      eh1: null, eh2: null, eh3: null
     }
   );
 
   const calculateSatisfaction = (newData: KsMeSinhConRecord) => {
     // Collect all matrix questions
     const questionKeys = SECTION_MAP.flatMap(s => s.questions.map(q => q.id));
-    const scores = questionKeys.map(k => (newData as any)[k]).filter(s => s !== undefined && s > 0);
+    const scores = questionKeys.map(k => (newData as any)[k]).filter(s => s !== null && s !== undefined && s > 0);
 
-    if (scores.length === 0 && !newData.overall_satisfaction) return 0;
+    const overall = newData.overall_satisfaction;
 
-    const avgSectionIII = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 5;
-    const overall = newData.overall_satisfaction || 5;
+    if (scores.length === 0 && (overall === null || overall === undefined)) return 0;
+
+    const avgSectionIII = scores.length > 0 ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length : 5;
+    const currentOverall = overall || 5;
 
     // Formula: (Avg III + Overall) / 2
-    // Convert to 0-100%: Score * 20 (as per user: 1 star = 20%, 5 stars = 100%)
-    const finalScore = (avgSectionIII + overall) / 2;
+    const finalScore = (avgSectionIII + currentOverall) / 2;
     const percent = Math.round(finalScore * 20);
 
     return percent;
@@ -92,6 +98,29 @@ export const KsMeSinhConForm: React.FC<Props> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.hospital?.trim()) return alert('Chưa nhập thông tin: Bệnh viện');
+    if (!formData.mother_id?.trim()) return alert('Chưa nhập thông tin: Mã số người mẹ');
+    if (!formData.departments?.trim()) return alert('Chưa nhập thông tin: Khoa điều trị');
+    if (!formData.age) return alert('Chưa nhập thông tin: Tuổi');
+    if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: Số điện thoại');
+    if (!formData.bhyt) return alert('Chưa nhập thông tin: Sử dụng BHYT');
+    if (!formData.birth_method) return alert('Chưa nhập thông tin: Cách sinh');
+    if (!formData.prenatal_check) return alert('Chưa nhập thông tin: Khám thai');
+
+    // Matrix validation
+    for (const section of SECTION_MAP) {
+      for (const q of section.questions) {
+        if ((formData as any)[q.id] === null || (formData as any)[q.id] === undefined) {
+          return alert(`Chưa nhập thông tin: [${section.title}] ${q.text}`);
+        }
+      }
+    }
+
+    if (!formData.overall_satisfaction) return alert('Chưa nhập thông tin: Mức hài lòng chung');
+    if (!formData.return_intent) return alert('Chưa nhập thông tin: Dự định quay lại');
+
     onSave(formData);
   };
 
@@ -325,7 +354,8 @@ export const KsMeSinhConForm: React.FC<Props> = ({
 
             <div className="space-y-4 md:col-span-2">
               <label className="text-sm font-black text-slate-800 uppercase tracking-wide">3. Quay lại bệnh viện</label>
-              <select value={formData.return_intent} onChange={e => handleChange('return_intent', parseInt(e.target.value))} className="w-full bg-slate-50 p-5 rounded-3xl border border-slate-200 text-[13px] font-black outline-none focus:border-[#009900] appearance-none">
+              <select value={formData.return_intent || ''} onChange={e => handleChange('return_intent', parseInt(e.target.value))} className="w-full bg-slate-50 p-5 rounded-3xl border border-slate-200 text-[13px] font-black outline-none focus:border-[#009900] appearance-none">
+                <option value="" disabled>-- Chọn lựa chọn --</option>
                 <option value={1}>1. Chắc chắn không bao giờ quay lại</option>
                 <option value={2}>2. Không bao giờ quay lại</option>
                 <option value={3}>3. Có thể quay lại nhưng không ưu tiên</option>

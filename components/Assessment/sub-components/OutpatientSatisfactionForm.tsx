@@ -80,7 +80,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
     area: '',
     visit_time: new Date().toISOString().split('T')[0],
     respondent: 'patient',
-    q1: 0, q2: 0, q3: 0, q4: 0, q5: 0, q6: 0, q7: 0, q8: 0, q9: 0, q10: 0, q11: 0, q12: 0, q13: 0, q14: 0, q15: 0,
+    q1: null, q2: null, q3: null, q4: null, q5: null, q6: null, q7: null, q8: null, q9: null, q10: null, q11: null, q12: null, q13: null, q14: null, q15: null,
     waiting_issues: [],
     priority_improvement: [],
     feedback: '',
@@ -124,6 +124,18 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (readOnly) return;
+
+    // Validation
+    if (!formData.full_name?.trim()) return alert('Chưa nhập thông tin: Họ và tên');
+    if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: Số điện thoại');
+    if (!formData.area) return alert('Chưa nhập thông tin: Khu vực khám');
+
+    for (let i = 1; i <= 15; i++) {
+      if ((formData as any)[`q${i}`] === null || (formData as any)[`q${i}`] === undefined) {
+        const qText = CATEGORIES.flatMap(c => c.questions).find(q => q.id === i)?.text || `Câu hỏi ${i}`;
+        return alert(`Chưa nhập thông tin: ${qText}`);
+      }
+    }
 
     if (onSave) {
       await onSave(formData);
