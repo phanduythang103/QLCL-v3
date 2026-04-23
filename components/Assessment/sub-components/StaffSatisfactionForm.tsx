@@ -106,10 +106,12 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
     return acc;
   }, {} as Record<string, typeof QUESTIONS>);
 
+  const themeColor = "#009900";
+
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen font-sans">
-      {/* HEADER SECTION */}
-      <div className="bg-[#009900] text-white p-10 md:p-14 rounded-3xl shadow-2xl space-y-4 mx-auto max-w-6xl mt-4 relative overflow-hidden text-center">
+      {/* HEADER SECTION - ĐỒNG BỘ VỚI CÁC FORM CHẠY TỐT */}
+      <div className={`bg-[${themeColor}] text-white p-10 md:p-14 rounded-3xl shadow-2xl space-y-4 mx-auto max-w-6xl mt-4 relative overflow-hidden text-center`}>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-24 -mb-24 blur-2xl" />
 

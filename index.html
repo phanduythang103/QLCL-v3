@@ -17,19 +17,11 @@
         var url = new URL(window.location.href);
         var path = url.pathname;
         
-        // 1. Luôn thêm dấu / nếu chưa có (trừ trang chủ) để chuẩn hóa routing
-        if (path.length > 1 && !path.endsWith('/')) {
-          window.location.replace(path + '/' + url.search + url.hash);
-          return;
-        }
-
-        // 2. XÓA TOÀN BỘ query params (zarsrc, utm, ...) - QUAN TRỌNG NHẤT
-        if (url.search) {
+        // Xóa query params của Zalo/FB để tránh lỗi định tuyến
+        if (url.search && (url.search.indexOf('zarsrc') !== -1 || url.search.indexOf('utm_') !== -1 || url.search.indexOf('fbclid') !== -1)) {
           window.history.replaceState({}, '', path + url.hash);
         }
-      } catch (e) {
-        console.error('URL Standardize Error:', e);
-      }
+      } catch (e) { }
     })();
   </script>
 

@@ -6,10 +6,9 @@ import { outpatientSatisfactionService } from '../services/outpatientSatisfactio
 interface Props {
   initialData?: OutpatientSurveyResponse;
   readOnly?: boolean;
-  onSave?: (data: OutpatientSurveyResponse) => Promise<void>;
-  onCancel?: () => void;
-  saving?: boolean;
-  setParentViewMode?: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
+  onSave: (data: OutpatientSurveyResponse) => void;
+  onCancel: () => void;
+  saving: boolean;
   isPublic?: boolean;
 }
 
@@ -67,11 +66,10 @@ const CATEGORIES = [
 
 export const OutpatientSatisfactionForm: React.FC<Props> = ({
   initialData,
-  readOnly,
+  readOnly = false,
   onSave,
   onCancel,
-  saving: propSaving,
-  setParentViewMode,
+  saving,
   isPublic = false
 }) => {
   const [formData, setFormData] = useState<OutpatientSurveyResponse>(initialData || {
@@ -87,8 +85,6 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
     ngay_khao_sat: new Date().toISOString()
   });
 
-  const [localSaving, setLocalSaving] = useState(false);
-  const saving = propSaving !== undefined ? propSaving : localSaving;
   const [shift, setShift] = useState<'Sáng' | 'Chiều'>('Sáng');
 
   const handleChange = (field: keyof OutpatientSurveyResponse, value: any) => {
@@ -121,7 +117,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (readOnly) return;
 
@@ -137,52 +133,40 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
       }
     }
 
-    if (onSave) {
-      await onSave(formData);
-    } else {
-      setLocalSaving(true);
-      try {
-        const payload = {
-          ...formData,
-          visit_time: `${formData.visit_time} (${shift})`,
-          ngay_khao_sat: new Date().toISOString()
-        };
+    const payload = {
+      ...formData,
+      visit_time: `${formData.visit_time} (${shift})`,
+      ngay_khao_sat: new Date().toISOString()
+    };
 
-        await outpatientSatisfactionService.createOutpatientSurvey(payload);
-        alert('Gửi phiếu khảo sát thành công!');
-        if (setParentViewMode) setParentViewMode('LIST');
-      } catch (err) {
-        console.error(err);
-        alert('Lỗi khi gửi phiếu khảo sát. Vui lòng thử lại sau.');
-      } finally {
-        setLocalSaving(false);
-      }
-    }
+    onSave(payload);
   };
 
   const themeColor = '#009900';
 
   return (
-    <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen px-4 md:px-8 pt-8 font-sans">
-      {/* Standalone Header Card */}
-      <div className="max-w-5xl mx-auto bg-[#009900] text-white p-8 md:p-10 rounded-3xl shadow-2xl relative overflow-hidden mb-8">
+    <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen px-4 md:px-8">
+      {/* HEADER SECTION - ĐỒNG BỘ VỚI CÁC FORM CHẠY TỐT */}
+      <div className={`bg-[${themeColor}] text-white p-6 md:p-10 rounded-3xl shadow-2xl text-center space-y-4 relative overflow-hidden mb-8 mx-auto max-w-5xl mt-4`}>
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full -ml-32 -mb-32 blur-2xl" />
 
         <div className="relative z-10">
-          {!isPublic && setParentViewMode && (
-            <button
-              type="button"
-              onClick={() => setParentViewMode('LIST')}
-              className="flex items-center gap-2 text-white/80 hover:text-white font-black text-xs uppercase transition-all mb-6 group"
-            >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Quay lại danh sách
-            </button>
+          {!isPublic && (
+            <div className="flex justify-start mb-4">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="flex items-center gap-2 text-white/80 hover:text-white font-black text-xs uppercase transition-all"
+              >
+                <ArrowLeft size={18} /> Quay lại
+              </button>
+            </div>
           )}
 
           <div className="text-center">
             <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase mb-2">PHIẾU KHẢO SÁT HÀI LÒNG</h1>
-            <h2 className="text-xl md:text-2xl font-bold opacity-90 uppercase truncate">Người bệnh ngoại trú 2026</h2>
+            <h2 className="text-xl md:text-2xl font-bold opacity-90 uppercase">Người bệnh ngoại trú 2026</h2>
           </div>
         </div>
       </div>
