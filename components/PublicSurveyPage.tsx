@@ -20,6 +20,26 @@ interface PublicConfig {
   survey_name: string;
 }
 
+const EXTERNAL_BROWSER_SURVEY_TYPES = ['staff', 'outpatient', 'ks_nuoi_con'];
+const EXTERNAL_BROWSER_SLUGS = ['nvyt-2026', 'ngoaitru-2026', 'nuoi-con-sua-me'];
+
+const isInAppBrowser = () => {
+  const ua = navigator.userAgent || '';
+  let sessionDetected = false;
+
+  try {
+    sessionDetected = sessionStorage.getItem('inapp_browser_detected') === 'true';
+  } catch (err) {
+    sessionDetected = false;
+  }
+
+  return Boolean(
+    (window as any).__INAPP_DETECTED ||
+    sessionDetected ||
+    /Zalo|ZaloBrowser|; wv\)/i.test(ua)
+  );
+};
+
 export const PublicSurveyPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
@@ -31,7 +51,10 @@ export const PublicSurveyPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [timedOut, setTimedOut] = useState(false);
-  const isZalo = /Zalo/i.test(navigator.userAgent);
+  const cleanSlug = (slug || '').trim().toLowerCase();
+  const shouldOpenExternallyBySlug = EXTERNAL_BROWSER_SLUGS.includes(cleanSlug);
+  const shouldOpenExternallyByType = config ? EXTERNAL_BROWSER_SURVEY_TYPES.includes(config.survey_type) : false;
+  const shouldShowBrowserOverlay = isInAppBrowser() && (shouldOpenExternallyBySlug || shouldOpenExternallyByType);
 
   // Clean up Zalo/UTM parameters if present
   useEffect(() => {
@@ -74,7 +97,6 @@ export const PublicSurveyPage: React.FC = () => {
       return;
     }
 
-    const cleanSlug = slug.trim().toLowerCase();
     setLoading(true);
     setError(null);
     setTimedOut(false);
@@ -150,6 +172,10 @@ export const PublicSurveyPage: React.FC = () => {
     }
   };
 
+  if (shouldShowBrowserOverlay) {
+    return <ZaloBrowserOverlay />;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
@@ -220,11 +246,6 @@ export const PublicSurveyPage: React.FC = () => {
   // Render the specific form
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Hiển thị Overlay yêu cầu mở trình duyệt nếu là 3 loại khảo sát chưa ổn định trên Zalo */}
-      {isZalo && ['staff', 'outpatient', 'ks_nuoi_con'].includes(config.survey_type) && (
-        <ZaloBrowserOverlay />
-      )}
-      
       {config.survey_type === 'staff' && (
         <StaffSatisfactionForm
           onSave={handleSave}

@@ -103,16 +103,14 @@ export const SurveyPublicConfig: React.FC = () => {
   };
 
   const copyToClipboard = (slug: string) => {
-    const fullUrl = `${window.location.origin}/khao-sat/${slug.trim()}`;
+    const fullUrl = `${publicBaseUrl}/${slug.trim()}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };
 
   const getQrUrl = (slug: string) => {
-    // Luôn sử dụng origin hiện tại (localhost hoặc domain thực) để QR quét được ngay tại môi trường đang test
-    const currentBaseUrl = `${window.location.origin}/khao-sat`;
-    const fullUrl = encodeURIComponent(`${currentBaseUrl}/${slug.trim()}`);
+    const fullUrl = encodeURIComponent(`${publicBaseUrl}/${slug.trim()}`);
     return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${fullUrl}&margin=10`;
   };
 
