@@ -28,19 +28,19 @@ textarea {
 input,
 select,
 textarea {
-  font-size: var(--font-size-md);
+  font-size: 13px;
   line-height: 1.45;
 }
 
 .text-title {
-  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  font-size: 16px;
   line-height: var(--line-height-tight);
   font-weight: 800;
   letter-spacing: var(--letter-spacing-ui);
 }
 
 .text-main-title {
-  font-size: clamp(1.125rem, 1rem + 0.65vw, 1.5rem);
+  font-size: 16px;
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-ui);
 }
@@ -57,24 +57,179 @@ textarea {
 }
 
 .text-table {
-  font-size: var(--font-size-sm);
+  font-size: 13px;
   line-height: 1.45;
 }
 
-@media (min-width: 768px) {
-  input,
-  select,
-  textarea {
-    font-size: var(--font-size-base);
-  }
+.card {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
 
-  .text-label {
-    font-size: var(--font-size-xs);
-  }
+.input-base {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  outline: none;
+}
 
-  .text-input,
-  .text-table {
-    font-size: var(--font-size-sm);
+.input-base:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 153, 0, 0.12);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  color: #fff;
+  background: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-700);
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.table-base {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 13px;
+}
+
+.table-base th,
+.table-base td {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  vertical-align: top;
+}
+
+.enterprise-ui table,
+main table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.enterprise-ui table th,
+.enterprise-ui table td,
+main table th,
+main table td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.enterprise-ui table thead th,
+main table thead th {
+  color: #fff;
+  background: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.table-base .table-header th,
+.table-base thead.table-header th,
+.table-header th {
+  color: #fff;
+  background: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tab-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-item {
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #333;
+  background: transparent;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab-active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.enterprise-form .input-base,
+.enterprise-form input:not([type="checkbox"]):not([type="radio"]),
+.enterprise-form select,
+.enterprise-form textarea,
+main form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+main form select,
+main form textarea {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.enterprise-form input:focus,
+.enterprise-form select:focus,
+.enterprise-form textarea:focus,
+main form input:focus,
+main form select:focus,
+main form textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 153, 0, 0.12);
+}
+
+.enterprise-form section h2,
+.enterprise-form section h3 {
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 }
 

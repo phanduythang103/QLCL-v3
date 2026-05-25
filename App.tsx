@@ -22,8 +22,8 @@ import { IndicatorCategory } from './types';
 
 // --- Reusable Nav Item ---
 const NavItem = ({ icon, label, active, onClick, collapsed }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; collapsed: boolean; }) => (
-  <button onClick={onClick} className={`w-full flex items-center px-4 py-3 rounded-lg mb-2 transition-all duration-200 group ${active ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/40' : 'text-primary-100 hover:bg-primary-800 hover:text-white'}`} title={collapsed ? label : ''}>
-    <div className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</div>
+  <button onClick={onClick} className={`w-full flex items-center px-4 py-2.5 mb-1 transition-colors group text-[12px] ${active ? 'bg-white text-primary-600 font-bold' : 'text-white hover:bg-white/10'}`} title={collapsed ? label : ''}>
+    <div>{icon}</div>
     {!collapsed && <span className="ml-3 text-label truncate">{label}</span>}
   </button>
 );
@@ -74,9 +74,9 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
 
   return (
     <div className="space-y-1">
-      <button onClick={toggleExpansion} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${active ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/40' : 'text-primary-100 hover:bg-primary-800 hover:text-white'}`} title={collapsed ? "Kiểm tra Giám sát" : ''}>
+      <button onClick={toggleExpansion} className={`w-full flex items-center justify-between px-4 py-2.5 mb-1 transition-colors group text-[12px] ${active ? 'bg-white text-primary-600 font-bold' : 'text-white hover:bg-white/10'}`} title={collapsed ? "Kiểm tra Giám sát" : ''}>
         <div className="flex items-center overflow-hidden">
-          <div className={`transition-transform duration-200 flex-shrink-0 ${active ? 'scale-110' : 'group-hover:scale-110'}`}><CheckSquare size={20} /></div>
+          <div className="flex-shrink-0"><CheckSquare size={20} /></div>
           {!collapsed && <span className="ml-3 text-label truncate">Kiểm tra Giám sát</span>}
         </div>
         {!collapsed && <ChevronDown size={16} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />}
@@ -99,7 +99,7 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
                       handleSubNavClick(item.cat);
                     }
                   }}
-                  className={`w-full text-left pl-11 pr-4 py-2 text-label transition-colors relative flex items-center justify-between ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}
+                  className={`w-full text-left pl-11 pr-4 py-2 text-[12px] transition-colors relative flex items-center justify-between ${active && category === item.cat ? 'bg-white/15 text-white font-bold' : 'text-white/85 hover:text-white hover:bg-white/10'}`}
                 >
                   <span className="truncate">{item.label}</span>
                   {isProf && <ChevronDown size={14} className={`transition-transform duration-200 ${profExpanded ? 'rotate-180' : ''}`} />}
@@ -111,7 +111,7 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
                       <button
                         key={child.label}
                         onClick={() => handleSubNavClick(child.cat)}
-                        className={`w-full text-left pl-16 pr-4 py-1.5 text-label transition-colors relative ${active && category === child.cat ? 'text-white font-black before:absolute before:left-12 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-1 before:bg-primary-400 before:rounded-full' : 'text-primary-300/60 hover:text-white hover:bg-primary-800/30'}`}
+                        className={`w-full text-left pl-16 pr-4 py-1.5 text-[12px] transition-colors relative ${active && category === child.cat ? 'bg-white/15 text-white font-bold' : 'text-white/75 hover:text-white hover:bg-white/10'}`}
                       >
                         {child.label}
                       </button>
@@ -167,9 +167,9 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
 
   return (
     <div className="space-y-1">
-      <button onClick={toggleExpansion} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${active ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/40' : 'text-primary-100 hover:bg-primary-800 hover:text-white'}`} title={collapsed ? "Chỉ số QLCL" : ''}>
+      <button onClick={toggleExpansion} className={`w-full flex items-center justify-between px-4 py-2.5 mb-1 transition-colors group text-[12px] ${active ? 'bg-white text-primary-600 font-bold' : 'text-white hover:bg-white/10'}`} title={collapsed ? "Chỉ số QLCL" : ''}>
         <div className="flex items-center overflow-hidden">
-          <div className={`transition-transform duration-200 flex-shrink-0 ${active ? 'scale-110' : 'group-hover:scale-110'}`}><BarChart2 size={20} /></div>
+          <div className="flex-shrink-0"><BarChart2 size={20} /></div>
           {!collapsed && <span className="ml-3 text-label truncate">Chỉ số QLCL</span>}
         </div>
         {!collapsed && <ChevronDown size={16} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />}
@@ -178,7 +178,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
       {!collapsed && isExpanded && (
         <div className="space-y-1 animate-in slide-in-from-top-2 duration-200 lg:max-h-64 overflow-y-auto custom-scrollbar-light">
           {subNavItems.map(item => (
-            <button key={item.label} onClick={() => handleSubNavClick(item.cat)} className={`w-full text-left pl-11 pr-4 py-2 text-label transition-colors relative ${active && category === item.cat ? 'text-white font-black before:absolute before:left-8 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-1.5 before:bg-primary-400 before:rounded-full' : 'text-primary-200/70 hover:text-white hover:bg-primary-800/50'}`}>
+            <button key={item.label} onClick={() => handleSubNavClick(item.cat)} className={`w-full text-left pl-11 pr-4 py-2 text-[12px] transition-colors relative ${active && category === item.cat ? 'bg-white/15 text-white font-bold' : 'text-white/85 hover:text-white hover:bg-white/10'}`}>
               {item.label}
             </button>
           ))}
@@ -193,30 +193,30 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
   const { canView } = usePermissions();
 
   return (
-    <aside className={`fixed md:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-900 shadow-xl transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-      <div className="h-20 flex items-center justify-between px-4 border-b border-primary-800/50 bg-primary-900 relative">
+    <aside className={`fixed md:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-600 transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <div className="h-16 flex items-center justify-between px-4 border-b border-white/20 bg-primary-600 relative">
         <div className="flex items-center gap-3 overflow-hidden">
           <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
           {!collapsed && (
             <div className="flex flex-col overflow-hidden py-1">
               <h1 className="text-white font-bold text-label uppercase leading-relaxed whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
-              <span className="text-primary-200 text-[11px] font-bold uppercase tracking-normal leading-normal whitespace-nowrap truncate opacity-80">HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG</span>
+              <span className="text-white/85 text-[12px] uppercase tracking-normal leading-normal whitespace-nowrap truncate">HỆ THỐNG QLCL</span>
             </div>
           )}
         </div>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex p-1.5 rounded-lg text-primary-200 hover:text-white hover:bg-primary-800 transition-colors shrink-0"
+          className="hidden md:flex p-1.5 text-white hover:bg-white/10 transition-colors shrink-0"
         >
           <Menu size={20} />
         </button>
 
-        <button onClick={() => setMobileOpen(false)} className="absolute top-1/2 -translate-y-1/2 right-2 md:hidden text-primary-200 hover:text-white">
+        <button onClick={() => setMobileOpen(false)} className="absolute top-1/2 -translate-y-1/2 right-2 md:hidden text-white">
           <X size={24} />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
         {canView(ModuleType.DASHBOARD) && <NavItem icon={<LayoutDashboard size={20} />} label="Trang chủ" active={currentModule === ModuleType.DASHBOARD} onClick={() => handleModuleChange(ModuleType.DASHBOARD)} collapsed={collapsed} />}
         {canView(ModuleType.HR) && <NavItem icon={<Users size={20} />} label="Quản lý Nhân sự" active={currentModule === ModuleType.HR} onClick={() => handleModuleChange(ModuleType.HR)} collapsed={collapsed} />}
         {canView(ModuleType.DOCS) && <NavItem icon={<BookOpen size={20} />} label="Văn bản & Đào tạo" active={currentModule === ModuleType.DOCS} onClick={() => handleModuleChange(ModuleType.DOCS)} collapsed={collapsed} />}
@@ -226,13 +226,13 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         {canView(ModuleType.INDICATORS) && <IndicatorsNav collapsed={collapsed} active={currentModule === ModuleType.INDICATORS} onSelectModule={() => handleModuleChange(ModuleType.INDICATORS)} />}
         {canView(ModuleType.SUPERVISION) && <SupervisionNav collapsed={collapsed} active={currentModule === ModuleType.SUPERVISION} onSelectModule={() => handleModuleChange(ModuleType.SUPERVISION)} />}
         {canView(ModuleType.REPORTS) && <NavItem icon={<FileText size={20} />} label="Báo cáo Tổng hợp" active={currentModule === ModuleType.REPORTS} onClick={() => handleModuleChange(ModuleType.REPORTS)} collapsed={collapsed} />}
-        <div className="pt-4 mt-4 border-t border-primary-800/50">
+        <div className="pt-4 mt-4 border-t border-white/20">
           {(canAccessSettings || canView(ModuleType.SETTINGS)) && (
             <NavItem icon={<Settings size={20} />} label="Cấu hình hệ thống" active={currentModule === ModuleType.SETTINGS} onClick={() => handleModuleChange(ModuleType.SETTINGS)} collapsed={collapsed} />
           )}
         </div>
       </div>
-      <div className="p-4 border-t border-primary-800/50 bg-primary-900 flex justify-center text-[12px] text-primary-400 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden">
+      <div className="p-4 border-t border-white/20 bg-primary-600 flex justify-center text-[12px] text-white/80 uppercase whitespace-nowrap overflow-hidden">
         {!collapsed && <span>Phiên bản 16042026-01</span>}
       </div>
     </aside>
@@ -431,7 +431,7 @@ const AppContent: React.FC = () => {
   }, [showNotifications]);
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans relative">
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans relative text-[#333]">
       {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setMobileSidebarOpen(false)} />}
 
       <Sidebar
@@ -444,18 +444,18 @@ const AppContent: React.FC = () => {
         canAccessSettings={canAccessSettings}
       />
 
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 w-full">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm z-10 flex-shrink-0">
+      <main className="enterprise-ui flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 w-full">
+        <header className="h-16 bg-primary-600 text-white border-b border-primary-700 flex items-center justify-between px-4 md:px-6 z-10 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileSidebarOpen(true)} className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg"><Menu size={24} /></button>
-            <h2 className="text-title text-black truncate">{getModuleTitle()}</h2>
+            <button onClick={() => setMobileSidebarOpen(true)} className="md:hidden p-2 -ml-2 text-white hover:bg-white/10"><Menu size={24} /></button>
+            <h2 className="text-title text-white truncate">{getModuleTitle()}</h2>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
             {/* Notification Button */}
             <div className="relative notification-dropdown">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+                className="relative p-2 text-white hover:bg-white/10 transition-colors"
               >
                 <Bell size={20} />
                 {notifications.length > 0 && (
@@ -520,19 +520,19 @@ const AppContent: React.FC = () => {
                 </div>
               )}
             </div>
-            <div className="h-8 w-px bg-slate-200 mx-1 md:mx-2"></div>
+            <div className="h-8 w-px bg-white/30 mx-1 md:mx-2"></div>
 
             {/* New Integrated User Menu */}
             <HeaderUserMenu />
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth relative">
+        <div className="flex-1 overflow-y-auto p-4 scroll-smooth relative">
           <div className="max-w-7xl mx-auto pb-10">
             {renderContent()}
           </div>
           <div className="text-center text-xs text-slate-400 pb-4">
-            <p>© 2026 Bệnh viện Quân y 103. Hệ thống Hỗ trợ Quản lý Chất lượng.</p>
+            <p>© 2026 Bệnh viện Quân y 103. Hệ thống Quản lý Chất lượng.</p>
           </div>
         </div>
       </main>

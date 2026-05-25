@@ -35,10 +35,10 @@ export const HeaderUserMenu: React.FC = () => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center gap-2 md:gap-3 p-1.5 pr-2.5 rounded-xl transition-all duration-200 border ${isOpen ? 'bg-primary-50 border-primary-200' : 'hover:bg-slate-50 border-transparent'
+                className={`flex items-center gap-2 md:gap-3 p-1.5 pr-2.5 transition-colors border ${isOpen ? 'bg-white/15 border-white/30' : 'hover:bg-white/10 border-transparent'
                     }`}
             >
-                <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-primary-900/10 overflow-hidden">
+                <div className="w-8 h-8 bg-white/20 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
                     {user.avatar ? (
                         <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -46,14 +46,14 @@ export const HeaderUserMenu: React.FC = () => {
                     )}
                 </div>
                 <div className="hidden md:block text-left">
-                    <p className="text-sm font-bold text-slate-700 leading-tight truncate max-w-[150px]">
+                    <p className="text-[12px] font-bold text-white leading-tight truncate max-w-[150px]">
                         {user.full_name?.toUpperCase()}
                     </p>
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 leading-none mt-0.5">
+                    <p className="text-[12px] uppercase text-white/85 leading-none mt-0.5">
                         {user.role?.toLowerCase()}
                     </p>
                 </div>
-                <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}

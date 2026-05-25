@@ -52,7 +52,7 @@ Use system font stack:
 | Table header  | 12px    |
 | Sidebar       | 12px    |
 | Button        | 11px    |
-| Title         | 16–18px |
+| Title         | 16px    |
 
 ---
 

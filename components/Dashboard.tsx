@@ -134,8 +134,8 @@ StatCard.displayName = 'StatCard';
 // ── Dashboard ─────────────────────────────────────────────
 export const Dashboard: React.FC = () => {
   // Independent Filters (Only Date now)
-  const [satFilter, setSatFilter] = useState<DateFilterState>({ type: 'thisMonth', startDate: '', endDate: '' });
-  const [compFilter, setCompFilter] = useState<DateFilterState>({ type: 'thisMonth', startDate: '', endDate: '' });
+  const [satFilter, setSatFilter] = useState<DateFilterState>({ type: 'all', startDate: '', endDate: '' });
+  const [compFilter, setCompFilter] = useState<DateFilterState>({ type: 'all', startDate: '', endDate: '' });
 
   // Stats state
   const [nhanSuTotal, setNhanSuTotal] = useState(0);
