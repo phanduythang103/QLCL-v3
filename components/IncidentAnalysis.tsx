@@ -3,7 +3,7 @@ import {
     Plus, Search, Edit2, Trash2, Eye, ArrowLeft, Save, X,
     BrainCircuit, FileText, User, ClipboardList, CheckCircle2,
     Calendar, Clock, LayoutGrid, ChevronRight, AlertCircle, Loader2,
-    CheckCircle, ShieldCheck, AlertTriangle, Printer, Download, Sparkles
+    CheckCircle, ShieldCheck, AlertTriangle, Printer, Download
 } from 'lucide-react';
 import {
     fetchTimHieuPhanTichScyk,
@@ -501,7 +501,7 @@ YÊU CẦU TRẢ VỀ JSON:
 
     if (viewMode === 'FORM') {
         return (
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="card enterprise-form overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="bg-slate-50 border-b border-slate-200 px-4 md:px-6 py-4 flex justify-between items-center sticky top-0 z-20">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary-200">
@@ -517,7 +517,7 @@ YÊU CẦU TRẢ VỀ JSON:
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="px-3 py-1.5 md:px-4 md:py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-xs md:text-sm font-bold shadow-sm flex items-center gap-2 transition-all disabled:opacity-50"
+                            className="btn-primary"
                         >
                             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                             Lưu bản phân tích
@@ -527,17 +527,17 @@ YÊU CẦU TRẢ VỀ JSON:
 
                 <div className="p-4 md:p-8 space-y-10 max-h-[calc(100vh-140px)] overflow-y-auto">
                     {/* Linked Incident Selection */}
-                    <div className="bg-white p-5 rounded-2xl border-2 border-primary-100 flex flex-col md:flex-row md:items-center gap-4 shadow-sm">
+                    <div className="card flex flex-col md:flex-row md:items-center gap-4">
                         <div className="shrink-0 w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600">
                             <ClipboardList size={24} />
                         </div>
                         <div className="flex-1">
                             <label className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-1.5 block">Chọn Sự cố Y khoa cần phân tích *</label>
-                            <div className="flex gap-2">
+                            <div className="form-grid">
                                 <select
                                     value={formData.scyk_id}
                                     onChange={e => handleIncidentSelect(e.target.value)}
-                                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[14pt] font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                    className="input-base"
                                 >
                                     <option value="">-- Chọn trong danh sách sự cố --</option>
                                     {incidents
@@ -554,14 +554,6 @@ YÊU CẦU TRẢ VỀ JSON:
                                         </option>
                                     ))}
                                 </select>
-                                <button
-                                    onClick={() => handleAiAnalysis('SPECIALIST')}
-                                    disabled={!formData.scyk_id || isAnalyzing}
-                                    className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 shadow-lg shadow-primary-200 hover:shadow-primary-300 transition-all active:scale-95 disabled:opacity-50"
-                                >
-                                    {isAnalyzing && aiRole === 'SPECIALIST' ? <Loader2 size={18} className="animate-spin" /> : <BrainCircuit size={18} />}
-                                    {isAnalyzing && aiRole === 'SPECIALIST' ? 'Đang phân tích...' : 'AI Phân tích RCA (Phần A)'}
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -843,7 +835,7 @@ YÊU CẦU TRẢ VỀ JSON:
                             </div>
 
                             {/* V & VI Actions & Recs */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="form-grid">
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">V</div>
@@ -902,15 +894,6 @@ YÊU CẦU TRẢ VỀ JSON:
                             <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 space-y-6">
                                 <h3 className="font-black text-amber-800 text-xs md:text-sm uppercase tracking-tight flex items-center gap-2"><ShieldCheck size={18} /> I. Đánh giá của trưởng nhóm chuyên gia</h3>
                                 
-                                <button
-                                    onClick={() => handleAiAnalysis('MANAGEMENT')}
-                                    disabled={!formData.scyk_id || isAnalyzing}
-                                    className="w-full mb-4 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-200 hover:shadow-amber-300 transition-all active:scale-95 disabled:opacity-50"
-                                >
-                                    {isAnalyzing && aiRole === 'MANAGEMENT' ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                                    {isAnalyzing && aiRole === 'MANAGEMENT' ? 'AI Đánh giá Quản lý (Phần B)' : 'AI Đánh giá Quản lý (Phần B)'}
-                                </button>
-
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-amber-900 block ml-1 uppercase opacity-60">Mô tả kết quả phát hiện được (không lặp lại các mô tả sự cố)</label>
                                     <textarea
@@ -970,7 +953,7 @@ YÊU CẦU TRẢ VỀ JSON:
                             <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl space-y-6">
                                 <h3 className="font-black text-slate-800 text-xs md:text-sm uppercase tracking-tight flex items-center gap-2"><AlertTriangle size={18} className="text-amber-500" /> II. Đánh giá mức độ tổn thương</h3>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="form-grid">
                                     {/* On Patient */}
                                     <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
                                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 border-b pb-2">Trên người bệnh</h4>
@@ -1324,10 +1307,10 @@ YÊU CẦU TRẢ VỀ JSON:
                         <ArrowLeft size={18} /> Quay lại danh sách
                     </button>
                     <div className="flex gap-2">
-                        <button onClick={handleExportWord} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center gap-2">
+                        <button onClick={handleExportWord} className="btn-primary">
                             <Download size={16} /> Xuất Word
                         </button>
-                        <button onClick={() => { setEditingItem(viewingItem); setFormData(viewingItem); setViewMode('FORM'); }} className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2">
+                        <button onClick={() => { setEditingItem(viewingItem); setFormData(viewingItem); setViewMode('FORM'); }} className="btn-primary">
                             <Edit2 size={16} /> Chỉnh sửa
                         </button>
                     </div>
@@ -1523,11 +1506,11 @@ YÊU CẦU TRẢ VỀ JSON:
 
     return (
         <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="card flex flex-col md:flex-row justify-between items-center gap-3">
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" size={18} />
                     <input
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500/50 transition-all font-medium"
+                        className="input-base pl-10"
                         placeholder="Tìm theo mã sự cố, nội dung..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -1535,7 +1518,7 @@ YÊU CẦU TRẢ VỀ JSON:
                 </div>
                 <button
                     onClick={() => { setEditingItem(null); setFormData(initialForm); setViewMode('FORM'); }}
-                    className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-primary-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    className="btn-primary w-full md:w-auto"
                 >
                     <Plus size={18} /> Lập bản phân tích mới
                 </button>
@@ -1560,7 +1543,7 @@ YÊU CẦU TRẢ VỀ JSON:
                     <p className="text-slate-500 mb-10 px-6 text-center max-w-sm text-sm leading-relaxed">Hệ thống chưa tìm thấy bản phân tích RCA nào. Hãy bắt đầu bằng cách nhấn nút dưới đây để tìm hiểu nguyên nhân gốc rễ.</p>
                     <button
                         onClick={() => { setEditingItem(null); setFormData(initialForm); setViewMode('FORM'); }}
-                        className="group flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:bg-primary-600 hover:scale-[1.05] active:scale-95 shadow-xl shadow-slate-200"
+                        className="btn-primary"
                     >
                         <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
                         Tạo bản phân tích ngay
@@ -1569,9 +1552,9 @@ YÊU CẦU TRẢ VỀ JSON:
             ) : (
                 <div className="space-y-6">
                     {/* Desktop View: Table */}
-                    <div className="hidden md:block overflow-hidden bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-[#009900] text-white font-bold text-[10px] uppercase tracking-widest">
+                    <div className="hidden md:block overflow-hidden">
+                        <table className="table-base text-left">
+                            <thead className="table-header">
                                 <tr>
                                     <th className="px-6 py-4">Đơn vị / Mã SCYK</th>
                                     <th className="px-6 py-4">Phân loại / Nội dung</th>

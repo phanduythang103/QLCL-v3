@@ -21,7 +21,11 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Te3uirMh_b_H51agy2fxtX
 
 [QLCL-v3]
 
-Ứng dụng web quản lý chất lượng, sử dụng Supabase làm backend lưu trữ dữ liệu.
+Ứng dụng web quản lý chất lượng dành cho Bệnh viện Quân y 103, sử dụng Supabase làm backend lưu trữ dữ liệu và tích hợp Gemini AI.
+
+## Tài liệu Hướng dẫn Sử dụng
+Hệ thống đi kèm tài liệu hướng dẫn sử dụng chi tiết cho từng vai trò người dùng và các module nghiệp vụ y tế. Xem chi tiết tại đây:
+👉 **[Hướng dẫn Sử dụng Chi tiết (GUIDE.md)](GUIDE.md)**
 
 ## Cấu hình Supabase & API
 Project này sử dụng Supabase làm backend và Gemini AI. Để chạy được ứng dụng, bạn cần cấu hình các biến môi trường trong file `.env.local` ở thư mục gốc:

@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import {
   Users, Building, Briefcase, Award, FileBadge,
   Layout, Bell, CalendarClock, ChevronRight, Plus, Edit2, Trash2, Users2,
-  ShieldCheck, Save, Check, Eye, Pencil, Trash, Loader2, Copy, Search, CheckCircle2, X, BrainCircuit, QrCode
+  ShieldCheck, Save, Check, Eye, Pencil, Trash, Loader2, Copy, Search, CheckCircle2, X, QrCode
 } from 'lucide-react';
 import { ModuleType } from '../types';
 import UsersTable from './settings/UsersTable';
@@ -15,7 +15,6 @@ import ScheduleTable from './settings/ScheduleTable';
 import AuthorityTable from './settings/AuthorityTable';
 import ThemeSettings from './settings/ThemeSettings';
 import NotificationTable from './settings/NotificationTable';
-import AiConfigTable from './settings/AiConfigTable';
 import Criteria83Config from './Criteria83Config'; 
 import { SurveyPublicConfig } from './settings/SurveyPublicConfig';
 import { AssessmentTeamConfig } from './settings/AssessmentTeamConfig';
@@ -38,7 +37,6 @@ export const SettingsModule: React.FC = () => {
 
   const menuItems = [
     { id: 'USER', label: 'Người dùng', icon: <Users size={18} /> },
-    { id: 'AI', label: 'Cấu hình AI', icon: <BrainCircuit size={18} /> },
     { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} /> },
     { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} /> },
     { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} /> },
@@ -75,8 +73,6 @@ export const SettingsModule: React.FC = () => {
         return <ScheduleTable />;
       case 'THEME':
         return <ThemeSettings />;
-      case 'AI':
-        return <AiConfigTable />;
       case 'CRITERIA83':
         return <Criteria83Config />;
       case 'SURVEY_PUBLIC':

@@ -220,7 +220,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               setSubmitSuccess(false);
               onSaved();
             }}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-6 rounded-xl transition-all shadow-lg shadow-emerald-500/30 uppercase tracking-widest text-xs"
+            className="btn-primary w-full"
           >
             Quay lại danh sách
           </button>
@@ -240,7 +240,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               <Hospital className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-base md:text-lg font-black uppercase tracking-tight leading-tight">
+              <h1 className="text-title uppercase">
                 {editingItem ? 'Chỉnh sửa báo cáo sự cố y khoa' : 'Tạo báo cáo sự cố y khoa'}
               </h1>
               <p className="text-green-100 text-xs font-medium mt-0.5">Ban hành kèm theo TT 43/2018/TT-BYT ngày 26/12/2018</p>
@@ -255,16 +255,16 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-10 space-y-10">
+        <form onSubmit={handleSubmit} className="card enterprise-form space-y-4">
 
           {/* SECTION 1: Thông tin chung */}
-          <section>
+          <section className="card">
             <div className="flex items-center space-x-2 border-b pb-2 mb-6 text-blue-600 border-blue-100">
               <FileText className="w-5 h-5" />
               <h2 className="text-xl font-bold uppercase tracking-tight">Thông tin chung</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-grid">
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Nhóm sự cố *</label>
                 <div className="flex flex-wrap gap-6">
@@ -351,13 +351,13 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
           </section>
 
           {/* SECTION 2: Thông tin người bệnh */}
-          <section className="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-200">
+          <section className="card">
             <div className="flex items-center space-x-2 border-b pb-2 mb-6 text-blue-600 border-blue-200">
               <User className="w-5 h-5" />
               <h2 className="text-xl font-bold uppercase tracking-tight">Thông tin người bệnh</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-grid">
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Họ và tên</label>
                 <input
@@ -409,13 +409,13 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
           </section>
 
           {/* SECTION 3: Thông tin sự cố */}
-          <section>
+          <section className="card">
             <div className="flex items-center space-x-2 border-b pb-2 mb-6 text-red-600 border-red-100">
               <ShieldAlert className="w-5 h-5" />
               <h2 className="text-xl font-bold uppercase tracking-tight">Chi tiết sự cố</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-grid">
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Đối tượng xảy ra sự cố *</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -498,7 +498,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
           </section>
 
           {/* SECTION 4: Xử lý và đánh giá */}
-          <section className="bg-red-50 p-6 md:p-8 rounded-2xl border border-red-100">
+          <section className="card">
             <div className="flex items-center space-x-2 border-b border-red-200 pb-2 mb-6 text-red-700">
               <Activity className="w-5 h-5" />
               <h2 className="text-xl font-bold uppercase tracking-tight">Xử lý & Đánh giá ban đầu</h2>
@@ -528,8 +528,8 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               </div>
 
               <div className="overflow-x-auto border rounded-xl bg-white shadow-sm border-slate-200">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-slate-50">
+                <table className="table-base">
+                  <thead className="table-header">
                     <tr>
                       <th className="px-4 py-4 text-left font-bold text-gray-500 uppercase tracking-widest text-[10px]">Hoạt động thông báo/ghi nhận</th>
                       <th className="px-4 py-4 text-center font-bold text-gray-500 uppercase tracking-widest text-[10px]">Có</th>
@@ -564,7 +564,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
                 </table>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="form-grid card">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-3">Phân loại ban đầu</label>
                   <div className="flex flex-wrap gap-6">
@@ -610,7 +610,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
           </section>
 
           {/* SECTION 5: Hình ảnh minh chứng */}
-          <section>
+          <section className="card">
             <div className="flex items-center space-x-2 border-b pb-2 mb-6 text-violet-600 border-violet-100">
               <ImageIcon className="w-5 h-5" />
               <h2 className="text-xl font-bold uppercase tracking-tight">Hình ảnh minh chứng</h2>
@@ -667,13 +667,13 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
           </section>
 
           {/* SECTION 6: Thông tin người báo cáo */}
-          <section>
+          <section className="card">
             <div className="flex items-center space-x-2 border-b pb-2 mb-6 text-blue-600 border-blue-100">
               <User className="w-5 h-5" />
               <h2 className="text-xl font-bold uppercase tracking-tight">Thông tin người báo cáo</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-grid">
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Họ tên người báo cáo *</label>
                 <input
@@ -751,7 +751,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto flex items-center justify-center px-10 py-3 border border-transparent rounded-xl shadow-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all disabled:opacity-70 font-bold uppercase tracking-widest text-xs"
+              className="btn-primary w-full sm:w-auto"
             >
               {isSubmitting ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" /> Đang xử lý...</>

@@ -9,6 +9,7 @@ import { fetchThoiGianNamVien, ThoiGianNamVien, ThoiGianNamVienInput, addThoiGia
 import { fetchPhanTichNamVienKeoDai, PhanTichNamVienKeoDai, PhanTichNamVienKeoDaiInput, addPhanTichNamVienKeoDai, updatePhanTichNamVienKeoDai, deletePhanTichNamVienKeoDai } from '../readPhanTichNamVien';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchIndicatorConfigs } from '../readCauHinhCscl';
 
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) => (
   <button
@@ -28,6 +29,7 @@ export const LengthOfStayModule: React.FC = () => {
   const [records, setRecords] = useState<ThoiGianNamVien[]>([]);
   const [analyses, setAnalyses] = useState<PhanTichNamVienKeoDai[]>([]);
   const [units, setUnits] = useState<DmDonVi[]>([]);
+  const [targetStayTime, setTargetStayTime] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(true);
@@ -91,7 +93,7 @@ export const LengthOfStayModule: React.FC = () => {
     don_vi: '',
     tong_luot_ra_vien: 0,
     tong_ngay_dieu_tri: 0,
-    muc_tieu: 0,
+    muc_tieu: targetStayTime,
   });
   const [form, setForm] = useState(emptyForm());
   const [showUnitDropdown, setShowUnitDropdown] = useState(false);
@@ -132,14 +134,23 @@ export const LengthOfStayModule: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [rData, uData, pData] = await Promise.all([
+      const [rData, uData, pData, cData] = await Promise.all([
         fetchThoiGianNamVien(),
         fetchDmDonVi(),
-        fetchPhanTichNamVienKeoDai()
+        fetchPhanTichNamVienKeoDai(),
+        fetchIndicatorConfigs()
       ]);
       setRecords(rData);
       setUnits(uData);
       setAnalyses(pData);
+
+      const stayTimeConfig = cData.find(c =>
+        c.ten_chi_so?.toLowerCase().includes('thời gian nằm viện trung bình') ||
+        c.ten_chi_so?.toLowerCase().includes('tg nằm viện')
+      );
+      const stayTimeTarget = stayTimeConfig?.muc_tieu ?? 0;
+      setTargetStayTime(stayTimeTarget);
+
       setError(null);
     } catch (err: any) {
       console.error('Error loading data:', err);
@@ -185,7 +196,7 @@ export const LengthOfStayModule: React.FC = () => {
       don_vi: r.don_vi,
       tong_luot_ra_vien: r.tong_luot_ra_vien,
       tong_ngay_dieu_tri: r.tong_ngay_dieu_tri,
-      muc_tieu: r.muc_tieu,
+      muc_tieu: targetStayTime,
     });
     setShowModal(true);
   };
@@ -825,13 +836,13 @@ export const LengthOfStayModule: React.FC = () => {
 
               <div className="space-y-1.5 bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-center justify-between">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-blue-600 flex items-center gap-1.5"><Target size={12} /> Mục tiêu (ngày)</label>
+                  <label className="text-[10px] font-black uppercase text-blue-600 flex items-center gap-1.5"><Target size={12} /> Mục tiêu (ngày) (Đồng bộ cấu hình)</label>
                   <input 
                     type="number" 
                     step="0.01" 
                     value={form.muc_tieu || ''} 
-                    onChange={e => setForm({ ...form, muc_tieu: Number(e.target.value) })} 
-                    className="w-32 px-4 py-2 bg-white border-none rounded-xl text-sm font-black text-blue-700 focus:ring-2 focus:ring-blue-500/20 shadow-sm" 
+                    readOnly
+                    className="w-32 px-4 py-2 bg-slate-100 border-none rounded-xl text-sm font-black text-blue-700 opacity-70 cursor-not-allowed shadow-sm focus:outline-none"
                     required 
                   />
                 </div>
@@ -941,4 +952,3 @@ export const LengthOfStayModule: React.FC = () => {
     </div>
   );
 };
-

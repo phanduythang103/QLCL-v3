@@ -80,8 +80,9 @@ export const Incidents: React.FC = () => {
     { id: 'REPORTS', label: 'Báo cáo Cục Quân y', icon: <Files size={20} /> },
   ].filter(item => canView('INCIDENTS', item.id));
 
-  const [activeMenu, setActiveMenu] = useState<MenuItem>(menuItems[0]?.id as MenuItem || 'OVERVIEW');
-  const [viewMode, setViewMode] = useState<ViewMode>(activeMenu === 'OVERVIEW' ? 'STATS' : 'LIST');
+  const defaultMenu = (menuItems.find(item => item.id === 'LIST')?.id || menuItems[0]?.id || 'OVERVIEW') as MenuItem;
+  const [activeMenu, setActiveMenu] = useState<MenuItem>(defaultMenu);
+  const [viewMode, setViewMode] = useState<ViewMode>(defaultMenu === 'OVERVIEW' ? 'STATS' : 'LIST');
   const [activePeriod, setActivePeriod] = useState<string>('YEAR'); // MONTH, QUARTER, YEAR
   const [filterYear, setFilterYear] = useState<number>(new Date().getFullYear());
   const [filterMonth, setFilterMonth] = useState<number>(new Date().getMonth() + 1);
@@ -203,31 +204,23 @@ export const Incidents: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Navigation - Horizontal Tabs */}
-      <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="p-3 md:px-4 md:pt-4 md:pb-0">
-          <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:gap-1 md:overflow-x-auto hide-scrollbar">
+      <div className="bg-white px-4">
+        <div className="tab-container">
             {menuItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleMenuChange(item.id as MenuItem)}
-                className={`relative flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-2 py-2 px-1 md:px-5 md:py-3 text-label uppercase transition-all rounded-xl md:rounded-none md:rounded-t-lg border md:border-transparent ${activeMenu === item.id
-                  ? 'text-primary-700 bg-primary-50 border-primary-200 shadow-sm md:shadow-none md:bg-primary-50/50 md:border-transparent font-black'
-                  : 'text-black/40 bg-white border-slate-200 hover:text-black hover:bg-slate-50 md:bg-transparent md:border-transparent font-bold'
-                  }`}
+                className={`tab-item flex items-center gap-2 ${activeMenu === item.id ? 'tab-active' : ''}`}
               >
-                <div className="scale-90 md:scale-100">{item.icon}</div>
-                <span className="text-center md:text-left leading-tight md:whitespace-nowrap tracking-tight">{item.label}</span>
-                {activeMenu === item.id && (
-                  <div className="hidden md:block absolute bottom-0 left-0 right-0 h-[3px] bg-primary-600 rounded-t-full shadow-[0_-2px_6px_rgba(37,99,235,0.3)]"></div>
-                )}
+                {item.icon}
+                <span>{item.label}</span>
               </button>
             ))}
-          </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-4 md:p-6 overflow-y-auto bg-slate-50/50">
+      <div className="flex-1 p-4 overflow-y-auto bg-slate-50/50">
         <div className="max-w-7xl mx-auto h-full">
           {/* Detail/Form Overlay Mode */}
           {viewMode === 'FORM' && (
@@ -566,10 +559,10 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
   // --- Helpers moved to top ---
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-300">
+    <div className="card animate-in fade-in duration-300">
       {/* Quick Status Filter Bar */}
       {showStatusFilter && (
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-wrap gap-2 items-center">
+        <div className="tab-container mb-4 flex-wrap">
           <button onClick={() => setActiveStatusFilter('ALL')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'ALL' ? 'bg-black text-white shadow-lg' : 'bg-white text-black/40 border border-slate-200 hover:bg-slate-100'}`}>Tất cả</button>
           <button onClick={() => setActiveStatusFilter('CHUA_TIEP_NHAN')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'CHUA_TIEP_NHAN' ? 'bg-red-600 text-white shadow-lg shadow-red-900/10' : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'}`}>Chưa tiếp nhận</button>
           <button onClick={() => setActiveStatusFilter('DA_TIEP_NHAN')} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider active:scale-95 ${activeStatusFilter === 'DA_TIEP_NHAN' ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/10' : 'bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50'}`}>Đã tiếp nhận</button>
@@ -588,7 +581,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div className="flex gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-80">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -597,7 +590,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
               placeholder="Tìm mã SC, khoa phòng..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+              className="input-base pl-10"
             />
           </div>
           <button className="px-3 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">
@@ -607,7 +600,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
         {canCreate('INCIDENTS', 'LIST') && (
           <button
             onClick={onCreate}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl text-table font-bold uppercase flex items-center transition-all shadow-xl shadow-red-900/10 active:scale-95"
+            className="btn-primary"
           >
             <Plus className="w-5 h-5 mr-2" /> Báo cáo sự cố mới
           </button>
@@ -615,10 +608,10 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
       </div>
 
       {/* Desktop Table - Grid Style with Green Header */}
-      <div className="hidden md:block overflow-x-auto shadow-2xl rounded-2xl border-2 border-slate-200 bg-white">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-[#009900]">
+      <div className="hidden md:block overflow-x-auto">
+        <table className="table-base text-left">
+          <thead className="table-header">
+            <tr>
               <th className="px-6 py-5 text-[11px] font-black uppercase text-white tracking-[0.2em] text-center w-1/5 border-r border-white/20">Ngày / Mã</th>
               <th className="px-6 py-5 text-[11px] font-black uppercase text-white tracking-[0.2em] w-1/5 border-r border-white/20">Đơn vị báo cáo / Thông tin</th>
               <th className="px-6 py-5 text-[11px] font-black uppercase text-white tracking-[0.2em] text-center w-1/5 border-r border-white/20">Nhóm báo cáo / Hình thức</th>
@@ -1148,7 +1141,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               <ArrowLeft size={16} /> Quay lại
             </button>
             {canUpdate('INCIDENTS') && (
-              <button onClick={onEdit} className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95">
+              <button onClick={onEdit} className="btn-primary">
                 <Edit2 size={16} /> Chỉnh sửa
               </button>
             )}

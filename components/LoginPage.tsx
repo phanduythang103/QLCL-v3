@@ -112,7 +112,7 @@ export function LoginPage() {
                     </div>
 
                     {/* Login Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="card enterprise-form space-y-4">
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                                 {error}
@@ -128,7 +128,7 @@ export function LoginPage() {
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                                className="input-base font-bold"
                                 placeholder="Nhập tên đăng nhập"
                                 disabled={loading}
                             />
@@ -144,7 +144,7 @@ export function LoginPage() {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition pr-12"
+                                    className="input-base font-bold pr-12"
                                     placeholder="Nhập mật khẩu"
                                     disabled={loading}
                                 />
@@ -161,7 +161,7 @@ export function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#009900] text-white py-3 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-green-900/20 active:scale-95"
+                            className="btn-primary w-full"
                         >
                             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                         </button>
@@ -193,15 +193,13 @@ export function LoginPage() {
                         {/* Titles at bottom left (roughly bottom 1/4 area) */}
                         <div className="absolute bottom-[15%] left-10 text-white z-10 max-w-[80%] transition-all duration-500">
                             <h1
-                                className="font-black mb-4 drop-shadow-2xl uppercase tracking-wider leading-tight"
-                                style={{ fontSize: `${uiSettings?.co_chu_chinh || 48}px` }}
+                                className="text-title font-black mb-4 drop-shadow-2xl uppercase leading-tight"
                             >
                                 {uiSettings?.tieu_de_chinh || 'HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG'}
                             </h1>
                             {uiSettings?.tieu_de_phu && uiSettings?.tieu_de_phu !== 'Test' && (
                                 <p
-                                    className="drop-shadow-xl opacity-95 font-black italic uppercase"
-                                    style={{ fontSize: `${uiSettings?.co_chu_phu || 24}px` }}
+                                    className="text-[13px] drop-shadow-xl opacity-95 font-bold italic uppercase"
                                 >
                                     {uiSettings.tieu_de_phu}
                                 </p>
@@ -212,14 +210,12 @@ export function LoginPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-end p-8">
                         <div className="text-white">
                             <h1
-                                className="font-bold mb-2"
-                                style={{ fontSize: `${uiSettings?.co_chu_chinh || 48}px` }}
+                                className="text-title font-bold mb-2"
                             >
                                 {uiSettings?.tieu_de_chinh || 'Chào mừng đến với'}
                             </h1>
                             <p
-                                className="text-xl"
-                                style={{ fontSize: `${uiSettings?.co_chu_phu || 24}px` }}
+                                className="text-[13px]"
                             >
                                 {uiSettings?.tieu_de_phu || 'Hệ thống Quản lý Chất lượng'}
                             </p>

@@ -79,7 +79,7 @@ export const IndicatorsModule: React.FC = () => {
 
       <div className="flex justify-between items-center">
         <div>
-          {category && category !== 'KTCM' && category !== 'AVG_EXAM_TIME' && category !== 'AVG_STAY_TIME' && category !== 'BED_USAGE' && category !== 'OR_USAGE' && category !== 'NURSE_PATIENT_RATIO' && category !== 'HAND_HYGIENE' && category !== 'INDICATOR_CONFIG' && category !== 'SEVERE_NON_MEDICAL' && (
+          {category && category !== 'OVERVIEW' && category !== 'SURGERY_II' && category !== 'KTCM' && category !== 'SSI' && category !== 'VAP' && category !== 'SEVERE_INCIDENT' && category !== 'AVG_EXAM_TIME' && category !== 'AVG_STAY_TIME' && category !== 'BED_USAGE' && category !== 'OR_USAGE' && category !== 'NURSE_PATIENT_RATIO' && category !== 'HAND_HYGIENE' && category !== 'INDICATOR_CONFIG' && category !== 'SEVERE_NON_MEDICAL' && (
             <h2 className="hidden md:block text-main-title font-bold text-[#009900] uppercase animate-in fade-in slide-in-from-left-4 duration-300">
               {getCategoryTitle(category)}
             </h2>
