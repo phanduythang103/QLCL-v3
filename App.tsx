@@ -405,19 +405,19 @@ const AppContent: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-3 md:grid-cols-5 lg:grid-cols-3">
+      <div className="function-icon-grid">
         {filteredMobileModules.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.label}
               onClick={() => handleModuleChange(item.module)}
-              className="mobile-app-tile flex min-h-[104px] min-w-0 flex-col items-center justify-start gap-2 px-1 text-center transition-transform active:scale-95"
+              className="mobile-app-tile function-icon-tile"
             >
-              <span className={`mobile-app-icon flex size-14 shrink-0 items-center justify-center rounded-2xl ${item.bgClass}`}>
+              <span className={`mobile-app-icon function-icon-box ${item.bgClass}`}>
                 <Icon size={28} className={item.iconClass} />
               </span>
-              <span className="mobile-app-label whitespace-pre-line text-[11px] font-medium leading-tight text-slate-700 sm:text-[12px]">
+              <span className="mobile-app-label function-icon-label">
                 {item.label}
               </span>
             </button>

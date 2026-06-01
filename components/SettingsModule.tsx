@@ -36,18 +36,18 @@ export const SettingsModule: React.FC = () => {
   const isRestricted = !user?.role?.toLowerCase().includes('admin') && !user?.role?.toLowerCase().includes('quản trị');
 
   const menuItems = [
-    { id: 'USER', label: 'Người dùng', icon: <Users size={18} /> },
-    { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} /> },
-    { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} /> },
-    { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} /> },
-    { id: 'POSITION', label: 'Chức vụ', icon: <Briefcase size={18} /> },
-    { id: 'RANK', label: 'Cấp bậc', icon: <Award size={18} /> },
-    { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} /> },
-    { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} /> },
-    { id: 'CRITERIA83', label: 'Cấu hình 83 TC', icon: <CheckCircle2 size={18} /> },
-    { id: 'TEAM_CONFIG', label: 'Danh sách tổ chấm điểm', icon: <Users2 size={18} /> },
-    { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public', icon: <QrCode size={18} /> },
-    { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} /> },
+    { id: 'USER', label: 'Người dùng', icon: <Users size={18} />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-150' },
+    { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} />, iconClass: 'text-orange-500', bgClass: 'bg-orange-150' },
+    { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-150' },
+    { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} />, iconClass: 'text-sky-500', bgClass: 'bg-sky-150' },
+    { id: 'POSITION', label: 'Chức vụ', icon: <Briefcase size={18} />, iconClass: 'text-purple-500', bgClass: 'bg-purple-150' },
+    { id: 'RANK', label: 'Cấp bậc', icon: <Award size={18} />, iconClass: 'text-amber-500', bgClass: 'bg-amber-150' },
+    { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} />, iconClass: 'text-red-500', bgClass: 'bg-red-150' },
+    { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} />, iconClass: 'text-blue-500', bgClass: 'bg-blue-150' },
+    { id: 'CRITERIA83', label: 'Cấu hình 83 TC', icon: <CheckCircle2 size={18} />, iconClass: 'text-teal-500', bgClass: 'bg-teal-150' },
+    { id: 'TEAM_CONFIG', label: 'Danh sách tổ chấm điểm', icon: <Users2 size={18} />, iconClass: 'text-violet-500', bgClass: 'bg-violet-150' },
+    { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public', icon: <QrCode size={18} />, iconClass: 'text-pink-500', bgClass: 'bg-pink-150' },
+    { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} />, iconClass: 'text-slate-500', bgClass: 'bg-slate-150' },
   ];
 
   /* ... renderContent function ... */
@@ -101,22 +101,36 @@ export const SettingsModule: React.FC = () => {
             <h3 className="text-section font-black text-black uppercase tracking-tight">Danh mục cấu hình</h3>
           </div>
 
-          {/* Horizontal scroll on mobile, vertical on desktop */}
-          <div className="flex lg:flex-col overflow-x-auto lg:overflow-y-auto p-2 scrollbar-none">
+          <div className="function-icon-grid p-2 lg:hidden">
             {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as SettingTab)}
-                className={`flex-shrink-0 lg:w-full flex items-center lg:justify-between px-4 py-3 lg:p-3 rounded-xl text-label font-black transition-all mr-2 lg:mr-0 lg:mb-1 border-2 uppercase ${activeTab === item.id
+                className="function-icon-tile"
+              >
+                <span className={`function-icon-box ${item.bgClass} ${item.iconClass}`}>
+                  {React.cloneElement(item.icon, { size: 28 })}
+                </span>
+                <span className="function-icon-label">{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="hidden overflow-y-auto p-2 lg:flex lg:flex-col lg:gap-1 scrollbar-none">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as SettingTab)}
+                className={`min-w-0 flex items-center justify-between gap-2 rounded-xl border p-3 text-label font-black transition-all uppercase ${activeTab === item.id
                   ? 'bg-[#009900] text-white border-[#009900] shadow-lg shadow-green-900/20'
-                  : 'text-black bg-white border-transparent hover:bg-slate-50 hover:text-black'
+                  : 'text-black bg-white border-slate-200 hover:bg-slate-50 hover:text-black'
                   }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <span className={`${activeTab === item.id ? 'text-white' : 'text-black/40'}`}>
                     {item.icon}
                   </span>
-                  <span className="whitespace-nowrap">{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </div>
                 <div className="hidden lg:block">
                   {activeTab === item.id && <ChevronRight size={16} />}
@@ -357,8 +371,8 @@ const PermissionManager = () => {
   const FIELD_LABELS = { can_view: 'Xem', can_create: 'Thêm', can_update: 'Sửa', can_delete: 'Xóa' };
 
   return (
-    <div className="flex gap-4 h-full min-h-[600px]">
-      <div className="w-64 shrink-0 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col shadow-sm">
+    <div className="flex h-full min-h-[600px] flex-col gap-4 lg:flex-row">
+      <div className="w-full max-h-[280px] shrink-0 bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col shadow-sm lg:w-64 lg:max-h-none">
         <div className="p-3 border-b border-slate-100 bg-slate-50">
           <input type="text" placeholder="Tìm người dùng..." value={search}
             onChange={e => setSearch(e.target.value)}
@@ -394,7 +408,7 @@ const PermissionManager = () => {
 
         {selectedUser ? (
           <>
-            <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 shadow-sm sm:flex-row sm:items-center">
               <div className="w-11 h-11 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden shrink-0">
                 {selectedUser.avatar ? <img src={selectedUser.avatar} alt="" className="w-full h-full object-cover" />
                   : <span className="text-base font-black text-slate-500">{selectedUser.full_name?.[0]?.toUpperCase()}</span>}
@@ -403,26 +417,26 @@ const PermissionManager = () => {
                 <p className="font-black text-slate-800 text-sm uppercase tracking-tight">{selectedUser.full_name}</p>
                 <p className="text-xs text-slate-400 font-bold">{selectedUser.department} · {selectedUser.role}</p>
               </div>
-              <div className="ml-auto flex gap-2">
+              <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row">
                 <button
                   onClick={() => setIsCopyModalOpen(true)}
                   disabled={saving || loadingPerms}
-                  className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all hover:bg-slate-50 disabled:opacity-50 shadow-sm"
+                  className="flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all hover:bg-slate-50 disabled:opacity-50 shadow-sm"
                 >
                   <Copy size={14} /> Sao chép cho người khác
                 </button>
                 <button onClick={handleSave} disabled={saving || loadingPerms}
-                  className="flex items-center gap-2 bg-[#009900] text-white px-5 py-2 rounded-xl text-[11px] font-black uppercase transition-all shadow-lg hover:bg-[#0d6e39] disabled:opacity-50">
+                  className="flex items-center justify-center gap-2 bg-[#009900] text-white px-5 py-2 rounded-xl text-[11px] font-black uppercase transition-all shadow-lg hover:bg-[#0d6e39] disabled:opacity-50">
                   {saving ? <><Loader2 className="animate-spin" size={14} />Đang lưu...</> : <><Save size={14} />Lưu quyền</>}
                 </button>
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl overflow-y-auto shadow-sm flex-1 custom-scrollbar">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto shadow-sm flex-1 custom-scrollbar">
               {loadingPerms ? (
                 <div className="flex items-center justify-center py-16"><Loader2 className="animate-spin text-[#009900]" size={28} /></div>
               ) : (
-                <table className="w-full text-left">
+                <table className="w-full min-w-[640px] text-left">
                   <thead className="bg-[#009900] text-white font-black uppercase text-[10px] tracking-widest sticky top-0 z-10">
                     <tr>
                       <th className="px-5 py-3">Module / Chức năng</th>

@@ -199,29 +199,29 @@ export const Supervision: React.FC = () => {
                 </h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 p-4 sm:gap-4 sm:p-8">
+            <div className="function-icon-grid function-icon-grid-desktop-2 p-4 lg:gap-4 lg:p-8">
               {[
-                { id: 'HAND_HYGIENE', label: 'Vệ sinh tay', icon: HandMetal, desc: 'Giám sát tuân thủ 5 thời điểm vệ sinh tay', color: 'bg-teal-50 text-teal-600' },
-                { id: 'SURGERY', label: 'An toàn phẫu thuật', icon: ShieldCheck, desc: 'Checklist an toàn phẫu thuật WHO', color: 'bg-orange-50 text-orange-600' },
-                { id: 'DRUGS', label: 'Công khai thuốc', icon: Pill, desc: 'Giám sát thực hành công khai thuốc tại khoa', color: 'bg-blue-50 text-blue-600' },
-                { id: '5S', label: 'Quản lý 5S', icon: LayoutList, desc: 'Đánh giá duy trì 5S tại các khoa phòng', color: 'bg-green-50 text-green-600' },
-                { id: 'NDNB', label: 'Nhận diện NB', icon: Users, desc: 'Giám sát nhận diện người bệnh tại các điểm', color: 'bg-purple-50 text-purple-600' },
-                { id: 'RECORDS', label: 'Hồ sơ bệnh án', icon: FileText, desc: 'Kiểm tra tính hoàn thiện của HSBA nội trú', color: 'bg-indigo-50 text-indigo-600' },
-                { id: 'PROF_DUTY', label: 'Trực chuyên môn', icon: Stethoscope, desc: 'Giám sát chế độ trực và thường trực', color: 'bg-rose-50 text-rose-600' },
-                { id: 'PROF_EMERGENCY', label: 'Cấp cứu', icon: Activity, desc: 'Giám sát chế độ cấp cứu và xe tiêm cấp cứu', color: 'bg-cyan-50 text-cyan-600' },
-                { id: 'PROF_ADMISSION', label: 'Ra,vào viện/CK, CV', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', color: 'bg-indigo-50 text-indigo-600' },
-                { id: 'GENERAL', label: 'Giám sát chung', icon: ClipboardCheck, desc: 'Giám sát các nội dung chuyên môn khác', color: 'bg-emerald-50 text-emerald-600' },
+                { id: 'HAND_HYGIENE', label: 'Vệ sinh tay', icon: HandMetal, desc: 'Giám sát tuân thủ 5 thời điểm vệ sinh tay', bgClass: 'bg-teal-150', iconClass: 'text-teal-500' },
+                { id: 'SURGERY', label: 'An toàn phẫu thuật', icon: ShieldCheck, desc: 'Checklist an toàn phẫu thuật WHO', bgClass: 'bg-orange-150', iconClass: 'text-orange-500' },
+                { id: 'DRUGS', label: 'Công khai thuốc', icon: Pill, desc: 'Giám sát thực hành công khai thuốc tại khoa', bgClass: 'bg-blue-150', iconClass: 'text-blue-500' },
+                { id: '5S', label: 'Quản lý 5S', icon: LayoutList, desc: 'Đánh giá duy trì 5S tại các khoa phòng', bgClass: 'bg-green-150', iconClass: 'text-green-500' },
+                { id: 'NDNB', label: 'Nhận diện NB', icon: Users, desc: 'Giám sát nhận diện người bệnh tại các điểm', bgClass: 'bg-purple-150', iconClass: 'text-purple-500' },
+                { id: 'RECORDS', label: 'Hồ sơ bệnh án', icon: FileText, desc: 'Kiểm tra tính hoàn thiện của HSBA nội trú', bgClass: 'bg-indigo-150', iconClass: 'text-indigo-500' },
+                { id: 'PROF_DUTY', label: 'Trực chuyên môn', icon: Stethoscope, desc: 'Giám sát chế độ trực và thường trực', bgClass: 'bg-rose-150', iconClass: 'text-rose-500' },
+                { id: 'PROF_EMERGENCY', label: 'Cấp cứu', icon: Activity, desc: 'Giám sát chế độ cấp cứu và xe tiêm cấp cứu', bgClass: 'bg-cyan-150', iconClass: 'text-cyan-500' },
+                { id: 'PROF_ADMISSION', label: 'Ra,vào viện/CK, CV', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', bgClass: 'bg-indigo-150', iconClass: 'text-indigo-500' },
+                { id: 'GENERAL', label: 'Giám sát chung', icon: ClipboardCheck, desc: 'Giám sát các nội dung chuyên môn khác', bgClass: 'bg-emerald-150', iconClass: 'text-emerald-500' },
               ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setCategory(item.id as any)}
-                  className="group flex min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 text-center transition-all hover:border-[#009900]/30 hover:shadow-xl hover:shadow-[#009900]/5 active:scale-[0.98] sm:flex-row sm:items-start sm:justify-start sm:gap-4 sm:p-5 sm:text-left">
-                  <div className={`shrink-0 rounded-2xl p-3 shadow-sm transition-transform group-hover:scale-110 sm:p-4 ${item.color}`}>
-                    <item.icon size={26} />
+                  className="function-icon-tile group lg:min-h-0 lg:flex-row lg:items-start lg:justify-start lg:gap-4 lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-[#009900]/30 lg:hover:shadow-xl lg:hover:shadow-[#009900]/5">
+                  <div className={`function-icon-box ${item.bgClass} lg:shadow-sm`}>
+                    <item.icon size={28} className={item.iconClass} />
                   </div>
-                  <div className="min-w-0">
-                    <h4 className="text-[11px] font-black uppercase leading-snug text-slate-900 transition-colors group-hover:text-[#009900] sm:text-table sm:normal-case">{item.label}</h4>
-                    <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 sm:block">{item.desc}</p>
+                  <div className="min-w-0 lg:flex-1">
+                    <h4 className="function-icon-label uppercase transition-colors group-hover:text-[#009900] lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
+                    <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
                   </div>
                 </button>
               ))}

@@ -543,40 +543,37 @@ const IndicatorOverviewModule: React.FC = () => {
     rows: rows.map(r => ({ ...r, colorIdx: colorCounter++ })),
   }));
 
-  const indicatorMenuItems: { id: IndicatorCategory; name: string; icon: React.ReactNode; color: string; bgColor: string }[] = [
-    { id: 'KTCM', name: 'KTCM', icon: <Microscope />, color: '#0d9488', bgColor: '#f0fdfa' },
-    { id: 'SURGERY_II', name: 'PT LOẠI II', icon: <Syringe />, color: '#e11d48', bgColor: '#fff1f2' },
-    { id: 'SSI', name: 'NKVM', icon: <Shield />, color: '#0891b2', bgColor: '#ecfeff' },
-    { id: 'VAP', name: 'VP-NKBV', icon: <HeartPulse />, color: '#4f46e5', bgColor: '#eef2ff' },
-    { id: 'SEVERE_INCIDENT', name: 'SCYK', icon: <AlertCircle />, color: '#dc2626', bgColor: '#fef2f2' },
-    { id: 'SEVERE_NON_MEDICAL', name: 'SC-NGOÀI', icon: <Shield />, color: '#d97706', bgColor: '#fffbeb' },
-    { id: 'AVG_EXAM_TIME', name: 'TG KHÁM', icon: <Clock />, color: '#2563eb', bgColor: '#eff6ff' },
-    { id: 'AVG_STAY_TIME', name: 'TG NẰM VIỆN', icon: <Calendar />, color: '#ea580c', bgColor: '#fff7ed' },
-    { id: 'BED_USAGE', name: 'CS GIƯỜNG', icon: <BedDouble />, color: '#16a34a', bgColor: '#f0fdf4' },
-    { id: 'OR_USAGE', name: 'SD PHÒNG MỔ', icon: <Activity />, color: '#7c3aed', bgColor: '#f5f3ff' },
-    { id: 'NURSE_PATIENT_RATIO', name: 'ĐD/NB', icon: <Users />, color: '#0284c7', bgColor: '#f0f9ff' },
-    { id: 'HAND_HYGIENE', name: 'VỆ SINH TAY', icon: <Hand />, color: '#059669', bgColor: '#ecfdf5' },
-    { id: 'INDICATOR_CONFIG', name: 'CẤU HÌNH', icon: <ClipboardList />, color: '#475569', bgColor: '#f8fafc' },
+  const indicatorMenuItems: { id: IndicatorCategory; name: string; icon: React.ReactNode; iconClass: string; bgClass: string }[] = [
+    { id: 'KTCM', name: 'KTCM', icon: <Microscope />, iconClass: 'text-teal-500', bgClass: 'bg-teal-150' },
+    { id: 'SURGERY_II', name: 'PT LOẠI II', icon: <Syringe />, iconClass: 'text-rose-500', bgClass: 'bg-rose-150' },
+    { id: 'SSI', name: 'NKVM', icon: <Shield />, iconClass: 'text-cyan-500', bgClass: 'bg-cyan-150' },
+    { id: 'VAP', name: 'VP-NKBV', icon: <HeartPulse />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-150' },
+    { id: 'SEVERE_INCIDENT', name: 'SCYK', icon: <AlertCircle />, iconClass: 'text-red-500', bgClass: 'bg-red-150' },
+    { id: 'SEVERE_NON_MEDICAL', name: 'SC-NGOÀI', icon: <Shield />, iconClass: 'text-amber-500', bgClass: 'bg-amber-150' },
+    { id: 'AVG_EXAM_TIME', name: 'TG KHÁM', icon: <Clock />, iconClass: 'text-blue-500', bgClass: 'bg-blue-150' },
+    { id: 'AVG_STAY_TIME', name: 'TG NẰM VIỆN', icon: <Calendar />, iconClass: 'text-orange-500', bgClass: 'bg-orange-150' },
+    { id: 'BED_USAGE', name: 'CS GIƯỜNG', icon: <BedDouble />, iconClass: 'text-green-500', bgClass: 'bg-green-150' },
+    { id: 'OR_USAGE', name: 'SD PHÒNG MỔ', icon: <Activity />, iconClass: 'text-violet-500', bgClass: 'bg-violet-150' },
+    { id: 'NURSE_PATIENT_RATIO', name: 'ĐD/NB', icon: <Users />, iconClass: 'text-sky-500', bgClass: 'bg-sky-150' },
+    { id: 'HAND_HYGIENE', name: 'VỆ SINH TAY', icon: <Hand />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-150' },
+    { id: 'INDICATOR_CONFIG', name: 'CẤU HÌNH', icon: <ClipboardList />, iconClass: 'text-slate-500', bgClass: 'bg-slate-150' },
   ];
 
   return (
     <div className="space-y-6">
       {/* ── Mobile Navigation Grid ── */}
-      <div className="md:hidden bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-50 mb-8">
-        <div className="grid grid-cols-3 gap-y-10 gap-x-2">
+      <div className="lg:hidden bg-white p-4 rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-50 mb-8">
+        <div className="function-icon-grid">
           {indicatorMenuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setCategory(item.id)}
-              className="flex flex-col items-center gap-3 active:scale-95 transition-all group"
+              className="function-icon-tile group"
             >
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300"
-                style={{ backgroundColor: item.bgColor, color: item.color }}
-              >
-                {React.cloneElement(item.icon as any, { size: 26 })}
-              </div>
-              <span className="text-[9px] font-black text-slate-600 uppercase tracking-tighter text-center leading-tight">
+              <span className={`function-icon-box ${item.bgClass}`}>
+                {React.cloneElement(item.icon as any, { size: 28, className: item.iconClass })}
+              </span>
+              <span className="function-icon-label uppercase">
                 {item.name}
               </span>
             </button>

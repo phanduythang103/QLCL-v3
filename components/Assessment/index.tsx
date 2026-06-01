@@ -89,7 +89,7 @@ export const AssessmentModule: React.FC = () => {
       {viewMode === 'LIST' && activeTab === null && (
         <div className="animate-in fade-in zoom-in-95 duration-700">
           {/* Desktop Dashboard */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="hidden lg:grid lg:grid-cols-4 gap-6">
             {navItems.filter(i => i.show).map((item) => (
               <button
                 key={item.id}
@@ -110,26 +110,30 @@ export const AssessmentModule: React.FC = () => {
             ))}
           </div>
 
-          {/* Mobile Dashboard */}
-          <div className="md:hidden bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-50">
-            <div className="grid grid-cols-2 gap-y-12 gap-x-6">
-              {navItems.filter(i => i.show).map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className="flex flex-col items-center gap-4 text-center active:scale-95 transition-all group"
-                >
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300"
-                    style={{ backgroundColor: item.bgColor, color: item.color }}
+          {/* Tablet & Mobile Function Grid */}
+          <div className="lg:hidden rounded-[2rem] border border-slate-50 bg-white p-4 shadow-xl shadow-slate-200/40">
+            <div className="function-icon-grid">
+              {navItems.filter(i => i.show).map((item, index) => {
+                const palette = [
+                  { bg: 'bg-emerald-150', icon: 'text-emerald-500' },
+                  { bg: 'bg-blue-150', icon: 'text-blue-500' },
+                  { bg: 'bg-amber-150', icon: 'text-amber-500' },
+                  { bg: 'bg-pink-150', icon: 'text-pink-500' },
+                ][index % 4];
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className="function-icon-tile"
                   >
-                    {React.cloneElement(item.icon as any, { size: 32 })}
-                  </div>
-                  <span className="font-black text-slate-700 uppercase text-[10px] leading-tight tracking-tighter px-1">
-                    {item.name}
-                  </span>
-                </button>
-              ))}
+                    <span className={`function-icon-box ${palette.bg}`}>
+                      {React.cloneElement(item.icon as any, { size: 28, className: palette.icon })}
+                    </span>
+                    <span className="function-icon-label">{item.name}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

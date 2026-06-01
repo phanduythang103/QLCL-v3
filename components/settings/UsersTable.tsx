@@ -553,7 +553,7 @@ export default function UsersTable() {
         </div>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50">
+      <div className="hidden bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50 md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
             <thead className="bg-[#009900] text-white font-black uppercase text-[10px] tracking-widest">
@@ -640,6 +640,60 @@ export default function UsersTable() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="grid gap-3 md:hidden">
+        {filteredUsers.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Hệ thống chưa ghi nhận dữ liệu người dùng
+          </div>
+        ) : (
+          filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className={`rounded-2xl border bg-white p-4 shadow-sm transition-colors ${selectedUserIds.includes(user.id) ? 'border-[#009900]/40 bg-green-50/40' : 'border-slate-200'}`}
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedUserIds.includes(user.id)}
+                  onChange={() => toggleSelectUser(user.id)}
+                  className="mt-3 h-4 w-4 rounded accent-[#009900] cursor-pointer"
+                />
+                <div className="w-11 h-11 rounded-2xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary-700 font-black text-[10px] uppercase overflow-hidden shrink-0">
+                  {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.username.substring(0, 2)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-black uppercase tracking-tight text-slate-800">{user.full_name || user.username}</p>
+                      <p className="truncate text-[10px] font-bold uppercase text-slate-400">{user.department || 'Chưa phân khoa'}</p>
+                    </div>
+                    <span className={`shrink-0 rounded px-2 py-1 text-[9px] font-black uppercase ${user.role === 'Quản trị viên' ? 'text-purple-600 bg-purple-50' : 'text-blue-600 bg-blue-50'}`}>
+                      {user.role}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-600">{user.username}</span>
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-600">{user.category || 'Nhân viên'}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-3 line-clamp-2 text-[11px] font-bold text-slate-500">{user.notes || '-'}</p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <button onClick={() => setSelectedUserDetail(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase text-blue-600">
+                  <Eye size={14} /> Xem
+                </button>
+                <button onClick={() => handleEdit(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#009900]">
+                  <Edit2 size={14} /> Sửa
+                </button>
+                <button onClick={() => handleDelete(user.id)} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-[10px] font-black uppercase text-red-600">
+                  <Trash2 size={14} /> Xóa
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {selectedUserDetail && (

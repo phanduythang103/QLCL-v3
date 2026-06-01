@@ -519,18 +519,18 @@ const Criteria83Config: React.FC = () => {
     return (
         <div className="space-y-4">
             {/* Tab Bar */}
-            <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+            <div className="flex w-full flex-wrap gap-1 rounded-xl bg-slate-100 p-1 sm:w-fit">
                 <button
                     onClick={() => setActiveTab('config')}
-                    className={`px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${activeTab === 'config' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-black uppercase transition-all sm:flex-none sm:px-5 ${activeTab === 'config' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    <span className="flex items-center gap-2"><CheckSquare size={14} /> Cấu hình chi tiết</span>
+                    <span className="flex items-center justify-center gap-2"><CheckSquare size={14} /> Cấu hình chi tiết</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('summary')}
-                    className={`px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${activeTab === 'summary' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-black uppercase transition-all sm:flex-none sm:px-5 ${activeTab === 'summary' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    <span className="flex items-center gap-2"><Building2 size={14} /> Danh sách đã cấu hình</span>
+                    <span className="flex items-center justify-center gap-2"><Building2 size={14} /> Danh sách đã cấu hình</span>
                 </button>
             </div>
 
@@ -549,7 +549,7 @@ const Criteria83Config: React.FC = () => {
                     </div>
 
                     {selectedIds.length > 0 && (
-                        <div className="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between shadow-xl sticky top-4 z-40">
+                        <div className="bg-slate-900 text-white p-4 rounded-2xl flex flex-col gap-3 shadow-xl sticky top-4 z-40 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="bg-[#009900] p-2 rounded-lg"><CheckSquare size={20} /></div>
                                 <div>
@@ -557,9 +557,9 @@ const Criteria83Config: React.FC = () => {
                                     <p className="text-slate-400 text-xs font-bold italic">Sẵn sàng cập nhật hàng loạt thông tin</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <button onClick={() => setSelectedIds([])} className="px-4 py-2 text-slate-400 hover:text-white font-bold text-xs uppercase">Hủy chọn</button>
-                                <button onClick={() => setShowBatchModal(true)} className="bg-[#009900] hover:bg-[#008800] text-white px-6 py-2 rounded-xl font-black text-xs uppercase transition-all shadow-lg flex items-center gap-2">
+                                <button onClick={() => setShowBatchModal(true)} className="bg-[#009900] hover:bg-[#008800] text-white px-6 py-2 rounded-xl font-black text-xs uppercase transition-all shadow-lg flex items-center justify-center gap-2">
                                     <Users size={16} /> Cập nhật hàng loạt
                                 </button>
                             </div>
@@ -567,7 +567,7 @@ const Criteria83Config: React.FC = () => {
                     )}
 
                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                        <div className="bg-slate-50 border-b border-slate-200 px-4 py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                             <h3 className="text-sm font-black text-black uppercase tracking-wider">Danh mục chi tiết</h3>
                             <div className="text-[10px] text-slate-400 font-bold italic uppercase">Nhấn vào tiêu đề để mở rộng/thu gọn</div>
                         </div>
@@ -635,8 +635,8 @@ const Criteria83Config: React.FC = () => {
                                                                                 </div>
                                                                             </div>
                                                                             {expandedTieuChi.includes(tieuChi) && (
-                                                                                <div className="mt-2 mr-4 overflow-hidden rounded-xl border border-slate-100">
-                                                                                    <table className="w-full text-xs text-left">
+                                                                                <div className="mt-2 mr-0 overflow-x-auto rounded-xl border border-slate-100 md:mr-4">
+                                                                                    <table className="w-full min-w-[760px] text-xs text-left">
                                                                                         <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] h-10 border-b border-slate-100">
                                                                                             <tr>
                                                                                                 <th className="w-10 px-4"></th>
@@ -719,7 +719,7 @@ const Criteria83Config: React.FC = () => {
                 <div className="space-y-4">
                     {/* Selection Action Bar (Existing Copy logic) */}
                     {selectedSummaryUnits.length > 0 && (
-                        <div className="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between shadow-xl sticky top-4 z-40">
+                        <div className="bg-slate-900 text-white p-4 rounded-2xl flex flex-col gap-3 shadow-xl sticky top-4 z-40 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="bg-blue-600 p-2 rounded-lg"><CheckSquare size={20} /></div>
                                 <div>
@@ -727,11 +727,11 @@ const Criteria83Config: React.FC = () => {
                                     <p className="text-slate-400 text-xs font-bold italic">{selectedSummaryUnits.join(', ')}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <button onClick={() => setSelectedSummaryUnits([])} className="px-4 py-2 text-slate-400 hover:text-white font-bold text-xs uppercase">Hủy chọn</button>
                                 <button
                                     onClick={() => { setCopyTargetUnits([]); setShowCopyModal(true); }}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-black text-xs uppercase transition-all shadow-lg flex items-center gap-2"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-black text-xs uppercase transition-all shadow-lg flex items-center justify-center gap-2"
                                 >
                                     <Copy size={14} /> Cấu hình cho khoa khác
                                 </button>
@@ -739,8 +739,8 @@ const Criteria83Config: React.FC = () => {
                         </div>
                     )}
 
-                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <table className="w-full text-left">
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+                        <table className="w-full min-w-[720px] text-left">
                             <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
                                     <th className="px-6 py-4 w-12">
@@ -877,7 +877,7 @@ const Criteria83Config: React.FC = () => {
                             <h3 className="text-xl font-black uppercase">Cập nhật hàng loạt</h3>
                             <p className="text-white/70 text-xs font-bold italic mt-1 uppercase">Đang tác động {selectedIds.length} bản ghi</p>
                         </div>
-                        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
+                        <div className="max-h-[70vh] space-y-6 overflow-y-auto p-5 sm:space-y-8 sm:p-8">
                             {/* Toggle switch between Khoa and Tổ */}
                             <div className="flex p-1 bg-slate-100 rounded-xl">
                                 <button 
@@ -956,7 +956,7 @@ const Criteria83Config: React.FC = () => {
                                 </>
                             )}
 
-                            <div className="flex items-center gap-3 pt-6">
+                            <div className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center">
                                 <button onClick={() => setShowBatchModal(false)} className="flex-1 px-6 py-4 border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase hover:bg-slate-50 transition-all">Hủy bỏ</button>
                                 <button onClick={handleBatchUpdate} disabled={updating || (configTarget === 'KHOA' && !isClearPhuTrach && !isClearDonViPhoiHop && batchForm.phu_trach.length === 0 && batchForm.don_vi_phoi_hop.length === 0) || (configTarget === 'TO' && !isClearToChamDiem && batchForm.to_cham_diem.length === 0)}
                                     className="flex-[2] bg-[#009900] hover:bg-[#008800] text-white px-6 py-4 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none">
@@ -973,9 +973,9 @@ const Criteria83Config: React.FC = () => {
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 max-h-[92vh]">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-8 py-6 text-white relative shrink-0">
+                        <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-5 py-5 text-white relative shrink-0 sm:px-8 sm:py-6">
                             <button onClick={() => setShowCopyModal(false)} className="absolute right-5 top-5 hover:bg-white/20 p-1.5 rounded-lg transition-colors"><X size={20} /></button>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3 sm:gap-4">
                                 <div className="bg-white/20 p-3 rounded-xl"><Copy size={28} /></div>
                                 <div>
                                     <h3 className="text-lg font-black uppercase tracking-wide">Cấu hình cho khoa khác</h3>
@@ -987,7 +987,7 @@ const Criteria83Config: React.FC = () => {
                         </div>
 
                         {/* Info notice */}
-                        <div className="px-8 pt-5 pb-0 shrink-0">
+                        <div className="px-5 pt-5 pb-0 shrink-0 sm:px-8">
                             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center gap-3">
                                 <CheckCircle2 size={15} className="text-blue-600 shrink-0" />
                                 <p className="text-[11px] text-blue-700 font-bold">
@@ -998,7 +998,7 @@ const Criteria83Config: React.FC = () => {
                         </div>
 
                         {/* Khoi Filter */}
-                        <div className="px-8 pt-4 shrink-0 flex flex-wrap gap-1.5 items-center">
+                        <div className="px-5 pt-4 shrink-0 flex flex-wrap gap-1.5 items-center sm:px-8">
                             <span className="text-[10px] font-black text-slate-400 uppercase mr-1">Lọc theo khối:</span>
                             {['Tất cả', ...Array.from(new Set(units.map(u => u.khoi).filter(Boolean)))].sort().map(khoi => (
                                 <button
@@ -1016,10 +1016,10 @@ const Criteria83Config: React.FC = () => {
                         </div>
 
                         {/* Scrollable unit checkbox grid */}
-                        <div className="flex-1 overflow-y-auto px-8 py-5 min-h-0">
-                            <div className="flex items-center justify-between mb-4">
+                        <div className="flex-1 overflow-y-auto px-5 py-5 min-h-0 sm:px-8">
+                            <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
                                 <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Chọn đơn vị sẽ thêm vào Phụ trách</h4>
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-3">
                                     {copyTargetUnits.length > 0 && (
                                         <span className="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">{copyTargetUnits.length} đã chọn</span>
                                     )}
@@ -1048,7 +1048,7 @@ const Criteria83Config: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6">
                                 {units
                                     .filter(u => copyModalKhoi === 'Tất cả' || u.khoi === copyModalKhoi)
                                     .map(unit => {
@@ -1075,8 +1075,8 @@ const Criteria83Config: React.FC = () => {
                         </div>
 
                         {/* Sticky footer */}
-                        <div className="px-8 py-5 border-t border-slate-100 bg-slate-50 shrink-0">
-                            <div className="flex items-center gap-3">
+                        <div className="px-5 py-5 border-t border-slate-100 bg-slate-50 shrink-0 sm:px-8">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <button onClick={() => setShowCopyModal(false)} className="flex-1 px-6 py-3.5 border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase hover:bg-white transition-all">Hủy bỏ</button>
                                 <button
                                     onClick={handleCopyToOtherUnits}

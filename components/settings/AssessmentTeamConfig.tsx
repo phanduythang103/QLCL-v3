@@ -228,7 +228,7 @@ export const AssessmentTeamConfig: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+      <div className="flex flex-col gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#009900]">
             <Users2 size={24} />
@@ -241,7 +241,7 @@ export const AssessmentTeamConfig: React.FC = () => {
         {!showForm && (
           <button 
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg shadow-emerald-100 hover:scale-105 transition-all active:scale-95"
+            className="flex w-full items-center justify-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg shadow-emerald-100 hover:scale-105 transition-all active:scale-95 sm:w-auto"
           >
             <UserPlus size={16} /> Thêm thành viên
           </button>
@@ -249,7 +249,7 @@ export const AssessmentTeamConfig: React.FC = () => {
       </div>
 
       {/* QUICK FILTERS */}
-      <div className="flex items-center gap-2 px-2 overflow-x-auto no-scrollbar pb-2">
+      <div className="flex flex-wrap items-center gap-2 px-0 pb-2 sm:px-2">
         <button 
           onClick={() => setFilterTeam(null)}
           className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${!filterTeam ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100 hover:border-slate-200'}`}
@@ -277,7 +277,7 @@ export const AssessmentTeamConfig: React.FC = () => {
       )}
 
       {showForm && (
-        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl space-y-8 animate-in zoom-in-95 duration-300">
+        <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-xl space-y-6 animate-in zoom-in-95 duration-300 sm:p-8 sm:space-y-8">
           <div className="flex items-center justify-between border-b border-slate-50 pb-4">
             <h3 className="font-black text-slate-900 text-sm uppercase tracking-tight flex items-center gap-2">
               <Plus className="text-[#009900]" size={18} />
@@ -420,7 +420,7 @@ export const AssessmentTeamConfig: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex flex-col justify-end gap-3 pt-4 sm:flex-row">
               <button 
                 type="button"
                 onClick={resetForm}
@@ -431,7 +431,7 @@ export const AssessmentTeamConfig: React.FC = () => {
               <button 
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 bg-[#009900] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase shadow-xl shadow-emerald-100 hover:scale-105 transition-all disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-[#009900] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase shadow-xl shadow-emerald-100 hover:scale-105 transition-all disabled:opacity-50"
               >
                 {saving ? 'Đang lưu...' : (editingId ? 'Cập nhật' : 'Thêm vào tổ')}
               </button>
@@ -441,7 +441,7 @@ export const AssessmentTeamConfig: React.FC = () => {
       )}
 
       {/* TABLE */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+      <div className="hidden bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-[#009900] text-white">
@@ -553,6 +553,102 @@ export const AssessmentTeamConfig: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="grid gap-4 md:hidden">
+        {Object.keys(groupedMembers).length === 0 ? (
+          <div className="rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-sm">
+            <Users size={48} className="mx-auto mb-4 text-slate-200" />
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">Không tìm thấy dữ liệu</p>
+            <p className="mt-1 text-[9px] font-bold uppercase text-slate-300">Thêm thành viên mới để bắt đầu</p>
+          </div>
+        ) : (
+          Object.keys(groupedMembers).sort().map(team => {
+            const isExpanded = expandedTeams.includes(team);
+            return (
+              <div key={team} className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggleTeam(team)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') toggleTeam(team);
+                  }}
+                  className="flex w-full items-center justify-between gap-3 bg-slate-50/80 p-4 text-left"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                    <div className="shrink-0 rounded-xl bg-[#009900] p-2 text-white">
+                      <Group size={14} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-black uppercase tracking-tight text-slate-800">{team}</p>
+                      <p className="text-[9px] font-black uppercase text-slate-400">{groupedMembers[team].length} thành viên</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddAtTeam(team);
+                    }}
+                    className="shrink-0 rounded-xl border border-[#009900]/20 bg-white p-2 text-[#009900]"
+                    aria-label="Thêm thành viên"
+                  >
+                    <Plus size={15} />
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <div className="grid gap-3 border-t border-slate-100 p-3">
+                    {groupedMembers[team].map((m) => (
+                      <div key={m.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-[11px] font-black uppercase text-slate-400">
+                            {m.ho_ten?.[0]}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-black uppercase tracking-tight text-slate-800">{m.ho_ten}</p>
+                                <p className="truncate text-[10px] font-bold uppercase text-slate-400">{m.don_vi || '-'}</p>
+                              </div>
+                              <span className={`shrink-0 rounded px-2 py-1 text-[8px] font-black uppercase tracking-wider ${
+                                m.vai_tro === 'Tổ trưởng' ? 'bg-amber-100 text-amber-700' : 
+                                m.vai_tro === 'Thư ký' ? 'bg-cyan-100 text-cyan-700' : 
+                                'bg-slate-100 text-slate-500'
+                              }`}>
+                                {m.vai_tro || 'Tổ viên'}
+                              </span>
+                            </div>
+                            <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] font-bold text-slate-500">
+                              <p><span className="font-black text-slate-700">Chức vụ:</span> {m.chuc_vu || '-'}</p>
+                              <p className="line-clamp-2"><span className="font-black text-slate-700">Ghi chú:</span> {m.ghi_chu || '-'}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => handleEdit(m)}
+                            className="flex items-center justify-center gap-2 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#009900]"
+                          >
+                            <Edit2 size={15} /> Sửa
+                          </button>
+                          <button
+                            onClick={() => handleDelete(m.id)}
+                            className="flex items-center justify-center gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-[10px] font-black uppercase text-rose-600"
+                          >
+                            <Trash2 size={15} /> Xóa
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
