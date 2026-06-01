@@ -4,12 +4,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import { UserInfoModal } from './UserInfoModal';
 
-export const HeaderUserMenu: React.FC = () => {
+interface HeaderUserMenuProps {
+    variant?: 'dark' | 'light';
+}
+
+export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({ variant = 'dark' }) => {
     const { user, logout } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const isLight = variant === 'light';
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -35,10 +40,12 @@ export const HeaderUserMenu: React.FC = () => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center gap-2 md:gap-3 p-1.5 pr-2.5 transition-colors border ${isOpen ? 'bg-white/15 border-white/30' : 'hover:bg-white/10 border-transparent'
+                className={`flex items-center gap-2 p-1.5 transition-colors border md:gap-3 ${isOpen
+                    ? (isLight ? 'bg-slate-100 border-slate-200' : 'bg-white/15 border-white/30')
+                    : (isLight ? 'hover:bg-slate-100 border-transparent' : 'hover:bg-white/10 border-transparent')
                     }`}
             >
-                <div className="w-8 h-8 bg-white/20 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
+                <div className={`flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-xs font-bold ${isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/20 text-white'}`}>
                     {user.avatar ? (
                         <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -46,14 +53,14 @@ export const HeaderUserMenu: React.FC = () => {
                     )}
                 </div>
                 <div className="hidden md:block text-left">
-                    <p className="text-[12px] font-bold text-white leading-tight truncate max-w-[150px]">
+                    <p className={`max-w-[150px] truncate text-[12px] font-bold leading-tight ${isLight ? 'text-slate-800' : 'text-white'}`}>
                         {user.full_name?.toUpperCase()}
                     </p>
-                    <p className="text-[12px] uppercase text-white/85 leading-none mt-0.5">
+                    <p className={`mt-0.5 text-[12px] uppercase leading-none ${isLight ? 'text-slate-500' : 'text-white/85'}`}>
                         {user.role?.toLowerCase()}
                     </p>
                 </div>
-                <ChevronDown size={14} className={`text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isLight ? 'text-slate-500' : 'text-white'} ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}

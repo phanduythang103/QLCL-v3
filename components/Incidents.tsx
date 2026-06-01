@@ -204,13 +204,13 @@ export const Incidents: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Navigation - Horizontal Tabs */}
-      <div className="bg-white px-4">
-        <div className="tab-container">
+      <div className="bg-white px-3 py-3 sm:px-4">
+        <div className="incident-tab-list">
             {menuItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleMenuChange(item.id as MenuItem)}
-                className={`tab-item flex items-center gap-2 ${activeMenu === item.id ? 'tab-active' : ''}`}
+                className={`incident-tab-button ${activeMenu === item.id ? 'incident-tab-button-active' : ''}`}
               >
                 {item.icon}
                 <span>{item.label}</span>

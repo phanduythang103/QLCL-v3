@@ -14,6 +14,29 @@ body {
   color: var(--color-gray-900);
 }
 
+.enterprise-ui {
+  --ui-surface: #ffffff;
+  --ui-surface-muted: #f8fafc;
+  --ui-border: #e2e8f0;
+  --ui-border-strong: #cbd5e1;
+  --ui-text: #0f172a;
+  --ui-muted: #64748b;
+  --ui-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
+  --ui-shadow-soft: 0 8px 28px rgba(15, 23, 42, 0.055);
+  --ui-radius: 18px;
+  --ui-radius-sm: 12px;
+}
+
+.bg-indigo-150 { background-color: #d7ddfe; }
+.bg-sky-150 { background-color: #d6f0fd; }
+.bg-purple-150 { background-color: #eadcff; }
+.bg-red-150 { background-color: #fed8d8; }
+.bg-emerald-150 { background-color: #c7f3df; }
+.bg-orange-150 { background-color: #fedfb8; }
+.bg-teal-150 { background-color: #c4f1ea; }
+.bg-blue-150 { background-color: #d3e7fe; }
+.bg-slate-150 { background-color: #e8edf4; }
+
 * {
   box-sizing: border-box;
 }
@@ -62,30 +85,32 @@ textarea {
 }
 
 .card {
-  margin-bottom: 12px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid var(--ui-border, #e2e8f0);
+  border-radius: var(--ui-radius, 18px);
+  background: var(--ui-surface, #fff);
+  box-shadow: var(--ui-shadow-soft, 0 8px 28px rgba(15, 23, 42, 0.055));
 }
 
 .input-base {
   display: block;
   width: 100%;
-  min-height: 34px;
-  padding: 6px 8px;
-  color: #333;
+  min-height: 38px;
+  padding: 8px 11px;
+  color: var(--ui-text, #0f172a);
   background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--ui-border, #e2e8f0);
+  border-radius: 10px;
   font-size: 13px;
   line-height: 1.45;
   outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .input-base:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 153, 0, 0.12);
+  box-shadow: 0 0 0 4px rgba(0, 153, 0, 0.12);
 }
 
 .btn-primary {
@@ -93,10 +118,10 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 34px;
-  padding: 6px 12px;
+  min-height: 38px;
+  padding: 8px 14px;
   border: 1px solid var(--color-primary);
-  border-radius: 4px;
+  border-radius: 10px;
   color: #fff;
   background: var(--color-primary);
   font-size: 11px;
@@ -122,31 +147,37 @@ textarea {
 
 .table-base {
   width: 100%;
-  border: 1px solid #ccc;
-  border-collapse: collapse;
+  border: 1px solid var(--ui-border, #e2e8f0);
+  border-collapse: separate;
+  border-spacing: 0;
   background: #fff;
   font-size: 13px;
+  overflow: hidden;
 }
 
 .table-base th,
 .table-base td {
-  padding: 6px 8px;
-  border: 1px solid #ccc;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ui-border, #e2e8f0);
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
   vertical-align: top;
 }
 
 .enterprise-ui table,
 main table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .enterprise-ui table th,
 .enterprise-ui table td,
 main table th,
 main table td {
-  border: 1px solid #ccc;
-  padding: 6px 8px;
+  border-color: var(--ui-border, #e2e8f0);
+  padding: 10px 12px;
   font-size: 13px;
 }
 
@@ -158,6 +189,18 @@ main table thead th {
   font-weight: 700;
 }
 
+.enterprise-ui table tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.enterprise-ui table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+.enterprise-ui table tbody tr:hover {
+  background: var(--color-primary-50);
+}
+
 .table-base .table-header th,
 .table-base thead.table-header th,
 .table-header th {
@@ -165,6 +208,292 @@ main table thead th {
   background: var(--color-primary);
   font-size: 12px;
   font-weight: 700;
+}
+
+.table-standardized {
+  width: 100%;
+  min-width: 720px;
+  border: 1px solid var(--ui-border, #e2e8f0) !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: #fff;
+}
+
+.table-standardized thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: 0 !important;
+  border-bottom: 1px solid var(--color-primary-700) !important;
+  padding: 10px 12px !important;
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table-standardized tbody td {
+  border: 0 !important;
+  border-bottom: 1px solid var(--ui-border, #e2e8f0) !important;
+  padding: 11px 12px !important;
+  vertical-align: middle;
+}
+
+.table-standardized tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.ql-card,
+.enterprise-ui .bg-white.border,
+.enterprise-ui .bg-white[class*="shadow"] {
+  border-color: var(--ui-border, #e2e8f0);
+  box-shadow: var(--ui-shadow-soft, 0 8px 28px rgba(15, 23, 42, 0.055));
+}
+
+.ql-card {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow-soft);
+}
+
+.ql-table-card {
+  overflow: hidden;
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow);
+}
+
+.ql-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--ui-border);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.ql-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ql-searchbox {
+  position: relative;
+  width: min(100%, 420px);
+}
+
+.ql-searchbox svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.ql-searchbox input {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 12px 9px 38px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ui-text);
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ql-searchbox input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(0, 153, 0, 0.12);
+}
+
+.ql-filter-panel {
+  padding: 14px;
+  border-bottom: 1px solid var(--ui-border);
+  background: #f8fafc;
+}
+
+.ql-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ql-form-field label,
+.enterprise-ui form label {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ql-form-field input,
+.ql-form-field select,
+.ql-form-field textarea,
+.ql-dialog input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.ql-dialog select,
+.ql-dialog textarea {
+  min-height: 40px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ui-text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ql-form-field input:focus,
+.ql-form-field select:focus,
+.ql-form-field textarea:focus,
+.ql-dialog input:focus,
+.ql-dialog select:focus,
+.ql-dialog textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(0, 153, 0, 0.12);
+}
+
+.ql-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.56);
+  backdrop-filter: blur(8px);
+}
+
+.ql-dialog-overlay.z-\[60\] {
+  z-index: 60;
+}
+
+.ql-dialog {
+  width: 100%;
+  max-height: min(90vh, 820px);
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
+}
+
+.ql-dialog-scroll {
+  overflow-y: auto;
+}
+
+.ql-dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--ui-border);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+}
+
+.ql-dialog-title {
+  color: var(--ui-text);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.ql-dialog-body {
+  padding: 20px;
+}
+
+.ql-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--ui-border);
+  background: #f8fafc;
+}
+
+.ql-loading-state,
+.ql-empty-state {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 18px;
+  text-align: center;
+}
+
+.ql-table-card > .p-12.text-center {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 18px;
+  color: var(--ui-muted);
+  font-weight: 800;
+}
+
+.ql-table-card > .p-12.text-center.text-red-500 {
+  color: #dc2626;
+}
+
+.ql-empty-icon {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-100);
+}
+
+.ql-empty-title {
+  color: var(--ui-text);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ql-empty-description {
+  max-width: 420px;
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ql-skeleton-lines {
+  display: grid;
+  width: min(100%, 760px);
+  gap: 10px;
+}
+
+.ql-skeleton-line {
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+  background-size: 400% 100%;
+  animation: ql-shimmer 1.35s ease infinite;
+}
+
+@keyframes ql-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
 }
 
 .tab-container {
@@ -192,6 +521,49 @@ main table thead th {
   font-weight: 700;
 }
 
+.incident-tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.incident-tab-button {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--ui-border, #e2e8f0);
+  border-radius: 12px;
+  background: #fff;
+  color: #475569;
+  padding: 9px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.incident-tab-button svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.incident-tab-button span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.incident-tab-button-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+}
+
 .enterprise-form .input-base,
 .enterprise-form input:not([type="checkbox"]):not([type="radio"]),
 .enterprise-form select,
@@ -201,11 +573,11 @@ main form select,
 main form textarea {
   display: block;
   width: 100%;
-  padding: 6px 8px;
-  color: #333;
+  padding: 8px 11px;
+  color: var(--ui-text, #0f172a);
   background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--ui-border, #e2e8f0);
+  border-radius: 10px;
   font-size: 13px;
   outline: none;
 }
@@ -217,7 +589,7 @@ main form input:focus,
 main form select:focus,
 main form textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 153, 0, 0.12);
+  box-shadow: 0 0 0 4px rgba(0, 153, 0, 0.12);
 }
 
 .enterprise-form section h2,
@@ -230,6 +602,129 @@ main form textarea:focus {
 @media (max-width: 767px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ql-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ql-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ql-toolbar-actions {
+    width: 100%;
+  }
+
+  .ql-toolbar-actions > * {
+    flex: 1 1 160px;
+    justify-content: center;
+  }
+
+  .ql-searchbox {
+    width: 100%;
+  }
+
+  .ql-dialog-overlay {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .ql-dialog {
+    max-height: 92vh;
+    border-radius: 18px;
+  }
+
+  .ql-dialog-body {
+    padding: 16px;
+  }
+
+  .ql-dialog-footer {
+    flex-direction: column-reverse;
+  }
+
+  .ql-dialog-footer > button {
+    width: 100%;
+  }
+
+  .ql-mobile-card {
+    margin: 10px;
+    border: 1px solid var(--ui-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--ui-shadow-soft);
+  }
+}
+
+@media (max-width: 1023px) {
+  .mobile-app-tile,
+  .mobile-app-label,
+  .mobile-module-content,
+  .mobile-module-content * {
+    min-width: 0;
+  }
+
+  .mobile-app-label {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    hyphens: auto;
+  }
+
+  .mobile-app-icon {
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  }
+
+  .mobile-app-tile:active .mobile-app-icon {
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+  }
+
+  .mobile-module-content {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .mobile-module-content p,
+  .mobile-module-content span,
+  .mobile-module-content h1,
+  .mobile-module-content h2,
+  .mobile-module-content h3,
+  .mobile-module-content h4,
+  .mobile-module-content label,
+  .mobile-module-content button,
+  .mobile-module-content td,
+  .mobile-module-content th {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .mobile-module-content .ql-table-card,
+  .mobile-module-content .table-responsive,
+  .mobile-module-content [class*="overflow-x-auto"] {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-module-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-module-content table th,
+  .mobile-module-content table td {
+    max-width: 220px;
+    white-space: normal;
+    vertical-align: top;
+  }
+
+  .mobile-module-content .table-standardized {
+    min-width: 640px;
   }
 }
 
@@ -252,5 +747,19 @@ main form textarea:focus {
   .tracking-\[0\.2em\],
   .tracking-\[0\.4em\] {
     letter-spacing: 0.04em;
+  }
+
+  .enterprise-ui {
+    --ui-radius: 14px;
+  }
+
+  .enterprise-ui .max-w-7xl {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .enterprise-ui table th,
+  .enterprise-ui table td {
+    padding: 9px 10px;
   }
 }

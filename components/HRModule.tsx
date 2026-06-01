@@ -143,6 +143,21 @@ export const HRModule: React.FC = () => {
     currentPage * rowsPerPage
   );
 
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+    filterOnlyWithCert ||
+    advancedFilters.cap_bac ||
+    advancedFilters.don_vi ||
+    advancedFilters.trang_thai
+  );
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilterOnlyWithCert(false);
+    setAdvancedFilters({ cap_bac: '', don_vi: '', trang_thai: '' });
+    setShowAdvancedFilter(false);
+  };
+
   const resetForm = () => {
     setFormData({
       ho_ten: '',
@@ -481,20 +496,19 @@ export const HRModule: React.FC = () => {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="ql-card ql-table-card">
         {/* Search & Filter Bar */}
-        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 justify-between bg-slate-50/50">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+        <div className="ql-toolbar">
+          <div className="ql-searchbox">
+            <Search />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm kiếm theo tên, khoa phòng..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-white"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="ql-toolbar-actions">
             <button
               onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
               className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${showAdvancedFilter || advancedFilters.cap_bac || advancedFilters.don_vi || advancedFilters.trang_thai
@@ -513,14 +527,22 @@ export const HRModule: React.FC = () => {
             >
               <Award size={16} /> Chỉ hiện có chứng chỉ
             </button>
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-white bg-white transition-colors"
+              >
+                <X size={16} /> Xoa loc
+              </button>
+            )}
           </div>
         </div>
 
         {/* Advanced Filter Panel */}
         {showAdvancedFilter && (
-          <div className="p-4 border-b border-slate-200 bg-slate-50">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
+          <div className="ql-filter-panel">
+            <div className="ql-form-grid">
+              <div className="ql-form-field">
                 <label className="block text-xs font-medium text-slate-700 mb-1">Cấp bậc</label>
                 <select
                   value={advancedFilters.cap_bac}
@@ -538,7 +560,7 @@ export const HRModule: React.FC = () => {
                   <option>Trung úy</option>
                 </select>
               </div>
-              <div>
+              <div className="ql-form-field">
                 <label className="block text-xs font-medium text-slate-700 mb-1">Đơn vị</label>
                 <input
                   type="text"
@@ -548,7 +570,7 @@ export const HRModule: React.FC = () => {
                   className="w-full p-2 border border-slate-300 rounded-lg text-sm"
                 />
               </div>
-              <div>
+              <div className="ql-form-field">
                 <label className="block text-xs font-medium text-slate-700 mb-1">Trạng thái</label>
                 <select
                   value={advancedFilters.trang_thai}
@@ -613,7 +635,7 @@ export const HRModule: React.FC = () => {
               </div>
             )}
             {paginatedStaff.map((item) => (
-              <div key={item.id} className="p-4 border-b border-slate-100 last:border-b-0">
+              <div key={item.id} className="ql-mobile-card p-4 border-b border-slate-100 last:border-b-0">
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
@@ -853,7 +875,7 @@ export const HRModule: React.FC = () => {
                   ))}
                   {filteredStaff.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-500 italic">
+                      <td colSpan={7} className="py-12 text-center text-slate-500 italic">
                         Không tìm thấy nhân sự nào phù hợp với bộ lọc.
                       </td>
                     </tr>
@@ -909,9 +931,9 @@ export const HRModule: React.FC = () => {
 
       {/* Import Excel Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200">
+        <div className="ql-dialog-overlay">
+          <div className="ql-dialog max-w-md">
+            <div className="ql-dialog-header">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <FileSpreadsheet className="text-primary-600" size={20} />
                 Nhập dữ liệu Excel
@@ -920,7 +942,7 @@ export const HRModule: React.FC = () => {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="ql-dialog-body space-y-4">
               <button
                 onClick={handleUploadFile}
                 className="w-full flex items-center gap-4 p-4 border-2 border-dashed border-slate-300 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-colors group"
@@ -946,7 +968,7 @@ export const HRModule: React.FC = () => {
                 </div>
               </button>
             </div>
-            <div className="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+            <div className="ql-dialog-footer">
               <button
                 onClick={() => setShowImportModal(false)}
                 className="w-full py-2 text-slate-600 hover:text-slate-800 text-sm font-medium"
@@ -976,9 +998,9 @@ export const HRModule: React.FC = () => {
 
       {/* View Detail Modal */}
       {viewingItem && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
+        <div className="ql-dialog-overlay">
+          <div className="ql-dialog ql-dialog-scroll max-w-lg">
+            <div className="ql-dialog-header">
               <div className="flex items-center gap-2">
                 <User className="text-primary-600" size={20} />
               </div>
@@ -986,7 +1008,7 @@ export const HRModule: React.FC = () => {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-6">
+            <div className="ql-dialog-body">
               {/* Header with Avatar */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden">
@@ -1085,7 +1107,7 @@ export const HRModule: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl relative">
+            <div className="ql-dialog-footer relative">
               <button
                 onClick={() => setViewingItem(null)}
                 className="py-2 px-4 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
@@ -1146,9 +1168,9 @@ export const HRModule: React.FC = () => {
 
       {/* Bulk Edit Modal */}
       {showBulkEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200">
+        <div className="ql-dialog-overlay">
+          <div className="ql-dialog max-w-md">
+            <div className="ql-dialog-header">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <Edit2 className="text-primary-600" size={20} />
                 Sửa hàng loạt ({selectedIds.length} nhân sự)
@@ -1157,7 +1179,7 @@ export const HRModule: React.FC = () => {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="ql-dialog-body space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Vai trò QLCL</label>
                 <div className="flex flex-col gap-2">
@@ -1214,7 +1236,7 @@ export const HRModule: React.FC = () => {
                 </select>
               </div>
             </div>
-            <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+            <div className="ql-dialog-footer">
               <button
                 onClick={() => setShowBulkEditModal(false)}
                 className="flex-1 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
@@ -1312,19 +1334,19 @@ const FormModal: React.FC<FormModalProps> = ({
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-          <h3 className="text-main-title font-bold text-black uppercase">
+    <div className="ql-dialog-overlay">
+      <div className="ql-dialog ql-dialog-scroll max-w-2xl">
+        <div className="ql-dialog-header">
+          <h3 className="ql-dialog-title uppercase">
             {editingItem ? 'Chỉnh sửa nhân sự' : 'Thêm nhân sự mới'}
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X size={20} />
           </button>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+        <div className="ql-dialog-body space-y-4">
+          <div className="ql-form-grid">
+            <div className="ql-form-field">
               <label className="block text-label font-bold text-black mb-1">Họ và tên *</label>
               <input
                 type="text"
@@ -1334,7 +1356,7 @@ const FormModal: React.FC<FormModalProps> = ({
                 placeholder="Nguyễn Văn A"
               />
             </div>
-            <div>
+            <div className="ql-form-field">
               <label className="block text-label font-bold text-black mb-1">Cấp bậc</label>
               <div className="flex gap-2">
                 <select
@@ -1357,7 +1379,7 @@ const FormModal: React.FC<FormModalProps> = ({
                 </button>
               </div>
             </div>
-            <div>
+            <div className="ql-form-field">
                <label className="block text-label font-bold text-black mb-1">Chức vụ</label>
               <div className="flex gap-2">
                 <select
@@ -1380,7 +1402,7 @@ const FormModal: React.FC<FormModalProps> = ({
                 </button>
               </div>
             </div>
-            <div className="relative">
+            <div className="ql-form-field relative">
                <label className="block text-label font-bold text-black mb-1">Đơn vị / Khoa phòng</label>
               <div className="flex gap-2">
                 <div className="flex-1 relative">
@@ -1449,7 +1471,7 @@ const FormModal: React.FC<FormModalProps> = ({
                 </button>
               </div>
             </div>
-            <div>
+            <div className="ql-form-field">
               <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
               <input
                 type="text"
@@ -1459,7 +1481,7 @@ const FormModal: React.FC<FormModalProps> = ({
                 placeholder="0912.345.678"
               />
             </div>
-            <div>
+            <div className="ql-form-field">
               <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
               <input
                 type="email"
@@ -1471,7 +1493,7 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
           </div>
 
-          <div>
+          <div className="ql-form-field">
             <label className="block text-sm font-medium text-slate-700 mb-2">Vai trò QLCL</label>
             <div className="flex gap-2 flex-wrap">
               {[
@@ -1510,7 +1532,7 @@ const FormModal: React.FC<FormModalProps> = ({
             </label>
           </div>
 
-          <div>
+          <div className="ql-form-field">
             <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
             <textarea
               value={formData.ghi_chu}
@@ -1520,7 +1542,7 @@ const FormModal: React.FC<FormModalProps> = ({
             />
           </div>
         </div>
-        <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
+        <div className="ql-dialog-footer">
           <button
             onClick={onClose}
             className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
@@ -1544,8 +1566,8 @@ const FormModal: React.FC<FormModalProps> = ({
 
       {/* Quick Add Rank Modal */}
       {showAddRankModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+        <div className="ql-dialog-overlay z-[60]">
+          <div className="ql-dialog max-w-md p-6">
             <h4 className="text-lg font-bold text-slate-800 mb-4">Thêm cấp bậc mới</h4>
             <input
               type="text"
@@ -1592,8 +1614,8 @@ const FormModal: React.FC<FormModalProps> = ({
 
       {/* Quick Add Position Modal */}
       {showAddPositionModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+        <div className="ql-dialog-overlay z-[60]">
+          <div className="ql-dialog max-w-md p-6">
             <h4 className="text-lg font-bold text-slate-800 mb-4">Thêm chức vụ mới</h4>
             <input
               type="text"
@@ -1637,8 +1659,8 @@ const FormModal: React.FC<FormModalProps> = ({
 
       {/* Quick Add Department Modal */}
       {showAddDeptModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+        <div className="ql-dialog-overlay z-[60]">
+          <div className="ql-dialog max-w-md p-6">
             <h4 className="text-lg font-bold text-slate-800 mb-4">Thêm đơn vị mới</h4>
             <div className="space-y-3 mb-4">
               <input

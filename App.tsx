@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut, Activity } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut, Activity, Home } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';
@@ -193,7 +193,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
   const { canView } = usePermissions();
 
   return (
-    <aside className={`fixed md:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-600 transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+    <aside className={`fixed lg:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-600 transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
       <div className="h-16 flex items-center justify-between px-4 border-b border-white/20 bg-primary-600 relative">
         <div className="flex items-center gap-3 overflow-hidden">
           <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
@@ -207,12 +207,12 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex p-1.5 text-white hover:bg-white/10 transition-colors shrink-0"
+          className="hidden lg:flex p-1.5 text-white hover:bg-white/10 transition-colors shrink-0"
         >
           <Menu size={20} />
         </button>
 
-        <button onClick={() => setMobileOpen(false)} className="absolute top-1/2 -translate-y-1/2 right-2 md:hidden text-white">
+        <button onClick={() => setMobileOpen(false)} className="absolute top-1/2 -translate-y-1/2 right-2 lg:hidden text-white">
           <X size={24} />
         </button>
       </div>
@@ -287,6 +287,8 @@ const AppContent: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(true);
   const { user } = useAuth();
+  const { canView } = usePermissions();
+  const [mobileSearch, setMobileSearch] = useState('');
 
   // Permission State
   const [canAccessSettings, setCanAccessSettings] = useState(false);
@@ -375,6 +377,56 @@ const AppContent: React.FC = () => {
     }
   }
 
+  const mobileModuleItems = [
+    { label: 'NHÂN SỰ', module: ModuleType.HR, icon: Users, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-150', permission: ModuleType.HR },
+    { label: 'VĂN BẢN', module: ModuleType.DOCS, icon: BookOpen, iconClass: 'text-sky-500', bgClass: 'bg-sky-150', permission: ModuleType.DOCS },
+    { label: 'ĐÁNH GIÁ\nCHẤT LƯỢNG', module: ModuleType.ASSESSMENT, icon: ClipboardCheck, iconClass: 'text-purple-500', bgClass: 'bg-purple-150', permission: ModuleType.ASSESSMENT },
+    { label: 'SỰ CỐ\nY KHOA', module: ModuleType.INCIDENTS, icon: AlertTriangle, iconClass: 'text-red-500', bgClass: 'bg-red-150', permission: ModuleType.INCIDENTS },
+    { label: 'CẢI TIẾN\nCHẤT LƯỢNG', module: ModuleType.IMPROVEMENT, icon: TrendingUp, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-150', permission: ModuleType.IMPROVEMENT },
+    { label: 'CHỈ SỐ\nCHẤT LƯỢNG', module: ModuleType.INDICATORS, icon: BarChart2, iconClass: 'text-orange-500', bgClass: 'bg-orange-150', permission: ModuleType.INDICATORS },
+    { label: 'KIỂM TRA\nGIÁM SÁT', module: ModuleType.SUPERVISION, icon: CheckSquare, iconClass: 'text-teal-500', bgClass: 'bg-teal-150', permission: ModuleType.SUPERVISION },
+    { label: 'BÁO CÁO', module: ModuleType.REPORTS, icon: FileText, iconClass: 'text-blue-500', bgClass: 'bg-blue-150', permission: ModuleType.REPORTS },
+    { label: 'CÀI ĐẶT', module: ModuleType.SETTINGS, icon: Settings, iconClass: 'text-slate-500', bgClass: 'bg-slate-150', permission: ModuleType.SETTINGS, requiresSettingsAccess: true },
+  ];
+
+  const filteredMobileModules = mobileModuleItems.filter(item => {
+    const normalizedLabel = item.label.replace(/\n/g, ' ').toLowerCase();
+    const hasPermission = item.requiresSettingsAccess ? (canAccessSettings || canView(item.permission)) : canView(item.permission);
+    return hasPermission && normalizedLabel.includes(mobileSearch.trim().toLowerCase());
+  });
+
+  const renderMobileHome = () => (
+    <div className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
+        <img
+          src="https://i.postimg.cc/13Tv4Z60/HOP-CA.png"
+          alt="Họp ca"
+          className="h-auto w-full object-cover"
+        />
+      </div>
+
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-3 md:grid-cols-5 lg:grid-cols-3">
+        {filteredMobileModules.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.label}
+              onClick={() => handleModuleChange(item.module)}
+              className="mobile-app-tile flex min-h-[104px] min-w-0 flex-col items-center justify-start gap-2 px-1 text-center transition-transform active:scale-95"
+            >
+              <span className={`mobile-app-icon flex size-14 shrink-0 items-center justify-center rounded-2xl ${item.bgClass}`}>
+                <Icon size={28} className={item.iconClass} />
+              </span>
+              <span className="mobile-app-label whitespace-pre-line text-[11px] font-medium leading-tight text-slate-700 sm:text-[12px]">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   // Load notifications và subscribe realtime
   React.useEffect(() => {
     loadNotifications();
@@ -432,8 +484,6 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans relative text-[#333]">
-      {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setMobileSidebarOpen(false)} />}
-
       <Sidebar
         currentModule={currentModule}
         handleModuleChange={handleModuleChange}
@@ -445,9 +495,120 @@ const AppContent: React.FC = () => {
       />
 
       <main className="enterprise-ui flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 w-full">
-        <header className="h-16 bg-primary-600 text-white border-b border-primary-700 flex items-center justify-between px-4 md:px-6 z-10 flex-shrink-0">
+        <div className="flex h-screen flex-col bg-white lg:hidden">
+          <header className="relative flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 text-slate-900">
+            <button
+              onClick={() => navigateToModule(ModuleType.DASHBOARD)}
+              className="flex size-10 items-center justify-center rounded-xl text-slate-700 active:bg-slate-100"
+              aria-label="Trang chủ"
+            >
+              <Menu size={23} />
+            </button>
+
+            <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-black text-slate-900">
+              {currentModule === ModuleType.DASHBOARD ? 'Trang chủ' : getModuleTitle()}
+            </h1>
+
+            <div className="flex items-center gap-2">
+              <div className="relative notification-dropdown">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative flex size-10 items-center justify-center rounded-xl text-slate-700 active:bg-slate-100"
+                  aria-label="Thông báo"
+                >
+                  <Bell size={21} />
+                  {notifications.length > 0 && (
+                    <span className="absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full border border-white bg-red-500 px-1 text-[10px] font-bold leading-4 text-white">
+                      {Math.min(notifications.length, 9)}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+                    <div className="border-b border-slate-100 bg-gradient-to-r from-primary-50 to-primary-100 p-4">
+                      <h3 className="text-sm font-bold text-slate-800">Thông báo mới</h3>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        Bạn có {notifications.length} thông báo chưa đọc
+                      </p>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {loadingNotifications ? (
+                        <div className="p-8 text-center text-sm text-slate-400">
+                          Đang tải thông báo...
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="p-8 text-center text-sm text-slate-400">
+                          Không có thông báo mới
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            onClick={() => handleNotificationClick(notification)}
+                            className="cursor-pointer border-b border-slate-100 p-3 transition-colors hover:bg-slate-50"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`flex size-8 flex-shrink-0 items-center justify-center rounded-full ${getNotificationBgColor(notification.type)}`}>
+                                {getNotificationIcon(notification.type)}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
+                                <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{notification.message}</p>
+                                <span className="mt-1 inline-block text-xs text-slate-400">
+                                  {formatTimeAgo(notification.created_at)}
+                                </span>
+                              </div>
+                              <div className="mt-1 size-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="border-t border-slate-100 bg-slate-50 p-3">
+                      <button
+                        onClick={() => {
+                          setSettingsTab('NOTI');
+                          navigateToModule(ModuleType.SETTINGS);
+                          setShowNotifications(false);
+                        }}
+                        className="w-full text-center text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
+                      >
+                        Xem tất cả thông báo
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <HeaderUserMenu variant="light" />
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-y-auto bg-white px-4 pb-24 pt-3">
+            {currentModule === ModuleType.DASHBOARD ? (
+              renderMobileHome()
+            ) : (
+              <div className="mobile-module-content pb-4">
+                {renderContent()}
+              </div>
+            )}
+          </div>
+
+          <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/95 px-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden">
+            <div className="mx-auto flex max-w-md justify-center">
+              <button
+                onClick={() => handleModuleChange(ModuleType.DASHBOARD)}
+                className={`flex min-w-24 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors ${currentModule === ModuleType.DASHBOARD ? 'text-blue-600' : 'text-slate-500'}`}
+              >
+                <Home size={22} />
+                <span>Trang chủ</span>
+              </button>
+            </div>
+          </nav>
+        </div>
+
+        <header className="hidden h-16 flex-shrink-0 items-center justify-between border-b border-primary-700 bg-primary-600 px-4 text-white md:px-6 lg:flex">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileSidebarOpen(true)} className="md:hidden p-2 -ml-2 text-white hover:bg-white/10"><Menu size={24} /></button>
             <h2 className="text-title text-white truncate">{getModuleTitle()}</h2>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
@@ -527,7 +688,7 @@ const AppContent: React.FC = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 scroll-smooth relative">
+        <div className="relative hidden flex-1 overflow-y-auto scroll-smooth px-3 py-4 sm:p-4 lg:block">
           <div className="max-w-7xl mx-auto pb-10">
             {renderContent()}
           </div>

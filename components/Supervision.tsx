@@ -168,20 +168,20 @@ export const Supervision: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header section with Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {[
           { label: 'Tổng số lịch', value: schedules.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Đang thực hiện', value: schedules.filter(s => s.trang_thai === 'Đang thực hiện').length, icon: PlayCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Đã hoàn thành', value: schedules.filter(s => s.trang_thai === 'Đã hoàn thành').length, icon: ClipboardCheck, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'Quá hạn', value: schedules.filter(s => s.trang_thai === 'Quá hạn').length, icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 transition-all hover:shadow-md hover:border-slate-300">
-            <div className={`p-4 rounded-xl ${stat.bg} ${stat.color}`}>
-              <stat.icon size={24} />
+          <div key={i} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-slate-300 hover:shadow-md sm:p-4 md:gap-4 md:p-6">
+            <div className={`shrink-0 rounded-xl p-3 md:p-4 ${stat.bg} ${stat.color}`}>
+              <stat.icon size={22} />
             </div>
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-              <p className="text-2xl font-black text-slate-900">{stat.value}</p>
+            <div className="min-w-0">
+              <p className="text-[9px] font-black uppercase leading-tight tracking-normal text-slate-400 sm:text-[10px] md:tracking-widest">{stat.label}</p>
+              <p className="text-xl font-black text-slate-900 md:text-2xl">{stat.value}</p>
             </div>
           </div>
         ))}
@@ -199,7 +199,7 @@ export const Supervision: React.FC = () => {
                 </h2>
               </div>
             </div>
-            <div className="p-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 p-4 sm:gap-4 sm:p-8">
               {[
                 { id: 'HAND_HYGIENE', label: 'Vệ sinh tay', icon: HandMetal, desc: 'Giám sát tuân thủ 5 thời điểm vệ sinh tay', color: 'bg-teal-50 text-teal-600' },
                 { id: 'SURGERY', label: 'An toàn phẫu thuật', icon: ShieldCheck, desc: 'Checklist an toàn phẫu thuật WHO', color: 'bg-orange-50 text-orange-600' },
@@ -209,19 +209,19 @@ export const Supervision: React.FC = () => {
                 { id: 'RECORDS', label: 'Hồ sơ bệnh án', icon: FileText, desc: 'Kiểm tra tính hoàn thiện của HSBA nội trú', color: 'bg-indigo-50 text-indigo-600' },
                 { id: 'PROF_DUTY', label: 'Trực chuyên môn', icon: Stethoscope, desc: 'Giám sát chế độ trực và thường trực', color: 'bg-rose-50 text-rose-600' },
                 { id: 'PROF_EMERGENCY', label: 'Cấp cứu', icon: Activity, desc: 'Giám sát chế độ cấp cứu và xe tiêm cấp cứu', color: 'bg-cyan-50 text-cyan-600' },
-                { id: 'PROF_ADMISSION', label: 'Vào viện / Chuyển khoa / Chuyển viện / Ra viện', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', color: 'bg-indigo-50 text-indigo-600' },
+                { id: 'PROF_ADMISSION', label: 'Ra,vào viện/CK, CV', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', color: 'bg-indigo-50 text-indigo-600' },
                 { id: 'GENERAL', label: 'Giám sát chung', icon: ClipboardCheck, desc: 'Giám sát các nội dung chuyên môn khác', color: 'bg-emerald-50 text-emerald-600' },
               ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setCategory(item.id as any)}
-                  className="group flex items-start gap-4 p-5 rounded-2xl border border-slate-100 bg-white hover:border-[#009900]/30 hover:shadow-xl hover:shadow-[#009900]/5 transition-all text-left active:scale-[0.98]">
-                  <div className={`p-4 rounded-2xl ${item.color} group-hover:scale-110 transition-transform shadow-sm`}>
-                    <item.icon size={28} />
+                  className="group flex min-w-0 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 text-center transition-all hover:border-[#009900]/30 hover:shadow-xl hover:shadow-[#009900]/5 active:scale-[0.98] sm:flex-row sm:items-start sm:justify-start sm:gap-4 sm:p-5 sm:text-left">
+                  <div className={`shrink-0 rounded-2xl p-3 shadow-sm transition-transform group-hover:scale-110 sm:p-4 ${item.color}`}>
+                    <item.icon size={26} />
                   </div>
-                  <div>
-                    <h4 className="text-table font-bold text-slate-900 group-hover:text-[#009900] transition-colors">{item.label}</h4>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">{item.desc}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-[11px] font-black uppercase leading-snug text-slate-900 transition-colors group-hover:text-[#009900] sm:text-table sm:normal-case">{item.label}</h4>
+                    <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 sm:block">{item.desc}</p>
                   </div>
                 </button>
               ))}

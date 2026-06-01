@@ -118,7 +118,7 @@ const StatCard = React.memo<{
   accent: string;
   bgColor: string;
 }>(({ title, value, subtext, icon, accent, bgColor }) => (
-  <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 flex items-center gap-4">
+  <div className="ql-card p-5 hover:shadow-md transition-all duration-300 flex items-center gap-4">
     <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: bgColor, color: accent }}>
       {icon}
     </div>
@@ -362,7 +362,7 @@ export const Dashboard: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
 
           {/* Mức độ hài lòng */}
-          <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
+          <div className="ql-card p-6 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
@@ -397,7 +397,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Tỷ lệ tuân thủ quy trình giám sát */}
-          <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
+          <div className="ql-card p-6 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-2 h-8 bg-indigo-600 rounded-full"></div>
@@ -429,7 +429,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Cải tiến CL Card */}
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
+          <div className="ql-card p-6 md:p-8">
             <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">
               <TrendingUp size={16} className="text-indigo-600" /> Cải tiến chất lượng
             </h3>
