@@ -164,7 +164,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+    className={`supervision-tab-button flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
       active 
         ? 'bg-white text-indigo-600 shadow-lg shadow-indigo-100 border border-indigo-50' 
         : 'text-slate-400 hover:text-slate-600'
@@ -232,8 +232,8 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
       </div>
       
       {/* Additional Overview Content (Moment breakdown) */}
-      <div className="bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
-        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center justify-between">
+      <div className="vst-detail-stats bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
+        <h3 className="vst-detail-title text-sm font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <FileText className="text-indigo-500" size={20} />
                 Thống kê chi tiết theo 5 thời điểm
@@ -261,18 +261,18 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
                 const techRate = compCount > 0 ? (techCount / compCount) * 100 : 0;
                 
                 return (
-                    <div key={idx} className="group">
-                        <div className="flex justify-between items-center mb-3">
-                            <div className="flex items-center gap-3">
+                    <div key={idx} className="vst-moment-stat group">
+                        <div className="vst-moment-stat-header flex justify-between items-center mb-3">
+                            <div className="vst-moment-stat-content flex items-center gap-3">
                                 <span className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-100">{momentId}</span>
                                 <span className="text-xs font-bold text-slate-700 uppercase tracking-tight">{moment}</span>
                             </div>
-                            <div className="flex gap-4">
-                                <div className="text-right">
+                            <div className="vst-moment-stat-metrics flex gap-4">
+                                <div className="vst-moment-stat-metric text-right">
                                     <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Tuân thủ</p>
                                     <p className="text-xs font-black text-indigo-600 tracking-tight">{compRate.toFixed(1)}%</p>
                                 </div>
-                                <div className="text-right">
+                                <div className="vst-moment-stat-metric text-right">
                                     <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Kỹ thuật</p>
                                     <p className="text-xs font-black text-emerald-600 tracking-tight">{techRate.toFixed(1)}%</p>
                                 </div>

@@ -187,9 +187,9 @@ export const ImprovementModule: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="improvement-module space-y-6">
       {/* Top Navigation Tabs */}
-      <div className="flex gap-4 p-1 bg-slate-100 rounded-2xl w-fit">
+      <div className="improvement-tab-list flex gap-4 p-1 bg-slate-100 rounded-2xl w-fit">
         {canView('IMPROVEMENT', 'PLAN') && (
           <button
             onClick={() => setActiveMainTab('PLAN')}
@@ -924,8 +924,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
     <div className="space-y-8" style={{ fontFamily: 'Tahoma, sans-serif' }}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">Kế hoạch Cải tiến Chất lượng (KHCTCL)</h2>
-          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Quản lý và theo dõi các đề án cải tiến chất lượng bệnh viện</p>
+          <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">Kế hoạch Cải tiến Chất lượng</h2>
         </div>
 
         <button

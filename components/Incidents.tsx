@@ -202,7 +202,7 @@ export const Incidents: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="incidents-module min-h-screen bg-slate-50 flex flex-col">
       {/* Top Navigation - Horizontal Tabs */}
       <div className="bg-white px-3 py-3 sm:px-4">
         <div className="incident-tab-list">

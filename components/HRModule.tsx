@@ -643,7 +643,7 @@ export const HRModule: React.FC = () => {
                     onChange={() => toggleSelect(item.id)}
                     className="mt-1 w-4 h-4 text-primary-600 rounded"
                   />
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0 overflow-hidden">
+                  <div className="hidden w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0 overflow-hidden">
                     {getAvatarForStaff(item) ? (
                       <img
                         src={getAvatarForStaff(item)!}
@@ -664,7 +664,7 @@ export const HRModule: React.FC = () => {
                         )}
                       </div>
                       {/* Vai trò ở góc phải */}
-                      <div className="flex flex-wrap gap-1 justify-end">
+                      <div className="hidden flex-wrap gap-1 justify-end">
                         {item.vai_tro_qlcl?.map(role => getRoleBadge(role))}
                       </div>
                     </div>

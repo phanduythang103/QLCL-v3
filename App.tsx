@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut, Activity, Home } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, Settings, X, LogOut, Activity, Home, ArrowLeft } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';
@@ -45,7 +45,7 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
 
   const handleSubNavClick = (cat: SupervisionCategory) => {
     onSelectModule();
-    setCategory(cat);
+    setCategory(null);
   }
 
   const { canView } = usePermissions();
@@ -94,7 +94,8 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
                   onClick={() => {
                     if (isProf) {
                       setProfExpanded(!profExpanded);
-                      handleSubNavClick(item.cat);
+                      onSelectModule();
+                      setCategory(null);
                     } else {
                       handleSubNavClick(item.cat);
                     }
@@ -135,7 +136,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
     if (!active) {
       onSelectModule();
       setIsExpanded(true);
-      setCategory('OVERVIEW');
+      setCategory(null);
     } else {
       setIsExpanded(!isExpanded);
     }
@@ -143,7 +144,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
 
   const handleSubNavClick = (cat: IndicatorCategory) => {
     onSelectModule();
-    setCategory(cat);
+    setCategory(null);
   }
 
   const { canView } = usePermissions();
@@ -288,7 +289,48 @@ const AppContent: React.FC = () => {
   const [loadingNotifications, setLoadingNotifications] = useState(true);
   const { user } = useAuth();
   const { canView } = usePermissions();
+  const { category: supervisionCategory, setCategory: setSupervisionCategory } = useSupervision();
+  const { category: indicatorCategory, setCategory: setIndicatorCategory } = useIndicators();
   const [mobileSearch, setMobileSearch] = useState('');
+
+  useEffect(() => {
+    const annotateMobileTables = () => {
+      const root = document.querySelector('.mobile-module-content');
+      if (!root) return;
+
+      root.querySelectorAll('table').forEach((table) => {
+        const headers = Array.from(table.querySelectorAll('thead th')).map((header) =>
+          (header.textContent || '').replace(/\s+/g, ' ').trim()
+        );
+
+        table.querySelectorAll('tbody tr').forEach((row) => {
+          Array.from(row.children).forEach((cell, index) => {
+            if (!(cell instanceof HTMLTableCellElement) || cell.tagName !== 'TD') return;
+            const label = headers[index] || cell.getAttribute('data-label') || '';
+
+            if (label) {
+              cell.setAttribute('data-label', label);
+            } else {
+              cell.removeAttribute('data-label');
+            }
+          });
+        });
+      });
+    };
+
+    const frameId = window.requestAnimationFrame(annotateMobileTables);
+    const root = document.querySelector('.mobile-module-content');
+    const observer = root
+      ? new MutationObserver(() => window.requestAnimationFrame(annotateMobileTables))
+      : null;
+
+    observer?.observe(root, { childList: true, subtree: true });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      observer?.disconnect();
+    };
+  }, [currentModule, activeSettingsTab]);
 
   // Permission State
   const [canAccessSettings, setCanAccessSettings] = useState(false);
@@ -595,7 +637,22 @@ const AppContent: React.FC = () => {
           </div>
 
           <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/95 px-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden">
-            <div className="mx-auto flex max-w-md justify-center">
+            <div className="mx-auto flex max-w-md justify-center gap-3">
+              {((currentModule === ModuleType.SUPERVISION && supervisionCategory) || (currentModule === ModuleType.INDICATORS && indicatorCategory)) && (
+                <button
+                  onClick={() => {
+                    if (currentModule === ModuleType.SUPERVISION) {
+                      setSupervisionCategory(null);
+                    } else if (currentModule === ModuleType.INDICATORS) {
+                      setIndicatorCategory(null);
+                    }
+                  }}
+                  className="flex min-w-24 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:text-primary-600"
+                >
+                  <ArrowLeft size={22} />
+                  <span>Quay lại</span>
+                </button>
+              )}
               <button
                 onClick={() => handleModuleChange(ModuleType.DASHBOARD)}
                 className={`flex min-w-24 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors ${currentModule === ModuleType.DASHBOARD ? 'text-blue-600' : 'text-slate-500'}`}

@@ -65,18 +65,6 @@ export const IndicatorsModule: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header & Back Button */}
-      {category && (
-        <div className="md:hidden animate-in slide-in-from-left-4 duration-500 mb-2">
-          <button
-            onClick={() => setCategory(null)}
-            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm"
-          >
-            <BarChart2 size={14} className="rotate-180" /> Quay lại Tổng quan Chỉ số
-          </button>
-        </div>
-      )}
-
       <div className="flex justify-between items-center">
         <div>
           {category && category !== 'OVERVIEW' && category !== 'SURGERY_II' && category !== 'KTCM' && category !== 'SSI' && category !== 'VAP' && category !== 'SEVERE_INCIDENT' && category !== 'AVG_EXAM_TIME' && category !== 'AVG_STAY_TIME' && category !== 'BED_USAGE' && category !== 'OR_USAGE' && category !== 'NURSE_PATIENT_RATIO' && category !== 'HAND_HYGIENE' && category !== 'INDICATOR_CONFIG' && category !== 'SEVERE_NON_MEDICAL' && (

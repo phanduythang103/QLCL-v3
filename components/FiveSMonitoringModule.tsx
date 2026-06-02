@@ -70,7 +70,7 @@ const defaultForm = (): any => {
 
 // ─── SUBCOMPONENTS ────────────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all ${active ? 'bg-white text-orange-600 shadow-lg border border-orange-50' : 'text-slate-400 hover:text-slate-600'}`}>
+  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all ${active ? 'bg-white text-orange-600 shadow-lg border border-orange-50' : 'text-slate-400 hover:text-slate-600'}`}>
     <Icon size={15} />{label}
   </button>
 );

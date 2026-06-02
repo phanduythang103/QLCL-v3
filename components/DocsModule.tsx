@@ -38,7 +38,7 @@ export const DocsModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MainTab>('LIBRARY');
 
   return (
-    <div className="space-y-6">
+    <div className="docs-module space-y-6">
       {/* Module Navigation */}
       <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
         <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1">
@@ -1368,4 +1368,3 @@ const SharingDetailModal = ({ article, onClose }: any) => {
     </div>
   );
 };
-

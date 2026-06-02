@@ -339,7 +339,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active
+    className={`supervision-tab-button flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active
       ? 'bg-white text-[#009900] shadow-lg shadow-green-100 border border-green-50'
       : 'text-slate-400 hover:text-slate-600'
       }`}
