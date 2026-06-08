@@ -115,10 +115,10 @@ export const AssessmentModule: React.FC = () => {
             <div className="function-icon-grid">
               {navItems.filter(i => i.show).map((item, index) => {
                 const palette = [
-                  { bg: 'bg-emerald-150', icon: 'text-emerald-500' },
-                  { bg: 'bg-blue-150', icon: 'text-blue-500' },
-                  { bg: 'bg-amber-150', icon: 'text-amber-500' },
-                  { bg: 'bg-pink-150', icon: 'text-pink-500' },
+                  { bg: 'bg-emerald-300', icon: 'text-emerald-500' },
+                  { bg: 'bg-blue-300', icon: 'text-blue-500' },
+                  { bg: 'bg-amber-300', icon: 'text-amber-500' },
+                  { bg: 'bg-pink-300', icon: 'text-pink-500' },
                 ][index % 4];
 
                 return (

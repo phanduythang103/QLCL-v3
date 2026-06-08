@@ -36,14 +36,14 @@ CREATE INDEX IF NOT EXISTS idx_83tc_to_date ON public.kq_danh_gia_83tc_to(ngay_d
 ALTER TABLE public.kq_danh_gia_83tc_to ENABLE ROW LEVEL SECURITY;
 
 -- Policies
-CREATE POLICY "Enable read access for authenticated users" ON public.kq_danh_gia_83tc_to
-    FOR SELECT TO authenticated USING (true);
+-- The application uses its own users table/localStorage auth, not Supabase Auth.
+-- Keep this table aligned with the other 83TC result table so anon API requests
+-- made with the public anon key can read/write through RLS.
+DROP POLICY IF EXISTS "Enable read access for authenticated users" ON public.kq_danh_gia_83tc_to;
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.kq_danh_gia_83tc_to;
+DROP POLICY IF EXISTS "Enable update for owners" ON public.kq_danh_gia_83tc_to;
+DROP POLICY IF EXISTS "Enable delete for owners" ON public.kq_danh_gia_83tc_to;
+DROP POLICY IF EXISTS "Allow all actions for app users" ON public.kq_danh_gia_83tc_to;
 
-CREATE POLICY "Enable insert for authenticated users" ON public.kq_danh_gia_83tc_to
-    FOR INSERT TO authenticated WITH CHECK (true);
-
-CREATE POLICY "Enable update for owners" ON public.kq_danh_gia_83tc_to
-    FOR UPDATE TO authenticated USING (auth.uid() = nguoi_tao_id);
-
-CREATE POLICY "Enable delete for owners" ON public.kq_danh_gia_83tc_to
-    FOR DELETE TO authenticated USING (auth.uid() = nguoi_tao_id);
+CREATE POLICY "Allow all actions for app users" ON public.kq_danh_gia_83tc_to
+    FOR ALL USING (true) WITH CHECK (true);

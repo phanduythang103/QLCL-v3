@@ -201,16 +201,16 @@ export const Supervision: React.FC = () => {
             </div>
             <div className="function-icon-grid function-icon-grid-desktop-2 p-4 lg:gap-4 lg:p-8">
               {[
-                { id: 'HAND_HYGIENE', label: 'Vệ sinh tay', icon: HandMetal, desc: 'Giám sát tuân thủ 5 thời điểm vệ sinh tay', bgClass: 'bg-teal-150', iconClass: 'text-teal-500' },
-                { id: 'SURGERY', label: 'An toàn phẫu thuật', icon: ShieldCheck, desc: 'Checklist an toàn phẫu thuật WHO', bgClass: 'bg-orange-150', iconClass: 'text-orange-500' },
-                { id: 'DRUGS', label: 'Công khai thuốc', icon: Pill, desc: 'Giám sát thực hành công khai thuốc tại khoa', bgClass: 'bg-blue-150', iconClass: 'text-blue-500' },
-                { id: '5S', label: 'Quản lý 5S', icon: LayoutList, desc: 'Đánh giá duy trì 5S tại các khoa phòng', bgClass: 'bg-green-150', iconClass: 'text-green-500' },
-                { id: 'NDNB', label: 'Nhận diện NB', icon: Users, desc: 'Giám sát nhận diện người bệnh tại các điểm', bgClass: 'bg-purple-150', iconClass: 'text-purple-500' },
-                { id: 'RECORDS', label: 'Hồ sơ bệnh án', icon: FileText, desc: 'Kiểm tra tính hoàn thiện của HSBA nội trú', bgClass: 'bg-indigo-150', iconClass: 'text-indigo-500' },
-                { id: 'PROF_DUTY', label: 'Trực chuyên môn', icon: Stethoscope, desc: 'Giám sát chế độ trực và thường trực', bgClass: 'bg-rose-150', iconClass: 'text-rose-500' },
-                { id: 'PROF_EMERGENCY', label: 'Cấp cứu', icon: Activity, desc: 'Giám sát chế độ cấp cứu và xe tiêm cấp cứu', bgClass: 'bg-cyan-150', iconClass: 'text-cyan-500' },
-                { id: 'PROF_ADMISSION', label: 'Ra,vào viện/CK, CV', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', bgClass: 'bg-indigo-150', iconClass: 'text-indigo-500' },
-                { id: 'GENERAL', label: 'Giám sát chung', icon: ClipboardCheck, desc: 'Giám sát các nội dung chuyên môn khác', bgClass: 'bg-emerald-150', iconClass: 'text-emerald-500' },
+                { id: 'HAND_HYGIENE', label: 'Vệ sinh tay', icon: HandMetal, desc: 'Giám sát tuân thủ 5 thời điểm vệ sinh tay', bgClass: 'bg-teal-300', iconClass: 'text-teal-500' },
+                { id: 'SURGERY', label: 'An toàn phẫu thuật', icon: ShieldCheck, desc: 'Checklist an toàn phẫu thuật WHO', bgClass: 'bg-orange-300', iconClass: 'text-orange-500' },
+                { id: 'DRUGS', label: 'Công khai thuốc', icon: Pill, desc: 'Giám sát thực hành công khai thuốc tại khoa', bgClass: 'bg-blue-300', iconClass: 'text-blue-500' },
+                { id: '5S', label: 'Quản lý 5S', icon: LayoutList, desc: 'Đánh giá duy trì 5S tại các khoa phòng', bgClass: 'bg-green-300', iconClass: 'text-green-500' },
+                { id: 'NDNB', label: 'Nhận diện NB', icon: Users, desc: 'Giám sát nhận diện người bệnh tại các điểm', bgClass: 'bg-purple-300', iconClass: 'text-purple-500' },
+                { id: 'RECORDS', label: 'Hồ sơ bệnh án', icon: FileText, desc: 'Kiểm tra tính hoàn thiện của HSBA nội trú', bgClass: 'bg-indigo-300', iconClass: 'text-indigo-500' },
+                { id: 'PROF_DUTY', label: 'Trực chuyên môn', icon: Stethoscope, desc: 'Giám sát chế độ trực và thường trực', bgClass: 'bg-rose-300', iconClass: 'text-rose-500' },
+                { id: 'PROF_EMERGENCY', label: 'Cấp cứu', icon: Activity, desc: 'Giám sát chế độ cấp cứu và xe tiêm cấp cứu', bgClass: 'bg-cyan-300', iconClass: 'text-cyan-500' },
+                { id: 'PROF_ADMISSION', label: 'Ra,vào viện/CK, CV', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', bgClass: 'bg-indigo-300', iconClass: 'text-indigo-500' },
+                { id: 'GENERAL', label: 'Giám sát chung', icon: ClipboardCheck, desc: 'Giám sát các nội dung chuyên môn khác', bgClass: 'bg-emerald-300', iconClass: 'text-emerald-500' },
               ].map((item) => (
                 <button
                   key={item.id}

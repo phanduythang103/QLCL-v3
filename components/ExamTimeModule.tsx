@@ -42,12 +42,12 @@ const TAN_SUAT_COLORS: Record<string, string> = {
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-      active ? 'bg-[#009900] text-white shadow-lg shadow-green-900/20 scale-105' : 'text-slate-500 hover:bg-slate-100'
+    className={`indicator-subtab-button ${
+      active ? 'indicator-subtab-button-active' : ''
     }`}
   >
     <Icon size={16} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span>{label}</span>
   </button>
 );
 
@@ -226,20 +226,20 @@ export const ExamTimeModule: React.FC = () => {
   const renderOverview = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="indicator-quick-stats grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Tổng phiếu GS', value: filteredRecords.length, unit: 'phiếu', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Thời gian trung bình', value: avgTime, unit: 'phút', icon: Clock, color: 'text-[#009900]', bg: 'bg-green-50' },
           { label: 'Thời gian tối đa', value: maxTime, unit: 'phút', icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
           { label: 'Thời gian tối thiểu', value: minTime, unit: 'phút', icon: Target, color: 'text-purple-600', bg: 'bg-purple-50' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex gap-4 items-center">
-            <div className={`w-11 h-11 ${bg} rounded-xl flex items-center justify-center ${color} shrink-0`}>
+          <div key={label} className="indicator-quick-stat-card bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex gap-4 items-center">
+            <div className={`indicator-quick-stat-icon w-11 h-11 ${bg} rounded-xl flex items-center justify-center ${color} shrink-0`}>
               <Icon size={22} />
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{label}</p>
-              <p className="text-2xl font-black text-slate-800">{value} <span className="text-xs font-bold text-slate-400">{unit}</span></p>
+            <div className="indicator-quick-stat-body">
+              <p className="indicator-quick-stat-label text-[10px] font-black uppercase text-slate-400 tracking-widest">{label}</p>
+              <p className="indicator-quick-stat-value text-2xl font-black text-slate-800">{value} <span className="indicator-quick-stat-unit text-xs font-bold text-slate-400">{unit}</span></p>
             </div>
           </div>
         ))}
@@ -524,7 +524,7 @@ export const ExamTimeModule: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex bg-slate-50 p-1 rounded-xl self-start">
+          <div className="indicator-subtab-list">
             <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
             <TabButton active={activeTab === 'GIAM_SAT'} onClick={() => setActiveTab('GIAM_SAT')} icon={ShieldCheck} label="Giám sát" />
             <TabButton active={activeTab === 'PHAN_TICH'} onClick={() => setActiveTab('PHAN_TICH')} icon={TrendingUp} label="Phân tích" />

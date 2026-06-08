@@ -14,12 +14,12 @@ import { fetchIndicatorConfigs } from '../readCauHinhCscl';
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-      active ? 'bg-[#009900] text-white shadow-lg shadow-green-900/20 scale-105' : 'text-slate-500 hover:bg-slate-100'
+    className={`indicator-subtab-button ${
+      active ? 'indicator-subtab-button-active' : ''
     }`}
   >
     <Icon size={16} />
-    <span className="font-bold uppercase text-table tracking-wider">{label}</span>
+    <span>{label}</span>
   </button>
 );
 
@@ -281,19 +281,19 @@ export const LengthOfStayModule: React.FC = () => {
 
   const renderOverview = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: 'Ngày điều trị trung bình', value: avgStay, unit: 'ngày', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Tổng lượt ra viện', value: totalDischarges, unit: 'lượt', icon: User, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'Số đơn vị báo cáo', value: new Set(records.map(r => r.don_vi)).size, unit: 'đơn vị', icon: Building2, color: 'text-purple-600', bg: 'bg-purple-50' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className={`w-14 h-14 ${bg} ${color} rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
+          <div key={label} className="indicator-quick-stat-card bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className={`indicator-quick-stat-icon w-14 h-14 ${bg} ${color} rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
               <Icon size={28} />
             </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
-              <p className="text-lg font-bold text-slate-800 tracking-tight">{value} <span className="text-sm font-normal text-slate-400">{unit}</span></p>
+            <div className="indicator-quick-stat-body">
+              <p className="indicator-quick-stat-label text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+              <p className="indicator-quick-stat-value text-lg font-bold text-slate-800 tracking-tight">{value} <span className="indicator-quick-stat-unit text-sm font-normal text-slate-400">{unit}</span></p>
             </div>
           </div>
         ))}
@@ -583,7 +583,7 @@ export const LengthOfStayModule: React.FC = () => {
         </div>
 
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-          <div className="flex bg-slate-100/50 p-1.5 gap-1 rounded-[28px] border border-slate-200/50 shrink-0 self-start">
+          <div className="indicator-subtab-list">
             <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={LayoutDashboard} label="Tổng quan" />
             <TabButton active={activeTab === 'DANH_SACH'} onClick={() => setActiveTab('DANH_SACH')} icon={List} label="Danh sách" />
             <TabButton active={activeTab === 'PHAN_TICH'} onClick={() => setActiveTab('PHAN_TICH')} icon={Activity} label="Phân tích" />

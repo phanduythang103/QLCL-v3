@@ -544,19 +544,19 @@ const IndicatorOverviewModule: React.FC = () => {
   }));
 
   const indicatorMenuItems: { id: IndicatorCategory; name: string; icon: React.ReactNode; iconClass: string; bgClass: string }[] = [
-    { id: 'KTCM', name: 'KTCM', icon: <Microscope />, iconClass: 'text-teal-500', bgClass: 'bg-teal-150' },
-    { id: 'SURGERY_II', name: 'PT LOẠI II', icon: <Syringe />, iconClass: 'text-rose-500', bgClass: 'bg-rose-150' },
-    { id: 'SSI', name: 'NKVM', icon: <Shield />, iconClass: 'text-cyan-500', bgClass: 'bg-cyan-150' },
-    { id: 'VAP', name: 'VP-NKBV', icon: <HeartPulse />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-150' },
-    { id: 'SEVERE_INCIDENT', name: 'SCYK', icon: <AlertCircle />, iconClass: 'text-red-500', bgClass: 'bg-red-150' },
-    { id: 'SEVERE_NON_MEDICAL', name: 'SC-NGOÀI', icon: <Shield />, iconClass: 'text-amber-500', bgClass: 'bg-amber-150' },
-    { id: 'AVG_EXAM_TIME', name: 'TG KHÁM', icon: <Clock />, iconClass: 'text-blue-500', bgClass: 'bg-blue-150' },
-    { id: 'AVG_STAY_TIME', name: 'TG NẰM VIỆN', icon: <Calendar />, iconClass: 'text-orange-500', bgClass: 'bg-orange-150' },
-    { id: 'BED_USAGE', name: 'CS GIƯỜNG', icon: <BedDouble />, iconClass: 'text-green-500', bgClass: 'bg-green-150' },
-    { id: 'OR_USAGE', name: 'SD PHÒNG MỔ', icon: <Activity />, iconClass: 'text-violet-500', bgClass: 'bg-violet-150' },
-    { id: 'NURSE_PATIENT_RATIO', name: 'ĐD/NB', icon: <Users />, iconClass: 'text-sky-500', bgClass: 'bg-sky-150' },
-    { id: 'HAND_HYGIENE', name: 'VỆ SINH TAY', icon: <Hand />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-150' },
-    { id: 'INDICATOR_CONFIG', name: 'CẤU HÌNH', icon: <ClipboardList />, iconClass: 'text-slate-500', bgClass: 'bg-slate-150' },
+    { id: 'KTCM', name: 'KTCM', icon: <Microscope />, iconClass: 'text-teal-500', bgClass: 'bg-teal-300' },
+    { id: 'SURGERY_II', name: 'PT LOẠI II', icon: <Syringe />, iconClass: 'text-rose-500', bgClass: 'bg-rose-300' },
+    { id: 'SSI', name: 'NKVM', icon: <Shield />, iconClass: 'text-cyan-500', bgClass: 'bg-cyan-300' },
+    { id: 'VAP', name: 'VP-NKBV', icon: <HeartPulse />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-300' },
+    { id: 'SEVERE_INCIDENT', name: 'SCYK', icon: <AlertCircle />, iconClass: 'text-red-500', bgClass: 'bg-red-300' },
+    { id: 'SEVERE_NON_MEDICAL', name: 'SC-NGOÀI', icon: <Shield />, iconClass: 'text-amber-500', bgClass: 'bg-amber-300' },
+    { id: 'AVG_EXAM_TIME', name: 'TG KHÁM', icon: <Clock />, iconClass: 'text-blue-500', bgClass: 'bg-blue-300' },
+    { id: 'AVG_STAY_TIME', name: 'TG NẰM VIỆN', icon: <Calendar />, iconClass: 'text-orange-500', bgClass: 'bg-orange-300' },
+    { id: 'BED_USAGE', name: 'CS GIƯỜNG', icon: <BedDouble />, iconClass: 'text-green-500', bgClass: 'bg-green-300' },
+    { id: 'OR_USAGE', name: 'SD PHÒNG MỔ', icon: <Activity />, iconClass: 'text-violet-500', bgClass: 'bg-violet-300' },
+    { id: 'NURSE_PATIENT_RATIO', name: 'ĐD/NB', icon: <Users />, iconClass: 'text-sky-500', bgClass: 'bg-sky-300' },
+    { id: 'HAND_HYGIENE', name: 'VỆ SINH TAY', icon: <Hand />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-300' },
+    { id: 'INDICATOR_CONFIG', name: 'CẤU HÌNH', icon: <ClipboardList />, iconClass: 'text-slate-500', bgClass: 'bg-slate-300' },
   ];
 
   return (
@@ -597,7 +597,7 @@ const IndicatorOverviewModule: React.FC = () => {
       </div>
 
       {/* ── Filter Bar ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+      <div className="indicator-overview-filter-bar bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
         {/* Row 1: Search + Time preset + Unit */}
         <div className="flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[180px]">
@@ -611,7 +611,7 @@ const IndicatorOverviewModule: React.FC = () => {
           </div>
 
           {/* Time preset buttons */}
-          <div className="flex items-center gap-1.5 bg-slate-50 rounded-xl p-1">
+          <div className="indicator-overview-quick-filter flex items-center gap-1.5 bg-slate-50 rounded-xl p-1">
             {([
               { val: 'week', label: 'Tuần này' },
               { val: 'month', label: 'Tháng này' },
@@ -622,7 +622,7 @@ const IndicatorOverviewModule: React.FC = () => {
               <button
                 key={val}
                 onClick={() => setTimePeriod(val)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${timePeriod === val
+                className={`indicator-overview-quick-filter-button px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${timePeriod === val
                   ? 'bg-[#009900] text-white shadow-sm'
                   : 'text-slate-500 hover:bg-white hover:shadow-sm'
                   }`}

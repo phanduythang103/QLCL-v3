@@ -87,7 +87,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex bg-slate-100/50 p-1.5 gap-1 rounded-[28px] border border-slate-200/50 shrink-0">
+          <div className="indicator-subtab-list indicator-subtab-list-2">
             <TabButton 
               active={activeTab === 'OVERVIEW'} 
               onClick={() => setActiveTab('OVERVIEW')} 
@@ -164,14 +164,12 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`supervision-tab-button flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-      active 
-        ? 'bg-white text-indigo-600 shadow-lg shadow-indigo-100 border border-indigo-50' 
-        : 'text-slate-400 hover:text-slate-600'
+    className={`indicator-subtab-button ${
+      active ? 'indicator-subtab-button-active' : ''
     }`}
   >
-    <Icon size={16} />
-    {label}
+    <Icon size={18} />
+    <span>{label}</span>
   </button>
 );
 
@@ -201,32 +199,32 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
-        <div className="bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+      <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
+        <div className="indicator-quick-stat-card bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
+          <div className="indicator-quick-stat-icon w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
             <Users size={20} />
           </div>
-          <div>
+          <div className="indicator-quick-stat-body">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tổng lượt giám sát</p>
-            <h3 className="text-sm font-black text-slate-800 tracking-tight">{stats.totalMonitors}</h3>
+            <h3 className="indicator-quick-stat-value text-sm font-black text-slate-800 tracking-tight">{stats.totalMonitors}</h3>
           </div>
         </div>
-        <div className="bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
+          <div className="indicator-quick-stat-icon w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
             <CheckCircle2 size={20} />
           </div>
-          <div>
+          <div className="indicator-quick-stat-body">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tỷ lệ tuân thủ</p>
-            <h3 className="text-sm font-black text-emerald-600 tracking-tight">{stats.complianceRate.toFixed(1)}%</h3>
+            <h3 className="indicator-quick-stat-value text-sm font-black text-emerald-600 tracking-tight">{stats.complianceRate.toFixed(1)}%</h3>
           </div>
         </div>
-        <div className="bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
+          <div className="indicator-quick-stat-icon w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
             <Camera size={20} />
           </div>
-          <div>
+          <div className="indicator-quick-stat-body">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Đúng kỹ thuật</p>
-            <h3 className="text-sm font-black text-blue-600 tracking-tight">{stats.techniqueRate.toFixed(1)}%</h3>
+            <h3 className="indicator-quick-stat-value text-sm font-black text-blue-600 tracking-tight">{stats.techniqueRate.toFixed(1)}%</h3>
           </div>
         </div>
       </div>

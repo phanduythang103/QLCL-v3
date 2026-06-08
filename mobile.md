@@ -6,3 +6,4 @@ các bảng chuyển thành card
 Chỉ khi bấm một sub-menu trong màn chính thì mới vào chức năng của sub-menu đó.
 Các thẻ thống kê nhanh để 2 thẻ trên 1 hàng
 các rule chỉ trong mobile để header không bị chật, filter xếp dọc, stat 2 cột và modal form dễ dùng hơn.
+class nền icon từ *-300  và cập nhật màu tương ứng trong CSS

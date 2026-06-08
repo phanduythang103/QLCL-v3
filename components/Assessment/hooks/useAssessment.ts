@@ -225,13 +225,7 @@ export const useAssessment = () => {
     try {
       let data;
       if (activeTab === 'TEAM_ASSESSMENT') {
-        // If viewing a team assessment, aggregate results for this team + unit + day
-        // Following the "lowest score wins" rule
-        data = await teamAssessment83Service.aggregateResultsByTeam(
-          sheet.nhom || "",
-          sheet.don_vi_duoc_danh_gia,
-          sheet.ngay_danh_gia
-        );
+        data = await teamAssessment83Service.fetchResultsByPhieuId(sheet.phieu_id);
       } else {
         data = await assessmentService.fetchResultsByPhieuId(sheet.phieu_id);
       }

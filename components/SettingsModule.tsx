@@ -36,18 +36,18 @@ export const SettingsModule: React.FC = () => {
   const isRestricted = !user?.role?.toLowerCase().includes('admin') && !user?.role?.toLowerCase().includes('quản trị');
 
   const menuItems = [
-    { id: 'USER', label: 'Người dùng', icon: <Users size={18} />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-150' },
-    { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} />, iconClass: 'text-orange-500', bgClass: 'bg-orange-150' },
-    { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-150' },
-    { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} />, iconClass: 'text-sky-500', bgClass: 'bg-sky-150' },
-    { id: 'POSITION', label: 'Chức vụ', icon: <Briefcase size={18} />, iconClass: 'text-purple-500', bgClass: 'bg-purple-150' },
-    { id: 'RANK', label: 'Cấp bậc', icon: <Award size={18} />, iconClass: 'text-amber-500', bgClass: 'bg-amber-150' },
-    { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} />, iconClass: 'text-red-500', bgClass: 'bg-red-150' },
-    { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} />, iconClass: 'text-blue-500', bgClass: 'bg-blue-150' },
-    { id: 'CRITERIA83', label: 'Cấu hình 83 TC', icon: <CheckCircle2 size={18} />, iconClass: 'text-teal-500', bgClass: 'bg-teal-150' },
-    { id: 'TEAM_CONFIG', label: 'Danh sách tổ chấm điểm', icon: <Users2 size={18} />, iconClass: 'text-violet-500', bgClass: 'bg-violet-150' },
-    { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public', icon: <QrCode size={18} />, iconClass: 'text-pink-500', bgClass: 'bg-pink-150' },
-    { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} />, iconClass: 'text-slate-500', bgClass: 'bg-slate-150' },
+    { id: 'USER', label: 'Người dùng', icon: <Users size={18} />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-300' },
+    { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} />, iconClass: 'text-orange-500', bgClass: 'bg-orange-300' },
+    { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-300' },
+    { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} />, iconClass: 'text-sky-500', bgClass: 'bg-sky-300' },
+    { id: 'POSITION', label: 'Chức vụ', icon: <Briefcase size={18} />, iconClass: 'text-purple-500', bgClass: 'bg-purple-300' },
+    { id: 'RANK', label: 'Cấp bậc', icon: <Award size={18} />, iconClass: 'text-amber-500', bgClass: 'bg-amber-300' },
+    { id: 'AUTHORITY', label: 'Cơ quan BH', icon: <FileBadge size={18} />, iconClass: 'text-red-500', bgClass: 'bg-red-300' },
+    { id: 'SCHEDULE', label: 'Lịch giám sát', icon: <CalendarClock size={18} />, iconClass: 'text-blue-500', bgClass: 'bg-blue-300' },
+    { id: 'CRITERIA83', label: 'Cấu hình 83 TC', icon: <CheckCircle2 size={18} />, iconClass: 'text-teal-500', bgClass: 'bg-teal-300' },
+    { id: 'TEAM_CONFIG', label: 'Danh sách tổ chấm điểm', icon: <Users2 size={18} />, iconClass: 'text-violet-500', bgClass: 'bg-violet-300' },
+    { id: 'SURVEY_PUBLIC', label: 'Khảo sát Public', icon: <QrCode size={18} />, iconClass: 'text-pink-500', bgClass: 'bg-pink-300' },
+    { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} />, iconClass: 'text-slate-500', bgClass: 'bg-slate-300' },
   ];
 
   /* ... renderContent function ... */

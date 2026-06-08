@@ -240,31 +240,31 @@ export const VAPModule: React.FC = () => {
 
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
+        <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="indicator-quick-stat-card bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tỷ lệ Viêm phổi máy thở</h4>
             <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-blue-600">{vapRate}</span>
-              <span className="text-table font-normal text-slate-400 mb-1">/1000 ngày máy thở</span>
+              <span className="indicator-quick-stat-value text-lg font-bold text-blue-600">{vapRate}</span>
+              <span className="indicator-quick-stat-unit text-table font-normal text-slate-400 mb-1">/1000 ngày máy thở</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
               <TrendingUp size={14} className="rotate-180" /> Thống kê từ {casesInMonth} ca bệnh
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-green-100 shadow-sm">
+          <div className="indicator-quick-stat-card bg-white p-6 rounded-xl border border-green-100 shadow-sm">
             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tỷ lệ tuân thủ Giám sát</h4>
             <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-green-600">{totalCompliance}%</span>
+              <span className="indicator-quick-stat-value text-lg font-bold text-green-600">{totalCompliance}%</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
               <TrendingUp size={14} /> Trung bình {records.length} lượt giám sát
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
+          <div className="indicator-quick-stat-card bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Ca mắc mới (VPBV)</h4>
             <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-amber-600">{casesInMonth < 10 ? `0${casesInMonth}` : casesInMonth}</span>
-              <span className="text-table font-normal text-slate-400 mb-1">Ca ghi nhận</span>
+              <span className="indicator-quick-stat-value text-lg font-bold text-amber-600">{casesInMonth < 10 ? `0${casesInMonth}` : casesInMonth}</span>
+              <span className="indicator-quick-stat-unit text-table font-normal text-slate-400 mb-1">Ca ghi nhận</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 font-bold">
               <AlertCircle size={14} /> Tổng {totalVentDays} ngày máy thở cộng dồn
@@ -544,7 +544,7 @@ export const VAPModule: React.FC = () => {
         </div>
 
         {/* Tabs Layout */}
-        <div className="flex border-b border-slate-200">
+        <div className="indicator-subtab-list">
           {[
             { id: 'OVERVIEW', label: 'Tổng quan', icon: <BarChart2 size={16} /> },
             { id: 'SUPERVISION', label: 'Giám sát dự phòng VAP', icon: <CheckSquare size={16} /> },
@@ -553,14 +553,14 @@ export const VAPModule: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as VAPTab)}
-              className={`flex items-center gap-2 px-6 py-3 text-table font-bold uppercase transition-all relative outline-none ${
+              className={`indicator-subtab-button ${
                 activeTab === tab.id 
-                  ? 'text-[#009900] border-b-2 border-[#009900]' 
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  ? 'indicator-subtab-button-active' 
+                  : ''
               }`}
             >
               {tab.icon}
-              {tab.label}
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>

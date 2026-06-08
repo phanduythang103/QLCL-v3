@@ -347,22 +347,22 @@ export const NKVMModule: React.FC = () => {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
+        <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="indicator-quick-stat-card bg-white p-6 rounded-xl border border-blue-100 shadow-sm">
             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tổng số lượt Giám sát</h4>
             <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-blue-600">{totalSupervisions}</span>
-              <span className="text-table font-normal text-slate-400 mb-1">ca</span>
+              <span className="indicator-quick-stat-value text-lg font-bold text-blue-600">{totalSupervisions}</span>
+              <span className="indicator-quick-stat-unit text-table font-normal text-slate-400 mb-1">ca</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-blue-600 font-bold bg-blue-50 py-1 px-3 rounded-full w-fit">
               <CheckSquare size={14} /> Tổng số báo cáo từ các Khoa
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-red-100 shadow-sm relative overflow-hidden">
+          <div className="indicator-quick-stat-card bg-white p-6 rounded-xl border border-red-100 shadow-sm relative overflow-hidden">
             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tổng số NKVM</h4>
             <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-red-600">{totalCasesInMonth}</span>
-              <span className="text-table font-normal text-slate-400 mb-1">ca nhiễm</span>
+              <span className="indicator-quick-stat-value text-lg font-bold text-red-600">{totalCasesInMonth}</span>
+              <span className="indicator-quick-stat-unit text-table font-normal text-slate-400 mb-1">ca nhiễm</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-red-600 font-bold bg-red-50 py-1 px-3 rounded-full w-fit">
               <AlertCircle size={14} /> Ghi nhận mắc mới
@@ -371,10 +371,10 @@ export const NKVMModule: React.FC = () => {
                 <AlertCircle size={64} />
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
+          <div className="indicator-quick-stat-card bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
             <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Tỷ lệ NKVM</h4>
             <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-amber-600">{ssiRate}%</span>
+              <span className="indicator-quick-stat-value text-lg font-bold text-amber-600">{ssiRate}%</span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 font-bold bg-amber-50 py-1 px-3 rounded-full w-fit">
               <TrendingUp size={14} /> Chiếm % trên tổng ca giám sát
@@ -806,7 +806,7 @@ export const NKVMModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex border-b border-slate-200">
+        <div className="indicator-subtab-list">
           {[
             { id: 'OVERVIEW', label: 'Tổng quan', icon: <BarChart2 size={16} /> },
             { id: 'SUPERVISION', label: 'Giám sát NKVM', icon: <CheckSquare size={16} /> },
@@ -815,14 +815,14 @@ export const NKVMModule: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as NKVMTab)}
-              className={`flex items-center gap-2 px-6 py-3 text-table font-bold uppercase transition-all relative outline-none ${
+              className={`indicator-subtab-button ${
                 activeTab === tab.id 
-                  ? 'text-[#009900] border-b-2 border-[#009900]' 
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  ? 'indicator-subtab-button-active' 
+                  : ''
               }`}
             >
               {tab.icon}
-              {tab.label}
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>

@@ -73,11 +73,11 @@ export const Incidents: React.FC = () => {
 
   // Filter menu items based on permissions
   const menuItems = [
-    { id: 'OVERVIEW', label: 'Tổng quan SCYK', icon: <LayoutDashboard size={20} /> },
-    { id: 'LIST', label: 'Danh sách SCYK', icon: <List size={20} /> },
-    { id: 'VERIFICATION', label: 'DS Biên bản xác minh', icon: <FileCheck size={20} /> },
-    { id: 'ANALYSIS', label: 'Phân tích RCA', icon: <BrainCircuit size={20} /> },
-    { id: 'REPORTS', label: 'Báo cáo Cục Quân y', icon: <Files size={20} /> },
+    { id: 'OVERVIEW', label: 'Tổng quan', icon: <LayoutDashboard size={28} />, bgClass: 'bg-sky-300', iconClass: 'text-sky-600' },
+    { id: 'LIST', label: 'Danh sách', icon: <List size={28} />, bgClass: 'bg-green-300', iconClass: 'text-green-600' },
+    { id: 'VERIFICATION', label: 'Xác minh', icon: <FileCheck size={28} />, bgClass: 'bg-orange-300', iconClass: 'text-orange-600' },
+    { id: 'ANALYSIS', label: 'RCA', icon: <BrainCircuit size={28} />, bgClass: 'bg-violet-300', iconClass: 'text-violet-600' },
+    { id: 'REPORTS', label: 'Báo cáo', icon: <Files size={28} />, bgClass: 'bg-slate-300', iconClass: 'text-slate-600' },
   ].filter(item => canView('INCIDENTS', item.id));
 
   const defaultMenu = (menuItems.find(item => item.id === 'LIST')?.id || menuItems[0]?.id || 'OVERVIEW') as MenuItem;
@@ -212,8 +212,10 @@ export const Incidents: React.FC = () => {
                 onClick={() => handleMenuChange(item.id as MenuItem)}
                 className={`incident-tab-button ${activeMenu === item.id ? 'incident-tab-button-active' : ''}`}
               >
-                {item.icon}
-                <span>{item.label}</span>
+                <span className={`function-icon-box ${item.bgClass}`}>
+                  {React.cloneElement(item.icon as React.ReactElement, { className: item.iconClass })}
+                </span>
+                <span className="function-icon-label">{item.label}</span>
               </button>
             ))}
         </div>
@@ -944,7 +946,7 @@ const IncidentStatistics = ({
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-slate-400"></div>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-400"></div>
           <p className="text-black/40 text-[10px] font-black uppercase tracking-widest mb-1">Tổng số sự cố</p>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-black text-black">{totalCount}</h3>
@@ -952,7 +954,7 @@ const IncidentStatistics = ({
           </div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
           <p className="text-red-600/60 text-[10px] font-black uppercase tracking-widest mb-1">Sự cố nặng (E-I)</p>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-black text-red-600">{severeCount}</h3>
@@ -960,7 +962,7 @@ const IncidentStatistics = ({
           </div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-cyan-500"></div>
           <p className="text-cyan-700/60 text-[10px] font-black uppercase tracking-widest mb-1">Đang xử lý</p>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-black text-cyan-600">
@@ -972,7 +974,7 @@ const IncidentStatistics = ({
           </div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-green-500"></div>
           <p className="text-green-700/60 text-[10px] font-black uppercase tracking-widest mb-1">Đã kết luận</p>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-black text-green-600">{analyzedCount}</h3>

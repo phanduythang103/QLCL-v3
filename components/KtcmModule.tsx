@@ -48,7 +48,7 @@ export const KtcmModule: React.FC = () => {
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       {/* Module Header & Tabs */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="flex flex-row items-center justify-between p-4 md:px-6 gap-4">
+        <div className="ktcm-header flex flex-col p-4 md:px-6 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
               <Activity size={24} />
@@ -59,19 +59,19 @@ export const KtcmModule: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex bg-slate-100/80 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
+          <div className="indicator-subtab-list indicator-subtab-list-2">
             <button
               onClick={() => setActiveTab('OVERVIEW')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
-                activeTab === 'OVERVIEW' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              className={`indicator-subtab-button ${
+                activeTab === 'OVERVIEW' ? 'indicator-subtab-button-active' : ''
               }`}
             >
               <Target size={18} /> Tổng quan
             </button>
             <button
               onClick={() => setActiveTab('LIST')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
-                activeTab === 'LIST' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              className={`indicator-subtab-button ${
+                activeTab === 'LIST' ? 'indicator-subtab-button-active' : ''
               }`}
             >
               <FileText size={18} /> Danh sách báo cáo
@@ -241,44 +241,44 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
       </div>
 
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+      <div className="indicator-quick-stats grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="indicator-quick-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
             <FileText size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng kỹ thuật</div>
-            <div className="text-lg font-bold text-slate-800">{stats.tongKyThuat}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-slate-800">{stats.tongKyThuat}</div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
             <CheckCircle2 size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Đã thực hiện</div>
-            <div className="text-lg font-bold text-emerald-600">{stats.daThucHien}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-emerald-600">{stats.daThucHien}</div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center shrink-0">
             <AlertTriangle size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chưa thực hiện</div>
-            <div className="text-lg font-bold text-rose-600">{stats.chuaThucHien}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-rose-600">{stats.chuaThucHien}</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-2xl shadow-lg relative overflow-hidden flex items-center gap-4 text-white">
-          <div className="w-12 h-12 bg-white/20 text-white rounded-full flex items-center justify-center shrink-0 backdrop-blur-sm">
+        <div className="indicator-quick-stat-card bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-2xl shadow-lg relative overflow-hidden flex items-center gap-4 text-white">
+          <div className="indicator-quick-stat-icon w-12 h-12 bg-white/20 text-white rounded-full flex items-center justify-center shrink-0 backdrop-blur-sm">
             <Target size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-indigo-100 uppercase tracking-wider mb-1">Tỷ lệ chung</div>
-            <div className="text-lg font-bold text-white">{stats.tyLeChung}%</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-white">{stats.tyLeChung}%</div>
           </div>
         </div>
       </div>

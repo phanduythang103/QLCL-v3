@@ -21,15 +21,31 @@ import {
   LabelList
 } from 'recharts';
 
-const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) => (
+const TabButton = ({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+  bgClass,
+  iconClass,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: any;
+  label: string;
+  bgClass: string;
+  iconClass: string;
+}) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-      active ? 'bg-[#009900] text-white shadow-lg shadow-[#009900]/20 scale-105' : 'text-slate-500 hover:bg-slate-100'
+    className={`function-icon-tile nurse-ratio-tab-button ${
+      active ? 'nurse-ratio-tab-button-active' : ''
     }`}
   >
-    <Icon size={16} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span className={`function-icon-box ${bgClass}`}>
+      <Icon size={28} className={iconClass} />
+    </span>
+    <span className="function-icon-label">{label}</span>
   </button>
 );
 
@@ -258,20 +274,20 @@ export const NurseRatioModule: React.FC = () => {
 
   const renderOverview = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="nurse-ratio-stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {[
           { label: 'Tỷ lệ ĐD/NB TB', value: avgRatio, unit: '', icon: Activity, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
           { label: 'Tổng NB nội trú', value: totalNB, unit: 'NB', icon: User, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
           { label: 'Tổng ĐD chuyên môn', value: totalDD, unit: 'ĐD', icon: Clipboard, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
           { label: 'Số khoa báo cáo', value: new Set(filteredRecords.map(r => r.khoa)).size, unit: 'khoa', icon: Building2, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-3 md:gap-5 text-center md:text-left">
-            <div className={`w-10 h-10 md:w-14 md:h-14 ${bg} ${color} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
+          <div key={label} className="nurse-ratio-stat-card bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-3 md:gap-5 text-center md:text-left">
+            <div className={`nurse-ratio-stat-icon w-10 h-10 md:w-14 md:h-14 ${bg} ${color} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
               <Icon size={20} className="md:w-7 md:h-7" />
             </div>
-            <div className="min-w-0 w-full">
-              <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">{label}</p>
-              <p className="text-xl md:text-3xl font-black text-slate-800 tracking-tight truncate">{value} <span className="text-[10px] md:text-sm font-bold text-slate-400">{unit}</span></p>
+            <div className="nurse-ratio-stat-body min-w-0 w-full">
+              <p className="nurse-ratio-stat-label text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">{label}</p>
+              <p className="nurse-ratio-stat-value text-xl md:text-3xl font-black text-slate-800 tracking-tight truncate">{value} <span className="nurse-ratio-stat-unit text-[10px] md:text-sm font-bold text-slate-400">{unit}</span></p>
             </div>
           </div>
         ))}
@@ -593,7 +609,7 @@ export const NurseRatioModule: React.FC = () => {
   );
 
   return (
-    <div className="min-h-full flex flex-col gap-6">
+    <div className="nurse-ratio-module min-h-full flex flex-col gap-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -606,13 +622,13 @@ export const NurseRatioModule: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative group">
+          <div className="nurse-ratio-filter-controls flex items-center gap-2">
+            <div className="nurse-ratio-dept-filter relative group">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#009900] transition-colors" size={14} />
               <select
                 value={selectedDept}
                 onChange={e => setSelectedDept(e.target.value)}
-                className="pl-9 pr-8 py-2.5 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-[#009900]/10 focus:border-[#009900] appearance-none shadow-sm cursor-pointer min-w-[140px]"
+                className="nurse-ratio-dept-select pl-9 pr-8 py-2.5 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-[#009900]/10 focus:border-[#009900] appearance-none shadow-sm cursor-pointer min-w-[140px]"
               >
                 <option value="ALL">Tất cả khoa</option>
                 {uniqueDepts.map(d => (
@@ -624,7 +640,7 @@ export const NurseRatioModule: React.FC = () => {
 
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-wider transition-all border ${
+              className={`nurse-ratio-time-filter flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-wider transition-all border ${
                 isFilterOpen ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50 shadow-sm'
               }`}
             >
@@ -676,11 +692,11 @@ export const NurseRatioModule: React.FC = () => {
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row items-center gap-3 bg-white/50 p-2 rounded-[24px] md:rounded-3xl border border-white/50 backdrop-blur-md self-start w-full md:w-auto">
-          <div className="flex flex-nowrap overflow-x-auto w-full md:w-auto gap-2 scrollbar-hide">
-            <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
-            <TabButton active={activeTab === 'DANH_SACH'} onClick={() => setActiveTab('DANH_SACH')} icon={FileText} label="Danh sách báo cáo" />
-            <TabButton active={activeTab === 'SHIFT_REPORT'} onClick={() => setActiveTab('SHIFT_REPORT')} icon={Users} label="Nhân lực theo ca" />
+        <div className="w-full">
+          <div className="nurse-ratio-tab-list function-icon-grid">
+            <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" bgClass="bg-sky-300" iconClass="text-sky-600" />
+            <TabButton active={activeTab === 'DANH_SACH'} onClick={() => setActiveTab('DANH_SACH')} icon={FileText} label="Danh sách báo cáo" bgClass="bg-green-300" iconClass="text-green-600" />
+            <TabButton active={activeTab === 'SHIFT_REPORT'} onClick={() => setActiveTab('SHIFT_REPORT')} icon={Users} label="Nhân lực theo ca" bgClass="bg-violet-300" iconClass="text-violet-600" />
           </div>
         </div>
       </div>

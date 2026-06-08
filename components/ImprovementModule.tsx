@@ -189,29 +189,31 @@ export const ImprovementModule: React.FC = () => {
   return (
     <div className="improvement-module space-y-6">
       {/* Top Navigation Tabs */}
-      <div className="improvement-tab-list flex gap-4 p-1 bg-slate-100 rounded-2xl w-fit">
+      <div className="improvement-tab-list function-icon-grid">
         {canView('IMPROVEMENT', 'PLAN') && (
           <button
             onClick={() => setActiveMainTab('PLAN')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-              activeMainTab === 'PLAN' 
-              ? 'bg-white text-[#108545] shadow-lg' 
-              : 'text-slate-500 hover:bg-slate-200'
+            className={`function-icon-tile improvement-tab-button ${
+              activeMainTab === 'PLAN' ? 'improvement-tab-button-active' : ''
             }`}
           >
-            <FileText size={20} /> Kế hoạch CTCL
+            <span className="function-icon-box bg-sky-300">
+              <FileText size={28} className="text-sky-600" />
+            </span>
+            <span className="function-icon-label">Kế hoạch</span>
           </button>
         )}
         {canView('IMPROVEMENT', 'REPORT') && (
           <button
             onClick={() => setActiveMainTab('REPORT')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-              activeMainTab === 'REPORT' 
-              ? 'bg-white text-[#108545] shadow-lg' 
-              : 'text-slate-500 hover:bg-slate-200'
+            className={`function-icon-tile improvement-tab-button ${
+              activeMainTab === 'REPORT' ? 'improvement-tab-button-active' : ''
             }`}
           >
-            <BarChart3 size={20} /> Báo cáo tiến độ
+            <span className="function-icon-box bg-green-300">
+              <BarChart3 size={28} className="text-green-600" />
+            </span>
+            <span className="function-icon-label">Tiến độ</span>
           </button>
         )}
       </div>

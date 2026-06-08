@@ -27,21 +27,21 @@ body {
   --ui-radius-sm: 12px;
 }
 
-.bg-indigo-150 { background-color: #d7ddfe; }
-.bg-sky-150 { background-color: #d6f0fd; }
-.bg-purple-150 { background-color: #eadcff; }
-.bg-red-150 { background-color: #fed8d8; }
-.bg-rose-150 { background-color: #fed7df; }
-.bg-emerald-150 { background-color: #c7f3df; }
-.bg-green-150 { background-color: #cdf4d6; }
-.bg-orange-150 { background-color: #fedfb8; }
-.bg-amber-150 { background-color: #fde9b5; }
-.bg-teal-150 { background-color: #c4f1ea; }
-.bg-cyan-150 { background-color: #c8f2fb; }
-.bg-blue-150 { background-color: #d3e7fe; }
-.bg-violet-150 { background-color: #e6ddff; }
-.bg-pink-150 { background-color: #fbd5ec; }
-.bg-slate-150 { background-color: #e8edf4; }
+.bg-indigo-300 { background-color: #a5b4fc; }
+.bg-sky-300 { background-color: #7dd3fc; }
+.bg-purple-300 { background-color: #d8b4fe; }
+.bg-red-300 { background-color: #fca5a5; }
+.bg-rose-300 { background-color: #fda4af; }
+.bg-emerald-300 { background-color: #6ee7b7; }
+.bg-green-300 { background-color: #86efac; }
+.bg-orange-300 { background-color: #fdba74; }
+.bg-amber-300 { background-color: #fcd34d; }
+.bg-teal-300 { background-color: #5eead4; }
+.bg-cyan-300 { background-color: #67e8f9; }
+.bg-blue-300 { background-color: #93c5fd; }
+.bg-violet-300 { background-color: #c4b5fd; }
+.bg-pink-300 { background-color: #f9a8d4; }
+.bg-slate-300 { background-color: #cbd5e1; }
 
 .function-icon-grid {
   display: grid;
@@ -763,6 +763,14 @@ main table thead th {
   box-shadow: none;
 }
 
+.incidents-module .incident-tab-button {
+  transition: transform 140ms ease;
+}
+
+.incidents-module .incident-tab-button:active {
+  transform: scale(0.95);
+}
+
 .incidents-module .incident-tab-button svg,
 .improvement-module .improvement-tab-list > button svg {
   box-sizing: border-box;
@@ -791,34 +799,6 @@ main table thead th {
   font-size: 11px;
   font-weight: 500;
   line-height: 1.2;
-}
-
-.incidents-module .incident-tab-button:nth-child(1)::after {
-  content: "Tổng quan";
-}
-
-.incidents-module .incident-tab-button:nth-child(2)::after {
-  content: "Danh sách";
-}
-
-.incidents-module .incident-tab-button:nth-child(3)::after {
-  content: "Xác minh";
-}
-
-.incidents-module .incident-tab-button:nth-child(4)::after {
-  content: "RCA";
-}
-
-.incidents-module .incident-tab-button:nth-child(5)::after {
-  content: "Báo cáo";
-}
-
-.improvement-module .improvement-tab-list > button:nth-child(1)::after {
-  content: "Kế hoạch";
-}
-
-.improvement-module .improvement-tab-list > button:nth-child(2)::after {
-  content: "Tiến độ";
 }
 
 .incidents-module .incident-tab-button:nth-child(1) svg,
@@ -866,6 +846,206 @@ main table thead th {
 .improvement-module .improvement-tab-list > button.bg-white::after {
   color: var(--color-primary);
   font-weight: 700;
+}
+
+.incidents-module .incident-tab-button::after {
+  content: none !important;
+}
+
+.incidents-module .incident-tab-button .function-icon-box {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 16px;
+  padding: 0;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.incidents-module .incident-tab-button .function-icon-box svg {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px;
+  border-radius: 0;
+  padding: 0;
+  background: transparent !important;
+  box-shadow: none;
+}
+
+.incidents-module .incident-tab-button .function-icon-label {
+  color: #334155;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: pre-line;
+}
+
+.incidents-module .incident-tab-button-active .function-icon-label {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.improvement-module .improvement-tab-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.improvement-module .improvement-tab-button {
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+}
+
+.improvement-module .improvement-tab-button > svg {
+  display: none;
+}
+
+.improvement-module .improvement-tab-button::after {
+  content: none;
+}
+
+.improvement-module .improvement-tab-button .function-icon-label {
+  color: #334155;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.improvement-module .improvement-tab-button .function-icon-box svg {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px;
+  border-radius: 0;
+  background: transparent !important;
+  padding: 0;
+  box-shadow: none;
+}
+
+.improvement-module .improvement-tab-button-active {
+  border-color: rgba(0, 153, 0, 0.28);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  box-shadow: 0 10px 24px rgba(0, 153, 0, 0.1);
+}
+
+.improvement-module .improvement-tab-button-active .function-icon-label {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.nurse-ratio-tab-list.function-icon-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.nurse-ratio-tab-button {
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+}
+
+.nurse-ratio-tab-button-active {
+  border-color: rgba(0, 153, 0, 0.28);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  box-shadow: 0 10px 24px rgba(0, 153, 0, 0.1);
+}
+
+.nurse-ratio-tab-button-active .function-icon-label {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.indicator-subtab-list {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.indicator-subtab-list.indicator-subtab-list-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.indicator-subtab-button {
+  display: flex;
+  min-width: 0;
+  min-height: 104px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  padding: 8px 4px;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  box-shadow: none;
+  transition: transform 140ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.indicator-subtab-button:active {
+  transform: scale(0.95);
+}
+
+.indicator-subtab-button > svg {
+  box-sizing: border-box;
+  width: 56px !important;
+  height: 56px !important;
+  flex: 0 0 56px;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.indicator-subtab-button span {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.indicator-subtab-button:nth-child(1) > svg {
+  background: #7dd3fc;
+  color: #0284c7;
+}
+
+.indicator-subtab-button:nth-child(2) > svg {
+  background: #86efac;
+  color: #16a34a;
+}
+
+.indicator-subtab-button:nth-child(3) > svg {
+  background: #c4b5fd;
+  color: #7c3aed;
+}
+
+.indicator-subtab-button:nth-child(4) > svg {
+  background: #fdba74;
+  color: #f97316;
+}
+
+.indicator-subtab-button-active {
+  border-color: rgba(0, 153, 0, 0.28);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  box-shadow: 0 10px 24px rgba(0, 153, 0, 0.1);
+}
+
+.indicator-subtab-button-active span {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.ktcm-header h2 + p {
+  display: none;
 }
 
 .pt-loai2-module .pt-loai2-tab-grid {
@@ -973,6 +1153,12 @@ main table thead th {
   }
 }
 
+@media (min-width: 1024px) {
+  .incidents-module .incident-tab-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
 .enterprise-form .input-base,
 .enterprise-form input:not([type="checkbox"]):not([type="radio"]),
 .enterprise-form select,
@@ -1057,6 +1243,203 @@ main form textarea:focus {
     width: 100%;
   }
 
+  .mobile-module-content .nurse-ratio-stats-grid {
+    gap: 8px;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-card {
+    min-height: 66px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    border-radius: 14px;
+    padding: 10px;
+    text-align: left;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-body {
+    min-width: 0;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-label {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 7px;
+    line-height: 1.15;
+    letter-spacing: 0.04em;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-value {
+    margin-top: 2px;
+    font-size: 16px;
+    line-height: 1.05;
+  }
+
+  .mobile-module-content .nurse-ratio-stat-unit {
+    font-size: 8px;
+  }
+
+  .mobile-module-content .nurse-ratio-filter-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .mobile-module-content .nurse-ratio-dept-filter,
+  .mobile-module-content .nurse-ratio-time-filter {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mobile-module-content .nurse-ratio-dept-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mobile-module-content .nurse-ratio-time-filter {
+    justify-content: flex-start;
+    overflow: hidden;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .mobile-module-content .nurse-ratio-time-filter svg {
+    flex: 0 0 auto;
+  }
+
+  .mobile-module-content .indicator-overview-filter-bar > div:first-child {
+    align-items: stretch;
+  }
+
+  .mobile-module-content .indicator-overview-quick-filter {
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 6px;
+    background: transparent;
+    padding: 0;
+  }
+
+  .mobile-module-content .indicator-overview-quick-filter-button {
+    display: inline-flex;
+    flex: 1 1 calc(50% - 6px);
+    min-width: 112px;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-module-content .indicator-overview-quick-filter-button.bg-\[\#009900\] {
+    border-color: #009900;
+    background: #009900;
+  }
+
+  .mobile-module-content .indicator-quick-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-card {
+    min-height: 66px;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+    padding: 10px !important;
+    text-align: left !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-card > .relative {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-module-content .indicator-quick-stat-card > .absolute {
+    display: none;
+  }
+
+  .mobile-module-content .indicator-quick-stat-icon {
+    width: 32px !important;
+    height: 32px !important;
+    margin-bottom: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-icon svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-body {
+    min-width: 0;
+  }
+
+  .mobile-module-content .indicator-quick-stat-label,
+  .mobile-module-content .indicator-quick-stat-card h4,
+  .mobile-module-content .indicator-quick-stat-card .text-\[11px\],
+  .mobile-module-content .indicator-quick-stat-card .text-\[10px\] {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+    color: #94a3b8;
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.04em !important;
+    white-space: normal !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .mobile-module-content .indicator-quick-stat-value,
+  .mobile-module-content .indicator-quick-stat-card .text-4xl,
+  .mobile-module-content .indicator-quick-stat-card .text-3xl,
+  .mobile-module-content .indicator-quick-stat-card .text-2xl,
+  .mobile-module-content .indicator-quick-stat-card .text-xl,
+  .mobile-module-content .indicator-quick-stat-card .text-lg {
+    margin-top: 2px !important;
+    font-size: 16px !important;
+    line-height: 1.05 !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-unit,
+  .mobile-module-content .indicator-quick-stat-card .text-sm,
+  .mobile-module-content .indicator-quick-stat-card .text-xs,
+  .mobile-module-content .indicator-quick-stat-card .text-table {
+    font-size: 8px !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-card .mt-4 {
+    display: none !important;
+  }
+
+  .mobile-module-content .indicator-quick-stat-card .indicator-quick-stat-value {
+    font-size: 16px !important;
+    line-height: 1.05 !important;
+  }
+
   .ql-mobile-card {
     margin: 10px;
     border: 1px solid var(--ui-border);
@@ -1111,9 +1494,10 @@ main form textarea:focus {
   }
 
   .mobile-module-content .incident-tab-button-active {
-    background: var(--color-primary);
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(0, 153, 0, 0.16);
+    border-color: rgba(0, 153, 0, 0.28);
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+    box-shadow: 0 10px 24px rgba(0, 153, 0, 0.1);
   }
 
   .mobile-module-content .ql-table-card,
@@ -1293,31 +1677,44 @@ main form textarea:focus {
   }
 
   .mobile-module-content .pt-loai2-module .pt-loai2-stat-card {
-    min-height: 116px;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 16px;
+    min-height: 66px;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start;
+    gap: 8px !important;
+    padding: 10px !important;
+    border-radius: 14px !important;
+    text-align: left;
   }
 
   .mobile-module-content .pt-loai2-module .pt-loai2-stat-icon {
-    width: 56px !important;
-    height: 56px !important;
-    flex: 0 0 56px;
-    border-radius: 16px;
+    width: 32px !important;
+    height: 32px !important;
+    flex: 0 0 32px;
+    border-radius: 10px !important;
+  }
+
+  .mobile-module-content .pt-loai2-module .pt-loai2-stat-icon svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .mobile-module-content .pt-loai2-module .pt-loai2-stat-card .text-\[11px\] {
-    font-size: 10px;
-    line-height: 1.25;
-    letter-spacing: 0;
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.04em !important;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .mobile-module-content .pt-loai2-module .pt-loai2-stat-card .text-lg {
-    font-size: 20px;
-    line-height: 1.1;
+    margin-top: 2px !important;
+    font-size: 16px !important;
+    line-height: 1.05 !important;
   }
 
   .mobile-module-content .pt-loai2-module select,

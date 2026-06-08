@@ -29,14 +29,12 @@ import { useAuth } from '../contexts/AuthContext';
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 ${
-      active 
-        ? 'bg-[#009900] text-white shadow-lg shadow-green-900/20 scale-105' 
-        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+    className={`indicator-subtab-button ${
+      active ? 'indicator-subtab-button-active' : ''
     }`}
   >
     <Icon size={18} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span>{label}</span>
   </button>
 );
 
@@ -151,34 +149,34 @@ export const SeriousIncidentModule: React.FC = () => {
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+        <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="indicator-quick-stat-card bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className="indicator-quick-stat-icon w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
               <AlertTriangle size={20} />
             </div>
-            <div>
+            <div className="indicator-quick-stat-body">
               <h4 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Tổng số sự cố NT</h4>
-              <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{totalReports}</p>
+              <p className="indicator-quick-stat-value text-xl font-black text-slate-800 leading-tight mt-0.5">{totalReports}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
-            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+          <div className="indicator-quick-stat-card bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className="indicator-quick-stat-icon w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
               <Clock size={20} />
             </div>
-            <div>
+            <div className="indicator-quick-stat-body">
               <h4 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Đang xử lý</h4>
-              <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{ongoingReports}</p>
+              <p className="indicator-quick-stat-value text-xl font-black text-slate-800 leading-tight mt-0.5">{ongoingReports}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
-            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
+          <div className="indicator-quick-stat-card bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md group">
+            <div className="indicator-quick-stat-icon w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={20} />
             </div>
-            <div>
+            <div className="indicator-quick-stat-body">
               <h4 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-tight">Đã kết luận</h4>
-              <p className="text-xl font-black text-slate-800 leading-tight mt-0.5">{completedReports}</p>
+              <p className="indicator-quick-stat-value text-xl font-black text-slate-800 leading-tight mt-0.5">{completedReports}</p>
             </div>
           </div>
         </div>
@@ -321,7 +319,7 @@ export const SeriousIncidentModule: React.FC = () => {
         </div>
 
         {/* Tab Navigation - Scrollable on mobile */}
-        <div className="flex flex-nowrap overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide items-center gap-3 bg-white/50 p-2 rounded-2xl border border-white/50 backdrop-blur-sm self-start">
+        <div className="indicator-subtab-list indicator-subtab-list-2">
           <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
           <TabButton active={activeTab === 'REPORTS'} onClick={() => setActiveTab('REPORTS')} icon={List} label="Danh sách báo cáo" />
         </div>
@@ -431,4 +429,3 @@ export const SeriousIncidentModule: React.FC = () => {
     </div>
   );
 };
-

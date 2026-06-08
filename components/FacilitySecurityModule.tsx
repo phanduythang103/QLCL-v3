@@ -32,14 +32,12 @@ import { useAuth } from '../contexts/AuthContext';
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 ${
-      active 
-        ? 'bg-[#009900] text-white shadow-lg shadow-green-900/20 scale-105' 
-        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+    className={`indicator-subtab-button ${
+      active ? 'indicator-subtab-button-active' : ''
     }`}
   >
     <Icon size={18} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span>{label}</span>
   </button>
 );
 
@@ -289,37 +287,37 @@ export const FacilitySecurityModule: React.FC = () => {
 
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="indicator-quick-stat-card bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
             <div className="absolute -right-4 -bottom-4 bg-green-50 w-24 h-24 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
             <div className="relative">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4">
+              <div className="indicator-quick-stat-icon w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4">
                 <ShieldCheck size={24} />
               </div>
               <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Tổng lượt giám sát</h4>
-              <p className="text-4xl font-black text-slate-800">{totalSupervisions}</p>
+              <p className="indicator-quick-stat-value text-4xl font-black text-slate-800">{totalSupervisions}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="indicator-quick-stat-card bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
             <div className="absolute -right-4 -bottom-4 bg-red-50 w-24 h-24 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
             <div className="relative">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600 mb-4">
+              <div className="indicator-quick-stat-icon w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600 mb-4">
                 <AlertOctagon size={24} />
               </div>
               <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Sự cố an ninh/vận hành</h4>
-              <p className="text-4xl font-black text-slate-800">{totalReports}</p>
+              <p className="indicator-quick-stat-value text-4xl font-black text-slate-800">{totalReports}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="indicator-quick-stat-card bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
             <div className="absolute -right-4 -bottom-4 bg-blue-50 w-24 h-24 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
             <div className="relative">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4">
+              <div className="indicator-quick-stat-icon w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4">
                 <Activity size={24} />
               </div>
               <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Tỷ lệ đạt TB</h4>
-              <p className="text-4xl font-black text-slate-800">{avgPassRate}%</p>
+              <p className="indicator-quick-stat-value text-4xl font-black text-slate-800">{avgPassRate}%</p>
             </div>
           </div>
         </div>
@@ -552,7 +550,7 @@ export const FacilitySecurityModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-nowrap overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide items-center gap-3 bg-white/50 p-2 rounded-2xl border border-white/50 backdrop-blur-sm self-start">
+        <div className="indicator-subtab-list">
           <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
           <TabButton active={activeTab === 'SUPERVISION'} onClick={() => setActiveTab('SUPERVISION')} icon={ShieldCheck} label="Giám sát an toàn" />
           <TabButton active={activeTab === 'REPORTS'} onClick={() => setActiveTab('REPORTS')} icon={AlertOctagon} label="Báo cáo sự cố" />

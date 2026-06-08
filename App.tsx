@@ -420,15 +420,15 @@ const AppContent: React.FC = () => {
   }
 
   const mobileModuleItems = [
-    { label: 'NHÂN SỰ', module: ModuleType.HR, icon: Users, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-150', permission: ModuleType.HR },
-    { label: 'VĂN BẢN', module: ModuleType.DOCS, icon: BookOpen, iconClass: 'text-sky-500', bgClass: 'bg-sky-150', permission: ModuleType.DOCS },
-    { label: 'ĐÁNH GIÁ\nCHẤT LƯỢNG', module: ModuleType.ASSESSMENT, icon: ClipboardCheck, iconClass: 'text-purple-500', bgClass: 'bg-purple-150', permission: ModuleType.ASSESSMENT },
-    { label: 'SỰ CỐ\nY KHOA', module: ModuleType.INCIDENTS, icon: AlertTriangle, iconClass: 'text-red-500', bgClass: 'bg-red-150', permission: ModuleType.INCIDENTS },
-    { label: 'CẢI TIẾN\nCHẤT LƯỢNG', module: ModuleType.IMPROVEMENT, icon: TrendingUp, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-150', permission: ModuleType.IMPROVEMENT },
-    { label: 'CHỈ SỐ\nCHẤT LƯỢNG', module: ModuleType.INDICATORS, icon: BarChart2, iconClass: 'text-orange-500', bgClass: 'bg-orange-150', permission: ModuleType.INDICATORS },
-    { label: 'KIỂM TRA\nGIÁM SÁT', module: ModuleType.SUPERVISION, icon: CheckSquare, iconClass: 'text-teal-500', bgClass: 'bg-teal-150', permission: ModuleType.SUPERVISION },
-    { label: 'BÁO CÁO', module: ModuleType.REPORTS, icon: FileText, iconClass: 'text-blue-500', bgClass: 'bg-blue-150', permission: ModuleType.REPORTS },
-    { label: 'CÀI ĐẶT', module: ModuleType.SETTINGS, icon: Settings, iconClass: 'text-slate-500', bgClass: 'bg-slate-150', permission: ModuleType.SETTINGS, requiresSettingsAccess: true },
+    { label: 'NHÂN SỰ', module: ModuleType.HR, icon: Users, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-300', permission: ModuleType.HR },
+    { label: 'VĂN BẢN', module: ModuleType.DOCS, icon: BookOpen, iconClass: 'text-sky-500', bgClass: 'bg-sky-300', permission: ModuleType.DOCS },
+    { label: 'ĐÁNH GIÁ\nCHẤT LƯỢNG', module: ModuleType.ASSESSMENT, icon: ClipboardCheck, iconClass: 'text-purple-500', bgClass: 'bg-purple-300', permission: ModuleType.ASSESSMENT },
+    { label: 'SỰ CỐ\nY KHOA', module: ModuleType.INCIDENTS, icon: AlertTriangle, iconClass: 'text-red-500', bgClass: 'bg-red-300', permission: ModuleType.INCIDENTS },
+    { label: 'CẢI TIẾN\nCHẤT LƯỢNG', module: ModuleType.IMPROVEMENT, icon: TrendingUp, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-300', permission: ModuleType.IMPROVEMENT },
+    { label: 'CHỈ SỐ\nCHẤT LƯỢNG', module: ModuleType.INDICATORS, icon: BarChart2, iconClass: 'text-orange-500', bgClass: 'bg-orange-300', permission: ModuleType.INDICATORS },
+    { label: 'KIỂM TRA\nGIÁM SÁT', module: ModuleType.SUPERVISION, icon: CheckSquare, iconClass: 'text-teal-500', bgClass: 'bg-teal-300', permission: ModuleType.SUPERVISION },
+    { label: 'BÁO CÁO', module: ModuleType.REPORTS, icon: FileText, iconClass: 'text-blue-500', bgClass: 'bg-blue-300', permission: ModuleType.REPORTS },
+    { label: 'CÀI ĐẶT', module: ModuleType.SETTINGS, icon: Settings, iconClass: 'text-slate-500', bgClass: 'bg-slate-300', permission: ModuleType.SETTINGS, requiresSettingsAccess: true },
   ];
 
   const filteredMobileModules = mobileModuleItems.filter(item => {

@@ -53,8 +53,8 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
               <h3 className="font-black uppercase text-sm tracking-widest flex items-center gap-2">
                 Chi tiết chấm điểm tiêu chí
                 {sheetInfo?.nhom && (
-                  <span className="bg-yellow-400 text-slate-900 text-[10px] px-2 py-0.5 rounded-full font-black animate-pulse">
-                    KẾT QUẢ TỔNG HỢP (LOWEST SCORE)
+                  <span className="bg-yellow-400 text-slate-900 text-[10px] px-2 py-0.5 rounded-full font-black">
+                    PHIẾU CHẤM ĐIỂM TỔ
                   </span>
                 )}
               </h3>

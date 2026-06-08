@@ -66,19 +66,19 @@ export const PtLoai2Module: React.FC = () => {
             </div>
           </div>
           
-          <div className="pt-loai2-tab-grid flex bg-slate-100/80 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
+          <div className="indicator-subtab-list indicator-subtab-list-2">
             <button
               onClick={() => setActiveTab('OVERVIEW')}
-              className={`pt-loai2-tab-button flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-table font-bold transition-all whitespace-nowrap uppercase ${
-                activeTab === 'OVERVIEW' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              className={`indicator-subtab-button ${
+                activeTab === 'OVERVIEW' ? 'indicator-subtab-button-active' : ''
               }`}
             >
               <Target size={18} /> Tổng quan
             </button>
             <button
               onClick={() => setActiveTab('LIST')}
-              className={`pt-loai2-tab-button flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-table font-bold transition-all whitespace-nowrap uppercase ${
-                activeTab === 'LIST' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              className={`indicator-subtab-button ${
+                activeTab === 'LIST' ? 'indicator-subtab-button-active' : ''
               }`}
             >
               <FileText size={18} /> Danh sách báo cáo
@@ -283,67 +283,67 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
       </div>
 
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="pt-loai2-stat-icon w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+      <div className="indicator-quick-stats grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="indicator-quick-stat-card pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon pt-loai2-stat-icon w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
             <FileText size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Tổng số PT</div>
-            <div className="text-lg font-bold text-blue-600">{stats.tongSoPT}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-blue-600">{stats.tongSoPT}</div>
           </div>
         </div>
 
-        <div className="pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="pt-loai2-stat-icon w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon pt-loai2-stat-icon w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
             <CheckCircle2 size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">PT Loại II trở lên</div>
-            <div className="text-lg font-bold text-emerald-600">{stats.tongLoai2TroLen}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-emerald-600">{stats.tongLoai2TroLen}</div>
           </div>
         </div>
 
-        <div className="pt-loai2-stat-card bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-2xl shadow-lg relative overflow-hidden flex items-center gap-4 text-white">
-          <div className="pt-loai2-stat-icon w-12 h-12 bg-white/20 text-white rounded-full flex items-center justify-center shrink-0 backdrop-blur-sm">
+        <div className="indicator-quick-stat-card pt-loai2-stat-card bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-2xl shadow-lg relative overflow-hidden flex items-center gap-4 text-white">
+          <div className="indicator-quick-stat-icon pt-loai2-stat-icon w-12 h-12 bg-white/20 text-white rounded-full flex items-center justify-center shrink-0 backdrop-blur-sm">
             <Target size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-indigo-100 uppercase tracking-widest leading-none mb-1">Tỷ lệ PT ≥ Loại II</div>
-            <div className="text-lg font-bold text-white">{stats.tyLeChung}%</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-white">{stats.tyLeChung}%</div>
           </div>
         </div>
       </div>
 
       {/* Sub Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="pt-loai2-stat-icon w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center shrink-0">
+      <div className="indicator-quick-stats grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="indicator-quick-stat-card pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon pt-loai2-stat-icon w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center shrink-0">
             <Activity size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Loại Đặc Biệt</div>
-            <div className="text-lg font-bold text-rose-600">{stats.tongLoaiDB}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-rose-600">{stats.tongLoaiDB}</div>
           </div>
         </div>
 
-        <div className="pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="pt-loai2-stat-icon w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon pt-loai2-stat-icon w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center shrink-0">
             <Activity size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Loại I</div>
-            <div className="text-lg font-bold text-amber-600">{stats.tongLoai1}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-amber-600">{stats.tongLoai1}</div>
           </div>
         </div>
 
-        <div className="pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
-          <div className="pt-loai2-stat-icon w-12 h-12 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center shrink-0">
+        <div className="indicator-quick-stat-card pt-loai2-stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden flex items-center gap-4">
+          <div className="indicator-quick-stat-icon pt-loai2-stat-icon w-12 h-12 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center shrink-0">
             <Activity size={24} />
           </div>
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Loại II</div>
-            <div className="text-lg font-bold text-sky-600">{stats.tongLoai2}</div>
+            <div className="indicator-quick-stat-value text-lg font-bold text-sky-600">{stats.tongLoai2}</div>
           </div>
         </div>
       </div>

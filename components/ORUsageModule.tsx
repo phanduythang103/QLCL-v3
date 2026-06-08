@@ -15,12 +15,12 @@ import { useAuth } from '../contexts/AuthContext';
 const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-      active ? 'bg-[#009900] text-white shadow-lg shadow-[#009900]/20 scale-105' : 'text-slate-500 hover:bg-slate-100'
+    className={`indicator-subtab-button ${
+      active ? 'indicator-subtab-button-active' : ''
     }`}
   >
     <Icon size={16} />
-    <span className="font-black uppercase text-xs tracking-wider">{label}</span>
+    <span>{label}</span>
   </button>
 );
 
@@ -222,20 +222,20 @@ export const ORUsageModule: React.FC = () => {
 
   const renderOverview = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="indicator-quick-stats grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {[
           { label: 'Hiệu suất TB', value: avgEfficiency, unit: '%', icon: Activity, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
           { label: 'TG Chết TB', value: avgDowntime, unit: 'phút', icon: Clock, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
           { label: 'Tổng giờ mổ', value: filteredRecords.reduce((a, b) => a + Number(b.gio_mo_thuc_te), 0), unit: 'giờ', icon: Target, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
           { label: 'Số phòng mổ', value: new Set(filteredRecords.map(r => r.phong_mo_so)).size, unit: 'phòng', icon: Layout, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center md:items-center gap-3 md:gap-5 text-center md:text-left">
-            <div className={`w-10 h-10 md:w-14 md:h-14 ${bg} ${color} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
+          <div key={label} className="indicator-quick-stat-card bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center md:items-center gap-3 md:gap-5 text-center md:text-left">
+            <div className={`indicator-quick-stat-icon w-10 h-10 md:w-14 md:h-14 ${bg} ${color} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
               <Icon size={20} className="md:w-7 md:h-7" />
             </div>
-            <div className="min-w-0 w-full">
-              <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">{label}</p>
-              <p className="text-xl md:text-3xl font-black text-slate-800 tracking-tight truncate">{value} <span className="text-[10px] md:text-sm font-bold text-slate-400">{unit}</span></p>
+            <div className="indicator-quick-stat-body min-w-0 w-full">
+              <p className="indicator-quick-stat-label text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">{label}</p>
+              <p className="indicator-quick-stat-value text-xl md:text-3xl font-black text-slate-800 tracking-tight truncate">{value} <span className="indicator-quick-stat-unit text-[10px] md:text-sm font-bold text-slate-400">{unit}</span></p>
             </div>
           </div>
         ))}
@@ -546,12 +546,12 @@ export const ORUsageModule: React.FC = () => {
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row items-center gap-3 bg-white/50 p-2 rounded-[24px] md:rounded-3xl border border-white/50 backdrop-blur-md self-start w-full md:w-auto">
-            <div className="flex flex-nowrap overflow-x-auto w-full md:w-auto gap-2 scrollbar-hide">
+        <div className="indicator-subtab-list">
+            <div className="contents">
               <TabButton active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} icon={BarChart2} label="Tổng quan" />
               <TabButton active={activeTab === 'DANH_SACH'} onClick={() => setActiveTab('DANH_SACH')} icon={FileText} label="Danh sách" />
             </div>
-            <div className="w-full md:w-auto md:border-l md:border-slate-200 md:pl-2">
+            <div className="contents">
               <TabButton active={activeTab === 'PHAN_TICH'} onClick={() => setActiveTab('PHAN_TICH')} icon={TrendingDown} label="Phân tích thời gian chết" />
             </div>
           </div>
