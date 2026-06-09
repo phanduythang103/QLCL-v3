@@ -1247,7 +1247,7 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
   };
 
   return (
-    <div className="bg-[#f8fafc] min-h-screen animate-in fade-in duration-500" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+    <div className="khctcl-form bg-[#f8fafc] min-h-screen animate-in fade-in duration-500" style={{ fontFamily: 'Tahoma, sans-serif' }}>
       {/* Optimized Header: Clean & professional (Stationary) */}
       <div className="bg-white border-b border-slate-200 py-6 px-10 shadow-sm">
         <div className="flex justify-between items-center max-w-7xl mx-auto">

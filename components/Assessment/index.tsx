@@ -12,13 +12,15 @@ import { TeamAssessmentModule } from './sub-components/TeamAssessmentModule';
 import { TeamSelectModal } from './sub-components/TeamSelectModal';
 import { ActiveTab } from './types';
 
+const naturalSort = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
+
 export const AssessmentModule: React.FC = () => {
   const {
     isAdmin, user, uDept,
     activeTab, setActiveTab,
     viewMode, setViewMode,
     sheetList, loading, saving,
-    groupedCriteria, results, setResults,
+    groupedCriteria, criteria, results, setResults,
     editingPhieuId, viewingPhieuId, viewingData,
     units, fontSize, setFontSize,
     ngayDanhGia, setNgayDanhGia,
@@ -34,14 +36,69 @@ export const AssessmentModule: React.FC = () => {
 
   const [isSubModuleActive, setIsSubModuleActive] = React.useState(false);
 
-  const handleScoreChange = (ma: string, field: any, value: any) => {
-    setResults(prev => ({
-      ...prev,
-      [ma]: {
-        ...prev[ma],
-        [field]: value
+  const handleBack = () => {
+    if (viewMode !== 'LIST') {
+      setViewMode('LIST');
+      return;
+    }
+
+    setActiveTab(null);
+  };
+
+  React.useEffect(() => {
+    const handleMobileBack = (event: Event) => {
+      if (isSubModuleActive) return;
+      if (viewMode !== 'LIST') {
+        event.preventDefault();
+        setViewMode('LIST');
+        return;
       }
-    }));
+      if (activeTab !== null) {
+        event.preventDefault();
+        setActiveTab(null);
+      }
+    };
+
+    window.addEventListener('app-mobile-back', handleMobileBack);
+    return () => window.removeEventListener('app-mobile-back', handleMobileBack);
+  }, [activeTab, isSubModuleActive, setActiveTab, setViewMode, viewMode]);
+
+  const handleScoreChange = (ma: string, field: any, value: any) => {
+    setResults(prev => {
+      const nextResults = {
+        ...prev,
+        [ma]: {
+          ...prev[ma],
+          [field]: value
+        }
+      };
+
+      if (field !== 'dat_muc' || value !== 'Đạt') return nextResults;
+
+      const currentItem = criteria.find(item => item.ma_tieu_muc === ma);
+      if (!currentItem) return nextResults;
+
+      const itemsInSameCriterion = criteria
+        .filter(item =>
+          item.phan === currentItem.phan &&
+          item.chuong === currentItem.chuong &&
+          item.tieu_chi === currentItem.tieu_chi &&
+          item.ma_tieu_muc
+        )
+        .sort((a, b) => naturalSort(a.ma_tieu_muc!, b.ma_tieu_muc!));
+      const currentIndex = itemsInSameCriterion.findIndex(item => item.ma_tieu_muc === ma);
+      if (currentIndex <= 0) return nextResults;
+
+      itemsInSameCriterion.slice(0, currentIndex).forEach(item => {
+        const itemCode = item.ma_tieu_muc!;
+        nextResults[itemCode] = {
+          ...prev[itemCode],
+          dat_muc: 'Đạt'
+        };
+      });
+
+      return nextResults;
+    });
   };
 
   const navItems = [
@@ -139,24 +196,6 @@ export const AssessmentModule: React.FC = () => {
         </div>
       )}
 
-      {/* Header with Back button when in sub-module */}
-      {viewMode === 'LIST' && activeTab !== null && (
-        <div className="flex items-center justify-between mb-4 animate-in slide-in-from-left-4 duration-500">
-          <button
-            onClick={() => setActiveTab(null)}
-            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm"
-          >
-            <CheckCircle2 size={14} /> Quay lại Menu Đánh giá
-          </button>
-
-          <div className="flex items-center gap-2 bg-[#009900]/5 text-[#009900] px-4 py-2 rounded-xl border border-[#009900]/10">
-            <span className="font-black text-[10px] uppercase truncate max-w-[150px] md:max-w-none">
-              {navItems.find(i => i.id === activeTab)?.name}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Main Content Area */}
       <div className={viewMode === 'LIST' ? "min-h-[400px]" : ""}>
         {viewMode === 'FORM' ? (
@@ -189,11 +228,20 @@ export const AssessmentModule: React.FC = () => {
             phieuId={viewingPhieuId}
             data={viewingData}
             onClose={() => setViewMode('LIST')}
+            onEdit={(() => {
+              const sheet = sheetList.find(item => item.phieu_id === viewingPhieuId);
+              return sheet && (
+                (user?.id && sheet.nguoi_tao_id === user.id) ||
+                (!sheet.nguoi_tao_id && sheet.nguoi_danh_gia?.trim().toLowerCase() === user?.full_name?.trim().toLowerCase())
+              )
+                ? () => handleEditSheet(sheet)
+                : undefined;
+            })()}
             sheetInfo={sheetList.find(s => s.phieu_id === viewingPhieuId)}
           />
         ) : activeTab !== null ? (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {activeTab === 'CRITERIA_83' && <Criteria83DataView />}
+            {activeTab === 'CRITERIA_83' && <Criteria83DataView onBack={handleBack} />}
 
             {activeTab === 'TEAM_ASSESSMENT' && (
               <TeamAssessmentModule
@@ -211,6 +259,7 @@ export const AssessmentModule: React.FC = () => {
                     handleDeleteSheet(id);
                   }
                 }}
+                onBack={handleBack}
               />
             )}
 
@@ -218,6 +267,7 @@ export const AssessmentModule: React.FC = () => {
               <AssessmentReports
                 setViewMode={setViewMode}
                 onSubModuleChange={setIsSubModuleActive}
+                onBack={handleBack}
               />
             )}
 
@@ -228,10 +278,13 @@ export const AssessmentModule: React.FC = () => {
                 uDept={uDept}
                 isAdmin={isAdmin}
                 currUserId={user?.id}
+                currUserName={user?.full_name}
+                assessmentType="UNIT"
                 onAddNew={handleAddNew}
                 onEdit={handleEditSheet}
                 onView={handleViewSheet}
                 onDelete={handleDeleteSheet}
+                onBack={handleBack}
               />
             )}
           </div>

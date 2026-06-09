@@ -3,6 +3,7 @@ import { Calendar, User, Eye, Edit2, Trash2, Plus, BarChart3, Download, Trophy, 
 import { InpatientSurveyResponse } from '../types/inpatientSatisfaction';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
 import * as XLSX from 'xlsx';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface Props {
   surveys: InpatientSurveyResponse[];
@@ -30,6 +31,12 @@ export const InpatientSatisfactionList: React.FC<Props> = ({
   respondentFilter, setRespondentFilter, departments,
   totalSurveys, avgSatisfaction
 }) => {
+  const { user } = useAuth();
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin')
+  );
+
   const getScoreColor = (percent: number) => {
     if (percent >= 90) return 'text-emerald-600 bg-emerald-50';
     if (percent >= 70) return 'text-amber-600 bg-amber-50';
@@ -153,12 +160,14 @@ export const InpatientSatisfactionList: React.FC<Props> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 w-full lg:w-auto">
+          {isAdmin && (
           <button
             onClick={handleExportExcel}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-blue-600 text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
           >
             <Download size={16} /><span className="md:inline">Xuất Excel</span>
           </button>
+          )}
           <button
             onClick={onAddNew}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"

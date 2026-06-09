@@ -8,6 +8,7 @@ import { InpatientSatisfactionSurvey } from './InpatientSatisfactionSurvey';
 import { OutpatientSatisfactionSurvey } from './OutpatientSatisfactionSurvey';
 import { KsNuoiConSurvey } from './KsNuoiConSurvey';
 import { KsMeSinhConSurvey } from './KsMeSinhConSurvey';
+import { supabase } from '../../../supabaseClient';
 
 // Import services
 import { inpatientSatisfactionService } from '../services/inpatientSatisfactionService';
@@ -18,6 +19,7 @@ import { ksMeSinhConService } from '../services/ksMeSinhConService';
 
 interface Props {
   setParentViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
+  onBack?: () => void;
 }
 
 interface SatisfactionStats {
@@ -28,9 +30,10 @@ interface SatisfactionStats {
   bgColor: string;
   icon: React.ReactNode;
   tab: 'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER';
+  surveyType: string;
 }
 
-export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }) => {
+export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, onBack }) => {
   const [activeTab, setActiveTab] = useState<'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER' | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Record<string, number>>({
@@ -40,6 +43,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
     BABY: 0,
     MOTHER: 0,
   });
+  const [publicConfigs, setPublicConfigs] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,6 +60,19 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
           ksNuoiConService.fetchAll(),
           ksMeSinhConService.fetchAll(),
         ]);
+
+        const { data: configs, error: configError } = await supabase
+          .from('survey_public_configs')
+          .select('survey_type, is_public');
+
+        if (configError) throw configError;
+
+        setPublicConfigs(
+          (configs || []).reduce((acc: Record<string, boolean>, config: any) => {
+            acc[config.survey_type] = !!config.is_public;
+            return acc;
+          }, {})
+        );
 
         const calcAvg = (data: any[], type: 'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER') => {
           if (!data || data.length === 0) return 0;
@@ -126,6 +143,17 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    const handleMobileBack = (event: Event) => {
+      if (activeTab === null) return;
+      event.preventDefault();
+      setActiveTab(null);
+    };
+
+    window.addEventListener('app-mobile-back', handleMobileBack);
+    return () => window.removeEventListener('app-mobile-back', handleMobileBack);
+  }, [activeTab]);
+
   const menuItems: SatisfactionStats[] = [
     {
       id: 'patient',
@@ -134,7 +162,8 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
       color: '#3b82f6',
       bgColor: '#eff6ff',
       icon: <Users size={24} />,
-      tab: 'PATIENT'
+      tab: 'PATIENT',
+      surveyType: 'inpatient'
     },
     {
       id: 'staff',
@@ -143,7 +172,8 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
       color: '#10b981',
       bgColor: '#ecfdf5',
       icon: <Stethoscope size={24} />,
-      tab: 'STAFF'
+      tab: 'STAFF',
+      surveyType: 'staff'
     },
     {
       id: 'outpatient',
@@ -152,7 +182,8 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
       color: '#f59e0b',
       bgColor: '#fff7ed',
       icon: <UserCheck size={24} />,
-      tab: 'OUTPATIENT'
+      tab: 'OUTPATIENT',
+      surveyType: 'outpatient'
     },
     {
       id: 'baby',
@@ -161,7 +192,8 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
       color: '#ec4899',
       bgColor: '#fdf2f8',
       icon: <Baby size={24} />,
-      tab: 'BABY'
+      tab: 'BABY',
+      surveyType: 'ks_nuoi_con'
     },
     {
       id: 'mother',
@@ -170,7 +202,8 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
       color: '#ef4444',
       bgColor: '#fef2f2',
       icon: <Heart size={24} />,
-      tab: 'MOTHER'
+      tab: 'MOTHER',
+      surveyType: 'ks_me_sinh_con'
     },
   ];
 
@@ -203,8 +236,12 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.tab)}
-              className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-center group"
+              onClick={() => publicConfigs[item.surveyType] && setActiveTab(item.tab)}
+              disabled={!publicConfigs[item.surveyType]}
+              title={!publicConfigs[item.surveyType] ? 'Khảo sát đang đóng trong cấu hình public' : undefined}
+              className={`bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all flex flex-col items-start justify-center group ${
+                publicConfigs[item.surveyType] ? 'hover:shadow-xl hover:-translate-y-1' : 'opacity-50 cursor-not-allowed'
+              }`}
             >
               <div className="flex items-center gap-3">
                 <div
@@ -216,11 +253,26 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
                 <div>
                   <h4 className="font-black text-slate-800 uppercase text-xs mb-1">Khảo sát hài lòng</h4>
                   <p className="font-black text-[#009900] uppercase text-[10px] tracking-widest">{item.name}</p>
+                  {!publicConfigs[item.surveyType] && (
+                    <p className="mt-2 text-[9px] font-black uppercase tracking-widest text-rose-500">Đang đóng</p>
+                  )}
                 </div>
               </div>
             </button>
           ))}
         </div>
+
+        {onBack && (
+          <div className="hidden justify-start md:flex">
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+            >
+              <ArrowLeft size={14} /> Quay lại
+            </button>
+          </div>
+        )}
 
         {/* Desktop Statistics Section */}
         <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
@@ -264,6 +316,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
             ))}
           </div>
         </div>
+
       </div>
 
       {/* --- MOBILE VIEW (Premium) --- */}
@@ -274,8 +327,12 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.tab)}
-                className="flex flex-col items-center gap-4 group active:scale-95 transition-all"
+                onClick={() => publicConfigs[item.surveyType] && setActiveTab(item.tab)}
+                disabled={!publicConfigs[item.surveyType]}
+                title={!publicConfigs[item.surveyType] ? 'Khảo sát đang đóng trong cấu hình public' : undefined}
+                className={`flex flex-col items-center gap-4 group transition-all ${
+                  publicConfigs[item.surveyType] ? 'active:scale-95' : 'opacity-50 cursor-not-allowed'
+                }`}
               >
                 <div
                   className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300"
@@ -286,10 +343,25 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
                 <span className="text-[10px] font-black text-slate-600 uppercase tracking-tighter text-center leading-tight">
                   {item.name}
                 </span>
+                {!publicConfigs[item.surveyType] && (
+                  <span className="text-[8px] font-black uppercase tracking-widest text-rose-500">Đóng</span>
+                )}
               </button>
             ))}
           </div>
         </div>
+
+        {onBack && (
+          <div className="hidden justify-start md:flex">
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+            >
+              <ArrowLeft size={14} /> Quay lại
+            </button>
+          </div>
+        )}
 
         {/* Statistics Section */}
         <div className="space-y-6">
@@ -330,6 +402,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode }
             ))}
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -365,22 +365,24 @@ const FiveSFormView = ({ item, onClose, onSaved, currentUser, departmentList }: 
               {isOpen && (
                 <div className="divide-y divide-slate-50">
                   {criteria.map((c, idx) => (
-                    <div key={c.id} className="p-4 space-y-2">
+                    <div key={c.id} className="p-4 space-y-3">
                       <div className="flex items-start gap-3">
-                        <span className="text-[10px] font-black text-slate-400 mt-1 shrink-0">{idx + 1}</span>
+                        <span className="w-6 h-6 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center text-[10px] font-black shrink-0">{idx + 1}</span>
                         <p className="text-sm font-bold text-slate-700 flex-1 leading-snug">{c.label}</p>
+                      </div>
+                      <div className="ml-0 sm:ml-9 flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 border border-slate-100">
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Điểm đạt</span>
                         <div className="shrink-0 flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 font-bold">Điểm</span>
                           <input
                             type="number" min={0} max={c.max}
                             value={form[`${c.id}_diem`]}
                             onChange={e => setField(`${c.id}_diem`, Math.min(c.max, Math.max(0, Number(e.target.value))))}
-                            className="w-16 p-2 border border-slate-200 rounded-xl text-sm font-black text-center outline-none focus:ring-2 focus:ring-orange-300"
+                            className="w-16 p-2 bg-white border border-slate-200 rounded-xl text-sm font-black text-center text-orange-600 outline-none focus:ring-2 focus:ring-orange-300"
                           />
-                          <span className="text-[10px] text-slate-400 font-bold">/{c.max}</span>
+                          <span className="text-[11px] text-slate-400 font-black">/ {c.max}</span>
                         </div>
                       </div>
-                      <div className="ml-5 space-y-2">
+                      <div className="ml-0 sm:ml-9 space-y-2">
                         <input
                           value={form[`${c.id}_ghi_chu`] || ''}
                           onChange={e => setField(`${c.id}_ghi_chu`, e.target.value)}
@@ -432,6 +434,7 @@ const FiveSDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) 
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'Quản trị viên';
   const isCreator = item.nguoi_giam_sat === currentUser?.full_name;
   const pl = getPhanLoai(item.tong_diem || 0);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-6 md:p-10 border border-slate-200 animate-in fade-in slide-in-from-bottom-8 duration-500">
@@ -500,9 +503,15 @@ const FiveSDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) 
                           {item[`${c.id}_hinh_anh`]?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1 no-print">
                               {item[`${c.id}_hinh_anh`].map((url: string, i: number) => (
-                                <a key={i} href={url} target="_blank" rel="noreferrer">
-                                  <img src={url} alt="" className="w-10 h-10 object-cover rounded-lg border border-slate-200 hover:scale-105 transition-all" />
-                                </a>
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => setPreviewImage(url)}
+                                  className="group relative w-14 h-14 md:w-10 md:h-10 overflow-hidden rounded-lg border border-slate-200 bg-white"
+                                  aria-label={`Xem ảnh minh chứng ${i + 1}`}
+                                >
+                                  <img src={url} alt={`Ảnh minh chứng ${i + 1}`} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                </button>
                               ))}
                             </div>
                           )}
@@ -553,6 +562,31 @@ const FiveSDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) 
           </div>
         </div>
       </div>
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-3 md:p-8 no-print"
+          onClick={() => setPreviewImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Xem ảnh minh chứng đầy đủ"
+        >
+          <button
+            type="button"
+            onClick={() => setPreviewImage(null)}
+            className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition-colors hover:bg-white/25"
+            aria-label="Đóng ảnh"
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={previewImage}
+            alt="Ảnh minh chứng đầy đủ"
+            className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+            onClick={event => event.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

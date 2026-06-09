@@ -3,6 +3,7 @@ import { Plus, Edit2, Eye, Trash2, Calendar, User, Star, Download, Trophy, Users
 import { KsMeSinhConRecord } from '../types/ksMeSinhCon';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
 import * as XLSX from 'xlsx';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface Props {
   records: KsMeSinhConRecord[];
@@ -26,6 +27,12 @@ export const KsMeSinhConList: React.FC<Props> = ({
   birthMethodFilter, setBirthMethodFilter,
   totalRecords, avgSatisfaction
 }) => {
+  const { user } = useAuth();
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin')
+  );
+
   const getBirthMethodLabel = (method?: number) => {
     switch (method) {
       case 1: return 'Đẻ thường';
@@ -124,12 +131,14 @@ export const KsMeSinhConList: React.FC<Props> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 w-full lg:w-auto">
+          {isAdmin && (
           <button
             onClick={handleExportExcel}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-blue-600 text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
           >
             <Download size={16} /><span className="md:inline">Xuất Excel</span>
           </button>
+          )}
           <button
             onClick={onAddNew}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"

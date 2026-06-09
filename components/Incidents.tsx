@@ -20,10 +20,10 @@ import { fetchDmDonVi } from '../readDmDonVi';
 import { fetchNhanSuQlcl } from '../readNhanSuQlcl';
 import { analyzeWithAi } from '../aiClient';
 import VerificationMinutes from './VerificationMinutes';
-import BcCqyList from './BcCqyList';
 import IncidentAnalysis from './IncidentAnalysis';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import ScykFormTT43 from './ScykFormTT43';
+import { FacilitySecurityModule } from './FacilitySecurityModule';
 
 type MenuItem = 'OVERVIEW' | 'LIST' | 'VERIFICATION' | 'REPORTS' | 'ANALYSIS';
 type ViewMode = 'LIST' | 'STATS' | 'FORM' | 'VIEW';
@@ -74,10 +74,10 @@ export const Incidents: React.FC = () => {
   // Filter menu items based on permissions
   const menuItems = [
     { id: 'OVERVIEW', label: 'Tổng quan', icon: <LayoutDashboard size={28} />, bgClass: 'bg-sky-300', iconClass: 'text-sky-600' },
-    { id: 'LIST', label: 'Danh sách', icon: <List size={28} />, bgClass: 'bg-green-300', iconClass: 'text-green-600' },
+    { id: 'LIST', label: 'Sự cố y khoa', icon: <List size={28} />, bgClass: 'bg-green-300', iconClass: 'text-green-600' },
     { id: 'VERIFICATION', label: 'Xác minh', icon: <FileCheck size={28} />, bgClass: 'bg-orange-300', iconClass: 'text-orange-600' },
     { id: 'ANALYSIS', label: 'RCA', icon: <BrainCircuit size={28} />, bgClass: 'bg-violet-300', iconClass: 'text-violet-600' },
-    { id: 'REPORTS', label: 'Báo cáo', icon: <Files size={28} />, bgClass: 'bg-slate-300', iconClass: 'text-slate-600' },
+    { id: 'REPORTS', label: 'Sự cố ngoài y khoa', icon: <Files size={28} />, bgClass: 'bg-slate-300', iconClass: 'text-slate-600' },
   ].filter(item => canView('INCIDENTS', item.id));
 
   const defaultMenu = (menuItems.find(item => item.id === 'LIST')?.id || menuItems[0]?.id || 'OVERVIEW') as MenuItem;
@@ -318,10 +318,10 @@ export const Incidents: React.FC = () => {
                     </div>
                   )}
 
-                  {/* 4. Reports List (Cục Quân y) */}
+                  {/* 4. Non-medical incidents */}
                   {activeMenu === 'REPORTS' && (
                     <div className="animate-in fade-in zoom-in-95 duration-200 h-full">
-                      <BcCqyList />
+                      <FacilitySecurityModule />
                     </div>
                   )}
 
@@ -1121,34 +1121,55 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
 
   // Checkbox helper for print view
   const Chk = ({ c }: { c: boolean }) => <span>{c ? '☑' : '☐'}</span>;
+  const formatDate = (value?: string) => value ? new Date(value).toLocaleDateString('vi-VN') : '---';
+  const statusLabel = getStatusLabel(item.trang_thai || 'Mới');
+
+  const MobileInfoField = ({ label, value, wide = false }: { label: string; value?: React.ReactNode; wide?: boolean }) => (
+    <div className={`rounded-2xl border border-slate-100 bg-slate-50/80 p-3 ${wide ? 'col-span-2' : ''}`}>
+      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+      <div className="mt-1 text-[13px] font-bold leading-relaxed text-slate-800 break-words">{value || '---'}</div>
+    </div>
+  );
+
+  const MobileSection = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
+    <section className="rounded-[1.5rem] border border-slate-100 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#009900]/10 text-[#009900]">
+          {icon}
+        </div>
+        <h3 className="text-xs font-black uppercase tracking-wide text-slate-800">{title}</h3>
+      </div>
+      {children}
+    </section>
+  );
 
   return (
     <div>
-      <div className="max-w-[1400px] w-full mx-auto animate-in fade-in slide-in-from-right-4 duration-500 pb-20 mt-4 px-4 md:px-0">
+      <div className="max-w-[1400px] w-full mx-auto animate-in fade-in slide-in-from-right-4 duration-500 pb-20 mt-2 px-0 md:mt-4 md:px-0">
         
         {/* Actions Bar - Page Header Style */}
-        <div className="bg-[#009900] px-6 py-5 text-white rounded-2xl mb-8 shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+        <div className="bg-[#009900] px-4 py-4 text-white rounded-2xl mb-4 shadow-md flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:px-6 md:py-5 md:mb-8">
+          <div className="flex w-full min-w-0 items-center gap-3 md:w-auto md:gap-4">
+            <div className="w-11 h-11 md:w-12 md:h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
                <FileText className="w-7 h-7 text-white" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h1 className="text-base md:text-lg font-black uppercase tracking-tight leading-tight">Chi tiết báo cáo sự cố y khoa</h1>
-              <p className="text-green-50 text-[10px] md:text-sm font-medium mt-0.5 tracking-widest uppercase opacity-80 decoration-white/30 underline underline-offset-4">ID: {item.so_bc_ma_scyk || '---'}</p>
+              <p className="truncate text-green-50 text-[10px] md:text-sm font-medium mt-0.5 tracking-widest uppercase opacity-80 decoration-white/30 underline underline-offset-4">ID: {item.so_bc_ma_scyk || '---'}</p>
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2">
-            <button onClick={onBack} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+          <div className="grid w-full grid-cols-3 gap-2 md:flex md:w-auto md:flex-wrap md:items-center">
+            <button onClick={onBack} className="flex min-h-11 items-center justify-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all md:px-4">
               <ArrowLeft size={16} /> Quay lại
             </button>
             {canUpdate('INCIDENTS') && (
-              <button onClick={onEdit} className="btn-primary">
+              <button onClick={onEdit} className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[#009900] shadow-sm transition-all hover:bg-emerald-50 active:scale-95 md:px-4">
                 <Edit2 size={16} /> Chỉnh sửa
               </button>
             )}
             {canDelete('INCIDENTS') && (
-              <button onClick={() => onDelete()} className="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95">
+              <button onClick={() => onDelete()} className="flex min-h-11 items-center justify-center gap-2 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 md:px-4">
                 <Trash2 size={16} /> Xóa
               </button>
             )}
@@ -1158,15 +1179,114 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
         {/* Paper Document Body */}
         <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative">
           {/* Subtle watermark or texture can be added here */}
-          <div className="p-8 md:p-20" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif' }}>
+          <div className="p-4 md:p-20" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif' }}>
             {/* Header Titles */}
-            <div className="flex flex-col items-center mb-16 text-center text-black">
-              <h2 className="text-[18pt] md:text-[26pt] font-bold uppercase leading-tight tracking-tight">Phiếu báo cáo sự cố y khoa</h2>
-              <p className="italic text-[11pt] mt-3 font-medium text-slate-600">(Mẫu TT 43/2018/TT-BYT ngày 26/12/2018 của Bộ trưởng Bộ Y tế)</p>
+            <div className="flex flex-col items-center mb-5 text-center text-black md:mb-16">
+              <h2 className="text-xl md:text-[26pt] font-bold uppercase leading-tight tracking-tight">Phiếu báo cáo sự cố y khoa</h2>
+              <p className="italic text-xs md:text-[11pt] mt-2 md:mt-3 font-medium text-slate-600">(Mẫu TT 43/2018/TT-BYT ngày 26/12/2018 của Bộ trưởng Bộ Y tế)</p>
+            </div>
+
+            {/* Mobile-first readable detail cards */}
+            <div className="space-y-4 md:hidden">
+              <section className="rounded-[1.75rem] bg-gradient-to-br from-[#009900] to-emerald-700 p-4 text-white shadow-lg shadow-emerald-900/10">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Mã báo cáo</p>
+                    <h3 className="mt-1 truncate text-lg font-black">{item.so_bc_ma_scyk || 'Chưa có mã'}</h3>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase">
+                    {statusLabel}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl bg-white/10 p-3">
+                    <p className="text-[9px] font-black uppercase text-white/60">Ngày báo cáo</p>
+                    <p className="mt-1 text-sm font-bold">{formatDate(item.ngay_bao_cao)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/10 p-3">
+                    <p className="text-[9px] font-black uppercase text-white/60">Ngày xảy ra</p>
+                    <p className="mt-1 text-sm font-bold">{formatDate(item.ngay_xay_ra_sc)}</p>
+                  </div>
+                  <div className="col-span-2 rounded-2xl bg-white/10 p-3">
+                    <p className="text-[9px] font-black uppercase text-white/60">Đơn vị / Khoa phòng</p>
+                    <p className="mt-1 text-sm font-bold leading-relaxed">{item.don_vi_bao_cao || item.khoa_phong || '---'}</p>
+                  </div>
+                </div>
+              </section>
+
+              <MobileSection title="Thông tin người bệnh" icon={<User size={18} />}>
+                <div className="grid grid-cols-2 gap-2">
+                  <MobileInfoField label="Họ tên" value={item.ho_ten_nb} wide />
+                  <MobileInfoField label="Số BA" value={item.so_benh_an} />
+                  <MobileInfoField label="Giới tính" value={item.gioi} />
+                  <MobileInfoField label="Ngày sinh" value={formatDate(item.ngay_sinh)} />
+                  <MobileInfoField label="Đối tượng" value={item.doi_tuong_xay_ra_sc} />
+                </div>
+              </MobileSection>
+
+              <MobileSection title="Vị trí và thời điểm" icon={<Target size={18} />}>
+                <div className="grid grid-cols-2 gap-2">
+                  <MobileInfoField label="Nơi xảy ra" value={item.noi_xay_ra_sc || item.khoa_phong} wide />
+                  <MobileInfoField label="Vị trí cụ thể" value={item.vi_tri_cu_the} wide />
+                  <MobileInfoField label="Thời gian" value={item.thoi_gian} />
+                  <MobileInfoField label="Hình thức" value={item.hinh_thuc_bao_cao} />
+                </div>
+              </MobileSection>
+
+              <MobileSection title="Mô tả sự cố" icon={<AlertTriangle size={18} />}>
+                <div className="rounded-2xl bg-slate-50 p-4 text-[14px] font-medium leading-relaxed text-slate-700 whitespace-pre-wrap">
+                  {item.mo_ta_su_co || 'Chưa có mô tả sự cố.'}
+                </div>
+              </MobileSection>
+
+              <MobileSection title="Xử lý và đề xuất" icon={<CheckSquare size={18} />}>
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-700">Xử lý ban đầu</p>
+                    <p className="mt-2 text-[13px] font-medium leading-relaxed text-slate-700 whitespace-pre-wrap">{item.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '---'}</p>
+                  </div>
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Đề xuất giải pháp</p>
+                    <p className="mt-2 text-[13px] font-medium leading-relaxed text-slate-700 whitespace-pre-wrap">{item.de_xuat_giai_phap_ban_dau || '---'}</p>
+                  </div>
+                </div>
+              </MobileSection>
+
+              <MobileSection title="Phân loại và thông báo" icon={<AlertOctagon size={18} />}>
+                <div className="grid grid-cols-2 gap-2">
+                  <MobileInfoField label="Phân loại" value={item.phan_loai_ban_dau} />
+                  <MobileInfoField label="Ảnh hưởng" value={item.muc_do_anh_huong} />
+                  <MobileInfoField label="Báo BS" value={item.thong_bao_bs_dieu_tri} />
+                  <MobileInfoField label="Ghi HSBA" value={item.ghi_nhan_vao_hsba} />
+                  <MobileInfoField label="Báo người nhà" value={item.thong_bao_nguoi_nha} />
+                  <MobileInfoField label="Báo người bệnh" value={item.thong_bao_nguoi_benh} />
+                </div>
+              </MobileSection>
+
+              <MobileSection title="Người báo cáo" icon={<Users size={18} />}>
+                <div className="grid grid-cols-2 gap-2">
+                  <MobileInfoField label="Họ tên" value={item.ho_ten_nguoi_bc} wide />
+                  <MobileInfoField label="SĐT" value={item.nguoi_bao_cao_sdt} />
+                  <MobileInfoField label="Email" value={item.nguoi_bao_cao_email} />
+                  <MobileInfoField label="Đối tượng" value={item.nguoi_bao_cao_doi_tuong} wide />
+                </div>
+              </MobileSection>
+
+              {item.hinh_anh_minh_chung?.length > 0 && (
+                <MobileSection title="Minh chứng hình ảnh" icon={<ImageIcon size={18} />}>
+                  <div className="grid grid-cols-2 gap-2">
+                    {item.hinh_anh_minh_chung.map((img: string, idx: number) => (
+                      <a key={idx} href={img} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                        <img src={img} alt={`Minh chứng ${idx + 1}`} className="h-28 w-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </MobileSection>
+              )}
             </div>
 
             {/* TT 43 Master Table */}
-            <div className="border-[1.5px] border-black text-black">
+            <div className="hidden border-[1.5px] border-black text-black md:block">
               {/* Box 1: Reporting Type */}
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-black p-6 space-y-4">
@@ -1343,12 +1463,12 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
             </div>
 
             {/* Status Log Section - Redesigned Timeline View */}
-            <div className="mt-24 pt-10 no-print">
+            <div className="mt-8 pt-2 no-print md:mt-24 md:pt-10">
               <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-sm bg-white font-sans">
                 {/* Header Style from Image */}
-                <div className="bg-slate-50/80 p-6 flex items-center gap-4 border-b border-slate-100">
-                  <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
-                    <History size={24} />
+                <div className="bg-slate-50/80 p-4 md:p-6 flex items-center gap-3 md:gap-4 border-b border-slate-100">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+                    <History size={22} />
                   </div>
                   <div>
                     <h3 className="text-[15px] font-bold text-slate-800 leading-tight">Lịch sử cập nhật trạng thái</h3>
@@ -1356,13 +1476,13 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                   </div>
                 </div>
 
-                <div className="p-8">
+                <div className="p-4 md:p-8">
                   {detailLogs.length === 0 ? (
                     <div className="text-center py-10 italic text-slate-400">
                       Hệ thống chưa ghi nhận bất kỳ mốc xử lý nào cho báo cáo này.
                     </div>
                   ) : (
-                    <div className="relative pl-8 space-y-12">
+                    <div className="relative pl-7 md:pl-8 space-y-8 md:space-y-12">
                       {/* Vertical Timeline Line */}
                       <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
 

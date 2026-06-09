@@ -541,12 +541,12 @@ export const FacilitySecurityModule: React.FC = () => {
     <div className="min-h-full flex flex-col gap-6">
       {/* Header & Tabs */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 shadow-sm animate-pulse-slow">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 shadow-sm animate-pulse-slow shrink-0">
              <AlertTriangle size={24} />
           </div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none uppercase">Sự cố ngoài y khoa nghiêm trọng</h2>
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-tight uppercase break-words">Sự cố ngoài y khoa nghiêm trọng</h2>
           </div>
         </div>
 

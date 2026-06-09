@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS public.kq_danh_gia_83tc_to (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     phieu_id TEXT NOT NULL,
-    nguoi_tao_id UUID REFERENCES auth.users(id),
+    nguoi_tao_id UUID REFERENCES public.users(id),
     ngay_danh_gia DATE NOT NULL,
     nguoi_danh_gia TEXT NOT NULL,
     don_vi_duoc_danh_gia TEXT NOT NULL,
@@ -34,6 +34,15 @@ CREATE INDEX IF NOT EXISTS idx_83tc_to_date ON public.kq_danh_gia_83tc_to(ngay_d
 
 -- Enable RLS
 ALTER TABLE public.kq_danh_gia_83tc_to ENABLE ROW LEVEL SECURITY;
+
+-- The app authenticates against public.users, so creator ownership must use
+-- the same user table instead of Supabase Auth.
+ALTER TABLE public.kq_danh_gia_83tc_to
+    DROP CONSTRAINT IF EXISTS kq_danh_gia_83tc_to_nguoi_tao_id_fkey;
+
+ALTER TABLE public.kq_danh_gia_83tc_to
+    ADD CONSTRAINT kq_danh_gia_83tc_to_nguoi_tao_id_fkey
+    FOREIGN KEY (nguoi_tao_id) REFERENCES public.users(id);
 
 -- Policies
 -- The application uses its own users table/localStorage auth, not Supabase Auth.

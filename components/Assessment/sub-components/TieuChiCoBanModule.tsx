@@ -3,13 +3,13 @@ import { TieuChiCoBan } from '../types/tieuChiCoBan';
 import { tieuChiCoBanService } from '../services/tieuChiCoBanService';
 import { TieuChiCoBanList } from './TieuChiCoBanList';
 import { TieuChiCoBanForm } from './TieuChiCoBanForm';
-import { ArrowLeft, ClipboardList } from 'lucide-react';
 
 interface TieuChiCoBanModuleProps {
   setParentViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
+  onBack?: () => void;
 }
 
-export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParentViewMode }) => {
+export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParentViewMode, onBack }) => {
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [assessments, setAssessments] = useState<TieuChiCoBan[]>([]);
@@ -90,6 +90,7 @@ export const TieuChiCoBanModule: React.FC<TieuChiCoBanModuleProps> = ({ setParen
           onEdit={handleEdit}
           onView={handleView}
           onDelete={handleDelete}
+          onBack={onBack}
         />
       ) : (
         <TieuChiCoBanForm

@@ -16,9 +16,11 @@ import { SupervisionProvider, useSupervision } from './components/SupervisionCon
 import { HeaderUserMenu } from './components/HeaderUserMenu';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { fetchUnreadNotifications, markNotificationAsRead, subscribeToNotifications, Notification } from './notificationApi';
+import { supabase } from './supabaseClient';
 import { PermissionsProvider, usePermissions } from './contexts/PermissionsContext';
 import { IndicatorsProvider, useIndicators } from './components/IndicatorsContext';
 import { IndicatorCategory } from './types';
+// Mobile overview will dynamically import data services to avoid module-init side effects
 
 // --- Reusable Nav Item ---
 const NavItem = ({ icon, label, active, onClick, collapsed }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; collapsed: boolean; }) => (
@@ -45,7 +47,7 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
 
   const handleSubNavClick = (cat: SupervisionCategory) => {
     onSelectModule();
-    setCategory(null);
+    setCategory(cat);
   }
 
   const { canView } = usePermissions();
@@ -240,6 +242,8 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
   );
 };
 
+// Mobile overview removed: component and quick stat tiles now disabled on mobile per request
+
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString: string) => {
@@ -292,6 +296,7 @@ const AppContent: React.FC = () => {
   const { category: supervisionCategory, setCategory: setSupervisionCategory } = useSupervision();
   const { category: indicatorCategory, setCategory: setIndicatorCategory } = useIndicators();
   const [mobileSearch, setMobileSearch] = useState('');
+  const [mobileBannerUrl, setMobileBannerUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const annotateMobileTables = () => {
@@ -376,6 +381,29 @@ const AppContent: React.FC = () => {
     navigateLogic(module);
   };
 
+  const hasMobileBackTarget =
+    currentModule !== ModuleType.DASHBOARD ||
+    (currentModule === ModuleType.SUPERVISION && !!supervisionCategory) ||
+    (currentModule === ModuleType.INDICATORS && !!indicatorCategory);
+
+  const handleMobileBack = () => {
+    const event = new CustomEvent('app-mobile-back', { cancelable: true });
+    window.dispatchEvent(event);
+    if (event.defaultPrevented) return;
+
+    if (currentModule === ModuleType.SUPERVISION && supervisionCategory) {
+      setSupervisionCategory(null);
+      return;
+    }
+
+    if (currentModule === ModuleType.INDICATORS && indicatorCategory) {
+      setIndicatorCategory(null);
+      return;
+    }
+
+    handleModuleChange(ModuleType.DASHBOARD);
+  };
+
   const navigateLogic = (module: ModuleType) => {
     // Allow access if explicitly checking notifications (bypass restriction)
     if (module === ModuleType.SETTINGS && !canAccessSettings && activeSettingsTab !== 'NOTI') {
@@ -439,13 +467,12 @@ const AppContent: React.FC = () => {
 
   const renderMobileHome = () => (
     <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
-        <img
-          src="https://i.postimg.cc/13Tv4Z60/HOP-CA.png"
-          alt="Họp ca"
-          className="h-auto w-full object-cover"
-        />
-      </div>
+
+      {mobileBannerUrl && (
+        <div className="w-full overflow-hidden rounded-2xl">
+          <img src={mobileBannerUrl} alt="Banner" className="w-full h-40 object-cover" />
+        </div>
+      )}
 
       <div className="function-icon-grid">
         {filteredMobileModules.map((item) => {
@@ -479,6 +506,31 @@ const AppContent: React.FC = () => {
     });
 
     return unsubscribe;
+  }, []);
+
+  // Load mobile banner from cai_dat_giao_dien (single row config)
+  useEffect(() => {
+    let mounted = true;
+    const loadBanner = async () => {
+      try {
+        if (!supabase) return;
+        const { data, error } = await supabase.from('cai_dat_giao_dien').select('*').order('created_at', { ascending: false }).limit(1).single();
+        if (error) return;
+        if (data && data.anh) {
+          try {
+            const { data: urlData } = supabase.storage.from('avatar').getPublicUrl(data.anh || '');
+            if (mounted && urlData?.publicUrl) setMobileBannerUrl(urlData.publicUrl);
+          } catch (e) {
+            console.error('Error getting banner public url', e);
+          }
+        }
+      } catch (e) {
+        console.error('Error loading mobile banner', e);
+      }
+    };
+
+    loadBanner();
+    return () => { mounted = false; };
   }, []);
 
   const loadNotifications = async () => {
@@ -638,15 +690,9 @@ const AppContent: React.FC = () => {
 
           <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/95 px-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden">
             <div className="mx-auto flex max-w-md justify-center gap-3">
-              {((currentModule === ModuleType.SUPERVISION && supervisionCategory) || (currentModule === ModuleType.INDICATORS && indicatorCategory)) && (
+              {hasMobileBackTarget && (
                 <button
-                  onClick={() => {
-                    if (currentModule === ModuleType.SUPERVISION) {
-                      setSupervisionCategory(null);
-                    } else if (currentModule === ModuleType.INDICATORS) {
-                      setIndicatorCategory(null);
-                    }
-                  }}
+                  onClick={handleMobileBack}
                   className="flex min-w-24 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:text-primary-600"
                 >
                   <ArrowLeft size={22} />

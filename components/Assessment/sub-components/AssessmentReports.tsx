@@ -6,9 +6,10 @@ import { StandardMeasurementModule } from './StandardMeasurementModule';
 interface AssessmentReportsProps {
   setViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
   onSubModuleChange: (active: boolean) => void;
+  onBack?: () => void;
 }
 
-export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMode, onSubModuleChange }) => {
+export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMode, onSubModuleChange, onBack }) => {
   const [activeSubModule, setActiveSubModule] = useState<string | null>(null);
 
   const handleSubModuleSelect = (id: string) => {
@@ -22,16 +23,27 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
     setViewMode('LIST');
   };
 
+  React.useEffect(() => {
+    const handleMobileBack = (event: Event) => {
+      if (!activeSubModule) return;
+      event.preventDefault();
+      handleBack();
+    };
+
+    window.addEventListener('app-mobile-back', handleMobileBack);
+    return () => window.removeEventListener('app-mobile-back', handleMobileBack);
+  }, [activeSubModule]);
+
   if (activeSubModule === 'standard-1') {
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4"
+          className="hidden"
         >
           <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
         </button>
-        <TieuChiCoBanModule setParentViewMode={setViewMode} />
+        <TieuChiCoBanModule setParentViewMode={setViewMode} onBack={handleBack} />
       </div>
     );
   }
@@ -41,11 +53,11 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4"
+          className="hidden"
         >
           <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
         </button>
-        <StandardMeasurementModule setParentViewMode={setViewMode} />
+        <StandardMeasurementModule setParentViewMode={setViewMode} onBack={handleBack} />
       </div>
     );
   }
@@ -114,6 +126,18 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
           ))}
         </div>
       </div>
+
+      {onBack && (
+        <div className="hidden justify-start md:flex">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+          >
+            <ArrowLeft size={14} /> Quay lại
+          </button>
+        </div>
+      )}
     </div>
   );
 };

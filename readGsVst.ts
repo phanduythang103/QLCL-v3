@@ -46,10 +46,10 @@ import { compressFile } from './utils/compression';
 export const uploadVstImage = async (file: File) => {
   const compressedFile = await compressFile(file);
   const fileExt = compressedFile.name.split('.').pop();
-  const fileName = `${Math.random()}.${fileExt}`;
-  const filePath = `${fileName}`;
+  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+  const filePath = `hand_hygiene/${fileName}`;
 
-  const { error: uploadError, data } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from('vst')
     .upload(filePath, compressedFile, { cacheControl: '31536000' });
 

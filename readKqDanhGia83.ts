@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { fetchDmDonVi, type DmDonVi } from './readDmDonVi';
 import { fetchData83tc, type Data83tc } from './readData83tc';
+import { calculateAssessment83Scores } from './utils/assessment83Scoring';
 
 export { fetchDmDonVi as fetchDonVi, type DmDonVi as DonVi } from './readDmDonVi';
 export { fetchData83tc, type Data83tc };
@@ -59,7 +60,7 @@ export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
     while (true) {
         const { data: rawData, error } = await supabase
             .from('kq_danh_gia_83tc')
-            .select('phieu_id, ngay_danh_gia, nguoi_danh_gia, nguoi_tao_id, don_vi_duoc_danh_gia, nhom, dat_muc, phan, chuong, ma_tieu_muc, dat, created_at, muc_dat_duoc')
+            .select('phieu_id, ngay_danh_gia, nguoi_danh_gia, nguoi_tao_id, don_vi_duoc_danh_gia, nhom, dat_muc, phan, chuong, tieu_chi, ma_tieu_muc, dat, created_at, muc_dat_duoc')
             .range(from, from + PAGE_SIZE - 1);
 
         if (error) throw error;
@@ -94,59 +95,20 @@ export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
             return c.phu_trach.split(',').map((s: string) => s.trim()).includes(unitCode);
         });
 
-        // 2. Identify unique "Criteria (Tiêu chí)" names assigned to this unit
-        const assignedTieuChiNames = [...new Set(assignedCriteria.map((c: Data83tc) => c.tieu_chi).filter(Boolean))];
-
-        // 3. Group assignment into Hierarchy: Phan -> Chuong -> TieuChi
-        const assignmentHierarchy: any = {};
-        assignedCriteria.forEach((c: Data83tc) => {
-            const p = c.phan || "Khác";
-            const ch = c.chuong || "Khác";
-            const tc = c.tieu_chi || "Khác";
-            if (!assignmentHierarchy[p]) assignmentHierarchy[p] = {};
-            if (!assignmentHierarchy[p][ch]) assignmentHierarchy[p][ch] = new Set();
-            assignmentHierarchy[p][ch].add(tc);
-        });
-
-        // 4. Map Results from DB to Criteria Names
-        const resultsByTc: Record<string, number> = {};
-        rows.forEach(r => {
-            const tcName = r.tieu_chi;
-            if (!tcName) return;
-            const level = r.muc_dat_duoc || 1;
-            if (!resultsByTc[tcName] || level > resultsByTc[tcName]) {
-                resultsByTc[tcName] = level;
-            }
-        });
-
-        // 5. Hierarchical Averaging
-        const phanScores: number[] = [];
-        console.group(`Sheet Calculation: ${phieuId} for unit ${unitCode}`);
-        Object.keys(assignmentHierarchy).forEach(p => {
-            const chuongScores: number[] = [];
-            Object.keys(assignmentHierarchy[p]).forEach(ch => {
-                const tcNamesInChuong = Array.from(assignmentHierarchy[p][ch] as Set<string>);
-                const tcLevels = tcNamesInChuong.map(name => resultsByTc[name] || 1);
-
-                if (tcLevels.length > 0) {
-                    const chuongAvg = tcLevels.reduce((a, b) => a + b, 0) / tcLevels.length;
-                    chuongScores.push(chuongAvg);
-                    console.log(`  - Chapter ${ch}: ${chuongAvg.toFixed(2)} (${tcLevels.length} items)`);
-                }
-            });
-
-            if (chuongScores.length > 0) {
-                const phanAvg = chuongScores.reduce((a, b) => a + b, 0) / chuongScores.length;
-                phanScores.push(phanAvg);
-                console.log(`- Part ${p}: ${phanAvg.toFixed(2)} (${chuongScores.length} chapters)`);
-            }
-        });
-
-        // Use a fixed denominator of 5 for Parts as per "83 criteria" standard
-        const TOTAL_PARTS_CONFIGURED = 5;
-        const finalScore = phanScores.length > 0 ? phanScores.reduce((a, b) => a + b, 0) / TOTAL_PARTS_CONFIGURED : 0;
-        console.log(`Final Sheet Score (divided by ${TOTAL_PARTS_CONFIGURED} parts): ${finalScore.toFixed(2)}`);
-        console.groupEnd();
+        const scoringCriteria = assignedCriteria.length > 0
+            ? assignedCriteria
+            : rows.map((row: any) => ({
+                phan: row.phan,
+                chuong: row.chuong,
+                tieu_chi: row.tieu_chi,
+                muc: row.nhom || row.muc_dat_duoc,
+                ma_tieu_muc: row.ma_tieu_muc
+            }));
+        const finalScore = calculateAssessment83Scores(
+            scoringCriteria,
+            rows,
+            { includeUnevaluatedAsLevelOne: true }
+        ).average || 0;
 
         return {
             phieu_id: phieuId,
@@ -154,7 +116,6 @@ export async function fetchAssessmentSheets(): Promise<AssessmentSheet[]> {
             nguoi_danh_gia: first.nguoi_danh_gia,
             nguoi_tao_id: first.nguoi_tao_id,
             don_vi_duoc_danh_gia: first.don_vi_duoc_danh_gia,
-            nhom: first.nhom,
             total_criteria: rows.length,
             passed_criteria: rows.filter((r: any) => r.dat).length,
             score: Number(finalScore.toFixed(2)),

@@ -42,6 +42,16 @@ export const useAssessment = () => {
   const [nguoiDanhGia, setNguoiDanhGia] = useState(user?.full_name || "");
   const [donViDuocDanhGia, setDonViDuocDanhGia] = useState(uDept);
 
+  const normalizeOwnerName = (value?: string | null) => (value || '').trim().toLowerCase();
+  const canModifySheet = useCallback((sheet?: AssessmentSheet | null) => {
+    if (!sheet) return false;
+    if (user?.id && sheet.nguoi_tao_id === user.id) return true;
+
+    // Backward compatibility for older sheets saved before nguoi_tao_id was populated.
+    return !sheet.nguoi_tao_id &&
+      normalizeOwnerName(sheet.nguoi_danh_gia) === normalizeOwnerName(user?.full_name || user?.username);
+  }, [user?.full_name, user?.id, user?.username]);
+
   // Expanded Groups
   const [expandedPhan, setExpandedPhan] = useState<string | null>(null);
   const [expandedChuong, setExpandedChuong] = useState<string | null>(null);
@@ -60,6 +70,23 @@ export const useAssessment = () => {
     });
     return hierarchy;
   }, [criteria]);
+
+  const filterCriteriaForCurrentAssessment = useCallback((
+    allCriteria: Data83tc[],
+    teamName?: string | null,
+    departmentCode = uDeptCode
+  ) => {
+    if (activeTab === 'TEAM_ASSESSMENT') {
+      if (!teamName) return [];
+      return allCriteria.filter(item =>
+        (item.to_cham_diem || '').split(',').map(value => value.trim()).includes(teamName)
+      );
+    }
+
+    return allCriteria.filter(item =>
+      (item.phu_trach || '').split(',').map(value => value.trim()).includes(departmentCode)
+    );
+  }, [activeTab, uDeptCode]);
 
   const loadSheets = useCallback(async () => {
     setLoading(true);
@@ -115,29 +142,23 @@ export const useAssessment = () => {
   }, [isAdmin, user?.id]);
 
   const handleEditSheet = async (sheet: AssessmentSheet) => {
+    if (!canModifySheet(sheet)) {
+      alert("Bạn chỉ có quyền xem phiếu này. Chỉ người tạo phiếu mới được chỉnh sửa.");
+      return;
+    }
+
     setLoading(true);
     try {
       setEditingPhieuId(sheet.phieu_id);
       setDonViDuocDanhGia(sheet.don_vi_duoc_danh_gia);
       setNgayDanhGia(sheet.ngay_danh_gia);
       setNguoiDanhGia(sheet.nguoi_danh_gia);
-      setSelectedTeam(sheet.nhom || null); // Team name is stored in nhom for sheets
+      const sheetTeam = activeTab === 'TEAM_ASSESSMENT' ? sheet.nhom || null : null;
+      setSelectedTeam(sheetTeam);
 
       const all = await assessmentService.fetchCriteria();
-      const filtered = isAdmin ? all : all.filter(c => {
-        const itemPhuTrach = (c.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
-        const itemTeams = (c.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
-
-        // Match by Dept
-        const matchDept = itemPhuTrach.includes(uDeptCode);
-
-        // Match by ANY of user's teams
-        const matchAnyTeam = itemTeams.some(t => userTeams.includes(t));
-
-        return matchDept || matchAnyTeam;
-      });
-      setCriteria(filtered);
-
+      const sheetDeptCode = (sheet.don_vi_duoc_danh_gia || '').split('-')[0].trim();
+      const filtered = filterCriteriaForCurrentAssessment(all, sheetTeam, sheetDeptCode);
       let kq;
       if (activeTab === 'TEAM_ASSESSMENT') {
         kq = await teamAssessment83Service.fetchResultsByPhieuId(sheet.phieu_id);
@@ -152,6 +173,21 @@ export const useAssessment = () => {
           hinh_anh_minh_chung: r.hinh_anh_minh_chung || []
         };
       });
+      const configuredCodes = new Set(filtered.map(item => item.ma_tieu_muc));
+      const savedCriteria = kq
+        .filter(result => !configuredCodes.has(result.ma_tieu_muc))
+        .map(result => ({
+          phan: result.phan || null,
+          chuong: result.chuong || null,
+          tieu_chi: result.tieu_chi || null,
+          muc: result.nhom || String(result.muc_dat_duoc || 1),
+          ma_tieu_muc: result.ma_tieu_muc,
+          tieu_muc: result.tieu_muc || null,
+          phu_trach: null,
+          don_vi_phoi_hop: null,
+          to_cham_diem: activeTab === 'TEAM_ASSESSMENT' ? sheetTeam : null
+        } as Data83tc));
+      setCriteria([...filtered, ...savedCriteria]);
       setResults(newResults);
       setViewMode('FORM');
     } catch (err) {
@@ -172,15 +208,7 @@ export const useAssessment = () => {
     setLoading(true);
     try {
       const all = await assessmentService.fetchCriteria();
-      const filtered = isAdmin ? all : all.filter(c => {
-        const itemPhuTrach = (c.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
-        const itemTeams = (c.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
-
-        const matchDept = itemPhuTrach.includes(uDeptCode);
-        const matchAnyTeam = itemTeams.some(t => userTeams.includes(t));
-
-        return matchDept || matchAnyTeam;
-      });
+      const filtered = filterCriteriaForCurrentAssessment(all, teamName);
       setCriteria(filtered);
       setViewMode('FORM');
     } catch (err) {
@@ -197,21 +225,20 @@ export const useAssessment = () => {
       } else if (userTeams.length > 0) {
         setShowTeamSelect(true);
       } else {
-        handleStartAssessment();
+        alert("Bạn chưa được phân công vào tổ chấm điểm nào.");
       }
     } else {
-      // Standard assessment tab logic
-      if (userTeams.length === 1 && !isAdmin) {
-        handleStartAssessment(userTeams[0]);
-      } else if (userTeams.length > 0) {
-        setShowTeamSelect(true);
-      } else {
-        handleStartAssessment();
-      }
+      handleStartAssessment();
     }
   };
 
   const handleDeleteSheet = async (phieuId: string) => {
+    const sheet = sheetList.find(item => item.phieu_id === phieuId);
+    if (!canModifySheet(sheet)) {
+      alert("Bạn chỉ có quyền xem phiếu này. Chỉ người tạo phiếu mới được xóa.");
+      return;
+    }
+
     if (activeTab === 'TEAM_ASSESSMENT') {
       await teamAssessment83Service.deleteSheet(phieuId);
     } else {
@@ -229,8 +256,38 @@ export const useAssessment = () => {
       } else {
         data = await assessmentService.fetchResultsByPhieuId(sheet.phieu_id);
       }
+      const allCriteria = await assessmentService.fetchCriteria();
+      const relevantCriteria = filterCriteriaForCurrentAssessment(
+        allCriteria,
+        activeTab === 'TEAM_ASSESSMENT' ? sheet.nhom : null,
+        (sheet.don_vi_duoc_danh_gia || '').split('-')[0].trim()
+      );
+      const resultByCode = new Map(data.map(item => [item.ma_tieu_muc, item]));
+      const completeData = relevantCriteria.map(item => {
+        const savedResult = resultByCode.get(item.ma_tieu_muc!);
+        if (savedResult) return savedResult;
+        return {
+          ngay_danh_gia: sheet.ngay_danh_gia,
+          nguoi_danh_gia: sheet.nguoi_danh_gia,
+          don_vi_duoc_danh_gia: sheet.don_vi_duoc_danh_gia,
+          phan: item.phan || "",
+          chuong: item.chuong || "",
+          tieu_chi: item.tieu_chi || "",
+          ma_tieu_muc: item.ma_tieu_muc!,
+          tieu_muc: item.tieu_muc || "",
+          nhom: item.muc || "",
+          dat: false,
+          khong_dat: false,
+          khong_danh_gia: false,
+          dat_muc: ""
+        } as KqDanhGia83;
+      });
+      const configuredCodes = new Set(relevantCriteria.map(item => item.ma_tieu_muc));
+      data.forEach(item => {
+        if (!configuredCodes.has(item.ma_tieu_muc)) completeData.push(item);
+      });
       setViewingPhieuId(sheet.phieu_id);
-      setViewingData(data);
+      setViewingData(completeData.length > 0 ? completeData : data);
       setViewMode('DETAIL');
     } catch (err) {
       console.error(err);
@@ -241,18 +298,34 @@ export const useAssessment = () => {
 
   const handleSaveAssessment = async () => {
     if (!donViDuocDanhGia) return alert("Vui lòng nhập đơn vị được đánh giá.");
+    if (editingPhieuId) {
+      const editingSheet = sheetList.find(sheet => sheet.phieu_id === editingPhieuId);
+      if (!canModifySheet(editingSheet)) {
+        alert("Bạn chỉ có quyền xem phiếu này. Chỉ người tạo phiếu mới được chỉnh sửa.");
+        setViewMode('LIST');
+        return;
+      }
+    }
     setSaving(true);
     try {
-      const phieuId = editingPhieuId || `83TC-${Date.now()}`;
+      const phieuId = editingPhieuId || crypto.randomUUID();
       const payload: KqDanhGia83[] = criteria
-        .filter(c => results[c.ma_tieu_muc!]?.dat_muc)
+        .filter(c => {
+          const result = results[c.ma_tieu_muc!];
+          return Boolean(
+            result?.dat_muc ||
+            result?.ghi_chu?.trim() ||
+            result?.hinh_anh_minh_chung?.length
+          );
+        })
         .map(c => {
           const res = results[c.ma_tieu_muc!];
           const itemLevelStr = c.muc || '1';
           const itemLevel = parseInt(itemLevelStr.replace('Mức ', '')) || 1;
 
-          return {
+          const resultItem: KqDanhGia83 = {
             phieu_id: phieuId,
+            nguoi_tao_id: user?.id || "",
             ngay_danh_gia: ngayDanhGia,
             nguoi_danh_gia: nguoiDanhGia,
             don_vi_duoc_danh_gia: donViDuocDanhGia,
@@ -262,26 +335,36 @@ export const useAssessment = () => {
             ma_tieu_muc: c.ma_tieu_muc!,
             tieu_muc: c.tieu_muc || "",
             nhom: c.muc || "",
-            dat_muc: res.dat_muc!,
+            dat_muc: res.dat_muc || "",
             dat: res.dat_muc === "Đạt",
             khong_dat: res.dat_muc === "Chưa đạt",
             khong_danh_gia: res.dat_muc === "Không đánh giá",
             ghi_chu: res.ghi_chu || "",
             hinh_anh_minh_chung: res.hinh_anh_minh_chung || [],
-            to_danh_gia: selectedTeam || "",
             muc_dat_duoc: itemLevel
           };
+
+          if (activeTab === 'TEAM_ASSESSMENT') {
+            resultItem.to_danh_gia = selectedTeam || "";
+          }
+
+          return resultItem;
         });
 
+      if (payload.length === 0) {
+        alert("Vui lòng chấm điểm hoặc nhập ghi chú trước khi lưu phiếu.");
+        return;
+      }
+
       if (editingPhieuId) {
-        if (selectedTeam) {
+        if (activeTab === 'TEAM_ASSESSMENT') {
           await teamAssessment83Service.deleteSheet(editingPhieuId);
         } else {
           await assessmentService.deleteSheet(editingPhieuId);
         }
       }
 
-      if (selectedTeam) {
+      if (activeTab === 'TEAM_ASSESSMENT') {
         await teamAssessment83Service.saveResultsBulk(payload);
       } else {
         await assessmentService.saveResultsBulk(payload);
@@ -290,7 +373,13 @@ export const useAssessment = () => {
       setViewMode('LIST');
       loadSheets();
     } catch (err) {
-      alert("Lỗi khi lưu phiếu chấm điểm.");
+      console.error("Lỗi khi lưu phiếu chấm điểm:", err);
+      const message = err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : "Không xác định được nguyên nhân.";
+      alert(`Lỗi khi lưu phiếu chấm điểm: ${message}`);
     } finally {
       setSaving(false);
     }

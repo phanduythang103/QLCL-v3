@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, User, Building, Trash2, Edit, ChevronRight, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Edit, ChevronRight, FileText, CheckCircle } from 'lucide-react';
 import { TieuChiCoBan } from '../types/tieuChiCoBan';
 
 interface Props {
@@ -9,9 +9,10 @@ interface Props {
   onView: (data: TieuChiCoBan) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  onBack?: () => void;
 }
 
-export const TieuChiCoBanList: React.FC<Props> = ({ assessments, loading, onEdit, onView, onDelete, onAddNew }) => {
+export const TieuChiCoBanList: React.FC<Props> = ({ assessments, loading, onEdit, onView, onDelete, onAddNew, onBack }) => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
@@ -23,7 +24,7 @@ export const TieuChiCoBanList: React.FC<Props> = ({ assessments, loading, onEdit
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="hidden md:flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-emerald-50 text-[#009900] rounded-2xl flex items-center justify-center shadow-inner">
             <FileText size={24} />
@@ -39,6 +40,41 @@ export const TieuChiCoBanList: React.FC<Props> = ({ assessments, loading, onEdit
         >
           <Edit size={16} /> Bắt đầu đánh giá mới
         </button>
+      </div>
+
+      <div className="md:hidden space-y-3">
+        <div className="grid grid-cols-2 gap-3 rounded-[1.75rem] border border-slate-100 bg-white p-4 shadow-xl shadow-slate-200/40">
+          <div className="flex min-h-32 flex-col items-center justify-center gap-3 rounded-2xl bg-slate-50 px-3 py-4 text-center border border-slate-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-[#009900]">
+              <FileText size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-[11px] font-black uppercase leading-snug text-slate-800">Lịch sử đánh giá</h3>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Tổng số: {assessments.length}</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onAddNew}
+            className="flex min-h-32 flex-col items-center justify-center gap-3 rounded-2xl bg-[#009900] px-3 py-4 text-center text-white shadow-lg shadow-emerald-100 active:scale-95 transition-all"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 border border-white/20">
+              <Edit size={24} />
+            </div>
+            <span className="text-[11px] font-black uppercase leading-snug">Bắt đầu đánh giá mới</span>
+          </button>
+        </div>
+
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98] md:inline-flex"
+          >
+            <ArrowLeft size={14} /> Quay lại
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

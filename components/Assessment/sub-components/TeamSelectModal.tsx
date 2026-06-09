@@ -10,10 +10,10 @@ interface TeamSelectModalProps {
 
 export const TeamSelectModal: React.FC<TeamSelectModalProps> = ({ teams, onSelect, onClose, hidePersonalOption }) => {
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4">
+      <div className="max-h-[92dvh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in slide-in-from-bottom-4 sm:zoom-in duration-300">
         {/* Header */}
-        <div className="bg-gradient-to-br from-[#009900] to-[#007700] p-6 text-white relative">
+        <div className="bg-gradient-to-br from-[#009900] to-[#007700] p-5 sm:p-6 text-white relative">
           <button 
             onClick={onClose}
             className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
@@ -25,19 +25,19 @@ export const TeamSelectModal: React.FC<TeamSelectModalProps> = ({ teams, onSelec
               <Users2 size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-black uppercase tracking-tight">Chọn Tổ chấm điểm</h3>
+              <h3 className="pr-8 text-base sm:text-lg font-black uppercase tracking-tight">Chọn Tổ chấm điểm</h3>
               <p className="text-white/70 text-xs font-bold uppercase italic">Bạn đang tham gia nhiều tổ đánh giá</p>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           <p className="text-sm text-slate-500 font-bold mb-4">
             Vui lòng chọn tổ mà bạn đang đại diện để hiển thị đúng cấu hình tiêu chí được phân công:
           </p>
 
-          <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3 max-h-[46dvh] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
             {teams.map((team, index) => (
               <button
                 key={index}
@@ -85,7 +85,7 @@ export const TeamSelectModal: React.FC<TeamSelectModalProps> = ({ teams, onSelec
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-6">
           <p className="text-[10px] text-slate-400 font-bold uppercase italic tabular-nums leading-relaxed max-w-[200px]">
             Hệ thống sẽ lọc 83 tiêu chí theo phân công của tổ bạn đã chọn.
           </p>

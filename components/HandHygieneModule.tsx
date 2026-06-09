@@ -65,7 +65,10 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
     return data.filter(item => {
       const range = getDateRange(filterConfig.type, filterConfig.startDate, filterConfig.endDate);
       const matchTime = isDateInRange(item.ngay_giam_sat, range);
-      const matchDept = filterConfig.department === 'Tất cả' || item.khoa_duoc_giam_sat === filterConfig.department;
+      const departmentQuery = filterConfig.department.trim().toLowerCase();
+      const matchDept = !departmentQuery
+        || departmentQuery === 'tất cả'
+        || item.khoa_duoc_giam_sat.toLowerCase().includes(departmentQuery);
       return matchDept && matchTime;
     });
   }, [data, filterConfig]);
@@ -112,16 +115,18 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Khoa giám sát</label>
-              <select 
+              <input
+                type="text"
+                list="vst-department-filter-options"
                 value={filterConfig.department}
                 onChange={e => setFilterConfig({...filterConfig, department: e.target.value})}
+                placeholder="Gõ để tìm khoa..."
                 className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-indigo-500/10 focus:ring-4 transition-all"
-              >
+              />
+              <datalist id="vst-department-filter-options">
                 <option value="Tất cả">Tất cả khoa</option>
-                {departmentList.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
+                {departmentList.map(dept => <option key={dept} value={dept} />)}
+              </datalist>
             </div>
             <div className="flex items-end">
               <button 
@@ -413,15 +418,9 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Khoa</span>
-                <span className="text-[11px] font-black text-slate-700 uppercase leading-tight truncate block">{item.khoa_duoc_giam_sat}</span>
-              </div>
-              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Đối tượng</span>
-                <span className="text-[11px] font-black text-slate-700 leading-tight truncate block">{item.nguoi_duoc_giam_sat} ({item.doi_tuong})</span>
-              </div>
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1">
+              <span className="text-[11px] font-black text-slate-700 leading-tight block">{item.nguoi_duoc_giam_sat || 'Chưa nhập họ tên'}</span>
+              <span className="text-[10px] font-bold text-slate-500 leading-tight block">Khoa: {item.khoa_duoc_giam_sat}</span>
             </div>
 
             <div className="flex gap-2">
@@ -559,8 +558,9 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
       if (item?.id) await updateGsVst(item.id, formData);
       else await addGsVst(formData);
       onSaved();
-    } catch (err) {
-      alert('Lỗi khi lưu giám sát');
+    } catch (err: any) {
+      console.error('Error saving hand hygiene monitoring:', err);
+      alert('Lỗi khi lưu giám sát: ' + (err?.message || 'Không rõ nguyên nhân'));
     } finally {
       setSaving(false);
     }
@@ -631,15 +631,18 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
                   <Building2 size={14} /> Khoa giám sát
                 </label>
-                <select 
+                <input
+                  type="text"
+                  list="vst-form-department-options"
                   value={formData.khoa_duoc_giam_sat} 
                   onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})} 
                   disabled={isReadOnly} 
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none"
-                >
-                   <option value="">Chọn khoa/phòng</option>
-                   {departmentList.map((d: string) => <option key={d} value={d}>{d}</option>)}
-                </select>
+                  placeholder="Gõ để tìm hoặc nhập khoa/phòng"
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                />
+                <datalist id="vst-form-department-options">
+                  {departmentList.map((d: string) => <option key={d} value={d} />)}
+                </datalist>
               </div>
 
               <div className="space-y-2 group">
@@ -671,7 +674,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
             </div>
 
             {/* Section 2: Checklist Quan sát - Table from Template */}
-            <div className="space-y-4">
+            <div className={`space-y-4 ${isReadOnly ? 'hidden md:block' : ''}`}>
               <div className="flex items-center border-b border-slate-100 pb-3">
                  <h3 className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight">
                     <CheckCircle2 size={18} className="text-emerald-600" /> Bảng quan sát chi tiết (5 Thời điểm)
@@ -684,8 +687,8 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     <tr>
                       <th className="p-4 border-b w-[280px]">Thời điểm</th>
                       <th className="p-4 border-b text-center w-20">Cơ hội</th>
-                      <th className="p-4 border-b text-center w-20">Tuân thủ</th>
-                      <th className="p-4 border-b text-center w-20">Đúng KT</th>
+                      <th className={`p-4 border-b text-center w-20 ${isReadOnly ? 'text-black' : ''}`}>Tuân thủ</th>
+                      <th className={`p-4 border-b text-center w-20 ${isReadOnly ? 'text-black' : ''}`}>Đúng KT</th>
                       <th className="p-4 border-b">Ghi chú chi tiết</th>
                     </tr>
                   </thead>
@@ -728,17 +731,22 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                           />
                         </td>
                         <td className="p-3">
-                          <input 
-                            type="text" 
-                            value={m.note} 
-                            onChange={e => {
-                               const newMoments = formData.checklist_data.moments.map((item: any) => item.id === m.id ? { ...item, note: e.target.value } : item);
-                               setFormData({ ...formData, checklist_data: { moments: newMoments } });
-                            }}
-                            disabled={isReadOnly}
-                            placeholder="..."
-                            className="w-full bg-transparent border-b border-transparent focus:border-emerald-300 outline-none px-2 py-1 text-xs font-bold italic text-slate-500"
-                          />
+                          {isReadOnly ? (
+                            String(m.note || '').trim() ? (
+                              <p className="px-2 py-1 text-xs font-bold text-black">{m.note}</p>
+                            ) : null
+                          ) : (
+                            <input 
+                              type="text" 
+                              value={m.note} 
+                              onChange={e => {
+                                const newMoments = formData.checklist_data.moments.map((item: any) => item.id === m.id ? { ...item, note: e.target.value } : item);
+                                setFormData({ ...formData, checklist_data: { moments: newMoments } });
+                              }}
+                              placeholder="..."
+                              className="w-full bg-transparent border-b border-transparent focus:border-emerald-300 outline-none px-2 py-1 text-xs font-bold italic text-slate-500"
+                            />
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -750,39 +758,39 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
               {/* Mobile Card List */}
               <div className="md:hidden space-y-4">
                 {formData.checklist_data.moments.map((m: any) => (
-                  <div key={m.id} className="bg-white border border-slate-100 rounded-[24px] overflow-hidden shadow-sm">
+                  <div key={m.id} className="bg-white border border-slate-200 rounded-[24px] overflow-hidden shadow-sm">
                     {/* Row 1: Name */}
-                    <div className="px-4 py-3 bg-slate-50 flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-black shrink-0">{m.id}</span>
-                      <span className="text-xs font-black text-slate-800 leading-tight uppercase tracking-tight">{m.name}</span>
+                    <div className="px-4 py-3.5 bg-slate-50 flex items-start gap-3">
+                      <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">{m.id}</span>
+                      <span className="text-[12px] font-black text-slate-900 leading-tight uppercase tracking-tight">{m.name}</span>
                     </div>
                     
                     {/* Row 2: Toggles */}
-                    <div className="p-4 flex gap-4 border-b border-slate-50 relative">
+                    <div className="px-4 pt-4 pb-3 flex gap-4 relative">
                       {/* Left: Compliance */}
                       <div className="flex-1 space-y-2">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block text-center">Tuân thủ</span>
+                        <span className={`text-[10px] font-black uppercase tracking-wider block text-center ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Tuân thủ</span>
                         <button 
                           type="button"
                           disabled={isReadOnly}
                           onClick={() => handleToggle(m.id, 'compliance')}
-                          className={`w-full py-2.5 px-3 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${m.compliance ? 'bg-[#009900] text-white border-[#007700] shadow-sm' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
+                          className={`w-full min-h-9 py-2 px-3 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${m.compliance ? 'bg-[#00a900] text-white border-[#009000] shadow-sm' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
                         >
                           {m.compliance ? 'Đạt' : 'K.Đạt'}
                         </button>
                       </div>
 
                       {/* Vertical Divider "I" */}
-                      <div className="w-[1px] h-10 bg-slate-200 self-end mb-1"></div>
+                      <div className="w-px h-11 bg-slate-200 self-end"></div>
 
                       {/* Right: Correct Technique */}
                       <div className="flex-1 space-y-2">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block text-center">Đúng kỹ thuật</span>
+                        <span className={`text-[10px] font-black uppercase tracking-wider block text-center ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Đúng kỹ thuật</span>
                         <button 
                           type="button"
                           disabled={isReadOnly || !m.compliance}
                           onClick={() => handleToggle(m.id, 'correct_technique')}
-                          className={`w-full py-2.5 px-3 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${m.correct_technique ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm' : 'bg-slate-100 text-slate-400 border-slate-200'} ${(!m.compliance && !isReadOnly) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                          className={`w-full min-h-9 py-2 px-3 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${m.correct_technique ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm' : 'bg-slate-100 text-slate-400 border-slate-200'} ${(!m.compliance && !isReadOnly) ? 'opacity-30 cursor-not-allowed' : ''}`}
                         >
                           {m.correct_technique ? 'Đạt' : 'K.Đạt'}
                         </button>
@@ -790,22 +798,27 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     </div>
 
                     {/* Row 3: Note */}
-                    <div className="p-3 px-4">
-                      <div className="relative">
-                        <FileText className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                        <input 
-                          type="text" 
-                          value={m.note} 
-                          onChange={e => {
-                             const newMoments = formData.checklist_data.moments.map((item: any) => item.id === m.id ? { ...item, note: e.target.value } : item);
-                             setFormData({ ...formData, checklist_data: { moments: newMoments } });
-                          }}
-                          disabled={isReadOnly}
-                          placeholder="Ghi chú thêm..."
-                          className="w-full bg-transparent border-none outline-none pl-6 py-1 text-[11px] font-medium text-slate-600 placeholder:text-slate-300"
-                        />
+                    {(!isReadOnly || String(m.note || '').trim()) && (
+                      <div className="px-4 pb-3">
+                        <div className="relative min-h-8 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <FileText className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={13} />
+                          {isReadOnly ? (
+                            <p className="pl-5 text-[10px] font-bold text-black">{m.note}</p>
+                          ) : (
+                            <input 
+                              type="text" 
+                              value={m.note} 
+                              onChange={e => {
+                                const newMoments = formData.checklist_data.moments.map((item: any) => item.id === m.id ? { ...item, note: e.target.value } : item);
+                                setFormData({ ...formData, checklist_data: { moments: newMoments } });
+                              }}
+                              placeholder="Ghi chú thêm..."
+                              className="w-full bg-transparent border-none outline-none pl-5 p-0 text-[10px] font-medium text-slate-600 placeholder:text-slate-300 focus:ring-0"
+                            />
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -818,11 +831,11 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     <span className="text-lg md:text-2xl font-black text-slate-800">{formData.tong_co_hoi}</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tuân thủ</span>
+                    <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Tuân thủ</span>
                     <span className="text-lg md:text-2xl font-black text-emerald-600">{formData.so_lan_tuan_thu}</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Đúng KT</span>
+                    <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Đúng KT</span>
                     <span className="text-lg md:text-2xl font-black text-indigo-600">{formData.so_lan_dung_ky_thuat}</span>
                   </div>
                 </div>
@@ -862,16 +875,23 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
             </div>
 
             {/* Notes Section */}
-            <div className="space-y-2">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Ghi chú chung</label>
-               <textarea 
-                 value={formData.ghi_chu_chung}
-                 onChange={e => setFormData({...formData, ghi_chu_chung: e.target.value})}
-                 disabled={isReadOnly}
-                 className="w-full px-6 py-4 bg-slate-50 border-none rounded-[24px] font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all h-24 resize-none"
-                 placeholder="Nhập ghi chú thêm nếu có..."
-               />
-            </div>
+            {(!isReadOnly || formData.ghi_chu_chung.trim()) && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Ghi chú chung</label>
+                {isReadOnly ? (
+                  <p className="w-full px-6 py-4 bg-slate-50 rounded-[24px] font-bold text-black whitespace-pre-wrap">
+                    {formData.ghi_chu_chung}
+                  </p>
+                ) : (
+                  <textarea 
+                    value={formData.ghi_chu_chung}
+                    onChange={e => setFormData({...formData, ghi_chu_chung: e.target.value})}
+                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-[24px] font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all h-24 resize-none"
+                    placeholder="Nhập ghi chú thêm nếu có..."
+                  />
+                )}
+              </div>
+            )}
           </form>
         </div>
 

@@ -7,11 +7,13 @@ import {
     BienBanXacMinh, ThanhVienDoan, NguoiThamDu,
     fetchBienBanXacMinh, addBienBanXacMinh, updateBienBanXacMinh, deleteBienBanXacMinh
 } from '../readBienBanXacMinh';
-import { fetchBaoCaoScyk, BaoCaoScyk } from '../readBaoCaoScyk';
+import { fetchBaoCaoScyk } from '../readBaoCaoScyk';
+import { fetchBcScnyknt } from '../readBcScnyknt';
 import { fetchNhanSuQlcl, NhanSuQlcl } from '../readNhanSuQlcl';
 import { useAuth } from '../contexts/AuthContext';
 import { exportBienBanToPdf } from '../utils/generateBienBanPdf';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import { LinkedIncident, incidentMatchesUserDepartment, mergeLinkedIncidents } from '../utils/incidentLinks';
 
 const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
     value: string,
@@ -25,7 +27,7 @@ const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
         <div className="relative w-full">
             <input
                 type="text"
-                className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent"
+                className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent"
                 value={value}
                 onChange={(e) => { onChange(e.target.value); setShow(true); }}
                 onFocus={() => setShow(true)}
@@ -33,11 +35,11 @@ const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
                 placeholder={placeholder}
             />
             {show && value.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto mt-1">
+                <div className="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto mt-1">
                     {list.filter(item => item.ho_ten.toLowerCase().includes(value.toLowerCase())).map(item => (
                         <div
                             key={item.id}
-                            className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-xs"
+                            className="px-3 py-3 sm:py-2 hover:bg-slate-100 cursor-pointer text-xs"
                             onClick={() => onSelect(item)}
                         >
                             <div className="font-black text-black uppercase text-table">{item.ho_ten}</div>
@@ -58,7 +60,7 @@ const VerificationMinutes = () => {
     const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
     const uDept = user?.department?.trim().toLowerCase() || '';
     const [items, setItems] = useState<BienBanXacMinh[]>([]);
-    const [incidents, setIncidents] = useState<BaoCaoScyk[]>([]);
+    const [incidents, setIncidents] = useState<LinkedIncident[]>([]);
     const [personnel, setPersonnel] = useState<NhanSuQlcl[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'PRINT' | 'VIEW'>('LIST');
@@ -94,13 +96,14 @@ const VerificationMinutes = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [minutesData, incidentData, personnelData] = await Promise.all([
+            const [minutesData, incidentData, nonMedicalIncidentData, personnelData] = await Promise.all([
                 fetchBienBanXacMinh(),
                 fetchBaoCaoScyk(),
+                fetchBcScnyknt(),
                 fetchNhanSuQlcl()
             ]);
             setItems(minutesData);
-            setIncidents(incidentData);
+            setIncidents(mergeLinkedIncidents(incidentData, nonMedicalIncidentData));
             setPersonnel(personnelData);
         } catch (error) {
             console.error(error);
@@ -183,6 +186,14 @@ const VerificationMinutes = () => {
             alert('Lỗi lưu dữ liệu: ' + e.message);
         }
     };
+
+    const verifiedIncidentIds = new Set(items.map(item => item.scyk_id).filter(Boolean));
+    const selectableIncidents = incidents.filter(inc => {
+        const isCurrentEditingIncident = editingItem?.scyk_id === inc.id;
+        const isUnverified = !verifiedIncidentIds.has(inc.id);
+        const matchesDepartment = isAdmin || incidentMatchesUserDepartment(inc, uDept);
+        return matchesDepartment && (isUnverified || isCurrentEditingIncident);
+    });
 
     const handleExportPdf = async (item: BienBanXacMinh) => {
         const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
@@ -317,9 +328,7 @@ const VerificationMinutes = () => {
         const thanhVien = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.filter(m => m.vai_tro !== 'CHU_TRI' && m.vai_tro !== 'THU_KY' && m.vai_tro !== 'NGUOI_CHUNG_KIEN') : [];
         const chungKien = Array.isArray(viewingItem.thanh_phan) ? viewingItem.thanh_phan.filter(m => m.vai_tro === 'NGUOI_CHUNG_KIEN') : [];
         const linkedInc = incidents.find(inc => inc.id === viewingItem.scyk_id);
-        const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
-        const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
-        const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+        const isOwnUnit = isAdmin || (linkedInc ? incidentMatchesUserDepartment(linkedInc, uDept) : false);
         return (
             <div className="space-y-4 animate-in fade-in duration-200">
                 <ExportToast />
@@ -566,24 +575,24 @@ const VerificationMinutes = () => {
 
     if (viewMode === 'FORM') {
         return (
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden max-w-5xl mx-auto my-4">
-                <div className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                    <h2 className="text-section font-black text-black uppercase flex items-center gap-2">
-                        <FileText className="text-[#009900]" />
+            <div className="bg-white rounded-none sm:rounded-xl shadow-lg border border-slate-200 overflow-hidden max-w-5xl mx-auto my-0 sm:my-4">
+                <div className="bg-white border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sticky top-0 z-10">
+                    <h2 className="text-base sm:text-section font-black text-black uppercase flex items-center gap-2 leading-tight">
+                        <FileText className="text-[#009900] shrink-0" size={20} />
                         {editingItem ? 'Cập nhật Biên bản' : 'Lập Biên bản xác minh mới'}
                     </h2>
-                    <div className="flex gap-2">
-                        <button onClick={() => setViewMode('LIST')} className="px-6 py-2 hover:bg-slate-200 rounded-xl text-black text-table font-black uppercase transition-all active:scale-95">Hủy bỏ</button>
-                        <button onClick={handleSave} className="px-6 py-2 bg-[#009900] hover:bg-[#0d6e39] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center gap-2 active:scale-95 transition-all">
+                    <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+                        <button onClick={() => setViewMode('LIST')} className="px-4 sm:px-6 py-2.5 hover:bg-slate-200 rounded-xl text-black text-table font-black uppercase transition-all active:scale-95 border border-slate-200 sm:border-transparent">Hủy bỏ</button>
+                        <button onClick={handleSave} className="px-4 sm:px-6 py-2.5 bg-[#009900] hover:bg-[#0d6e39] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
                             <Save size={16} /> Lưu biên bản
                         </button>
                     </div>
                 </div>
 
-                <div className="p-8 space-y-6 overflow-y-auto max-h-[85vh]">
+                <div className="p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto max-h-[calc(100vh-132px)] sm:max-h-[85vh]">
                     {/* Section 0: Incident Code Link */}
-                    <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 mb-4">
-                        <label className="text-label font-black text-blue-900 mb-2 block uppercase">Liên kết với Sự cố Y khoa (Bắt buộc)</label>
+                    <div className="bg-blue-50 p-4 sm:p-6 rounded-2xl border border-blue-100 mb-4">
+                        <label className="text-[11px] sm:text-label font-black text-blue-900 mb-2 block uppercase leading-tight">Liên kết với Sự cố Y khoa (Bắt buộc)</label>
                         <div className="relative">
                             <select
                                 value={formData.scyk_id || ''}
@@ -595,57 +604,49 @@ const VerificationMinutes = () => {
                                         ma_baocao_scyk: sc?.so_bc_ma_scyk
                                     });
                                 }}
-                                className="w-full border border-blue-300 rounded-xl p-3 text-input font-black uppercase focus:ring-2 focus:ring-blue-500 bg-white shadow-xl shadow-blue-900/5"
+                                className="w-full border border-blue-300 rounded-xl p-3 pr-10 text-sm sm:text-input font-bold sm:font-black uppercase focus:ring-2 focus:ring-blue-500 bg-white shadow-xl shadow-blue-900/5 leading-snug min-h-12"
                             >
-                                <option value="">-- Chọn sự cố y khoa để lập biên bản --</option>
-                                {incidents
-                                    .filter(inc => {
-                                        if (isAdmin || !uDept) return true;
-                                        const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
-                                        const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
-                                        return (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
-                                               (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
-                                    })
-                                    .map(inc => (
+                                <option value="">-- Chọn sự cố chưa xác minh để lập biên bản --</option>
+                                {selectableIncidents.map(inc => (
                                     <option key={inc.id} value={inc.id}>
-                                        {inc.so_bc_ma_scyk} - {inc.don_vi_bao_cao} (Ngày báo cáo: {new Date(inc.ngay_bao_cao || '').toLocaleDateString('vi-VN')})
+                                        [{inc.nhom_bao_cao}] {inc.so_bc_ma_scyk} - {inc.don_vi_bao_cao} (Ngày báo cáo: {new Date(inc.ngay_bao_cao || '').toLocaleDateString('vi-VN')})
                                     </option>
                                 ))}
                             </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                                 <Search size={16} className="text-slate-400" />
                             </div>
                         </div>
                     </div>
 
                     {/* Section 1: Time & Location */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div className="space-y-1">
-                            <label className="text-label font-bold text-black uppercase block ml-1">Thời gian bắt đầu</label>
+                            <label className="text-[11px] sm:text-label font-bold text-black uppercase block ml-1">Thời gian bắt đầu</label>
                             <input
                                 type="datetime-local"
                                 value={formData.thoi_gian_bat_dau}
                                 onChange={(e) => setFormData({ ...formData, thoi_gian_bat_dau: e.target.value })}
-                                className="w-full border border-slate-300 rounded-xl p-3 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
+                                className="w-full border border-slate-300 rounded-xl p-3 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm min-h-12"
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-label font-bold text-black uppercase block ml-1">Tại địa điểm</label>
+                            <label className="text-[11px] sm:text-label font-bold text-black uppercase block ml-1">Tại địa điểm</label>
                             <input
                                 type="text"
                                 placeholder="VD: Phòng họp Khoa Hồi sức tích cực..."
                                 value={formData.dia_diem}
                                 onChange={(e) => setFormData({ ...formData, dia_diem: e.target.value })}
-                                className="w-full border border-slate-300 rounded-xl p-3 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
+                                className="w-full border border-slate-300 rounded-xl p-3 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm min-h-12"
                             />
                         </div>
                     </div>
 
                     {/* Section 2: Participants */}
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-label font-black text-black uppercase">Thành phần đoàn xác minh</h3>
-                            <button onClick={addMember} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center gap-1"><Plus size={14} /> Thêm thành viên</button>
+                    <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                            <h3 className="text-[12px] sm:text-label font-black text-black uppercase leading-tight">Thành phần đoàn xác minh</h3>
+                            <button onClick={addMember} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center justify-center sm:justify-start gap-1 rounded-xl border border-emerald-100 bg-white px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0"><Plus size={14} /> Thêm thành viên</button>
                         </div>
                         <div className="space-y-3">
                             {formData.thanh_phan?.map((mem, idx) => (
@@ -667,15 +668,15 @@ const VerificationMinutes = () => {
                                         </div>
                                         <div className="md:col-span-3">
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Chức vụ</label>
-                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateMember(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateMember(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
                                         </div>
                                         <div className="md:col-span-3">
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Đơn vị</label>
-                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateMember(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateMember(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
                                         </div>
                                         <div className="md:col-span-3">
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Vai trò</label>
-                                            <select className="w-full text-table font-black text-black uppercase border-b border-slate-200 bg-transparent py-1 cursor-pointer" value={mem.vai_tro} onChange={(e) => updateMember(idx, 'vai_tro', e.target.value as any)}>
+                                            <select className="w-full text-table font-black text-black uppercase border-b border-slate-200 bg-transparent py-2 sm:py-1 cursor-pointer" value={mem.vai_tro} onChange={(e) => updateMember(idx, 'vai_tro', e.target.value as any)}>
                                                 <option value="CHU_TRI">Chủ trì đoàn</option>
                                                 <option value="THANH_VIEN">Thành viên</option>
                                                 <option value="THU_KY">Thư ký</option>
@@ -683,17 +684,17 @@ const VerificationMinutes = () => {
                                             </select>
                                         </div>
                                     </div>
-                                    <button onClick={() => removeMember(idx)} className="text-black/20 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-all active:scale-95"><X size={18} /></button>
+                                    <button onClick={() => removeMember(idx)} className="text-red-500 sm:text-black/20 hover:text-red-500 p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all active:scale-95 rounded-lg bg-red-50 sm:bg-transparent"><X size={18} /></button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* Section 2b: Attendees */}
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-label font-black text-black uppercase">Với sự tham dự của (Khách mời)</h3>
-                            <button onClick={addAttendee} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center gap-1"><Plus size={14} /> Thêm người tham dự</button>
+                    <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                            <h3 className="text-[12px] sm:text-label font-black text-black uppercase leading-tight">Với sự tham dự của (Khách mời)</h3>
+                            <button onClick={addAttendee} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center justify-center sm:justify-start gap-1 rounded-xl border border-emerald-100 bg-white px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0"><Plus size={14} /> Thêm người tham dự</button>
                         </div>
                         <div className="space-y-3">
                             {formData.nguoi_tham_du?.map((mem, idx) => (
@@ -715,18 +716,18 @@ const VerificationMinutes = () => {
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Chức vụ</label>
-                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateAttendee(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateAttendee(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Đơn vị</label>
-                                            <input type="text" className="w-full text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateAttendee(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateAttendee(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
                                         </div>
                                     </div>
-                                    <button onClick={() => removeAttendee(idx)} className="text-black/20 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-all active:scale-95"><X size={18} /></button>
+                                    <button onClick={() => removeAttendee(idx)} className="text-red-500 sm:text-black/20 hover:text-red-500 p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all active:scale-95 rounded-lg bg-red-50 sm:bg-transparent"><X size={18} /></button>
                                 </div>
                             ))}
                             {(!formData.nguoi_tham_du || formData.nguoi_tham_du.length === 0) && (
-                                <p className="text-center text-table font-black text-black/20 uppercase py-2 tracking-widest">Chưa có người tham dự nào.</p>
+                                <p className="text-center text-table font-black text-black/20 uppercase py-3 tracking-widest leading-snug">Chưa có người tham dự nào.</p>
                             )}
                         </div>
                     </div>
@@ -737,7 +738,7 @@ const VerificationMinutes = () => {
                             <label className="text-label font-black text-black uppercase block ml-1">1. Nội dung xác minh</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-2xl p-4 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
+                                className="w-full border border-slate-300 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm leading-relaxed"
                                 value={formData.noi_dung_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, noi_dung_xac_minh: e.target.value })}
                                 placeholder="Tiến hành xác minh về việc..."
@@ -747,7 +748,7 @@ const VerificationMinutes = () => {
                             <label className="text-label font-black text-red-600 uppercase block ml-1">2. Kết quả xác minh (Quan trọng)</label>
                             <textarea
                                 rows={10}
-                                className="w-full border border-red-200 rounded-2xl p-4 text-input font-bold text-black focus:ring-2 focus:ring-red-500 bg-white transition-all shadow-lg shadow-red-900/5 leading-relaxed"
+                                className="w-full border border-red-200 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-red-500 bg-white transition-all shadow-lg shadow-red-900/5 leading-relaxed"
                                 value={formData.ket_qua_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, ket_qua_xac_minh: e.target.value })}
                                 placeholder="Ghi chi tiết kết quả xác minh..."
@@ -757,7 +758,7 @@ const VerificationMinutes = () => {
                             <label className="text-label font-bold text-black uppercase block ml-1">3. Ý kiến tham gia</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-2xl p-4 text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm"
+                                className="w-full border border-slate-300 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm leading-relaxed"
                                 value={formData.y_kien_tham_gia}
                                 onChange={(e) => setFormData({ ...formData, y_kien_tham_gia: e.target.value })}
                                 placeholder="Ý kiến của các thành viên khác (nếu có)..."
@@ -817,19 +818,12 @@ const VerificationMinutes = () => {
                                     
                                     const linkedInc = incidents.find(inc => inc.id === i.scyk_id);
                                     if (!linkedInc) return false; // Or true if orphans should be seen
-                                    
-                                    const iDept1 = (linkedInc.khoa_phong || '').trim().toLowerCase();
-                                    const iDept2 = (linkedInc.don_vi_bao_cao || '').trim().toLowerCase();
-                                    const matchesUnit = (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
-                                                       (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
-                                    return matchesSearch && matchesUnit;
+                                    return matchesSearch && incidentMatchesUserDepartment(linkedInc, uDept);
                                 })
                                 .map((item) => {
                                 const chuTri = Array.isArray(item.thanh_phan) ? item.thanh_phan.find(m => m.vai_tro === 'CHU_TRI') : null;
                                 const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
-                                const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
-                                const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
-                                const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                                const isOwnUnit = isAdmin || (linkedInc ? incidentMatchesUserDepartment(linkedInc, uDept) : false);
                                 return (
                                     <tr key={item.id} className="hover:bg-slate-50 transition-all font-black text-black">
                                         <td className="px-6 py-4">

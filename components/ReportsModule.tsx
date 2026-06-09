@@ -306,6 +306,10 @@ const formatCellValue = (key: string, val: any): string => {
 
 export const ReportsModule: React.FC = () => {
   const { user } = useAuth();
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin')
+  );
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -659,6 +663,7 @@ export const ReportsModule: React.FC = () => {
                   className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
                 />
               </div>
+              {isAdmin && (
               <button
                 onClick={handleExportExcel}
                 disabled={filteredData.length === 0}
@@ -666,6 +671,7 @@ export const ReportsModule: React.FC = () => {
               >
                 <FileSpreadsheet size={16} /> Xuất Excel
               </button>
+              )}
             </div>
           </div>
 
@@ -714,7 +720,9 @@ export const ReportsModule: React.FC = () => {
 
           {filteredData.length > 20 && (
             <p className="text-[10px] text-slate-400 mt-4 text-center font-bold uppercase italic">
-              Hiển thị 20/{filteredData.length} bản ghi — Xuất Excel để lấy toàn bộ dữ liệu
+              {isAdmin
+                ? `Hiển thị 20/${filteredData.length} bản ghi — Xuất Excel để lấy toàn bộ dữ liệu`
+                : `Hiển thị 20/${filteredData.length} bản ghi`}
             </p>
           )}
         </div>

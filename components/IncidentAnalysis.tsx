@@ -11,10 +11,12 @@ import {
     updateTimHieuPhanTichScyk,
     deleteTimHieuPhanTichScyk
 } from '../readTimHieuPhanTichScyk';
-import { fetchBaoCaoScyk, BaoCaoScyk } from '../readBaoCaoScyk';
+import { fetchBaoCaoScyk } from '../readBaoCaoScyk';
+import { fetchBcScnyknt } from '../readBcScnyknt';
 import { useAuth } from '../contexts/AuthContext';
 import { analyzeWithAi } from '../aiClient';
 import { fetchBienBanXacMinhByScykId, BienBanXacMinh } from '../readBienBanXacMinh';
+import { LinkedIncident, incidentMatchesUserDepartment, mergeLinkedIncidents } from '../utils/incidentLinks';
 
 export interface AnalysisRecord {
     id?: string;
@@ -101,7 +103,7 @@ const IncidentAnalysis: React.FC = () => {
     const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
     const uDept = user?.department?.trim().toLowerCase() || '';
     const [items, setItems] = useState<AnalysisRecord[]>([]);
-    const [incidents, setIncidents] = useState<BaoCaoScyk[]>([]);
+    const [incidents, setIncidents] = useState<LinkedIncident[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'VIEW'>('LIST');
     const [editingItem, setEditingItem] = useState<AnalysisRecord | null>(null);
@@ -158,12 +160,13 @@ const IncidentAnalysis: React.FC = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [analysisData, incidentData] = await Promise.all([
+            const [analysisData, incidentData, nonMedicalIncidentData] = await Promise.all([
                 fetchTimHieuPhanTichScyk(),
-                fetchBaoCaoScyk()
+                fetchBaoCaoScyk(),
+                fetchBcScnyknt()
             ]);
             setItems(analysisData || []);
-            setIncidents(incidentData || []);
+            setIncidents(mergeLinkedIncidents(incidentData || [], nonMedicalIncidentData || []));
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -216,14 +219,17 @@ const IncidentAnalysis: React.FC = () => {
         const searchStr = (linkedInc?.so_bc_ma_scyk || '') + (item.a_danh_cho_nv_chuyen_trach || '');
         const matchesSearch = searchStr.toLowerCase().includes(searchTerm.toLowerCase());
         
-        if (isAdmin || !uDept) return matchesSearch;
-        
-        if (!linkedInc) return false;
-        const iDept1 = (linkedInc.khoa_phong || '').trim().toLowerCase();
-        const iDept2 = (linkedInc.don_vi_bao_cao || '').trim().toLowerCase();
-        const matchesUnit = (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
-                           (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+        if (!linkedInc) return isAdmin && matchesSearch;
+        const matchesUnit = isAdmin || incidentMatchesUserDepartment(linkedInc, uDept);
         return matchesSearch && matchesUnit;
+    });
+
+    const analyzedIncidentIds = new Set(items.map(item => item.scyk_id).filter(Boolean));
+    const selectableIncidents = incidents.filter(inc => {
+        const isCurrentEditingIncident = editingItem?.scyk_id === inc.id;
+        const isNotAnalyzed = !analyzedIncidentIds.has(inc.id);
+        const matchesDepartment = isAdmin || incidentMatchesUserDepartment(inc, uDept);
+        return matchesDepartment && (isNotAnalyzed || isCurrentEditingIncident);
     });
 
     const handleIncidentSelect = async (scyk_id: string) => {
@@ -539,18 +545,10 @@ YÊU CẦU TRẢ VỀ JSON:
                                     onChange={e => handleIncidentSelect(e.target.value)}
                                     className="input-base"
                                 >
-                                    <option value="">-- Chọn trong danh sách sự cố --</option>
-                                    {incidents
-                                        .filter(inc => {
-                                            if (isAdmin || !uDept) return true;
-                                            const iDept1 = (inc.khoa_phong || '').trim().toLowerCase();
-                                            const iDept2 = (inc.don_vi_bao_cao || '').trim().toLowerCase();
-                                            return (iDept1 !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1))) ||
-                                                   (iDept2 !== '' && (uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
-                                        })
-                                        .map(inc => (
+                                    <option value="">-- Chọn trong danh sách sự cố chưa RCA --</option>
+                                    {selectableIncidents.map(inc => (
                                         <option key={inc.id} value={inc.id}>
-                                            {inc.so_bc_ma_scyk} - {inc.ho_ten_nb || inc.doi_tuong_xay_ra_sc || 'N/A'} - {inc.khoa_phong || inc.don_vi_bao_cao}
+                                            [{inc.nhom_bao_cao}] {inc.so_bc_ma_scyk} - {inc.ho_ten_nb || inc.doi_tuong_xay_ra_sc || 'N/A'} - {inc.khoa_phong || inc.don_vi_bao_cao}
                                         </option>
                                     ))}
                                 </select>
@@ -1566,9 +1564,7 @@ YÊU CẦU TRẢ VỀ JSON:
                             <tbody className="divide-y divide-slate-100">
                                 {filteredItems.map(item => {
                                     const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
-                                    const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
-                                    const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
-                                    const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                                    const isOwnUnit = isAdmin || (linkedInc ? incidentMatchesUserDepartment(linkedInc, uDept) : false);
                                     return (
                                         <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
                                             <td className="px-6 py-4">
@@ -1629,9 +1625,7 @@ YÊU CẦU TRẢ VỀ JSON:
                     <div className="md:hidden space-y-4">
                         {filteredItems.map(item => {
                             const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
-                            const iDept1 = (linkedInc?.khoa_phong || '').trim().toLowerCase();
-                            const iDept2 = (linkedInc?.don_vi_bao_cao || '').trim().toLowerCase();
-                            const isOwnUnit = isAdmin || (uDept !== '' && (uDept === iDept1 || iDept1.includes(uDept) || uDept.includes(iDept1) || uDept === iDept2 || iDept2.includes(uDept) || uDept.includes(iDept2)));
+                            const isOwnUnit = isAdmin || (linkedInc ? incidentMatchesUserDepartment(linkedInc, uDept) : false);
 
                             return (
                                 <div key={item.id} className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm flex flex-col gap-4">

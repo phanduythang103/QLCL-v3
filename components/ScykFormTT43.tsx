@@ -34,7 +34,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
   // State lưu trữ dữ liệu form
   const [formData, setFormData] = useState<Partial<BaoCaoScyk>>({
-    nhom_bao_cao: editingItem?.nhom_bao_cao || 'Sự cố y khoa',
+    nhom_bao_cao: 'Sự cố y khoa',
     hinh_thuc_bao_cao: editingItem?.hinh_thuc_bao_cao || 'Tự nguyện',
     so_bc_ma_scyk: editingItem?.so_bc_ma_scyk || '',
     ngay_bao_cao: editingItem?.ngay_bao_cao || new Date().toISOString().split('T')[0],
@@ -137,7 +137,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
     setIsSubmitting(true);
     try {
-      const payload = { ...formData, hinh_anh_minh_chung: uploadedImages };
+      const payload = { ...formData, nhom_bao_cao: 'Sự cố y khoa', hinh_anh_minh_chung: uploadedImages };
       if (editingItem?.id) {
         await updateBaoCaoScyk(editingItem.id, payload);
       } else {
@@ -243,7 +243,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               <h1 className="text-title uppercase">
                 {editingItem ? 'Chỉnh sửa báo cáo sự cố y khoa' : 'Tạo báo cáo sự cố y khoa'}
               </h1>
-              <p className="text-green-100 text-xs font-medium mt-0.5">Ban hành kèm theo TT 43/2018/TT-BYT ngày 26/12/2018</p>
+              <p className="hidden md:block text-green-100 text-xs font-medium mt-0.5">Ban hành kèm theo TT 43/2018/TT-BYT ngày 26/12/2018</p>
             </div>
             <button
               type="button"
@@ -265,25 +265,6 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
             </div>
 
             <div className="form-grid">
-              <div className="col-span-1 md:col-span-2">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Nhóm sự cố *</label>
-                <div className="flex flex-wrap gap-6">
-                  {['Sự cố y khoa', 'Ngoài sự cố y khoa'].map(type => (
-                    <label key={type} className="flex items-center cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="nhom_bao_cao"
-                        value={type}
-                        checked={formData.nhom_bao_cao === type}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <span className="ml-2 text-gray-700 group-hover:text-blue-600 transition-colors font-medium">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Hình thức báo cáo *</label>
                 <div className="flex flex-wrap gap-6">

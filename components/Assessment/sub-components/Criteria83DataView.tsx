@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, ChevronRight, ListFilter } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, ListFilter, ArrowLeft } from 'lucide-react';
 import { assessmentService } from '../services';
 import { Data83tc } from '../types';
 
-export const Criteria83DataView: React.FC = () => {
+interface Criteria83DataViewProps {
+  onBack?: () => void;
+}
+
+export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }) => {
   const [data, setData] = useState<Data83tc[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,6 +67,18 @@ export const Criteria83DataView: React.FC = () => {
           />
         </div>
       </div>
+
+      {onBack && (
+        <div className="hidden justify-start md:flex">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+          >
+            <ArrowLeft size={14} /> Quay lại
+          </button>
+        </div>
+      )}
 
       <div className="space-y-4">
         {loading ? (

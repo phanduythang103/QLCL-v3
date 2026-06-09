@@ -1,6 +1,7 @@
 import { supabase } from '../../../supabaseClient';
 import { KqDanhGia83, AssessmentSheet } from '../types';
 import { fetchData83tc } from '../../../readData83tc';
+import { calculateAssessment83Scores } from '../../../utils/assessment83Scoring';
 
 export const teamAssessment83Service = {
     /**
@@ -36,7 +37,7 @@ export const teamAssessment83Service = {
         // Group rows by phieu_id
         const sheetsMap: Record<string, any[]> = {};
         allRawData.forEach((row: any) => {
-            if (!row.phieu_id) return;
+            if (!row.phieu_id || !row.to_danh_gia?.trim()) return;
             if (!sheetsMap[row.phieu_id]) sheetsMap[row.phieu_id] = [];
             sheetsMap[row.phieu_id].push(row);
         });
@@ -46,8 +47,24 @@ export const teamAssessment83Service = {
         const sheets: AssessmentSheet[] = Object.keys(sheetsMap).map(phieuId => {
             const rows = sheetsMap[phieuId];
             const first = rows[0];
+            const teamCriteria = allConfig.filter(item =>
+                (item.to_cham_diem || '').split(',').map(value => value.trim()).includes(first.to_danh_gia)
+            );
+            const scoringCriteria = teamCriteria.length > 0
+                ? teamCriteria
+                : rows.map((row: any) => ({
+                    phan: row.phan,
+                    chuong: row.chuong,
+                    tieu_chi: row.tieu_chi,
+                    muc: row.nhom || row.muc_dat_duoc,
+                    ma_tieu_muc: row.ma_tieu_muc
+                }));
+            const score = calculateAssessment83Scores(
+                scoringCriteria,
+                rows,
+                { includeUnevaluatedAsLevelOne: true }
+            ).average || 0;
 
-            // Logic similar to readKqDanhGia83 but tailored for team reporting
             return {
                 phieu_id: phieuId,
                 ngay_danh_gia: first.ngay_danh_gia,
@@ -57,7 +74,7 @@ export const teamAssessment83Service = {
                 nhom: first.to_danh_gia, // Use team name as group
                 total_criteria: rows.length,
                 passed_criteria: rows.filter((r: any) => r.dat).length,
-                score: 0, // Simplified score for now
+                score: Number(score.toFixed(2)),
                 created_at: first.created_at
             };
         });

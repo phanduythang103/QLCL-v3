@@ -3,6 +3,7 @@ import { Plus, Edit2, Eye, Trash2, Calendar, User, BarChart3, Download, Trophy, 
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
 import * as XLSX from 'xlsx';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface Props {
   surveys: OutpatientSurveyResponse[];
@@ -26,6 +27,12 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
   dateFilter, setDateFilter, areaFilter, setAreaFilter,
   respondentFilter, setRespondentFilter, totalSurveys, avgSatisfaction
 }) => {
+  const { user } = useAuth();
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin')
+  );
+
   const calculatePercentage = (s: OutpatientSurveyResponse) => {
     let totalScore = 0;
     let validCount = 0;
@@ -156,12 +163,14 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 w-full lg:w-auto">
+          {isAdmin && (
           <button
             onClick={handleExportExcel}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-blue-600 text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
           >
             <Download size={16} /><span className="md:inline">Xuất Excel</span>
           </button>
+          )}
           <button
             onClick={onAddNew}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"

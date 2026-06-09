@@ -3,6 +3,7 @@ import { Calendar, User, Eye, Edit2, Trash2, Plus, BarChart3, Briefcase, Downloa
 import { StaffSatisfactionSurvey } from '../types/staffSatisfaction';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
 import * as XLSX from 'xlsx';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface Props {
   surveys: StaffSatisfactionSurvey[];
@@ -26,6 +27,12 @@ export const StaffSatisfactionList: React.FC<Props> = ({
   dateFilter, setDateFilter, blockFilter, setBlockFilter,
   positionFilter, setPositionFilter, totalSurveys, avgSatisfaction
 }) => {
+  const { user } = useAuth();
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin')
+  );
+
   const calculatePercentage = (s: StaffSatisfactionSurvey) => {
     let totalScore = 0;
     let validCount = 0;
@@ -165,12 +172,14 @@ export const StaffSatisfactionList: React.FC<Props> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 md:gap-3 w-full lg:w-auto">
+          {isAdmin && (
           <button
             onClick={handleExportExcel}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-blue-600 text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg shadow-blue-100 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
           >
             <Download size={16} className="md:w-[18px]" /> <span className="md:inline">Xuất Excel</span>
           </button>
+          )}
           <button
             onClick={onAddNew}
             className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg shadow-emerald-100 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
@@ -259,4 +268,3 @@ export const StaffSatisfactionList: React.FC<Props> = ({
     </div>
   );
 };
-

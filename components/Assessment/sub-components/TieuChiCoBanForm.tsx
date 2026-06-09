@@ -81,18 +81,19 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
       ref={scrollRef}
       className="absolute inset-0 z-[40] bg-slate-50 overflow-y-auto animate-in fade-in duration-300 no-scrollbar"
     >
-      <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col p-4 md:p-8 space-y-8">
+      <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col p-3 md:p-8 space-y-5 md:space-y-8">
         {/* SCYK Style Header - Now with Actions & Results */}
-        <div className="bg-[#009900] rounded-3xl p-6 shadow-xl shadow-emerald-900/20 flex flex-col lg:flex-row justify-between items-center gap-6 relative group border border-white/20">
-          <div className="flex items-center gap-4 text-white w-full lg:w-auto">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-sm">
-              <ClipboardCheck size={28} />
+        <div className="bg-[#009900] rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl shadow-emerald-900/20 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 md:gap-6 relative group border border-white/20">
+          <div className="flex items-start md:items-center gap-3 md:gap-4 text-white w-full lg:w-auto min-w-0">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-sm shrink-0">
+              <ClipboardCheck size={22} className="md:w-7 md:h-7" />
             </div>
-            <div>
-              <h2 className="font-black text-lg md:text-xl uppercase tracking-tight leading-none mb-1">
-                {readOnly ? 'Chi tiết' : 'Đánh giá'} TIÊU CHUẨN CHẤT LƯỢNG CƠ BẢN
+            <div className="min-w-0 flex-1">
+              <h2 className="font-black text-[14px] md:text-xl uppercase tracking-tight leading-tight md:leading-none mb-1 break-words">
+                <span className="block md:inline">{readOnly ? 'Chi tiết' : 'Đánh giá'}</span>
+                <span className="block md:inline md:ml-1">Tiêu chuẩn chất lượng cơ bản</span>
               </h2>
-              <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest">
+              <p className="text-[9px] md:text-[10px] font-bold opacity-80 uppercase tracking-widest leading-relaxed">
                 (Thông tư số 35/2024/TT-BYT)
               </p>
             </div>
@@ -104,19 +105,18 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
             const totalMet = Object.keys(formData).filter(k => k.startsWith('c_') && (formData as any)[k] === true).length;
             const percentage = ((totalMet / totalCriteria) * 100).toFixed(1);
             return (
-              <div className="flex items-center gap-6 px-6 py-2 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-md">
-                <div className="flex flex-col items-center">
-                  <span className="text-[9px] font-black text-emerald-100 uppercase tracking-widest opacity-70">Tiêu chí đạt</span>
+              <div className="grid grid-cols-2 gap-0 overflow-hidden bg-white/10 rounded-2xl border border-white/20 backdrop-blur-md w-full lg:w-auto">
+                <div className="flex flex-col items-center px-4 md:px-6 py-2.5">
+                  <span className="text-[8px] md:text-[9px] font-black text-emerald-100 uppercase tracking-widest opacity-70">Tiêu chí đạt</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-white">{totalMet}</span>
+                    <span className="text-lg md:text-xl font-black text-white">{totalMet}</span>
                     <span className="text-emerald-200/50 text-[10px] font-bold">/ {totalCriteria}</span>
                   </div>
                 </div>
-                <div className="w-px h-8 bg-white/20"></div>
-                <div className="flex flex-col items-center">
-                  <span className="text-[9px] font-black text-emerald-100 uppercase tracking-widest opacity-70">Tỷ lệ %</span>
+                <div className="flex flex-col items-center px-4 md:px-6 py-2.5 border-l border-white/20">
+                  <span className="text-[8px] md:text-[9px] font-black text-emerald-100 uppercase tracking-widest opacity-70">Tỷ lệ %</span>
                   <div className="flex items-baseline gap-0.5">
-                    <span className="text-xl font-black text-white">{percentage}</span>
+                    <span className="text-lg md:text-xl font-black text-white">{percentage}</span>
                     <span className="text-emerald-200/50 text-[10px] font-bold">%</span>
                   </div>
                 </div>
@@ -125,19 +125,19 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
           })()}
 
           {/* Actions in Header */}
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-center lg:justify-end">
+          <div className="grid grid-cols-2 md:flex md:flex-wrap items-center gap-2 md:gap-3 w-full lg:w-auto justify-center lg:justify-end">
             <button
               onClick={onCancel}
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border border-white/20 flex items-center gap-2"
+              className="px-4 md:px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border border-white/20 flex items-center justify-center gap-2"
             >
-              <X size={16} /> Đóng
+              <X size={15} /> Đóng
             </button>
 
             {readOnly && initialData && (
               <>
                 <button
                   onClick={() => onEdit?.(initialData)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-all active:scale-95 border border-blue-400"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 transition-all active:scale-95 border border-blue-400"
                 >
                   <Edit size={16} /> Sửa
                 </button>
@@ -148,7 +148,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
                       onCancel();
                     }
                   }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95 border border-red-400"
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 md:px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95 border border-red-400"
                 >
                   <Trash2 size={16} /> Xóa
                 </button>
@@ -159,7 +159,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="bg-white hover:bg-emerald-50 text-[#009900] px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all active:scale-95 disabled:opacity-50 border border-white"
+                className="col-span-1 md:col-span-1 bg-white hover:bg-emerald-50 text-[#009900] px-4 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all active:scale-95 disabled:opacity-50 border border-white"
               >
                 {saving ? 'Đang lưu...' : <><Save size={18} /> Lưu đánh giá</>}
               </button>

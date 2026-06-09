@@ -307,13 +307,13 @@ export const SeriousIncidentModule: React.FC = () => {
     <div className="min-h-full flex flex-col gap-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 shadow-sm shrink-0 border border-red-100">
-              <AlertTriangle size={28} />
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 shadow-sm shrink-0 border border-red-100">
+              <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
-            <div>
-              <h2 className="text-main-title font-bold text-slate-800 tracking-tight uppercase">Sự cố ngoài y khoa nghiêm trọng</h2>
-              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Báo cáo & Phân tích sự cố y khoa loại nghiêm trọng</p>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl md:text-main-title font-bold text-slate-800 tracking-tight leading-tight uppercase break-words">Sự cố ngoài y khoa nghiêm trọng</h2>
+              <p className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider sm:tracking-widest mt-1 leading-snug">Báo cáo & Phân tích sự cố y khoa loại nghiêm trọng</p>
             </div>
           </div>
         </div>

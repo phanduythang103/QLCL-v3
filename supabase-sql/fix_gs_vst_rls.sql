@@ -1,24 +1,10 @@
--- Create table gs_vst
-CREATE TABLE IF NOT EXISTS public.gs_vst (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    created_at TIMESTAMPTZ DEFAULT now(),
-    ngay_giam_sat DATE NOT NULL,
-    nguoi_giam_sat TEXT NOT NULL,
-    khoa_duoc_giam_sat TEXT NOT NULL,
-    doi_tuong TEXT NOT NULL, -- Bác sỹ, Điều dưỡng, ...
-    nguoi_duoc_giam_sat TEXT,
-    checklist_data JSONB NOT NULL, -- Detailed 5 moments data
-    tong_co_hoi INTEGER DEFAULT 0,
-    so_lan_tuan_thu INTEGER DEFAULT 0,
-    so_lan_dung_ky_thuat INTEGER DEFAULT 0,
-    hinh_anh_minh_chung TEXT[] DEFAULT '{}'::TEXT[],
-    ghi_chu_chung TEXT
-);
+-- Fix RLS for hand-hygiene monitoring and its evidence-image bucket.
+-- Run this once in the Supabase SQL Editor for an existing deployment.
 
--- Enable Row Level Security
+BEGIN;
+
 ALTER TABLE public.gs_vst ENABLE ROW LEVEL SECURITY;
 
--- Recreate policies so this script is safe to run on an existing project.
 DROP POLICY IF EXISTS "gs_vst_select_public" ON public.gs_vst;
 DROP POLICY IF EXISTS "gs_vst_insert_public" ON public.gs_vst;
 DROP POLICY IF EXISTS "gs_vst_update_public" ON public.gs_vst;
@@ -42,12 +28,10 @@ CREATE POLICY "gs_vst_delete_public" ON public.gs_vst
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.gs_vst TO anon, authenticated;
 
--- Create Storage Bucket for evidence
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('vst', 'vst', true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET public = true;
 
--- A public bucket only makes downloads public; uploads still require an INSERT policy.
 DROP POLICY IF EXISTS "vst_select_public" ON storage.objects;
 DROP POLICY IF EXISTS "vst_insert_public" ON storage.objects;
 DROP POLICY IF EXISTS "vst_update_public" ON storage.objects;
@@ -66,3 +50,5 @@ CREATE POLICY "vst_update_public" ON storage.objects
 
 CREATE POLICY "vst_delete_public" ON storage.objects
     FOR DELETE TO anon, authenticated USING (bucket_id = 'vst');
+
+COMMIT;
