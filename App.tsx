@@ -16,7 +16,7 @@ import { SupervisionProvider, useSupervision } from './components/SupervisionCon
 import { HeaderUserMenu } from './components/HeaderUserMenu';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { supabase } from './supabaseClient';
-import { fetchThongBao, ThongBao } from './readThongBao';
+import { fetchThongBao, fetchThongBaoReadIds, markThongBaoAsRead, THONG_BAO_READ_EVENT, ThongBao } from './readThongBao';
 import { PermissionsProvider, usePermissions } from './contexts/PermissionsContext';
 import { IndicatorsProvider, useIndicators } from './components/IndicatorsContext';
 import { IndicatorCategory } from './types';
@@ -277,15 +277,17 @@ const getNotificationAttachmentUrl = (filePath?: string) => {
 
 const NotificationMenu: React.FC<{
   notifications: ThongBao[];
+  readNotificationIds: Set<string>;
+  unreadCount: number;
   loading: boolean;
   onSelect: (notification: ThongBao) => void;
   onManage: () => void;
-}> = ({ notifications, loading, onSelect, onManage }) => (
+}> = ({ notifications, readNotificationIds, unreadCount, loading, onSelect, onManage }) => (
   <div className="absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-2xl">
     <div className="border-b border-slate-100 bg-orange-50 p-4">
       <h3 className="text-sm font-black uppercase text-slate-800">Thông báo</h3>
       <p className="mt-0.5 text-xs font-bold text-slate-500">
-        {notifications.length} thông báo đã tạo
+        {unreadCount} thông báo chưa xem
       </p>
     </div>
     <div className="max-h-96 overflow-y-auto">
@@ -298,14 +300,17 @@ const NotificationMenu: React.FC<{
           <button
             key={notification.id}
             onClick={() => onSelect(notification)}
-            className="block w-full border-b border-slate-100 p-3 text-left transition-colors hover:bg-slate-50"
+            className={`block w-full border-b border-slate-100 p-3 text-left transition-colors hover:bg-slate-50 ${readNotificationIds.has(notification.id) ? 'bg-white' : 'bg-orange-50/60'}`}
           >
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600">
                 <Bell size={17} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-bold leading-snug text-slate-800">{notification.noi_dung}</p>
+                <div className="flex items-start gap-2">
+                  <p className="line-clamp-2 flex-1 text-sm font-bold leading-snug text-slate-800">{notification.noi_dung}</p>
+                  {!readNotificationIds.has(notification.id) && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-blue-500" />}
+                </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-400">
                   <span>{formatTimeAgo(notification.ngay_tao)}</span>
                   {notification.file_dinh_kem && <span className="text-primary-600">Có đính kèm</span>}
@@ -329,10 +334,12 @@ const NotificationMenu: React.FC<{
 
 const NotificationListSheet: React.FC<{
   notifications: ThongBao[];
+  readNotificationIds: Set<string>;
+  unreadCount: number;
   loading: boolean;
   onClose: () => void;
   onSelect: (notification: ThongBao) => void;
-}> = ({ notifications, loading, onClose, onSelect }) => {
+}> = ({ notifications, readNotificationIds, unreadCount, loading, onClose, onSelect }) => {
   const toSafeText = (value: unknown, fallback = '---') => {
     if (value === null || value === undefined) return fallback;
     const text = String(value).trim();
@@ -369,7 +376,7 @@ const NotificationListSheet: React.FC<{
               </div>
               <div>
                 <h3 className="text-base font-black uppercase text-slate-800">Thông báo</h3>
-                <p className="text-xs font-bold text-slate-400">{notifications.length} thông báo đã tạo</p>
+                <p className="text-xs font-bold text-slate-400">{unreadCount} thông báo chưa xem</p>
               </div>
             </div>
             <button
@@ -396,14 +403,17 @@ const NotificationListSheet: React.FC<{
                 <button
                   key={notification.id}
                   onClick={() => onSelect(notification)}
-                  className="w-full rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all active:scale-[0.99] active:bg-slate-50"
+                  className={`w-full rounded-3xl border p-5 text-left shadow-sm transition-all active:scale-[0.99] active:bg-slate-50 ${readNotificationIds.has(notification.id) ? 'border-slate-200 bg-white' : 'border-orange-200 bg-orange-50/60'}`}
                 >
                   <div className="mb-4 flex items-start gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-green-200 bg-green-100 text-sm font-black text-green-700">
                       {initial}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-black uppercase text-slate-900">{creatorName}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-[13px] font-black uppercase text-slate-900">{creatorName}</p>
+                        {!readNotificationIds.has(notification.id) && <span className="size-2 shrink-0 rounded-full bg-blue-500" />}
+                      </div>
                       <p className="mt-0.5 text-[12px] font-black text-slate-500">{formatCreatedAt(notification.ngay_tao)}</p>
                     </div>
                   </div>
@@ -436,6 +446,7 @@ const AppContent: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showNotificationList, setShowNotificationList] = useState(false);
   const [notifications, setNotifications] = useState<ThongBao[]>([]);
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
   const [loadingNotifications, setLoadingNotifications] = useState(true);
   const [selectedNotification, setSelectedNotification] = useState<ThongBao | null>(null);
   const { user } = useAuth();
@@ -444,6 +455,10 @@ const AppContent: React.FC = () => {
   const { category: indicatorCategory, setCategory: setIndicatorCategory } = useIndicators();
   const [mobileSearch, setMobileSearch] = useState('');
   const [mobileBannerUrl, setMobileBannerUrl] = useState<string | null>(null);
+  const unreadCount = notifications.reduce(
+    (count, notification) => count + (readNotificationIds.has(notification.id) ? 0 : 1),
+    0
+  );
 
   useEffect(() => {
     const annotateMobileTables = () => {
@@ -628,9 +643,9 @@ const AppContent: React.FC = () => {
         >
           <span className="mobile-app-icon function-icon-box bg-orange-300 relative">
             <Bell size={28} className="text-orange-500" />
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <span className="absolute -right-1 -top-1 min-w-5 h-5 rounded-full bg-red-500 px-1 text-[10px] font-black leading-5 text-white shadow-sm">
-                {notifications.length > 9 ? '9+' : notifications.length}
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </span>
@@ -672,10 +687,19 @@ const AppContent: React.FC = () => {
       )
       .subscribe();
 
+    const handleReadEvent = (event: Event) => {
+      const { thongBaoId, userId } = (event as CustomEvent<{ thongBaoId: string; userId: string }>).detail;
+      if (userId === user?.id) {
+        setReadNotificationIds(current => new Set(current).add(thongBaoId));
+      }
+    };
+    window.addEventListener(THONG_BAO_READ_EVENT, handleReadEvent);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener(THONG_BAO_READ_EVENT, handleReadEvent);
     };
-  }, []);
+  }, [user?.id]);
 
   // Load mobile banner from cai_dat_giao_dien (single row config)
   useEffect(() => {
@@ -705,8 +729,17 @@ const AppContent: React.FC = () => {
   const loadNotifications = async () => {
     setLoadingNotifications(true);
     try {
-      const data = await fetchThongBao();
+      const [data, readIds] = await Promise.all([
+        fetchThongBao(),
+        user?.id
+          ? fetchThongBaoReadIds(user.id).catch(err => {
+              console.error('Error loading notification click logs:', err);
+              return [];
+            })
+          : Promise.resolve([])
+      ]);
       setNotifications(data || []);
+      setReadNotificationIds(new Set(readIds));
     } catch (err) {
       console.error('Error loading notifications:', err);
     } finally {
@@ -715,9 +748,22 @@ const AppContent: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = (notification: ThongBao) => {
+  const handleNotificationClick = async (notification: ThongBao) => {
     setSelectedNotification(notification);
     setShowNotifications(false);
+    if (!user?.id || readNotificationIds.has(notification.id)) return;
+
+    setReadNotificationIds(current => new Set(current).add(notification.id));
+    try {
+      await markThongBaoAsRead(notification.id, user.id);
+    } catch (err) {
+      console.error('Error logging notification click:', err);
+      setReadNotificationIds(current => {
+        const next = new Set(current);
+        next.delete(notification.id);
+        return next;
+      });
+    }
   };
 
   // Close notification dropdown when clicking outside
@@ -769,15 +815,17 @@ const AppContent: React.FC = () => {
                   aria-label="Thông báo"
                 >
                   <Bell size={22} />
-                  {notifications.length > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute right-1 top-1 min-w-4 h-4 rounded-full bg-red-500 px-1 text-[9px] font-black leading-4 text-white">
-                      {notifications.length > 9 ? '9+' : notifications.length}
+                      {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
                 {showNotifications && (
                   <NotificationMenu
                     notifications={notifications}
+                    readNotificationIds={readNotificationIds}
+                    unreadCount={unreadCount}
                     loading={loadingNotifications}
                     onSelect={handleNotificationClick}
                     onManage={() => {
@@ -837,9 +885,9 @@ const AppContent: React.FC = () => {
                 className="relative p-2 text-white hover:bg-white/10 transition-colors"
               >
                 <Bell size={20} />
-                {notifications.length > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -right-1 -top-1 min-w-5 h-5 rounded-full bg-red-500 px-1 text-[10px] font-black leading-5 text-white border border-white text-center">
-                    {notifications.length > 9 ? '9+' : notifications.length}
+                    {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
@@ -850,7 +898,7 @@ const AppContent: React.FC = () => {
                   <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-primary-50 to-primary-100">
                     <h3 className="font-bold text-slate-800 text-sm">Thông báo mới</h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Bạn có {notifications.length} thông báo chưa đọc
+                      Bạn có {unreadCount} thông báo chưa xem
                     </p>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
@@ -867,7 +915,7 @@ const AppContent: React.FC = () => {
                         <div
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
-                          className="p-3 hover:bg-slate-50 border-b border-slate-100 cursor-pointer transition-colors"
+                          className={`p-3 hover:bg-slate-50 border-b border-slate-100 cursor-pointer transition-colors ${readNotificationIds.has(notification.id) ? 'bg-white' : 'bg-orange-50/60'}`}
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
@@ -880,7 +928,7 @@ const AppContent: React.FC = () => {
                                 {formatTimeAgo(notification.ngay_tao)}
                               </span>
                             </div>
-                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
+                            {!readNotificationIds.has(notification.id) && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>}
                           </div>
                         </div>
                       ))
@@ -921,6 +969,8 @@ const AppContent: React.FC = () => {
       {showNotificationList && (
         <NotificationListSheet
           notifications={notifications}
+          readNotificationIds={readNotificationIds}
+          unreadCount={unreadCount}
           loading={loadingNotifications}
           onClose={() => setShowNotificationList(false)}
           onSelect={(notification) => {

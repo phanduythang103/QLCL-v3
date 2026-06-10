@@ -13,6 +13,8 @@ export interface ThongBao {
     file_dinh_kem: string;
 }
 
+export const THONG_BAO_READ_EVENT = 'thong-bao-read';
+
 export const fetchThongBao = async () => {
     const { data, error } = await supabase
         .from('thong_bao')
@@ -20,6 +22,35 @@ export const fetchThongBao = async () => {
         .order('ngay_tao', { ascending: false });
     if (error) throw error;
     return data;
+};
+
+export const fetchThongBaoReadIds = async (userId: string): Promise<string[]> => {
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+        .from('thong_bao_reads')
+        .select('thong_bao_id')
+        .eq('user_id', userId);
+
+    if (error) throw error;
+    return (data || []).map((item: { thong_bao_id: string }) => item.thong_bao_id);
+};
+
+export const markThongBaoAsRead = async (thongBaoId: string, userId: string): Promise<void> => {
+    if (!thongBaoId || !userId) return;
+
+    const { error } = await supabase
+        .from('thong_bao_reads')
+        .upsert(
+            { thong_bao_id: thongBaoId, user_id: userId },
+            { onConflict: 'thong_bao_id,user_id', ignoreDuplicates: true }
+        );
+
+    if (error) throw error;
+
+    window.dispatchEvent(new CustomEvent(THONG_BAO_READ_EVENT, {
+        detail: { thongBaoId, userId }
+    }));
 };
 
 export const addThongBao = async (thongBao: Partial<ThongBao>) => {

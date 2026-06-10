@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { fetchThongBao, ThongBao } from '../readThongBao';
+import { fetchThongBao, fetchThongBaoReadIds, markThongBaoAsRead, THONG_BAO_READ_EVENT, ThongBao } from '../readThongBao';
 import { fetchLichGiamSat, LichGiamSat } from '../readLichGiamSat';
 import { Bell, Calendar, ChevronRight, Paperclip, Loader, X, FileText, Activity, Clock, MapPin, Eye, Info, List } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export const NotificationDashboard: React.FC = () => {
+    const { user } = useAuth();
     const [notifications, setNotifications] = useState<ThongBao[]>([]);
+    const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
     const [schedules, setSchedules] = useState<LichGiamSat[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -17,12 +20,19 @@ export const NotificationDashboard: React.FC = () => {
     useEffect(() => {
         const loadAll = async () => {
             try {
-                const [notiData, scheduleData] = await Promise.all([
+                const [notiData, scheduleData, readIds] = await Promise.all([
                     fetchThongBao(),
-                    fetchLichGiamSat()
+                    fetchLichGiamSat(),
+                    user?.id
+                        ? fetchThongBaoReadIds(user.id).catch(err => {
+                            console.error('Error loading notification click logs:', err);
+                            return [];
+                        })
+                        : Promise.resolve([])
                 ]);
                 setNotifications(notiData || []);
                 setSchedules(scheduleData || []);
+                setReadNotificationIds(new Set(readIds));
             } catch (err) {
                 console.error(err);
             } finally {
@@ -30,7 +40,21 @@ export const NotificationDashboard: React.FC = () => {
             }
         };
         loadAll();
-    }, []);
+
+        const handleReadEvent = (event: Event) => {
+            const { thongBaoId, userId } = (event as CustomEvent<{ thongBaoId: string; userId: string }>).detail;
+            if (userId === user?.id) {
+                setReadNotificationIds(current => new Set(current).add(thongBaoId));
+            }
+        };
+        window.addEventListener(THONG_BAO_READ_EVENT, handleReadEvent);
+        return () => window.removeEventListener(THONG_BAO_READ_EVENT, handleReadEvent);
+    }, [user?.id]);
+
+    const unreadCount = notifications.reduce(
+        (count, notification) => count + (readNotificationIds.has(notification.id) ? 0 : 1),
+        0
+    );
 
     const safeText = (value: unknown, fallback = '---') => {
         if (value === null || value === undefined) return fallback;
@@ -47,13 +71,26 @@ export const NotificationDashboard: React.FC = () => {
 
     const safeLink = (value: unknown) => safeText(value, '');
 
-    const openNotiDetail = (noti: ThongBao) => {
+    const openNotiDetail = async (noti: ThongBao) => {
         setSelectedNoti({
             ...noti,
             nguoi_tao_name: safeText(noti.nguoi_tao_name, 'Người tạo'),
             noi_dung: safeText(noti.noi_dung, 'Không có nội dung'),
         });
         setShowNotiDetail(true);
+        if (!user?.id || readNotificationIds.has(noti.id)) return;
+
+        setReadNotificationIds(current => new Set(current).add(noti.id));
+        try {
+            await markThongBaoAsRead(noti.id, user.id);
+        } catch (err) {
+            console.error('Error logging notification click:', err);
+            setReadNotificationIds(current => {
+                const next = new Set(current);
+                next.delete(noti.id);
+                return next;
+            });
+        }
     };
 
     if (loading) return (
@@ -72,6 +109,11 @@ export const NotificationDashboard: React.FC = () => {
                         <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                             <Bell className="text-[#009900]" size={16} />
                             Thông báo mới nhất
+                            {unreadCount > 0 && (
+                                <span className="min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[9px] text-white">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
                         </h3>
                         <button
                             onClick={() => setShowAllNoti(true)}
@@ -88,12 +130,15 @@ export const NotificationDashboard: React.FC = () => {
                                 <div
                                     key={noti.id}
                                     onClick={() => openNotiDetail(noti)}
-                                    className="p-5 hover:bg-slate-50 transition-all group cursor-pointer"
+                                    className={`p-5 hover:bg-slate-50 transition-all group cursor-pointer ${readNotificationIds.has(noti.id) ? 'bg-white' : 'bg-green-50/50'}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                            {safeDate(noti.ngay_tao, 'date') === '---' ? 'Mới' : safeDate(noti.ngay_tao, 'date')}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {!readNotificationIds.has(noti.id) && <span className="size-2 rounded-full bg-blue-500" />}
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                {safeDate(noti.ngay_tao, 'date') === '---' ? 'Mới' : safeDate(noti.ngay_tao, 'date')}
+                                            </span>
+                                        </div>
                                         {noti.file_dinh_kem && (
                                             <Paperclip size={10} className="text-slate-300 group-hover:text-primary-500" />
                                         )}
@@ -162,7 +207,10 @@ export const NotificationDashboard: React.FC = () => {
                                 <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-[#009900] shadow-sm">
                                     <Bell size={24} />
                                 </div>
-                                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Tất cả thông báo</h3>
+                                <div>
+                                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Tất cả thông báo</h3>
+                                    <p className="text-[10px] font-black uppercase text-slate-400">{unreadCount} thông báo chưa xem</p>
+                                </div>
                             </div>
                             <button onClick={() => setShowAllNoti(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full transition-all">
                                 <X size={24} />
@@ -173,12 +221,15 @@ export const NotificationDashboard: React.FC = () => {
                                 <div
                                     key={noti.id}
                                     onClick={() => { openNotiDetail(noti); setShowAllNoti(false); }}
-                                    className="p-6 hover:bg-slate-50 transition-all group cursor-pointer rounded-2xl"
+                                    className={`p-6 hover:bg-slate-50 transition-all group cursor-pointer rounded-2xl ${readNotificationIds.has(noti.id) ? 'bg-white' : 'bg-green-50/50'}`}
                                 >
                                     <div className="flex justify-between items-start mb-3">
-                                        <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-full">
-                                            {safeDate(noti.ngay_tao, 'date')}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {!readNotificationIds.has(noti.id) && <span className="size-2 rounded-full bg-blue-500" />}
+                                            <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-full">
+                                                {safeDate(noti.ngay_tao, 'date')}
+                                            </span>
+                                        </div>
                                         {noti.file_dinh_kem && <Paperclip size={14} className="text-slate-300" />}
                                     </div>
                                     <p className="text-sm font-black text-slate-700 group-hover:text-[#009900] uppercase transition-colors leading-relaxed">
