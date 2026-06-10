@@ -15,8 +15,8 @@ import { SettingsModule } from './components/SettingsModule';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
 import { HeaderUserMenu } from './components/HeaderUserMenu';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
-import { fetchUnreadNotifications, markNotificationAsRead, subscribeToNotifications, Notification } from './notificationApi';
 import { supabase } from './supabaseClient';
+import { fetchThongBao, ThongBao } from './readThongBao';
 import { PermissionsProvider, usePermissions } from './contexts/PermissionsContext';
 import { IndicatorsProvider, useIndicators } from './components/IndicatorsContext';
 import { IndicatorCategory } from './types';
@@ -246,7 +246,8 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
 
 
 // Helper function to format time ago
-const formatTimeAgo = (dateString: string) => {
+const formatTimeAgo = (dateString?: string) => {
+  if (!dateString) return '---';
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -262,26 +263,170 @@ const formatTimeAgo = (dateString: string) => {
   return `${diffDays} ngày trước`;
 };
 
-// Helper to get notification icon
-const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case 'incident': return <AlertTriangle size={16} className="text-red-600" />;
-    case 'document': return <BookOpen size={16} className="text-green-600" />;
-    case 'assessment': return <ClipboardCheck size={16} className="text-purple-600" />;
-    case 'improvement': return <TrendingUp size={16} className="text-orange-600" />;
-    default: return <Bell size={16} className="text-blue-600" />;
-  }
+const getNotificationAttachmentUrl = (filePath?: string) => {
+  if (!filePath) return '';
+  if (/^(https?:|blob:|data:)/i.test(filePath)) return filePath;
+
+  const normalizedPath = filePath
+    .replace(/^\/+/, '')
+    .replace(/^cv_file\//, '');
+
+  const { data } = supabase.storage.from('cv_file').getPublicUrl(normalizedPath);
+  return data.publicUrl;
 };
 
-// Helper to get notification background color
-const getNotificationBgColor = (type: string) => {
-  switch (type) {
-    case 'incident': return 'bg-red-100';
-    case 'document': return 'bg-green-100';
-    case 'assessment': return 'bg-purple-100';
-    case 'improvement': return 'bg-orange-100';
-    default: return 'bg-blue-100';
-  }
+const NotificationMenu: React.FC<{
+  notifications: ThongBao[];
+  loading: boolean;
+  onSelect: (notification: ThongBao) => void;
+  onManage: () => void;
+}> = ({ notifications, loading, onSelect, onManage }) => (
+  <div className="absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-2xl">
+    <div className="border-b border-slate-100 bg-orange-50 p-4">
+      <h3 className="text-sm font-black uppercase text-slate-800">Thông báo</h3>
+      <p className="mt-0.5 text-xs font-bold text-slate-500">
+        {notifications.length} thông báo đã tạo
+      </p>
+    </div>
+    <div className="max-h-96 overflow-y-auto">
+      {loading ? (
+        <div className="p-8 text-center text-sm font-bold text-slate-400">Đang tải thông báo...</div>
+      ) : notifications.length === 0 ? (
+        <div className="p-8 text-center text-sm font-bold text-slate-400">Chưa có thông báo</div>
+      ) : (
+        notifications.slice(0, 10).map((notification) => (
+          <button
+            key={notification.id}
+            onClick={() => onSelect(notification)}
+            className="block w-full border-b border-slate-100 p-3 text-left transition-colors hover:bg-slate-50"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                <Bell size={17} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-sm font-bold leading-snug text-slate-800">{notification.noi_dung}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-400">
+                  <span>{formatTimeAgo(notification.ngay_tao)}</span>
+                  {notification.file_dinh_kem && <span className="text-primary-600">Có đính kèm</span>}
+                </div>
+              </div>
+            </div>
+          </button>
+        ))
+      )}
+    </div>
+    <div className="border-t border-slate-100 bg-slate-50 p-3">
+      <button
+        onClick={onManage}
+        className="w-full rounded-xl px-3 py-2 text-center text-sm font-black uppercase text-primary-600 transition-colors hover:bg-white"
+      >
+        Quản lý thông báo
+      </button>
+    </div>
+  </div>
+);
+
+const NotificationListSheet: React.FC<{
+  notifications: ThongBao[];
+  loading: boolean;
+  onClose: () => void;
+  onSelect: (notification: ThongBao) => void;
+}> = ({ notifications, loading, onClose, onSelect }) => {
+  const toSafeText = (value: unknown, fallback = '---') => {
+    if (value === null || value === undefined) return fallback;
+    const text = String(value).trim();
+    return text || fallback;
+  };
+
+  const toSafeDate = (value: unknown) => {
+    if (!value) return '---';
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return '---';
+    return date;
+  };
+
+  const formatCreatedAt = (value?: string) => {
+    const date = toSafeDate(value);
+    if (date === '---') return date;
+    return `${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} ${date.toLocaleDateString('vi-VN')}`;
+  };
+
+  const formatDate = (value?: string) => {
+    const date = toSafeDate(value);
+    return date === '---' ? date : date.toLocaleDateString('vi-VN');
+  };
+
+  return (
+    <div className="fixed inset-0 z-[115] flex items-end justify-center bg-slate-900/50 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-md overflow-hidden rounded-t-[2rem] border border-slate-200 bg-slate-50 shadow-2xl sm:rounded-[2rem]">
+        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-5 pb-4 pt-3 backdrop-blur">
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200 sm:hidden" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+                <Bell size={21} />
+              </div>
+              <div>
+                <h3 className="text-base font-black uppercase text-slate-800">Thông báo</h3>
+                <p className="text-xs font-bold text-slate-400">{notifications.length} thông báo đã tạo</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-full bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
+              aria-label="Đóng danh sách thông báo"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div className="max-h-[calc(92vh-5.5rem)] space-y-4 overflow-y-auto p-4">
+          {loading ? (
+            <div className="rounded-3xl bg-white p-8 text-center text-sm font-bold text-slate-400">Đang tải thông báo...</div>
+          ) : notifications.length === 0 ? (
+            <div className="rounded-3xl bg-white p-8 text-center text-sm font-bold text-slate-400">Chưa có thông báo</div>
+          ) : (
+            notifications.map((notification) => {
+              const creatorName = toSafeText(notification.nguoi_tao_name, 'Thông báo hệ thống');
+              const content = toSafeText(notification.noi_dung, 'Không có nội dung');
+              const initial = creatorName.charAt(0).toUpperCase();
+              return (
+                <button
+                  key={notification.id}
+                  onClick={() => onSelect(notification)}
+                  className="w-full rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all active:scale-[0.99] active:bg-slate-50"
+                >
+                  <div className="mb-4 flex items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-green-200 bg-green-100 text-sm font-black text-green-700">
+                      {initial}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-black uppercase text-slate-900">{creatorName}</p>
+                      <p className="mt-0.5 text-[12px] font-black text-slate-500">{formatCreatedAt(notification.ngay_tao)}</p>
+                    </div>
+                  </div>
+
+                  <p className="mb-4 line-clamp-3 text-[13px] font-medium leading-6 text-slate-900">
+                    {content}
+                  </p>
+
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                    <div className="flex min-w-0 items-center gap-2 text-[12px] font-black text-slate-600">
+                      <Calendar size={14} className="shrink-0 text-green-600" />
+                      <span className="truncate">{formatDate(notification.ngay_bat_dau)} - {formatDate(notification.ngay_ket_thuc)}</span>
+                    </div>
+                    <ChevronRight size={16} className="shrink-0 text-slate-300" />
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const AppContent: React.FC = () => {
@@ -289,8 +434,10 @@ const AppContent: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotificationList, setShowNotificationList] = useState(false);
+  const [notifications, setNotifications] = useState<ThongBao[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(true);
+  const [selectedNotification, setSelectedNotification] = useState<ThongBao | null>(null);
   const { user } = useAuth();
   const { canView } = usePermissions();
   const { category: supervisionCategory, setCategory: setSupervisionCategory } = useSupervision();
@@ -475,6 +622,22 @@ const AppContent: React.FC = () => {
       )}
 
       <div className="function-icon-grid">
+        <button
+          onClick={() => setShowNotificationList(true)}
+          className="mobile-app-tile function-icon-tile"
+        >
+          <span className="mobile-app-icon function-icon-box bg-orange-300 relative">
+            <Bell size={28} className="text-orange-500" />
+            {notifications.length > 0 && (
+              <span className="absolute -right-1 -top-1 min-w-5 h-5 rounded-full bg-red-500 px-1 text-[10px] font-black leading-5 text-white shadow-sm">
+                {notifications.length > 9 ? '9+' : notifications.length}
+              </span>
+            )}
+          </span>
+          <span className="mobile-app-label function-icon-label">
+            THÔNG BÁO
+          </span>
+        </button>
         {filteredMobileModules.map((item) => {
           const Icon = item.icon;
           return (
@@ -500,12 +663,18 @@ const AppContent: React.FC = () => {
   React.useEffect(() => {
     loadNotifications();
 
-    // Subscribe to realtime updates
-    const unsubscribe = subscribeToNotifications((newNotification) => {
-      setNotifications(prev => [newNotification, ...prev]);
-    });
+    const channel = supabase
+      .channel('thong_bao_home')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'thong_bao' },
+        () => loadNotifications()
+      )
+      .subscribe();
 
-    return unsubscribe;
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Load mobile banner from cai_dat_giao_dien (single row config)
@@ -534,9 +703,10 @@ const AppContent: React.FC = () => {
   }, []);
 
   const loadNotifications = async () => {
+    setLoadingNotifications(true);
     try {
-      const data = await fetchUnreadNotifications();
-      setNotifications(data);
+      const data = await fetchThongBao();
+      setNotifications(data || []);
     } catch (err) {
       console.error('Error loading notifications:', err);
     } finally {
@@ -545,22 +715,9 @@ const AppContent: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = async (notification: Notification) => {
-    try {
-      // 1. Mark as read
-      await markNotificationAsRead(notification.id);
-
-      // 2. Remove from UI
-      setNotifications(prev => prev.filter(n => n.id !== notification.id));
-
-      // 3. Navigate to module
-      navigateToModule(notification.module as ModuleType);
-
-      // 4. Close dropdown
-      setShowNotifications(false);
-    } catch (err) {
-      console.error('Error marking notification as read:', err);
-    }
+  const handleNotificationClick = (notification: ThongBao) => {
+    setSelectedNotification(notification);
+    setShowNotifications(false);
   };
 
   // Close notification dropdown when clicking outside
@@ -604,76 +761,34 @@ const AppContent: React.FC = () => {
             </h1>
 
             <div className="flex items-center gap-2">
+              {currentModule === ModuleType.DASHBOARD && (
               <div className="relative notification-dropdown">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="relative flex size-10 items-center justify-center rounded-xl text-slate-700 active:bg-slate-100"
                   aria-label="Thông báo"
                 >
-                  <Bell size={21} />
+                  <Bell size={22} />
                   {notifications.length > 0 && (
-                    <span className="absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full border border-white bg-red-500 px-1 text-[10px] font-bold leading-4 text-white">
-                      {Math.min(notifications.length, 9)}
+                    <span className="absolute right-1 top-1 min-w-4 h-4 rounded-full bg-red-500 px-1 text-[9px] font-black leading-4 text-white">
+                      {notifications.length > 9 ? '9+' : notifications.length}
                     </span>
                   )}
                 </button>
-
                 {showNotifications && (
-                  <div className="absolute right-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
-                    <div className="border-b border-slate-100 bg-gradient-to-r from-primary-50 to-primary-100 p-4">
-                      <h3 className="text-sm font-bold text-slate-800">Thông báo mới</h3>
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Bạn có {notifications.length} thông báo chưa đọc
-                      </p>
-                    </div>
-                    <div className="max-h-80 overflow-y-auto">
-                      {loadingNotifications ? (
-                        <div className="p-8 text-center text-sm text-slate-400">
-                          Đang tải thông báo...
-                        </div>
-                      ) : notifications.length === 0 ? (
-                        <div className="p-8 text-center text-sm text-slate-400">
-                          Không có thông báo mới
-                        </div>
-                      ) : (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            onClick={() => handleNotificationClick(notification)}
-                            className="cursor-pointer border-b border-slate-100 p-3 transition-colors hover:bg-slate-50"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`flex size-8 flex-shrink-0 items-center justify-center rounded-full ${getNotificationBgColor(notification.type)}`}>
-                                {getNotificationIcon(notification.type)}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
-                                <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{notification.message}</p>
-                                <span className="mt-1 inline-block text-xs text-slate-400">
-                                  {formatTimeAgo(notification.created_at)}
-                                </span>
-                              </div>
-                              <div className="mt-1 size-2 flex-shrink-0 rounded-full bg-blue-500"></div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    <div className="border-t border-slate-100 bg-slate-50 p-3">
-                      <button
-                        onClick={() => {
-                          setSettingsTab('NOTI');
-                          navigateToModule(ModuleType.SETTINGS);
-                          setShowNotifications(false);
-                        }}
-                        className="w-full text-center text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
-                      >
-                        Xem tất cả thông báo
-                      </button>
-                    </div>
-                  </div>
+                  <NotificationMenu
+                    notifications={notifications}
+                    loading={loadingNotifications}
+                    onSelect={handleNotificationClick}
+                    onManage={() => {
+                      setSettingsTab('NOTI');
+                      navigateToModule(ModuleType.SETTINGS);
+                      setShowNotifications(false);
+                    }}
+                  />
                 )}
               </div>
+              )}
               <HeaderUserMenu variant="light" />
             </div>
           </header>
@@ -723,7 +838,9 @@ const AppContent: React.FC = () => {
               >
                 <Bell size={20} />
                 {notifications.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                  <span className="absolute -right-1 -top-1 min-w-5 h-5 rounded-full bg-red-500 px-1 text-[10px] font-black leading-5 text-white border border-white text-center">
+                    {notifications.length > 9 ? '9+' : notifications.length}
+                  </span>
                 )}
               </button>
 
@@ -753,14 +870,14 @@ const AppContent: React.FC = () => {
                           className="p-3 hover:bg-slate-50 border-b border-slate-100 cursor-pointer transition-colors"
                         >
                           <div className="flex items-start gap-3">
-                            <div className={`w-8 h-8 rounded-full ${getNotificationBgColor(notification.type)} flex items-center justify-center flex-shrink-0`}>
-                              {getNotificationIcon(notification.type)}
+                            <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
+                              <Bell size={16} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
-                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{notification.message}</p>
+                              <p className="text-sm font-semibold text-slate-800 line-clamp-2">{notification.noi_dung}</p>
+                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{notification.nguoi_tao_name || 'Thông báo hệ thống'}</p>
                               <span className="text-xs text-slate-400 mt-1 inline-block">
-                                {formatTimeAgo(notification.created_at)}
+                                {formatTimeAgo(notification.ngay_tao)}
                               </span>
                             </div>
                             <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
@@ -800,6 +917,96 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {showNotificationList && (
+        <NotificationListSheet
+          notifications={notifications}
+          loading={loadingNotifications}
+          onClose={() => setShowNotificationList(false)}
+          onSelect={(notification) => {
+            setShowNotificationList(false);
+            handleNotificationClick(notification);
+          }}
+        />
+      )}
+
+      {selectedNotification && (
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-900/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="max-h-[92vh] w-full max-w-lg overflow-hidden rounded-t-[2rem] bg-white shadow-2xl sm:rounded-3xl">
+            <div className="flex justify-center pt-3 sm:hidden">
+              <div className="h-1.5 w-12 rounded-full bg-slate-200" />
+            </div>
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 p-5 backdrop-blur sm:bg-slate-50 sm:p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 sm:h-12 sm:w-12">
+                  <Bell size={22} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-base font-black uppercase text-slate-800">Thông báo</h3>
+                  <p className="mt-1 text-xs font-bold text-slate-400">
+                    {selectedNotification.ngay_tao ? new Date(selectedNotification.ngay_tao).toLocaleString('vi-VN') : '---'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedNotification(null)}
+                className="rounded-full bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
+                aria-label="Đóng"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="max-h-[calc(92vh-5rem)] space-y-5 overflow-y-auto px-5 pb-6 pt-5 sm:p-6">
+              <p className="whitespace-pre-wrap rounded-2xl border border-orange-100 bg-orange-50/60 p-5 text-[15px] font-semibold leading-7 text-slate-800">
+                {selectedNotification.noi_dung}
+              </p>
+              <div className="grid gap-3 text-xs font-bold text-slate-500">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Người tạo</span>
+                  <span className="mt-1 block text-slate-700">{selectedNotification.nguoi_tao_name || '---'}</span>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Hiệu lực</span>
+                  <span className="mt-1 block text-slate-700">
+                    {selectedNotification.ngay_bat_dau ? new Date(selectedNotification.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}
+                    {selectedNotification.ngay_ket_thuc ? ` - ${new Date(selectedNotification.ngay_ket_thuc).toLocaleDateString('vi-VN')}` : ''}
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Đơn vị nhận</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedNotification.don_vi_thuc_hien?.length ? (
+                      selectedNotification.don_vi_thuc_hien.map((unit, index) => (
+                        <span key={`${unit}-${index}`} className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600">
+                          {unit}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-slate-700">Toàn viện</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {selectedNotification.ghi_chu && (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm font-bold leading-6 text-slate-600">
+                  {selectedNotification.ghi_chu}
+                </div>
+              )}
+              {selectedNotification.file_dinh_kem && (
+                <a
+                  href={getNotificationAttachmentUrl(selectedNotification.file_dinh_kem)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="sticky bottom-0 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 py-4 text-sm font-black uppercase text-white shadow-lg shadow-green-900/20 transition-opacity hover:opacity-90"
+                >
+                  <FileText size={18} />
+                  Xem tài liệu đính kèm
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

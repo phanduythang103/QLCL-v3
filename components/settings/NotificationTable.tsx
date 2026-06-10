@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { fetchThongBao, addThongBao, updateThongBao, deleteThongBao, uploadCVFile, ThongBao } from '../../readThongBao';
 import { fetchDmDonVi, addDmDonVi } from '../../readDmDonVi';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../contexts/PermissionsContext';
 import {
     Edit2, Trash2, Plus, X, Check, Paperclip, Loader,
     Calendar, Users, Info, Bell, Eye, ChevronRight, ArrowLeft,
@@ -10,6 +11,7 @@ import {
 
 export default function NotificationTable() {
     const { user } = useAuth();
+    const { canCreate, canUpdate, canDelete } = usePermissions();
     const [notifications, setNotifications] = useState<ThongBao[]>([]);
     const [units, setUnits] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,8 +39,9 @@ export default function NotificationTable() {
         file_dinh_kem: ''
     });
 
-    // Check permissions
-    const isAdmin = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase().includes('quản trị');
+    const canCreateNotification = canCreate('SETTINGS', 'NOTI');
+    const canUpdateNotification = canUpdate('SETTINGS', 'NOTI');
+    const canDeleteNotification = canDelete('SETTINGS', 'NOTI');
 
     const loadData = async () => {
         setLoading(true);
@@ -92,6 +95,16 @@ export default function NotificationTable() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (editingId && !canUpdateNotification) {
+            setMessage('Bạn không có quyền sửa thông báo.');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
+        if (!editingId && !canCreateNotification) {
+            setMessage('Bạn không có quyền tạo thông báo.');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
         try {
             const dataToSave = {
                 ...form,
@@ -115,6 +128,11 @@ export default function NotificationTable() {
     };
 
     const handleEdit = (noti: ThongBao) => {
+        if (!canUpdateNotification) {
+            setMessage('Bạn không có quyền sửa thông báo.');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
         setForm({
             noi_dung: noti.noi_dung || '',
             don_vi_thuc_hien: noti.don_vi_thuc_hien || [],
@@ -128,6 +146,11 @@ export default function NotificationTable() {
     };
 
     const handleDelete = async (id: string) => {
+        if (!canDeleteNotification) {
+            setMessage('Bạn không có quyền xóa thông báo.');
+            setTimeout(() => setMessage(''), 3000);
+            return;
+        }
         if (window.confirm('Bạn có chắc muốn xóa thông báo này?')) {
             try {
                 await deleteThongBao(id);
@@ -194,7 +217,7 @@ export default function NotificationTable() {
                 <div>
                     <p className="text-title font-black text-black uppercase">Danh sách thông báo</p>
                 </div>
-                {isAdmin && (
+                {canCreateNotification && (
                     <button
                         onClick={() => {
                             setEditingId(null);
@@ -272,8 +295,9 @@ export default function NotificationTable() {
                                             >
                                                 <Eye size={16} />
                                             </button>
-                                            {isAdmin && (
+                                            {(canUpdateNotification || canDeleteNotification) && (
                                                 <>
+                                                    {canUpdateNotification && (
                                                     <button
                                                         onClick={() => handleEdit(noti)}
                                                         className="p-2 text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all"
@@ -281,6 +305,8 @@ export default function NotificationTable() {
                                                     >
                                                         <Edit2 size={16} />
                                                     </button>
+                                                    )}
+                                                    {canDeleteNotification && (
                                                     <button
                                                         onClick={() => handleDelete(noti.id)}
                                                         className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all"
@@ -288,6 +314,7 @@ export default function NotificationTable() {
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
+                                                    )}
                                                 </>
                                             )}
                                         </div>
@@ -554,7 +581,7 @@ export default function NotificationTable() {
                                     <ArrowLeft size={20} />
                                     <span>Quay lại danh sách</span>
                                 </button>
-                                {isAdmin && (
+                                {canUpdateNotification && (
                                     <button
                                         onClick={() => handleEdit(selectedNoti)}
                                         className="flex-1 flex items-center justify-center gap-3 px-10 py-5 bg-slate-800 text-white rounded-3xl text-[14px] font-black uppercase hover:bg-black transition-all shadow-xl active:scale-95"
