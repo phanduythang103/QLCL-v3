@@ -9,12 +9,12 @@ import {
 import { fetchThuVienVb, addThuVienVb, updateThuVienVb, deleteThuVienVb } from '../readThuVienVb';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchThuVienVideo, addThuVienVideo, deleteThuVienVideo } from '../readThuVienVideo';
+import { fetchDaoTao, addDaoTao, updateDaoTao, deleteDaoTao, DaoTao } from '../readDaoTao';
 import {
   fetchChiaSe, addChiaSe, deleteChiaSe, updateChiaSe,
   fetchComments, addComment, fetchReactions, toggleReaction, fetchBookmarks, toggleBookmark
 } from '../readChiaSe';
-import { compressFile } from '../utils/compression';
+import { compressFile, compressFileForStorage } from '../utils/compression';
 
 import { fetchCoQuanBanHanh, addCoQuanBanHanh } from '../readCoQuanBanHanh';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -433,143 +433,420 @@ const DocumentLibrary = () => {
 // --- SUB-COMPONENT: TRAINING CENTER ---
 const TrainingCenter = () => {
   const { canCreate } = usePermissions();
-  const [videos, setVideos] = useState<any[]>([]);
+  const { user } = useAuth();
+  const [items, setItems] = useState<DaoTao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<DaoTao | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
+
+  const initialFormData = {
+    tieu_de: '',
+    noi_dung: '',
+    link: '',
+    link_embed: '',
+    file_dinh_kem: '',
+    file_ten_goc: '',
+    file_ten_nen: '',
+    file_mime_type: '',
+    file_kich_thu_goc: undefined as number | undefined,
+    file_kich_thu_nen: undefined as number | undefined,
+    nguoi_tao_id: user?.id,
+    nguoi_tao_name: user?.full_name || 'Anonymous'
+  };
+  const [formData, setFormData] = useState<any>(initialFormData);
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin')
+  );
+
+  const canManageTraining = (item: DaoTao) => {
+    return isAdmin || (!!user?.id && item.nguoi_tao_id === user.id);
+  };
+
+  const getEmbedUrl = (url?: string) => {
+    if (!url) return '';
+    const trimmedUrl = url.trim();
+
+    const youtubeMatch = trimmedUrl.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/);
+    if (youtubeMatch?.[1]) return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+
+    const driveFileMatch = trimmedUrl.match(/drive\.google\.com\/file\/d\/([^\/\s?]+)/);
+    if (driveFileMatch?.[1]) return `https://drive.google.com/file/d/${driveFileMatch[1]}/preview`;
+
+    const driveIdMatch = trimmedUrl.match(/[?&]id=([^&\s]+)/);
+    if (trimmedUrl.includes('drive.google.com') && driveIdMatch?.[1]) {
+      return `https://drive.google.com/file/d/${driveIdMatch[1]}/preview`;
+    }
+
+    if (trimmedUrl.includes('/preview') || trimmedUrl.includes('/embed/')) return trimmedUrl;
+    return '';
+  };
+
+  const getTrainingEmbedUrl = (item: DaoTao) => getEmbedUrl(item.link_embed) || getEmbedUrl(item.link);
+
+  const loadItems = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchDaoTao();
+      setItems(data || []);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadVideos = async () => {
-      try {
-        const data = await fetchThuVienVideo();
-        setVideos(data || []);
-      } catch (err) {
-        console.error('Error loading videos:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadVideos();
+    loadItems();
   }, []);
 
-  // Static data for quizzes and unit training (can be moved to Supabase later)
-  const QUIZZES = [
-    { id: 1, title: 'Bài kiểm tra An toàn người bệnh cơ bản', questions: 20, time: '30 phút', attempts: 3, bestScore: 95 },
-    { id: 2, title: 'Kiến thức về 83 Tiêu chí chất lượng', questions: 50, time: '60 phút', attempts: 1, bestScore: 70 },
-    { id: 3, title: 'Quy trình Báo động đỏ (Code Red)', questions: 15, time: '15 phút', attempts: 0, bestScore: 0 },
-  ];
+  const openAttachment = async (item: DaoTao) => {
+    if (!item.file_dinh_kem) return;
+    const { data } = supabase.storage.from('dao_tao').getPublicUrl(item.file_dinh_kem);
+    if (data?.publicUrl) window.open(data.publicUrl, '_blank');
+  };
 
-  const UNIT_TRAINING = [
-    { id: 1, date: '12/06/2024', unit: 'Khoa Nội Tiêu hóa', content: 'Bình bệnh án, bình đơn thuốc', attendees: 15, status: 'Đã báo cáo' },
-    { id: 2, date: '10/06/2024', unit: 'Khoa Ngoại Dã chiến', content: 'Tập huấn Quy trình KSNK vết mổ', attendees: 20, status: 'Đã báo cáo' },
-  ];
+  const handleSave = async () => {
+    if (!formData.tieu_de.trim() || !formData.noi_dung.trim()) {
+      alert('Vui lòng nhập tiêu đề và nội dung');
+      return;
+    }
 
-  const thumbnailColors = ['bg-blue-100', 'bg-green-100', 'bg-teal-100', 'bg-purple-100', 'bg-amber-100'];
+    setSaving(true);
+    try {
+      let fileFields: Partial<DaoTao> = {};
+      if (fileUpload) {
+        const compressedFile = await compressFileForStorage(fileUpload);
+        const ext = compressedFile.name.split('.').pop() || 'gz';
+        const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('dao_tao')
+          .upload(uniqueName, compressedFile, { cacheControl: '31536000', upsert: true });
+        if (uploadError) throw uploadError;
+        fileFields = {
+          file_dinh_kem: uniqueName,
+          file_ten_goc: fileUpload.name,
+          file_ten_nen: compressedFile.name,
+          file_mime_type: compressedFile.type || fileUpload.type,
+          file_kich_thu_goc: fileUpload.size,
+          file_kich_thu_nen: compressedFile.size
+        };
+      }
+
+      const saveData = {
+        ...formData,
+        ...fileFields,
+        link_embed: getEmbedUrl(formData.link) || formData.link_embed || '',
+        nguoi_tao_id: user?.id || formData.nguoi_tao_id,
+        nguoi_tao_name: user?.full_name || formData.nguoi_tao_name || 'Anonymous'
+      };
+
+      if (editingId) {
+        await updateDaoTao(editingId, saveData);
+      } else {
+        await addDaoTao(saveData);
+      }
+
+      setShowForm(false);
+      setEditingId(null);
+      setFileUpload(null);
+      setFormData(initialFormData);
+      loadItems();
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = (item: DaoTao) => {
+    setFormData({
+      tieu_de: item.tieu_de || '',
+      noi_dung: item.noi_dung || '',
+      link: item.link || '',
+      link_embed: item.link_embed || '',
+      file_dinh_kem: item.file_dinh_kem || '',
+      file_ten_goc: item.file_ten_goc || '',
+      file_ten_nen: item.file_ten_nen || '',
+      file_mime_type: item.file_mime_type || '',
+      file_kich_thu_goc: item.file_kich_thu_goc,
+      file_kich_thu_nen: item.file_kich_thu_nen,
+      nguoi_tao_id: item.nguoi_tao_id || user?.id,
+      nguoi_tao_name: item.nguoi_tao_name || user?.full_name || 'Anonymous'
+    });
+    setEditingId(item.id || null);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id?: string) => {
+    if (!id || !window.confirm('Bạn có chắc muốn xóa nội dung đào tạo này?')) return;
+    try {
+      await deleteDaoTao(id);
+      loadItems();
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+    }
+  };
+
+  const filteredItems = items.filter(item =>
+    `${item.tieu_de || ''} ${item.noi_dung || ''}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left Column: Video Library & Quizzes */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Section: Video Library */}
-        <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
+    <div className="space-y-5">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row gap-3 justify-between bg-slate-50/50">
+          <div>
             <h3 className="text-main-title text-black flex items-center gap-2 uppercase">
               <Youtube className="text-red-600" size={20} />
-              Video Đào tạo & Quy trình mẫu
+              Video đào tạo & quy trình
             </h3>
-            <button className="text-sm text-primary-600 hover:underline">Xem tất cả</button>
+            <p className="text-xs text-slate-500 mt-1">Dữ liệu lấy từ bảng dao_tao và bucket dao_tao.</p>
           </div>
-          {loading ? (
-            <div className="text-center py-8 text-slate-500">Đang tải...</div>
-          ) : videos.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 italic">Chưa có video đào tạo nào.</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {videos.slice(0, 4).map((video, idx) => (
-                <div key={video.id} className="group cursor-pointer">
-                  <div className={`aspect-video rounded-lg ${video.thumbnail || thumbnailColors[idx % thumbnailColors.length]} relative flex items-center justify-center mb-2 overflow-hidden`}>
-                    <PlayCircle className="w-12 h-12 text-slate-900/50 group-hover:text-red-600 transition-colors z-10" />
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
-                    <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">{video.thoi_luong || '--:--'}</span>
-                  </div>
-                  <h4 className="text-table text-black leading-tight group-hover:text-green-700 transition-colors">{video.tieu_de}</h4>
-                  <p className="text-xs text-slate-500 mt-1">{video.tac_gia || 'N/A'} • {video.luot_xem || 0} lượt xem</p>
-                </div>
-              ))}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Tìm tiêu đề, nội dung..."
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-table text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#009900]"
+              />
             </div>
-          )}
-        </section>
-
-        {/* Section: Self-Study Quizzes */}
-        <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-main-title text-black flex items-center gap-2 uppercase">
-              <CheckSquare className="text-[#009900]" size={20} />
-              Ôn tập & Kiểm tra kiến thức
-            </h3>
+            {canCreate('DOCS') && (
+              <button onClick={() => { setEditingId(null); setFormData(initialFormData); setFileUpload(null); setShowForm(true); }} className="flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] text-white rounded-lg text-label font-black hover:bg-[#008800] transition-colors shadow-sm">
+                <Plus size={16} /> Thêm nội dung
+              </button>
+            )}
           </div>
-          <div className="space-y-3">
-            {QUIZZES.map(quiz => (
-              <div key={quiz.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary-200 hover:bg-slate-50 transition-colors">
-                <div className="mb-2 sm:mb-0">
-                  <h4 className="text-table text-black">{quiz.title}</h4>
-                  <div className="flex gap-3 text-xs text-slate-500 mt-1">
-                    <span className="flex items-center gap-1"><HelpCircle size={12} /> {quiz.questions} câu hỏi</span>
-                    <span className="flex items-center gap-1"><BookOpen size={12} /> {quiz.time}</span>
+        </div>
+
+        {loading && <div className="p-8 text-center text-slate-500">Đang tải nội dung đào tạo...</div>}
+        {error && (
+          <div className="p-8 text-center text-red-500 space-y-3">
+            <p>Lỗi: {error}</p>
+            <button onClick={loadItems} className="px-4 py-2 rounded-lg bg-red-50 text-red-700 text-sm font-bold hover:bg-red-100">
+              Tải lại
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filteredItems.map(item => {
+              const embedUrl = getTrainingEmbedUrl(item);
+              return (
+                <div key={item.id} className="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
+                  <button onClick={() => setSelectedItem(item)} className="aspect-video bg-slate-100 relative flex items-center justify-center text-left group">
+                    {embedUrl ? (
+                      <iframe src={embedUrl} className="w-full h-full pointer-events-none" title={item.tieu_de} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-slate-400">
+                        <PlayCircle size={42} />
+                        <span className="text-xs font-bold uppercase">Chưa có link xem</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </button>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="text-table text-black line-clamp-2 leading-tight">{item.tieu_de}</h4>
+                      <div className="flex gap-1 shrink-0">
+                        {canManageTraining(item) && <button onClick={() => handleEdit(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full"><Edit2 size={14} /></button>}
+                        {canManageTraining(item) && <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-full"><Trash2 size={14} /></button>}
+                      </div>
+                    </div>
+                    <p className="text-table text-black/70 line-clamp-3 mt-2 leading-relaxed">{item.noi_dung}</p>
+                    <div className="mt-auto pt-4 flex items-center justify-between text-xs text-slate-500">
+                      <span>{item.ngay_tao ? new Date(item.ngay_tao).toLocaleDateString('vi-VN') : '-'}</span>
+                      <div className="flex gap-2">
+                        {item.file_dinh_kem && (
+                          <button onClick={() => openAttachment(item)} className="flex items-center gap-1 text-primary-700 hover:underline">
+                            <Download size={14} /> File
+                          </button>
+                        )}
+                        <button onClick={() => setSelectedItem(item)} className="flex items-center gap-1 text-[#009900] font-bold hover:underline">
+                          <Eye size={14} /> Xem
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {quiz.bestScore > 0 ? (
-                    <div className="text-right">
-                      <span className="block text-xs text-slate-400">Kết quả tốt nhất</span>
-                      <span className={`font-bold ${quiz.bestScore >= 80 ? 'text-green-600' : 'text-amber-600'}`}>{quiz.bestScore}/100</span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-slate-400 italic">Chưa làm</span>
-                  )}
-                  <button className="px-4 py-2 bg-white border border-primary-200 text-primary-700 text-sm font-bold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
-                    {quiz.attempts > 0 ? 'Làm lại' : 'Bắt đầu'}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+
+            {filteredItems.length === 0 && (
+              <div className="col-span-full py-12 text-center text-slate-400 italic">Chưa có nội dung đào tạo nào.</div>
+            )}
           </div>
-        </section>
+        )}
       </div>
 
-      {/* Right Column: Unit Training Logs */}
-      <div className="space-y-6">
-        <section className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-main-title text-black uppercase flex items-center gap-2">
-              <Building size={18} className="text-indigo-600" />
-              Hồ sơ đào tạo tại đơn vị
-            </h3>
+      {showForm && (
+        <TrainingFormModal
+          formData={formData}
+          setFormData={setFormData}
+          fileUpload={fileUpload}
+          setFileUpload={setFileUpload}
+          onSave={handleSave}
+          onClose={() => setShowForm(false)}
+          saving={saving}
+          isEdit={!!editingId}
+        />
+      )}
+
+      {selectedItem && (
+        <TrainingDetailModal
+          item={selectedItem}
+          embedUrl={getTrainingEmbedUrl(selectedItem)}
+          onClose={() => setSelectedItem(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onOpenAttachment={openAttachment}
+          canManage={canManageTraining(selectedItem)}
+        />
+      )}
+    </div>
+  );
+};
+
+const TrainingFormModal = ({ formData, setFormData, fileUpload, setFileUpload, onSave, onClose, saving, isEdit }: any) => (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white z-10">
+        <h3 className="text-title font-black text-black uppercase">{isEdit ? 'Sửa nội dung đào tạo' : 'Thêm nội dung đào tạo'}</h3>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <X size={20} />
+        </button>
+      </div>
+      <div className="p-6 space-y-4">
+        <div>
+          <label className="block text-label font-bold text-slate-500 uppercase tracking-widest mb-1">Tiêu đề *</label>
+          <input
+            type="text"
+            value={formData.tieu_de}
+            onChange={e => setFormData({ ...formData, tieu_de: e.target.value })}
+            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-bold bg-white"
+            placeholder="Nhập tên video, quy trình hoặc tài liệu đào tạo..."
+          />
+        </div>
+        <div>
+          <label className="block text-label font-bold text-slate-500 uppercase tracking-widest mb-1">Nội dung *</label>
+          <textarea
+            rows={6}
+            value={formData.noi_dung}
+            onChange={e => setFormData({ ...formData, noi_dung: e.target.value })}
+            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm"
+            placeholder="Mô tả nội dung đào tạo, quy trình, đối tượng áp dụng..."
+          />
+        </div>
+        <div>
+          <label className="block text-label font-bold text-slate-500 uppercase tracking-widest mb-1">Link Google Drive / YouTube</label>
+          <input
+            type="text"
+            value={formData.link}
+            onChange={e => setFormData({ ...formData, link: e.target.value })}
+            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm"
+            placeholder="Dán link Google Drive hoặc YouTube..."
+          />
+          <p className="text-[10px] text-slate-500 mt-1 italic">Hệ thống sẽ tự chuyển link Google Drive sang chế độ preview khi lưu.</p>
+        </div>
+        <div>
+          <label className="block text-label font-bold text-slate-500 uppercase tracking-widest mb-1">File đính kèm</label>
+          <input
+            type="file"
+            onChange={e => setFileUpload(e.target.files?.[0] || null)}
+            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+          />
+          {fileUpload ? (
+            <p className="text-xs text-slate-500 mt-1">Đã chọn: {fileUpload.name}</p>
+          ) : formData.file_dinh_kem ? (
+            <p className="text-xs text-slate-500 mt-1">File hiện tại: {formData.file_ten_goc || formData.file_dinh_kem}</p>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex justify-end gap-2 p-4 border-t border-slate-200 bg-slate-50">
+        <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Hủy</button>
+        <button onClick={onSave} disabled={saving} className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+          {saving ? <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span> : <Save size={16} />}
+          {saving ? 'Đang lưu...' : 'Lưu'}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const TrainingDetailModal = ({ item, embedUrl, onClose, onEdit, onDelete, onOpenAttachment, canManage }: any) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+        <div className="p-5 border-b border-slate-100 sticky top-0 bg-white z-20 flex justify-between items-start gap-4">
+          <div>
+            <h3 className="text-title font-black text-black uppercase leading-tight">{item.tieu_de}</h3>
+            <p className="text-xs text-slate-500 mt-1">{item.ngay_tao ? new Date(item.ngay_tao).toLocaleDateString('vi-VN') : '-'}</p>
           </div>
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-xs text-blue-800 mb-4">
-            <p>Các khoa/phòng cập nhật hoạt động tự đào tạo (bình bệnh án, sinh hoạt chuyên môn, tập huấn tại chỗ...) tại đây.</p>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {embedUrl ? (
+            <div className="space-y-3">
+              <div className="aspect-video rounded-xl overflow-hidden shadow-lg border border-slate-200 bg-black">
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={item.tieu_de}
+                />
+              </div>
+              {item.link && (
+                <a href={item.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">
+                  <Link size={14} /> Mở link gốc
+                </a>
+              )}
+            </div>
+          ) : item.link ? (
+            <a href={item.link} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
+              <Link className="text-primary-600" />
+              <span className="text-sm font-bold text-slate-800 break-all">{item.link}</span>
+            </a>
+          ) : null}
+
+          <div className="prose max-w-none text-input font-bold text-black/80 leading-relaxed whitespace-pre-wrap">
+            {item.noi_dung}
           </div>
 
-          {canCreate('DOCS') && (
-            <button className="w-full py-2 mb-4 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
-              <Plus size={16} /> Đăng ký buổi đào tạo
+          {item.file_dinh_kem && (
+            <button onClick={() => onOpenAttachment(item)} className="w-full flex items-center gap-3 p-4 bg-primary-50 border border-primary-100 rounded-xl hover:bg-primary-100 transition-colors text-left">
+              <FileText className="text-primary-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-primary-800 truncate">{item.file_ten_goc || item.file_dinh_kem}</p>
+                <p className="text-xs text-primary-600">File đã nén trong bucket dao_tao. Nhấn để tải/xem.</p>
+              </div>
             </button>
           )}
+        </div>
 
-          <div className="space-y-4">
-            {UNIT_TRAINING.map(item => (
-              <div key={item.id} className="relative pl-4 border-l-2 border-slate-200 pb-2">
-                <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border border-white"></div>
-                <p className="text-xs text-slate-400 font-mono mb-0.5">{item.date}</p>
-                <h4 className="text-sm font-bold text-slate-800">{item.unit}</h4>
-                <p className="text-xs text-slate-600 mt-1 line-clamp-2">{item.content}</p>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{item.attendees} người tham gia</span>
-                  <span className="text-[10px] text-green-600 font-bold">{item.status}</span>
-                </div>
-              </div>
-            ))}
+        {canManage && (
+          <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+            <button onClick={() => { onEdit(item); onClose(); }} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <Edit2 size={16} /> Sửa
+            </button>
+            <button onClick={() => { onDelete(item.id); onClose(); }} className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors">
+              <Trash2 size={16} /> Xóa
+            </button>
           </div>
-          <button className="w-full mt-4 text-xs text-slate-500 hover:text-primary-600 text-center block">Xem lịch sử toàn viện</button>
-        </section>
+        )}
       </div>
     </div>
   );

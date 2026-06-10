@@ -89,3 +89,27 @@ export async function compressFile(file: File): Promise<File> {
 
     return file;
 }
+
+export async function compressFileForStorage(file: File): Promise<File> {
+    if (typeof CompressionStream === 'undefined') {
+        return compressFile(file);
+    }
+
+    try {
+        const compressedStream = file.stream().pipeThrough(new CompressionStream('gzip'));
+        const compressedBlob = await new Response(compressedStream).blob();
+
+        if (compressedBlob.size >= file.size) {
+            return compressFile(file);
+        }
+
+        const baseName = file.name.replace(/\.[^/.]+$/, '');
+        return new File([compressedBlob], `${baseName}.gz`, {
+            type: 'application/gzip',
+            lastModified: Date.now(),
+        });
+    } catch (error) {
+        console.warn('File compression failed, using original file', error);
+        return compressFile(file);
+    }
+}

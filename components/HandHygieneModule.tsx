@@ -572,20 +572,21 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
         <div className="flex flex-col h-full bg-white">
           
           {/* Form Header - Emerald Theme */}
-          <div className="bg-emerald-600 p-8 text-white flex justify-between items-center relative overflow-hidden">
+          <div className="bg-emerald-600 p-4 md:p-8 text-white flex justify-between items-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
-            <div className="flex items-center gap-5 relative z-10">
+            <div className="flex min-w-0 items-center gap-3 md:gap-5 relative z-10">
               <button 
                 onClick={onClose}
-                className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner hover:bg-white/30 transition-all active:scale-90"
+                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-md rounded-xl md:rounded-2xl flex items-center justify-center shadow-inner hover:bg-white/30 transition-all active:scale-90 shrink-0"
               >
-                 <ArrowLeft size={24} className="text-white" />
+                 <ArrowLeft size={20} className="text-white md:hidden" />
+                 <ArrowLeft size={24} className="text-white hidden md:block" />
               </button>
-              <div>
-                <h2 className="text-2xl font-black uppercase tracking-tight leading-none mb-1">
+              <div className="min-w-0">
+                <h2 className="text-base md:text-2xl font-black uppercase tracking-normal md:tracking-tight leading-tight md:leading-none mb-0.5 md:mb-1 break-words">
                   {isReadOnly ? 'Chi tiết Giám sát' : item ? 'Cập nhật bản ghi' : 'Thêm phiếu Giám sát'}
                 </h2>
-                <p className="text-emerald-100 text-[11px] font-bold uppercase tracking-widest opacity-80">Giám sát vệ sinh tay</p>
+                <p className="text-emerald-100 text-[9px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-widest opacity-80">Giám sát vệ sinh tay</p>
               </div>
             </div>
             <button 
@@ -755,75 +756,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
               </div>
             </div>
 
-              {/* Mobile Card List */}
-              <div className="md:hidden space-y-4">
-                {formData.checklist_data.moments.map((m: any) => (
-                  <div key={m.id} className="bg-white border border-slate-200 rounded-[24px] overflow-hidden shadow-sm">
-                    {/* Row 1: Name */}
-                    <div className="px-4 py-3.5 bg-slate-50 flex items-start gap-3">
-                      <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">{m.id}</span>
-                      <span className="text-[12px] font-black text-slate-900 leading-tight uppercase tracking-tight">{m.name}</span>
-                    </div>
-                    
-                    {/* Row 2: Toggles */}
-                    <div className="px-4 pt-4 pb-3 flex gap-4 relative">
-                      {/* Left: Compliance */}
-                      <div className="flex-1 space-y-2">
-                        <span className={`text-[10px] font-black uppercase tracking-wider block text-center ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Tuân thủ</span>
-                        <button 
-                          type="button"
-                          disabled={isReadOnly}
-                          onClick={() => handleToggle(m.id, 'compliance')}
-                          className={`w-full min-h-9 py-2 px-3 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${m.compliance ? 'bg-[#00a900] text-white border-[#009000] shadow-sm' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
-                        >
-                          {m.compliance ? 'Đạt' : 'K.Đạt'}
-                        </button>
-                      </div>
-
-                      {/* Vertical Divider "I" */}
-                      <div className="w-px h-11 bg-slate-200 self-end"></div>
-
-                      {/* Right: Correct Technique */}
-                      <div className="flex-1 space-y-2">
-                        <span className={`text-[10px] font-black uppercase tracking-wider block text-center ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Đúng kỹ thuật</span>
-                        <button 
-                          type="button"
-                          disabled={isReadOnly || !m.compliance}
-                          onClick={() => handleToggle(m.id, 'correct_technique')}
-                          className={`w-full min-h-9 py-2 px-3 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${m.correct_technique ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm' : 'bg-slate-100 text-slate-400 border-slate-200'} ${(!m.compliance && !isReadOnly) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                        >
-                          {m.correct_technique ? 'Đạt' : 'K.Đạt'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Row 3: Note */}
-                    {(!isReadOnly || String(m.note || '').trim()) && (
-                      <div className="px-4 pb-3">
-                        <div className="relative min-h-8 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                          <FileText className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={13} />
-                          {isReadOnly ? (
-                            <p className="pl-5 text-[10px] font-bold text-black">{m.note}</p>
-                          ) : (
-                            <input 
-                              type="text" 
-                              value={m.note} 
-                              onChange={e => {
-                                const newMoments = formData.checklist_data.moments.map((item: any) => item.id === m.id ? { ...item, note: e.target.value } : item);
-                                setFormData({ ...formData, checklist_data: { moments: newMoments } });
-                              }}
-                              placeholder="Ghi chú thêm..."
-                              className="w-full bg-transparent border-none outline-none pl-5 p-0 text-[10px] font-medium text-slate-600 placeholder:text-slate-300 focus:ring-0"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Results Summary Bar (Visible on both) */}
+              {/* Results Summary Bar */}
               <div className="bg-indigo-50/50 border border-indigo-100 rounded-[28px] p-4 md:p-6 shadow-xl shadow-indigo-900/5">
                 <div className="grid grid-cols-3 gap-2 md:gap-4 divide-x divide-indigo-100">
                   <div className="flex flex-col items-center">

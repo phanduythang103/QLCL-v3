@@ -77,7 +77,7 @@ export const IndicatorsModule: React.FC = () => {
           <div className="flex gap-2">
             <button
               onClick={loadData}
-              className="p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50"
+              className="hidden md:block p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50"
               title="Làm mới dữ liệu"
             >
               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
@@ -85,7 +85,7 @@ export const IndicatorsModule: React.FC = () => {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="bg-white border border-slate-200 text-black text-input font-bold rounded-lg p-2.5 focus:ring-green-500 focus:border-green-500"
+              className="hidden md:block bg-white border border-slate-200 text-black text-input font-bold rounded-lg p-2.5 focus:ring-green-500 focus:border-green-500"
             >
               <option value="06/2024">Tháng 6/2024</option>
               <option value="05/2024">Tháng 5/2024</option>
