@@ -32,8 +32,27 @@ export const NotificationDashboard: React.FC = () => {
         loadAll();
     }, []);
 
+    const safeText = (value: unknown, fallback = '---') => {
+        if (value === null || value === undefined) return fallback;
+        const text = String(value).trim();
+        return text || fallback;
+    };
+
+    const safeDate = (value: unknown, format: 'date' | 'datetime' = 'date') => {
+        if (!value) return '---';
+        const date = new Date(String(value));
+        if (Number.isNaN(date.getTime())) return '---';
+        return format === 'datetime' ? date.toLocaleString('vi-VN') : date.toLocaleDateString('vi-VN');
+    };
+
+    const safeLink = (value: unknown) => safeText(value, '');
+
     const openNotiDetail = (noti: ThongBao) => {
-        setSelectedNoti(noti);
+        setSelectedNoti({
+            ...noti,
+            nguoi_tao_name: safeText(noti.nguoi_tao_name, 'Người tạo'),
+            noi_dung: safeText(noti.noi_dung, 'Không có nội dung'),
+        });
         setShowNotiDetail(true);
     };
 
@@ -73,14 +92,14 @@ export const NotificationDashboard: React.FC = () => {
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                            {noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : 'Mới'}
+                                            {safeDate(noti.ngay_tao, 'date') === '---' ? 'Mới' : safeDate(noti.ngay_tao, 'date')}
                                         </span>
                                         {noti.file_dinh_kem && (
                                             <Paperclip size={10} className="text-slate-300 group-hover:text-primary-500" />
                                         )}
                                     </div>
                                     <p className="text-[11px] font-black text-slate-700 group-hover:text-[#009900] transition-colors line-clamp-2 uppercase leading-relaxed">
-                                        {noti.noi_dung}
+                                        {safeText(noti.noi_dung, 'Không có nội dung')}
                                     </p>
                                 </div>
                             ))
@@ -117,7 +136,7 @@ export const NotificationDashboard: React.FC = () => {
                                         </div>
                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                                             <Clock size={10} />
-                                            {item.tu_ngay ? new Date(item.tu_ngay).toLocaleDateString('vi-VN') : '---'}
+                                            {safeDate(item.tu_ngay, 'date')}
                                         </span>
                                     </div>
                                     <p className="text-[11px] font-black text-slate-700 group-hover:text-indigo-600 transition-colors line-clamp-1 uppercase mb-2">
@@ -158,12 +177,12 @@ export const NotificationDashboard: React.FC = () => {
                                 >
                                     <div className="flex justify-between items-start mb-3">
                                         <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-full">
-                                            {noti.ngay_tao ? new Date(noti.ngay_tao).toLocaleDateString('vi-VN') : '---'}
+                                            {safeDate(noti.ngay_tao, 'date')}
                                         </span>
                                         {noti.file_dinh_kem && <Paperclip size={14} className="text-slate-300" />}
                                     </div>
                                     <p className="text-sm font-black text-slate-700 group-hover:text-[#009900] uppercase transition-colors leading-relaxed">
-                                        {noti.noi_dung}
+                                        {safeText(noti.noi_dung, 'Không có nội dung')}
                                     </p>
                                 </div>
                             ))}
@@ -196,8 +215,8 @@ export const NotificationDashboard: React.FC = () => {
                                         </span>
                                         <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
                                             <Clock size={16} className="text-indigo-400" />
-                                            {item.tu_ngay ? new Date(item.tu_ngay).toLocaleDateString('vi-VN') : '---'}
-                                            {item.den_ngay && ` - ${new Date(item.den_ngay).toLocaleDateString('vi-VN')}`}
+                                            {safeDate(item.tu_ngay, 'date')}
+                                            {safeDate(item.den_ngay, 'date') !== '---' && ` - ${safeDate(item.den_ngay, 'date')}`}
                                         </div>
                                     </div>
                                     <p className="text-sm font-black text-slate-800 uppercase tracking-tight mb-4">{item.nd_giam_sat}</p>
@@ -223,16 +242,16 @@ export const NotificationDashboard: React.FC = () => {
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
                         <div className="p-8 border-b border-slate-100 bg-slate-50/30 relative">
-                            <button onClick={() => setShowNotiDetail(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full transition-all">
+                            <button onClick={() => { setShowNotiDetail(false); setSelectedNoti(null); }} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-full transition-all">
                                 <X size={20} />
                             </button>
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 rounded-2xl bg-[#009900] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-900/20">
-                                    {selectedNoti.nguoi_tao_name?.charAt(0) || 'U'}
+                                    {safeText(selectedNoti.nguoi_tao_name, 'U').charAt(0)}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{selectedNoti.nguoi_tao_name}</p>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{selectedNoti.ngay_tao ? new Date(selectedNoti.ngay_tao).toLocaleString('vi-VN') : '---'}</p>
+                                    <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{safeText(selectedNoti.nguoi_tao_name, 'Người tạo')}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{safeDate(selectedNoti.ngay_tao, 'datetime')}</p>
                                 </div>
                             </div>
                         </div>
@@ -241,7 +260,7 @@ export const NotificationDashboard: React.FC = () => {
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Nội dung thông báo</label>
                                 <p className="text-sm font-black text-slate-700 uppercase leading-relaxed bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                    {selectedNoti.noi_dung}
+                                    {safeText(selectedNoti.noi_dung, 'Không có nội dung')}
                                 </p>
                             </div>
 
@@ -250,20 +269,20 @@ export const NotificationDashboard: React.FC = () => {
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hiệu lực</p>
                                     <p className="text-[11px] font-black text-slate-700 uppercase flex items-center gap-1.5">
                                         <Calendar size={14} className="text-[#009900]" />
-                                        {selectedNoti.ngay_bat_dau ? new Date(selectedNoti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}
+                                        {safeDate(selectedNoti.ngay_bat_dau, 'date')}
                                     </p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Đến ngày</p>
                                     <p className="text-[11px] font-black text-slate-700 uppercase">
-                                        {selectedNoti.ngay_ket_thuc ? new Date(selectedNoti.ngay_ket_thuc).toLocaleDateString('vi-VN') : '---'}
+                                        {safeDate(selectedNoti.ngay_ket_thuc, 'date')}
                                     </p>
                                 </div>
                             </div>
 
-                            {selectedNoti.file_dinh_kem && (
+                            {safeLink(selectedNoti.file_dinh_kem) && (
                                 <a
-                                    href={selectedNoti.file_dinh_kem}
+                                    href={safeLink(selectedNoti.file_dinh_kem)}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="block w-full text-center py-4 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase hover:opacity-90 transition-all shadow-lg shadow-green-900/20"

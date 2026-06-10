@@ -679,9 +679,127 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
     }
   };
 
+  const formatDate = (value?: string) => value ? new Date(value).toLocaleDateString('vi-VN') : '.....';
+
   return (
-    <div className="bg-slate-50 min-h-screen py-10 px-4 animate-in fade-in duration-500" style={{ fontFamily: 'Tahoma, sans-serif' }}>
-      <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-sm p-16 print:p-0 print:shadow-none min-h-[29.7cm]">
+    <div className="bg-slate-50 min-h-screen px-0 py-3 sm:px-4 sm:py-10 animate-in fade-in duration-500" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+      <div className="md:hidden space-y-3 pb-6">
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-3 shadow-sm">
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={onBack} className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-2 text-[11px] font-black text-slate-700 active:scale-[0.98]">
+              <ArrowLeft size={16} /> Quay lại
+            </button>
+            <button
+              onClick={handleExportWord}
+              disabled={exporting}
+              className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-2 text-[11px] font-black text-white shadow-md shadow-blue-200 disabled:opacity-50 active:scale-[0.98]"
+            >
+              <FileDown size={16} /> Word
+            </button>
+            {canEditItem ? (
+              <button onClick={onEdit} className="min-h-11 flex items-center justify-center gap-1.5 rounded-xl bg-[#108545] px-2 text-[11px] font-black text-white shadow-md shadow-emerald-200 active:scale-[0.98]">
+                <Edit2 size={16} /> Sửa
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+        </div>
+
+        <article className="mx-3 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-4 py-5 border-b border-slate-100 bg-slate-50">
+            <div className="space-y-3 text-center">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-wide text-slate-700">Bệnh viện Quân y 103</p>
+                <p className="mt-1 text-[12px] font-black uppercase leading-snug text-slate-900">{item.don_vi || '[Tên đơn vị]'}</p>
+              </div>
+              <div className="mx-auto h-px w-32 bg-slate-300" />
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-wide text-slate-700">Cộng hòa xã hội chủ nghĩa Việt Nam</p>
+                <p className="mt-1 text-[12px] font-black text-slate-900">Độc lập - Tự do - Hạnh phúc</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 py-6 space-y-6">
+            <header className="text-center space-y-3">
+              <h1 className="text-[18px] font-black uppercase leading-tight tracking-normal text-slate-950">Kế hoạch cải tiến chất lượng</h1>
+              <p className="mx-auto max-w-[18rem] border-b border-slate-200 pb-3 text-[15px] font-black uppercase leading-snug text-slate-800">
+                {item.ten_van_de || '[Tên vấn đề]'}
+              </p>
+            </header>
+
+            <section className="space-y-2">
+              <h2 className="text-[15px] font-black leading-snug text-slate-950">1. Lý do thực hiện (Đặt vấn đề):</h2>
+              <div className="whitespace-pre-wrap rounded-xl bg-slate-50 px-4 py-3 text-[14px] font-semibold leading-7 text-slate-800">
+                {item.ly_do_thuc_hien || 'Chưa cập nhật nội dung...'}
+              </div>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-[15px] font-black leading-snug text-slate-950">2. Mục tiêu (SMART):</h2>
+              <div className="space-y-3 rounded-xl bg-slate-50 px-4 py-3 text-[14px] font-semibold leading-7 text-slate-800">
+                <div className="whitespace-pre-wrap">{item.muc_tieu || 'Chưa cập nhật nội dung...'}</div>
+                {(item.ngay_bat_dau || item.ngay_ket_thuc) && (
+                  <p className="rounded-lg bg-white px-3 py-2 text-[13px] font-black text-slate-700">
+                    Thời gian: {formatDate(item.ngay_bat_dau)} đến {formatDate(item.ngay_ket_thuc)}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-[15px] font-black leading-snug text-slate-950">3. Giải pháp và Tổ chức thực hiện:</h2>
+              <div className="space-y-3">
+                {(item.giai_phap_to_chuc || []).map((row, idx) => (
+                  <div key={idx} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between bg-slate-50 px-4 py-2 border-b border-slate-100">
+                      <span className="text-[11px] font-black uppercase tracking-wide text-slate-500">STT</span>
+                      <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-[#108545] px-2 text-[12px] font-black text-white">{row.tt}</span>
+                    </div>
+                    <dl className="divide-y divide-slate-100 text-[13px]">
+                      <div className="grid grid-cols-[96px_1fr] gap-3 px-4 py-3">
+                        <dt className="font-black uppercase leading-5 text-slate-500">Hành động cụ thể</dt>
+                        <dd className="whitespace-pre-wrap font-semibold leading-6 text-slate-900">{row.hanh_dong || '-'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[96px_1fr] gap-3 px-4 py-3">
+                        <dt className="font-black uppercase leading-5 text-slate-500">Người phụ trách</dt>
+                        <dd className="font-semibold leading-6 text-slate-900">{row.nguoi_phu_trach || '-'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[96px_1fr] gap-3 px-4 py-3">
+                        <dt className="font-black uppercase leading-5 text-slate-500">Thời hạn</dt>
+                        <dd className="font-semibold leading-6 text-slate-900">{row.thoi_han || '-'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[96px_1fr] gap-3 px-4 py-3">
+                        <dt className="font-black uppercase leading-5 text-slate-500">Kết quả mong đợi</dt>
+                        <dd className="whitespace-pre-wrap font-semibold leading-6 text-slate-900">{row.ket_qua || '-'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+                {(item.giai_phap_to_chuc || []).length === 0 && (
+                  <div className="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm font-bold text-slate-400">
+                    Chưa có giải pháp tổ chức thực hiện.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="grid grid-cols-1 gap-3 border-t border-slate-100 pt-5 text-center">
+              <div className="rounded-xl bg-slate-50 px-4 py-4">
+                <p className="text-[12px] font-black uppercase text-slate-700">Chỉ huy đơn vị</p>
+                <p className="mt-2 text-[12px] italic text-slate-400">(Ký và ghi rõ họ tên)</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-4">
+                <p className="text-[12px] font-black uppercase text-slate-700">Người lập kế hoạch</p>
+                <p className="mt-2 text-[13px] font-black text-slate-900">{item.nguoi_lap_ke_hoach || '-'}</p>
+              </div>
+            </section>
+          </div>
+        </article>
+      </div>
+
+      <div className="hidden md:block max-w-5xl mx-auto bg-white shadow-2xl rounded-sm p-16 print:block print:p-0 print:shadow-none min-h-[29.7cm]">
         {/* Sticky Controls (Hidden on Print) */}
         <div className="flex justify-between items-center mb-10 print:hidden border-b border-slate-100 pb-6">
           <button onClick={onBack} className="flex items-center gap-2 px-5 py-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 font-bold transition-all">
