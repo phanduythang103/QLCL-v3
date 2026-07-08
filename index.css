@@ -2149,3 +2149,73 @@ main form textarea:focus {
     padding: 9px 10px;
   }
 }
+
+/* --- Desktop Layout Overrides for Indicator Subtabs --- */
+@media (min-width: 1024px) {
+  .indicator-subtab-list,
+  .indicator-subtab-list.indicator-subtab-list-2,
+  .pt-loai2-module .pt-loai2-tab-grid,
+  .nurse-ratio-tab-list {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .indicator-subtab-button,
+  .pt-loai2-module .pt-loai2-tab-button,
+  .nurse-ratio-tab-button {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 44px;
+    height: 44px;
+    padding: 6px 20px 6px 8px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    background: #ffffff;
+    flex: 0 0 auto;
+    width: auto;
+    gap: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+
+  .indicator-subtab-button:hover,
+  .pt-loai2-module .pt-loai2-tab-button:hover,
+  .nurse-ratio-tab-button:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+
+  .indicator-subtab-button > svg,
+  .pt-loai2-module .pt-loai2-tab-button > svg,
+  .nurse-ratio-tab-button > svg {
+    width: 32px !important;
+    height: 32px !important;
+    flex: 0 0 32px;
+    padding: 7px;
+    border-radius: 8px;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .indicator-subtab-button span,
+  .pt-loai2-module .pt-loai2-tab-button span,
+  .nurse-ratio-tab-button span,
+  .indicator-subtab-button .function-icon-label,
+  .nurse-ratio-tab-button .function-icon-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    width: auto;
+    margin: 0;
+  }
+
+  .indicator-subtab-button-active,
+  .pt-loai2-module .pt-loai2-tab-button-active,
+  .nurse-ratio-tab-button-active {
+    border-color: rgba(0, 153, 0, 0.3) !important;
+    background: var(--color-primary-50) !important;
+    box-shadow: none !important;
+  }
+}
