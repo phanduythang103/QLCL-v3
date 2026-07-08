@@ -228,7 +228,12 @@ function AdminTraining({ courses, selectedCourse, onSelect, onReload, userId }: 
       setOriginalFile(null);
       onSelect(course.id);
       await onReload();
-    } finally { setBusy(''); }
+    } catch (err: any) {
+      console.error(err);
+      alert('Lỗi tạo khóa học: ' + (err.message || 'Có lỗi xảy ra. Kiểm tra console.'));
+    } finally { 
+      setBusy(''); 
+    }
   };
 
   const publish = async () => {

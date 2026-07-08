@@ -233,25 +233,30 @@ export async function createTrainingCourseFromJson({ lessonFile, quizFile, origi
     created_by: createdBy,
   });
 
-  const lessonMaterial = await uploadJsonMaterial(lessonFile, course.id, 'lesson_json', lesson.text);
-  await uploadJsonMaterial(quizFile, course.id, 'quiz_json', quiz.text);
+  try {
+    const lessonMaterial = await uploadJsonMaterial(lessonFile, course.id, 'lesson_json', lesson.text);
+    await uploadJsonMaterial(quizFile, course.id, 'quiz_json', quiz.text);
 
-  if (originalFile) {
-    await uploadTrainingMaterial(originalFile, course.id);
+    if (originalFile) {
+      await uploadTrainingMaterial(originalFile, course.id);
+    }
+
+    const lessonRows = getSectionRows(lesson.json, course.id, lessonMaterial.id);
+    const { data: lessons, error: lessonError } = await supabase
+      .from('training_lessons')
+      .insert(lessonRows)
+      .select();
+    if (lessonError) throw lessonError;
+
+    const questionRows = getQuestionRows(quiz.json, course.id, lessons || []);
+    const { error: questionError } = await supabase.from('training_questions').insert(questionRows);
+    if (questionError) throw questionError;
+
+    return { ...course, lessons_count: lessonRows.length, questions_count: questionRows.length };
+  } catch (error) {
+    await deleteTrainingCourse(course.id);
+    throw error;
   }
-
-  const lessonRows = getSectionRows(lesson.json, course.id, lessonMaterial.id);
-  const { data: lessons, error: lessonError } = await supabase
-    .from('training_lessons')
-    .insert(lessonRows)
-    .select();
-  if (lessonError) throw lessonError;
-
-  const questionRows = getQuestionRows(quiz.json, course.id, lessons || []);
-  const { error: questionError } = await supabase.from('training_questions').insert(questionRows);
-  if (questionError) throw questionError;
-
-  return { ...course, lessons_count: lessonRows.length, questions_count: questionRows.length };
 }
 export async function updateTrainingCourse(courseId, patch) {
   const title = String(patch.title || '').trim();
