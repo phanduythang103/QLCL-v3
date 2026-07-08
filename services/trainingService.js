@@ -222,8 +222,9 @@ export async function createTrainingCourseFromJson({ lessonFile, quizFile, origi
   const lesson = await readJsonFile(lessonFile, 'lesson_json');
   const quiz = await readJsonFile(quizFile, 'quiz_json');
 
-  const title = String(lesson.json.course_title || lesson.json.title || '').trim();
-  if (!title) throw new Error('lesson_json phải có course_title');
+  const fallbackTitle = (lessonFile?.name || 'Khóa học mới').replace(/\.json$/i, '').replace(/[_-]/g, ' ').trim();
+  const title = String(lesson.json.course_title || lesson.json.title || fallbackTitle).trim();
+  if (!title) throw new Error('Không thể xác định được tên khóa học từ file hoặc tên file.');
 
   const course = await createTrainingCourse({
     title,
