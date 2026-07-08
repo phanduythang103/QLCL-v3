@@ -6,6 +6,7 @@ import {
   ViewMode, ActiveTab, AssessmentSheet,
   KqDanhGia83, Data83tc, DmDonVi
 } from '../types';
+import { useAssessmentContext } from '../../AssessmentContext';
 import { supabase } from '../../../supabaseClient';
 
 const naturalSort = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
@@ -21,7 +22,7 @@ export const useAssessment = () => {
   const uDeptCode = uDept.split('-')[0].trim();
 
   // State
-  const [activeTab, setActiveTab] = useState<ActiveTab | null>(null);
+  const { activeTab, setActiveTab } = useAssessmentContext();
   const [viewMode, setViewMode] = useState<ViewMode>('LIST');
   const [sheetList, setSheetList] = useState<AssessmentSheet[]>([]);
   const [loading, setLoading] = useState(true);

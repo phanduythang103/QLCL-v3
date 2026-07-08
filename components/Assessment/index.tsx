@@ -146,25 +146,7 @@ export const AssessmentModule: React.FC = () => {
       {viewMode === 'LIST' && activeTab === null && (
         <div className="animate-in fade-in zoom-in-95 duration-700">
           {/* Desktop Dashboard */}
-          <div className="hidden lg:grid lg:grid-cols-4 gap-6">
-            {navItems.filter(i => i.show).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 text-left flex flex-col items-start gap-6 group"
-              >
-                <div
-                  className="p-4 rounded-2xl shadow-sm transition-transform group-hover:scale-110"
-                  style={{ backgroundColor: item.bgColor, color: item.color }}
-                >
-                  {item.icon}
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-black text-slate-800 uppercase text-sm tracking-tight">{item.name}</h3>
-                  <p className="text-xs text-slate-400 font-medium leading-relaxed">{item.description}</p>
-                </div>
-              </button>
-            ))}
+          <div className="hidden">
           </div>
 
           {/* Tablet & Mobile Function Grid */}

@@ -14,6 +14,7 @@ import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
 import { ContinuousTraining } from './components/ContinuousTraining';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
+import { AssessmentProvider, useAssessmentContext } from './components/AssessmentContext';
 import { HeaderUserMenu } from './components/HeaderUserMenu';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { supabase } from './supabaseClient';
@@ -131,6 +132,75 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
   );
 };
 
+// --- Assessment Dropdown ---
+const AssessmentNav = ({ collapsed, active, onSelectModule }: { collapsed: boolean; active: boolean; onSelectModule: () => void; }) => {
+  const { activeTab, setActiveTab, isExpanded, setIsExpanded } = useAssessmentContext();
+
+  const toggleExpansion = () => {
+    if (!active) {
+      onSelectModule();
+      setIsExpanded(true);
+      setActiveTab(null);
+    } else {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
+  const handleSubNavClick = (tab: any) => {
+    onSelectModule();
+    setActiveTab(tab);
+  }
+
+  const { user } = useAuth();
+  const isAdmin = !!user?.role && (
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin') ||
+    user.role.toLowerCase().includes('manager')
+  );
+
+  const subNavItems = [
+    { label: "Chấm điểm 83 Tiêu chí", tab: 'QUALITY_ASSESSMENT' },
+    { label: "Các bộ tiêu chuẩn khác", tab: 'ASSESSMENT_REPORTS' },
+    { label: "Chấm điểm theo tổ", tab: 'TEAM_ASSESSMENT' },
+  ];
+  if (isAdmin) {
+    subNavItems.push({ label: "Danh mục 83 Tiêu chí", tab: 'CRITERIA_83' });
+  }
+
+  return (
+    <div>
+      <button
+        onClick={toggleExpansion}
+        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${active ? 'bg-white/10 text-white shadow-inner' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
+      >
+        <div className={`flex items-center justify-center ${collapsed ? 'w-full' : ''}`}>
+          <ClipboardCheck size={20} />
+        </div>
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-left uppercase text-[13px] tracking-wide font-bold whitespace-nowrap">Đánh giá Chất lượng</span>
+            <ChevronDown size={16} className={`transition-transform duration-200 ${isExpanded && active ? 'rotate-180' : ''}`} />
+          </>
+        )}
+      </button>
+
+      {!collapsed && isExpanded && active && (
+        <div className="bg-black/20 py-1 animate-in slide-in-from-top-2 duration-200">
+          {subNavItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => handleSubNavClick(item.tab)}
+              className={`w-full text-left pl-11 pr-4 py-2 text-[12px] transition-colors relative flex items-center justify-between ${activeTab === item.tab ? 'bg-white/15 text-white font-bold' : 'text-white/85 hover:text-white hover:bg-white/10'}`}
+            >
+              <span className="truncate">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Indicators Dropdown ---
 const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boolean; active: boolean; onSelectModule: () => void; }) => {
   const { category, setCategory, isExpanded, setIsExpanded } = useIndicators();
@@ -231,7 +301,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         {canView(ModuleType.DASHBOARD) && <NavItem icon={<LayoutDashboard size={20} />} label="Trang chủ" active={currentModule === ModuleType.DASHBOARD} onClick={() => handleModuleChange(ModuleType.DASHBOARD)} collapsed={collapsed} />}
         {canView(ModuleType.HR) && <NavItem icon={<Users size={20} />} label="Quản lý Nhân sự" active={currentModule === ModuleType.HR} onClick={() => handleModuleChange(ModuleType.HR)} collapsed={collapsed} />}
         {canView(ModuleType.DOCS, 'LIBRARY') && <NavItem icon={<BookOpen size={20} />} label="Văn bản & Tài liệu" active={currentModule === ModuleType.DOCS} onClick={() => handleModuleChange(ModuleType.DOCS)} collapsed={collapsed} />}
-        {canView(ModuleType.ASSESSMENT) && <NavItem icon={<ClipboardCheck size={20} />} label="Đánh giá Chất lượng" active={currentModule === ModuleType.ASSESSMENT} onClick={() => handleModuleChange(ModuleType.ASSESSMENT)} collapsed={collapsed} />}
+        {canView(ModuleType.ASSESSMENT) && <AssessmentNav collapsed={collapsed} active={currentModule === ModuleType.ASSESSMENT} onSelectModule={() => handleModuleChange(ModuleType.ASSESSMENT)} />}
         {canView(ModuleType.INCIDENTS) && <NavItem icon={<AlertTriangle size={20} />} label="Sự cố Y khoa" active={currentModule === ModuleType.INCIDENTS} onClick={() => handleModuleChange(ModuleType.INCIDENTS)} collapsed={collapsed} />}
         {canView(ModuleType.IMPROVEMENT) && <NavItem icon={<TrendingUp size={20} />} label="Cải tiến Chất lượng" active={currentModule === ModuleType.IMPROVEMENT} onClick={() => handleModuleChange(ModuleType.IMPROVEMENT)} collapsed={collapsed} />}
         {canView(ModuleType.INDICATORS) && <IndicatorsNav collapsed={collapsed} active={currentModule === ModuleType.INDICATORS} onSelectModule={() => handleModuleChange(ModuleType.INDICATORS)} />}
@@ -1081,13 +1151,15 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <NavigationProvider>
-    <SupervisionProvider>
-      <IndicatorsProvider>
-        <PermissionsProvider>
-          <AppContent />
-        </PermissionsProvider>
-      </IndicatorsProvider>
-    </SupervisionProvider>
+    <AssessmentProvider>
+      <SupervisionProvider>
+        <IndicatorsProvider>
+          <PermissionsProvider>
+            <AppContent />
+          </PermissionsProvider>
+        </IndicatorsProvider>
+      </SupervisionProvider>
+    </AssessmentProvider>
   </NavigationProvider>
 );
 
