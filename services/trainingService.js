@@ -136,10 +136,35 @@ function normalizeQuestionOptions(question) {
 function normalizeCorrectIndex(question, options) {
   const direct = Number(question.correctAnswerIndex != null ? question.correctAnswerIndex : (question.correct_answer_index != null ? question.correct_answer_index : question.correct_index));
   if (Number.isInteger(direct) && direct >= 0 && direct < options.length) return direct;
+  
   const answerRaw = question.correct_answer != null ? question.correct_answer : (question.answer != null ? question.answer : (question.correctAnswer != null ? question.correctAnswer : ''));
   const answer = String(answerRaw).trim();
-  const byText = options.findIndex(option => String(option).trim() === answer);
-  return byText >= 0 ? byText : 0;
+  if (!answer) return 0;
+
+  // 1. Exact match
+  let idx = options.findIndex(option => String(option).trim() === answer);
+  if (idx >= 0) return idx;
+
+  // 2. A, B, C, D
+  if (answer.length === 1 && answer.toUpperCase() >= 'A' && answer.toUpperCase() <= 'D') {
+    idx = answer.toUpperCase().charCodeAt(0) - 65;
+    if (idx >= 0 && idx < options.length) return idx;
+  }
+
+  // 3. Numeric string 0, 1, 2, 3
+  if (/^\d+$/.test(answer)) {
+    idx = parseInt(answer, 10);
+    if (idx >= 0 && idx < options.length) return idx;
+  }
+
+  // 4. Partial match ignoring prefix like "B. "
+  idx = options.findIndex(option => {
+    const textWithoutPrefix = String(option).replace(/^[A-D][\.\:\)]\s*/i, '').trim();
+    return textWithoutPrefix === answer || textWithoutPrefix.includes(answer) || answer.includes(textWithoutPrefix);
+  });
+  if (idx >= 0) return idx;
+
+  return 0;
 }
 
 function getQuestionRows(quizJson, courseId, lessons) {
@@ -664,9 +689,21 @@ export async function getTestAttemptDetails(attemptId) {
     const options = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
     const expectedText = String(q.correct_answer || '').trim();
     let expectedIndex = options.findIndex(opt => String(opt).trim() === expectedText);
-    if (expectedIndex < 0 && expectedText.length === 1 && expectedText >= 'A' && expectedText <= 'D') {
-      expectedIndex = expectedText.charCodeAt(0) - 65;
-    } else if (expectedIndex < 0) {
+    
+    if (expectedIndex < 0) {
+      if (/^\d+$/.test(expectedText)) {
+        expectedIndex = parseInt(expectedText, 10);
+      } else if (expectedText.length === 1 && expectedText.toUpperCase() >= 'A' && expectedText.toUpperCase() <= 'D') {
+        expectedIndex = expectedText.toUpperCase().charCodeAt(0) - 65;
+      } else {
+        expectedIndex = options.findIndex(opt => {
+          const textWithoutPrefix = String(opt).replace(/^[A-D][\.\:\)]\s*/i, '').trim();
+          return textWithoutPrefix === expectedText || textWithoutPrefix.includes(expectedText) || expectedText.includes(textWithoutPrefix);
+        });
+      }
+    }
+    
+    if (expectedIndex < 0 || expectedIndex >= options.length) {
       expectedIndex = 0;
     }
     return {
