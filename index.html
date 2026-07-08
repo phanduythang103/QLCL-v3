@@ -177,7 +177,7 @@
   <script>
     /**
      * FAIL-SAFE MOUNT CHECK
-     * If the app doesn't mount within 8 seconds, something is wrong.
+     * If the app doesn't mount within 25 seconds, something is wrong.
      */
     setTimeout(function() {
       var root = document.getElementById('root');
@@ -197,7 +197,7 @@
           </div>
         `;
       }
-    }, 8000);
+    }, 25000);
 
     // Global error listener for debugging
     window.onerror = function(msg, url, line, col, error) {
