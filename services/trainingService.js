@@ -477,7 +477,20 @@ export function evaluateCorrectAnswerIndex(question) {
     return Number(question.correct_answer_index);
   }
 
-  const options = [question.option_a, question.option_b, question.option_c, question.option_d].filter(Boolean);
+  let options = [];
+  if (Array.isArray(question.options)) {
+    options = question.options;
+  } else if (typeof question.options === 'string') {
+    try {
+      const parsed = JSON.parse(question.options);
+      if (Array.isArray(parsed)) options = parsed;
+    } catch {
+      options = question.options.split('|');
+    }
+  } else {
+    options = [question.option_a, question.option_b, question.option_c, question.option_d].filter(Boolean);
+  }
+
   const expectedText = String(question.correct_answer || '').trim();
   
   if (!expectedText) return 0;
@@ -709,7 +722,7 @@ export async function getTestAttemptDetails(attemptId) {
     .select(`
       id, selected_answer, is_correct,
       training_questions (
-        id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation
+        id, question_text, options, option_a, option_b, option_c, option_d, correct_answer, explanation
       )
     `)
     .eq('attempt_id', attemptId);
@@ -718,26 +731,24 @@ export async function getTestAttemptDetails(attemptId) {
   return (answers || []).map(a => {
     const q = a.training_questions;
     if (!q) return null;
-    const options = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
-    const expectedText = String(q.correct_answer || '').trim();
-    let expectedIndex = options.findIndex(opt => String(opt).trim() === expectedText);
     
-    if (expectedIndex < 0) {
-      if (/^\d+$/.test(expectedText)) {
-        expectedIndex = parseInt(expectedText, 10);
-      } else if (expectedText.length === 1 && expectedText.toUpperCase() >= 'A' && expectedText.toUpperCase() <= 'D') {
-        expectedIndex = expectedText.toUpperCase().charCodeAt(0) - 65;
-      } else {
-        expectedIndex = options.findIndex(opt => {
-          const textWithoutPrefix = String(opt).replace(/^[A-D][\.\:\)]\s*/i, '').trim();
-          return textWithoutPrefix === expectedText || textWithoutPrefix.includes(expectedText) || expectedText.includes(textWithoutPrefix);
-        });
+    let options = [];
+    if (Array.isArray(q.options)) {
+      options = q.options;
+    } else if (typeof q.options === 'string') {
+      try {
+        const parsed = JSON.parse(q.options);
+        if (Array.isArray(parsed)) options = parsed;
+        else options = q.options.split('|');
+      } catch {
+        options = q.options.split('|');
       }
+    } else {
+      options = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
     }
-    
-    if (expectedIndex < 0 || expectedIndex >= options.length) {
-      expectedIndex = 0;
-    }
+
+    const expectedIndex = evaluateCorrectAnswerIndex(q);
+
     return {
       dung: a.is_correct,
       cau_hoi: q.question_text,
