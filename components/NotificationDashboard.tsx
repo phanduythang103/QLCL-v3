@@ -95,7 +95,7 @@ export const NotificationDashboard: React.FC = () => {
 
     if (loading) return (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-full flex items-center justify-center">
-            <Loader className="animate-spin text-[#009900]" />
+            <Loader className="animate-spin text-[#059669]" />
         </div>
     );
 
@@ -107,7 +107,7 @@ export const NotificationDashboard: React.FC = () => {
                 <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0">
                     <div className="p-5 border-b border-slate-50 bg-white flex justify-between items-center">
                         <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                            <Bell className="text-[#009900]" size={16} />
+                            <Bell className="text-[#059669]" size={16} />
                             Thông báo mới nhất
                             {unreadCount > 0 && (
                                 <span className="min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[9px] text-white">
@@ -117,7 +117,7 @@ export const NotificationDashboard: React.FC = () => {
                         </h3>
                         <button
                             onClick={() => setShowAllNoti(true)}
-                            className="text-[10px] font-black text-[#009900] uppercase hover:underline"
+                            className="text-[10px] font-black text-[#059669] uppercase hover:underline"
                         >
                             Tất cả
                         </button>
@@ -143,7 +143,7 @@ export const NotificationDashboard: React.FC = () => {
                                             <Paperclip size={10} className="text-slate-300 group-hover:text-primary-500" />
                                         )}
                                     </div>
-                                    <p className="text-[11px] font-black text-slate-700 group-hover:text-[#009900] transition-colors line-clamp-2 uppercase leading-relaxed">
+                                    <p className="text-[11px] font-black text-slate-700 group-hover:text-[#059669] transition-colors line-clamp-2 uppercase leading-relaxed">
                                         {safeText(noti.noi_dung, 'Không có nội dung')}
                                     </p>
                                 </div>
@@ -204,7 +204,7 @@ export const NotificationDashboard: React.FC = () => {
                     <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
                         <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center relative">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-[#009900] shadow-sm">
+                                <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-[#059669] shadow-sm">
                                     <Bell size={24} />
                                 </div>
                                 <div>
@@ -232,7 +232,7 @@ export const NotificationDashboard: React.FC = () => {
                                         </div>
                                         {noti.file_dinh_kem && <Paperclip size={14} className="text-slate-300" />}
                                     </div>
-                                    <p className="text-sm font-black text-slate-700 group-hover:text-[#009900] uppercase transition-colors leading-relaxed">
+                                    <p className="text-sm font-black text-slate-700 group-hover:text-[#059669] uppercase transition-colors leading-relaxed">
                                         {safeText(noti.noi_dung, 'Không có nội dung')}
                                     </p>
                                 </div>
@@ -277,7 +277,7 @@ export const NotificationDashboard: React.FC = () => {
                                             <span className="text-[11px] font-black text-slate-500 uppercase">{item.dv_duoc_gs || 'TOÀN VIỆN'}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Activity size={14} className="text-[#009900]" />
+                                            <Activity size={14} className="text-[#059669]" />
                                             <span className="text-[11px] font-black text-slate-500 uppercase">Người GS: {item.nhan_vien_gs || '---'}</span>
                                         </div>
                                     </div>
@@ -297,7 +297,7 @@ export const NotificationDashboard: React.FC = () => {
                                 <X size={20} />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-[#009900] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-900/20">
+                                <div className="w-14 h-14 rounded-2xl bg-[#059669] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-900/20">
                                     {safeText(selectedNoti.nguoi_tao_name, 'U').charAt(0)}
                                 </div>
                                 <div>
@@ -319,7 +319,7 @@ export const NotificationDashboard: React.FC = () => {
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hiệu lực</p>
                                     <p className="text-[11px] font-black text-slate-700 uppercase flex items-center gap-1.5">
-                                        <Calendar size={14} className="text-[#009900]" />
+                                        <Calendar size={14} className="text-[#059669]" />
                                         {safeDate(selectedNoti.ngay_bat_dau, 'date')}
                                     </p>
                                 </div>
@@ -336,7 +336,7 @@ export const NotificationDashboard: React.FC = () => {
                                     href={safeLink(selectedNoti.file_dinh_kem)}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="block w-full text-center py-4 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase hover:opacity-90 transition-all shadow-lg shadow-green-900/20"
+                                    className="block w-full text-center py-4 bg-[#059669] text-white rounded-2xl text-[11px] font-black uppercase hover:opacity-90 transition-all shadow-lg shadow-green-900/20"
                                 >
                                     Xem tài liệu đính kèm
                                 </a>

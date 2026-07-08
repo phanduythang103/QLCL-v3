@@ -124,7 +124,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
     onSave(formData);
   };
 
-  const themeColor = "#009900";
+  const themeColor = "#059669";
 
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen">
@@ -154,7 +154,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
         {/* I. THÔNG TIN HÀNH CHÍNH */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">I. Thông tin hành chính</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -209,7 +209,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
         {/* II. THÔNG TIN NGƯỜI BỆNH */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">II. Thông tin người bệnh</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -236,7 +236,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
               <p className="text-[13px] font-black text-slate-400 uppercase tracking-wider">Sử dụng BHYT</p>
               <div className="flex gap-2">
                 {[1, 2].map(v => (
-                  <button key={v} type="button" onClick={() => handleChange('bhyt', v)} className={`flex-1 py-3 rounded-xl text-[13px] font-black uppercase transition-all ${formData.bhyt === v ? 'bg-[#009900] text-white shadow-md' : 'bg-slate-50 text-slate-500'}`}>
+                  <button key={v} type="button" onClick={() => handleChange('bhyt', v)} className={`flex-1 py-3 rounded-xl text-[13px] font-black uppercase transition-all ${formData.bhyt === v ? 'bg-[#059669] text-white shadow-md' : 'bg-slate-50 text-slate-500'}`}>
                     {v === 1 ? 'Có' : 'Không'}
                   </button>
                 ))}
@@ -267,7 +267,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
         {/* III. ĐÁNH GIÁ DỊCH VỤ */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">III. Đánh giá dịch vụ</h3>
           </div>
 
@@ -293,7 +293,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
                             type="button"
                             onClick={() => handleChange(q.id as any, val)}
                             className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${(formData as any)[q.id] === val
-                              ? 'bg-[#009900] text-white shadow-lg scale-110'
+                              ? 'bg-[#059669] text-white shadow-lg scale-110'
                               : 'bg-slate-100 text-slate-400 hover:bg-emerald-100'
                               }`}
                           >
@@ -312,7 +312,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
         {/* IV. ĐÁNH GIÁ CHUNG */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">IV. Đánh giá chung</h3>
           </div>
 
@@ -343,18 +343,18 @@ export const KsMeSinhConForm: React.FC<Props> = ({
 
             <div className="space-y-4">
               <label className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                <Activity size={18} className="text-[#009900]" /> 2. Tỷ lệ hài lòng (%)
+                <Activity size={18} className="text-[#059669]" /> 2. Tỷ lệ hài lòng (%)
               </label>
               <div className="bg-emerald-50 p-8 rounded-[2rem] border border-emerald-100 text-center relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100/30 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-                <h4 className="text-5xl font-black text-[#009900] relative z-10">{formData.satisfaction_percent}%</h4>
-                <p className="text-[10px] font-black text-[#009900]/60 uppercase mt-2 tracking-[0.2em] relative z-10">Tự động tính toán</p>
+                <h4 className="text-5xl font-black text-[#059669] relative z-10">{formData.satisfaction_percent}%</h4>
+                <p className="text-[10px] font-black text-[#059669]/60 uppercase mt-2 tracking-[0.2em] relative z-10">Tự động tính toán</p>
               </div>
             </div>
 
             <div className="space-y-4 md:col-span-2">
               <label className="text-sm font-black text-slate-800 uppercase tracking-wide">3. Quay lại bệnh viện</label>
-              <select value={formData.return_intent || ''} onChange={e => handleChange('return_intent', parseInt(e.target.value))} className="w-full bg-slate-50 p-5 rounded-3xl border border-slate-200 text-[13px] font-black outline-none focus:border-[#009900] appearance-none">
+              <select value={formData.return_intent || ''} onChange={e => handleChange('return_intent', parseInt(e.target.value))} className="w-full bg-slate-50 p-5 rounded-3xl border border-slate-200 text-[13px] font-black outline-none focus:border-[#059669] appearance-none">
                 <option value="" disabled>-- Chọn lựa chọn --</option>
                 <option value={1}>1. Chắc chắn không bao giờ quay lại</option>
                 <option value={2}>2. Không bao giờ quay lại</option>
@@ -384,7 +384,7 @@ export const KsMeSinhConForm: React.FC<Props> = ({
             type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="flex items-center gap-4 px-20 py-6 bg-[#009900] text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 hover:scale-105 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+            className="flex items-center gap-4 px-20 py-6 bg-[#059669] text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 hover:scale-105 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
           >
             {saving ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

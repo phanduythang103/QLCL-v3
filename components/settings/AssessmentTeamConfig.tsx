@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { fetchUsers } from '../../readUsers';
-import { 
-  Users, Users2, Shield, Plus, Edit2, Trash2, Check, X, 
-  Search, ChevronDown, UserPlus, Group, Briefcase, Building 
+import {
+  Users, Users2, Shield, Plus, Edit2, Trash2, Check, X,
+  Search, ChevronDown, UserPlus, Group, Briefcase, Building
 } from 'lucide-react';
 
 interface TeamMember {
@@ -23,10 +23,10 @@ export const AssessmentTeamConfig: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
-  
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   const [form, setForm] = useState({
     team_name: '',
     user_id: '',
@@ -47,7 +47,7 @@ export const AssessmentTeamConfig: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    
+
     // Close dropdown on click outside
     const handleClickOutside = (e: MouseEvent) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
@@ -67,7 +67,7 @@ export const AssessmentTeamConfig: React.FC = () => {
       ]);
 
       if (membersRes.error) throw membersRes.error;
-      
+
       setMembers(membersRes.data || []);
       setUsers(usersData || []);
 
@@ -91,7 +91,7 @@ export const AssessmentTeamConfig: React.FC = () => {
   const [filterTeam, setFilterTeam] = useState<string | null>(null);
 
   const groupedMembers = useMemo(() => {
-    const filtered = filterTeam 
+    const filtered = filterTeam
       ? members.filter(m => m.team_name === filterTeam)
       : members;
 
@@ -172,7 +172,7 @@ export const AssessmentTeamConfig: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Xác nhận xóa thành viên này khỏi tổ?')) return;
-    
+
     try {
       const { error } = await supabase
         .from('assessment_team_members')
@@ -205,9 +205,9 @@ export const AssessmentTeamConfig: React.FC = () => {
   const [expandedTeams, setExpandedTeams] = useState<string[]>([]);
 
   const toggleTeam = (teamName: string) => {
-    setExpandedTeams(prev => 
-      prev.includes(teamName) 
-        ? prev.filter(t => t !== teamName) 
+    setExpandedTeams(prev =>
+      prev.includes(teamName)
+        ? prev.filter(t => t !== teamName)
         : [...prev, teamName]
     );
   };
@@ -221,7 +221,7 @@ export const AssessmentTeamConfig: React.FC = () => {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
-      <div className="w-10 h-10 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin"></div>
+      <div className="w-10 h-10 border-4 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin"></div>
       <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Đang tải dữ liệu...</p>
     </div>
   );
@@ -230,7 +230,7 @@ export const AssessmentTeamConfig: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#009900]">
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#059669]">
             <Users2 size={24} />
           </div>
           <div>
@@ -239,9 +239,9 @@ export const AssessmentTeamConfig: React.FC = () => {
           </div>
         </div>
         {!showForm && (
-          <button 
+          <button
             onClick={() => setShowForm(true)}
-            className="flex w-full items-center justify-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg shadow-emerald-100 hover:scale-105 transition-all active:scale-95 sm:w-auto"
+            className="flex w-full items-center justify-center gap-2 bg-[#059669] text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg shadow-emerald-100 hover:scale-105 transition-all active:scale-95 sm:w-auto"
           >
             <UserPlus size={16} /> Thêm thành viên
           </button>
@@ -250,17 +250,17 @@ export const AssessmentTeamConfig: React.FC = () => {
 
       {/* QUICK FILTERS */}
       <div className="flex flex-wrap items-center gap-2 px-0 pb-2 sm:px-2">
-        <button 
+        <button
           onClick={() => setFilterTeam(null)}
           className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${!filterTeam ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100 hover:border-slate-200'}`}
         >
           Tất cả
         </button>
         {teamSuggestions.sort().map(team => (
-          <button 
+          <button
             key={team}
             onClick={() => setFilterTeam(team)}
-            className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterTeam === team ? 'bg-[#009900] text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100 hover:border-slate-200'}`}
+            className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterTeam === team ? 'bg-[#059669] text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100 hover:border-slate-200'}`}
           >
             {team}
           </button>
@@ -280,7 +280,7 @@ export const AssessmentTeamConfig: React.FC = () => {
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-xl space-y-6 animate-in zoom-in-95 duration-300 sm:p-8 sm:space-y-8">
           <div className="flex items-center justify-between border-b border-slate-50 pb-4">
             <h3 className="font-black text-slate-900 text-sm uppercase tracking-tight flex items-center gap-2">
-              <Plus className="text-[#009900]" size={18} />
+              <Plus className="text-[#059669]" size={18} />
               {editingId ? 'Cập nhật thành viên' : 'Thêm thành viên vào tổ'}
             </h3>
             <button onClick={resetForm} className="p-2 hover:bg-slate-50 rounded-full transition-colors text-slate-400">
@@ -295,14 +295,14 @@ export const AssessmentTeamConfig: React.FC = () => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <Group size={12} /> Tên Tổ *
                 </label>
-                <input 
+                <input
                   type="text"
                   required
                   list="team-list"
                   value={form.team_name}
                   onChange={e => setForm(f => ({ ...f, team_name: e.target.value }))}
                   placeholder="Ví dụ: Tổ 1, Tổ Nội khoa..."
-                  className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#009900] transition-all"
+                  className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#059669] transition-all"
                 />
                 <datalist id="team-list">
                   {teamSuggestions.map(t => <option key={t} value={t} />)}
@@ -315,7 +315,7 @@ export const AssessmentTeamConfig: React.FC = () => {
                   <Search size={12} /> Tìm người dùng (từ danh sách user) *
                 </label>
                 <div className="relative">
-                  <input 
+                  <input
                     type="text"
                     value={userSearch}
                     onChange={e => {
@@ -326,12 +326,12 @@ export const AssessmentTeamConfig: React.FC = () => {
                     }}
                     onFocus={() => setShowUserDropdown(true)}
                     placeholder="Nhập tên để tìm..."
-                    className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#009900] transition-all"
+                    className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#059669] transition-all"
                   />
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                  
+
                   {showUserDropdown && (
-                    <div 
+                    <div
                       ref={userDropdownRef}
                       className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar"
                     >
@@ -367,13 +367,13 @@ export const AssessmentTeamConfig: React.FC = () => {
                   <Shield size={12} /> Vai trò
                 </label>
                 <div className="relative group">
-                  <input 
+                  <input
                     type="text"
                     list="role-list"
                     value={form.vai_tro}
                     onChange={e => setForm(f => ({ ...f, vai_tro: e.target.value }))}
                     placeholder="Trưởng đoàn, Thành viên..."
-                    className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#009900] transition-all"
+                    className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#059669] transition-all"
                   />
                   <datalist id="role-list">
                     {roleSuggestions.map(r => <option key={r} value={r} />)}
@@ -392,11 +392,11 @@ export const AssessmentTeamConfig: React.FC = () => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <Briefcase size={12} /> Chức vụ
                 </label>
-                <input 
+                <input
                   type="text"
                   value={form.chuc_vu}
                   onChange={e => setForm(f => ({ ...f, chuc_vu: e.target.value }))}
-                  className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#009900] transition-all"
+                  className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#059669] transition-all"
                 />
               </div>
 
@@ -412,26 +412,26 @@ export const AssessmentTeamConfig: React.FC = () => {
             {/* Ghi chú */}
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ghi chú</label>
-              <textarea 
+              <textarea
                 value={form.ghi_chu}
                 onChange={e => setForm(f => ({ ...f, ghi_chu: e.target.value }))}
                 rows={2}
-                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#009900] transition-all resize-none"
+                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm font-black outline-none focus:border-[#059669] transition-all resize-none"
               />
             </div>
 
             <div className="flex flex-col justify-end gap-3 pt-4 sm:flex-row">
-              <button 
+              <button
                 type="button"
                 onClick={resetForm}
                 className="px-8 py-4 rounded-2xl text-[10px] font-black uppercase text-slate-400 hover:bg-slate-50 transition-all font-mono"
               >
                 Hủy bỏ
               </button>
-              <button 
+              <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center justify-center gap-2 bg-[#009900] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase shadow-xl shadow-emerald-100 hover:scale-105 transition-all disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-[#059669] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase shadow-xl shadow-emerald-100 hover:scale-105 transition-all disabled:opacity-50"
               >
                 {saving ? 'Đang lưu...' : (editingId ? 'Cập nhật' : 'Thêm vào tổ')}
               </button>
@@ -444,7 +444,7 @@ export const AssessmentTeamConfig: React.FC = () => {
       <div className="hidden bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-[#009900] text-white">
+            <thead className="bg-[#059669] text-white">
               <tr>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Họ và tên / Vai trò</th>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Chức vụ & Đơn vị</th>
@@ -471,7 +471,7 @@ export const AssessmentTeamConfig: React.FC = () => {
                   return (
                     <React.Fragment key={team}>
                       {/* GROUP HEADER */}
-                      <tr 
+                      <tr
                         className="bg-slate-50/80 border-y border-slate-100 cursor-pointer hover:bg-slate-100/50 transition-colors"
                         onClick={() => toggleTeam(team)}
                       >
@@ -481,7 +481,7 @@ export const AssessmentTeamConfig: React.FC = () => {
                               <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
                                 <ChevronDown size={18} className="text-slate-400" />
                               </div>
-                              <div className="bg-[#009900] p-1.5 rounded-lg text-white">
+                              <div className="bg-[#059669] p-1.5 rounded-lg text-white">
                                 <Group size={14} />
                               </div>
                               <div>
@@ -489,12 +489,12 @@ export const AssessmentTeamConfig: React.FC = () => {
                                  <span className="ml-3 bg-white px-2 py-0.5 rounded-md text-[9px] font-black text-slate-400 border border-slate-100">{groupedMembers[team].length} Thành viên</span>
                               </div>
                             </div>
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleAddAtTeam(team);
                               }}
-                              className="flex items-center gap-1.5 bg-white text-[#009900] px-4 py-2 rounded-xl text-[9px] font-black uppercase border border-[#009900]/20 hover:bg-[#009900] hover:text-white transition-all shadow-sm group"
+                              className="flex items-center gap-1.5 bg-white text-[#059669] px-4 py-2 rounded-xl text-[9px] font-black uppercase border border-[#059669]/20 hover:bg-[#059669] hover:text-white transition-all shadow-sm group"
                             >
                               <Plus size={12} className="group-hover:scale-125 transition-transform" /> Thêm thành viên
                             </button>
@@ -512,8 +512,8 @@ export const AssessmentTeamConfig: React.FC = () => {
                               <div>
                                 <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{m.ho_ten}</p>
                                 <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
-                                  m.vai_tro === 'Tổ trưởng' ? 'bg-amber-100 text-amber-700' : 
-                                  m.vai_tro === 'Thư ký' ? 'bg-cyan-100 text-cyan-700' : 
+                                  m.vai_tro === 'Tổ trưởng' ? 'bg-amber-100 text-amber-700' :
+                                  m.vai_tro === 'Thư ký' ? 'bg-cyan-100 text-cyan-700' :
                                   'bg-slate-100 text-slate-500'
                                 }`}>
                                   {m.vai_tro || 'Tổ viên'}
@@ -530,13 +530,13 @@ export const AssessmentTeamConfig: React.FC = () => {
                           </td>
                           <td className="px-8 py-5">
                             <div className="flex justify-end gap-2 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                              <button 
+                              <button
                                 onClick={() => handleEdit(m)}
-                                className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-[#009900] hover:border-[#009900] transition-all shadow-sm"
+                                className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-[#059669] hover:border-[#059669] transition-all shadow-sm"
                               >
                                 <Edit2 size={16} />
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleDelete(m.id)}
                                 className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-rose-600 hover:border-rose-100 transition-all shadow-sm"
                               >
@@ -578,7 +578,7 @@ export const AssessmentTeamConfig: React.FC = () => {
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
-                    <div className="shrink-0 rounded-xl bg-[#009900] p-2 text-white">
+                    <div className="shrink-0 rounded-xl bg-[#059669] p-2 text-white">
                       <Group size={14} />
                     </div>
                     <div className="min-w-0">
@@ -592,7 +592,7 @@ export const AssessmentTeamConfig: React.FC = () => {
                       e.stopPropagation();
                       handleAddAtTeam(team);
                     }}
-                    className="shrink-0 rounded-xl border border-[#009900]/20 bg-white p-2 text-[#009900]"
+                    className="shrink-0 rounded-xl border border-[#059669]/20 bg-white p-2 text-[#059669]"
                     aria-label="Thêm thành viên"
                   >
                     <Plus size={15} />
@@ -614,8 +614,8 @@ export const AssessmentTeamConfig: React.FC = () => {
                                 <p className="truncate text-[10px] font-bold uppercase text-slate-400">{m.don_vi || '-'}</p>
                               </div>
                               <span className={`shrink-0 rounded px-2 py-1 text-[8px] font-black uppercase tracking-wider ${
-                                m.vai_tro === 'Tổ trưởng' ? 'bg-amber-100 text-amber-700' : 
-                                m.vai_tro === 'Thư ký' ? 'bg-cyan-100 text-cyan-700' : 
+                                m.vai_tro === 'Tổ trưởng' ? 'bg-amber-100 text-amber-700' :
+                                m.vai_tro === 'Thư ký' ? 'bg-cyan-100 text-cyan-700' :
                                 'bg-slate-100 text-slate-500'
                               }`}>
                                 {m.vai_tro || 'Tổ viên'}
@@ -630,7 +630,7 @@ export const AssessmentTeamConfig: React.FC = () => {
                         <div className="mt-4 grid grid-cols-2 gap-2">
                           <button
                             onClick={() => handleEdit(m)}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#009900]"
+                            className="flex items-center justify-center gap-2 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#059669]"
                           >
                             <Edit2 size={15} /> Sửa
                           </button>

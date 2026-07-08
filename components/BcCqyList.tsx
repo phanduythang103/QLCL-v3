@@ -181,7 +181,7 @@ export default function BcCqyList() {
                 </div>
 
                 <div class="body-text">
-                    Trên đây là báo cáo nhanh của Bệnh viện Quân y 103 về sự việc nêu trên. 
+                    Trên đây là báo cáo nhanh của Bệnh viện Quân y 103 về sự việc nêu trên.
                 </div>
                 <div class="body-text">
                     Kính mong nhận được chỉ thị từ Thủ trưởng Cục Quân y./.
@@ -312,7 +312,7 @@ export default function BcCqyList() {
                         </button>
                         <button
                             type="submit"
-                            className="px-8 py-2.5 bg-[#009900] text-white rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-100 transition-all flex items-center gap-2"
+                            className="px-8 py-2.5 bg-[#059669] text-white rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-100 transition-all flex items-center gap-2"
                         >
                             <CheckCircle2 size={20} />
                             {editingItem ? 'Lưu cập nhật' : 'Gửi báo cáo'}
@@ -408,7 +408,7 @@ export default function BcCqyList() {
                 </div>
                 <button
                     onClick={() => { setEditingItem(null); setViewMode('FORM'); }}
-                    className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2 bg-[#009900] text-white rounded-lg font-bold shadow-sm hover:bg-green-700 transition-all"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2 bg-[#059669] text-white rounded-lg font-bold shadow-sm hover:bg-green-700 transition-all"
                 >
                     <Plus size={20} /> Thêm báo cáo
                 </button>

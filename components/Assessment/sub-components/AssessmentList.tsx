@@ -47,7 +47,7 @@ export const AssessmentList: React.FC<AssessmentListProps> = ({
       <div className="flex flex-col gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm text-[12pt] md:flex-row md:justify-between md:items-center">
         <div className="w-full min-w-0">
           <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2">
-            <FileText className="text-[#009900]" size={24} />
+            <FileText className="text-[#059669]" size={24} />
             {assessmentType === 'TEAM' ? 'Danh sách phiếu chấm điểm theo tổ' : 'Danh sách phiếu đánh giá 83 tiêu chí theo đơn vị'}
           </h3>
           <p className="text-slate-500 font-bold uppercase text-[10px]">
@@ -56,7 +56,7 @@ export const AssessmentList: React.FC<AssessmentListProps> = ({
         </div>
         <button
           onClick={onAddNew}
-          className="flex w-full items-center justify-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-xl hover:bg-[#007700] font-black transition-all shadow-lg active:scale-95 md:w-auto md:shrink-0 md:py-2.5"
+          className="flex w-full items-center justify-center gap-2 bg-[#059669] text-white px-6 py-3 rounded-xl hover:bg-[#007700] font-black transition-all shadow-lg active:scale-95 md:w-auto md:shrink-0 md:py-2.5"
         >
           <Plus size={20} /> Tạo chấm điểm mới
         </button>
@@ -67,7 +67,7 @@ export const AssessmentList: React.FC<AssessmentListProps> = ({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#059669] active:scale-[0.98]"
           >
             <ArrowLeft size={14} /> Quay lại
           </button>
@@ -92,7 +92,7 @@ export const AssessmentList: React.FC<AssessmentListProps> = ({
                   {assessmentType === 'TEAM' ? `Theo tổ: ${sheet.nhom || uDept}` : 'Theo đơn vị'}
                 </span>
               </div>
-              <span className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-black ${sheet.score > 0 ? 'bg-emerald-50 text-[#009900]' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-black ${sheet.score > 0 ? 'bg-emerald-50 text-[#059669]' : 'bg-slate-100 text-slate-500'}`}>
                 {sheet.score > 0 ? `Mức ${sheet.score}` : 'Chưa chấm'}
               </span>
             </div>
@@ -105,7 +105,7 @@ export const AssessmentList: React.FC<AssessmentListProps> = ({
 
       <div className="hidden bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm text-[12pt] md:block">
         <table className="w-full text-sm text-left">
-          <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest h-12">
+          <thead className="bg-[#059669] text-white font-black uppercase text-table tracking-widest h-12">
             <tr>
               <th className="px-6 py-4">Ngày đánh giá</th>
               <th className="px-6 py-4">Đơn vị / Người đánh giá</th>
@@ -136,7 +136,7 @@ export const AssessmentList: React.FC<AssessmentListProps> = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-black text-[#009900]">
+                    <span className="text-sm font-black text-[#059669]">
                       {sheet.score > 0 ? `Mức trung bình ${sheet.score}` : 'Chưa đánh giá'}
                     </span>
                   </td>

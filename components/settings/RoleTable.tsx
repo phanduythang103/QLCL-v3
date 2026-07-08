@@ -98,7 +98,7 @@ export default function RoleTable() {
                <input required placeholder="Vai trò QLCL *" value={form.vai_tro} onChange={e => setForm(f => ({ ...f, vai_tro: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-input font-bold text-black focus:outline-none focus:border-green-500" />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
+              <button type="submit" className="flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
                 <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
               </button>
               <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-input font-black text-black hover:bg-slate-50 uppercase">Hủy</button>
@@ -108,14 +108,14 @@ export default function RoleTable() {
       )}
 
       {!showForm && (
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
+        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
           <Plus size={16} /> Thêm vai trò
         </button>
       )}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-[#009900] text-white font-black uppercase text-table h-12">
+          <thead className="bg-[#059669] text-white font-black uppercase text-table h-12">
             <tr>
               <th className="px-4 py-3 w-12 text-center">#</th>
               <th className="px-4 py-3">Vai trò QLCL</th>

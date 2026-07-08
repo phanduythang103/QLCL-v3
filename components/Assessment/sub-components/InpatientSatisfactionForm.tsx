@@ -116,7 +116,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
     onSave(formData);
   };
 
-  const themeColor = "#009900";
+  const themeColor = "#059669";
 
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen px-4 md:px-8">
@@ -157,14 +157,14 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
         {/* Section 1: Thông tin chung */}
         <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">1. THÔNG TIN NGƯỜI BỆNH</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="space-y-3">
               <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <User size={14} className="text-[#009900]" /> 1.1. Họ và tên:
+                <User size={14} className="text-[#059669]" /> 1.1. Họ và tên:
               </label>
               <input
                 type="text"
@@ -178,7 +178,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
 
             <div className="space-y-3">
               <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Phone size={14} className="text-[#009900]" /> 1.2. Số điện thoại:
+                <Phone size={14} className="text-[#059669]" /> 1.2. Số điện thoại:
               </label>
               <input
                 type="tel"
@@ -192,7 +192,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
 
             <div className="space-y-3">
               <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <MapPin size={14} className="text-[#009900]" /> 1.3. Khoa điều trị:
+                <MapPin size={14} className="text-[#059669]" /> 1.3. Khoa điều trị:
               </label>
               <input
                 type="text"
@@ -206,7 +206,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
 
             <div className="space-y-3">
               <label className="text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Clock size={14} className="text-[#009900]" /> 1.4. Số ngày nằm viện:
+                <Clock size={14} className="text-[#059669]" /> 1.4. Số ngày nằm viện:
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -233,7 +233,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                     disabled={readOnly}
                     onClick={() => handleChange('respondent', opt.value)}
                     className={`px-10 py-4 rounded-xl border transition-all text-xs font-black uppercase ${formData.respondent === opt.value
-                      ? 'border-[#009900] bg-[#009900] text-white shadow-lg ring-1 ring-[#009900]'
+                      ? 'border-[#059669] bg-[#059669] text-white shadow-lg ring-1 ring-[#059669]'
                       : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'
                       }`}
                   >
@@ -248,7 +248,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
         {/* Section 2: Đánh giá dịch vụ */}
         <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">2. ĐÁNH GIÁ CỦA NGƯỜI BỆNH</h3>
           </div>
 
@@ -262,7 +262,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
           <div className="space-y-12 mt-8">
             {CATEGORIES.map((cat, catIdx) => (
               <div key={cat.name} className="space-y-6">
-                <div className="bg-[#009900] p-4 rounded-xl shadow-md border-l-8 border-emerald-900/30">
+                <div className="bg-[#059669] p-4 rounded-xl shadow-md border-l-8 border-emerald-900/30">
                   <h4 className="text-sm font-black text-white uppercase tracking-wider">{cat.name}</h4>
                 </div>
 
@@ -284,7 +284,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                               disabled={readOnly}
                               onClick={() => handleScoreChange(q.id, val)}
                               className={`w-11 h-11 rounded-full border-2 transition-all flex items-center justify-center text-sm font-black ${(formData[`q${q.id}` as keyof InpatientSurveyResponse] as number) === val
-                                ? 'bg-[#009900] border-[#009900] text-white shadow-lg scale-110'
+                                ? 'bg-[#059669] border-[#059669] text-white shadow-lg scale-110'
                                 : 'bg-white border-slate-200 text-slate-400 hover:border-emerald-400'
                                 }`}
                             >
@@ -307,7 +307,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
         {/* Section 3: Đánh giá chung */}
         <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">3. ĐÁNH GIÁ CHUNG VÀ GÓP Ý</h3>
           </div>
 
@@ -326,7 +326,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                   disabled={readOnly}
                   value={formData.satisfaction_percent}
                   onChange={(e) => handleChange('satisfaction_percent', parseInt(e.target.value))}
-                  className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#009900]"
+                  className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#059669]"
                 />
                 <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest">
                   <span>0%</span>
@@ -341,7 +341,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                   {[
                     { value: 'no', label: 'Chắc chắn không', color: '#ef4444' },
                     { value: 'maybe', label: 'Có thể', color: '#f59e0b' },
-                    { value: 'yes', label: 'Chắc chắn', color: '#009900' }
+                    { value: 'yes', label: 'Chắc chắn', color: '#059669' }
                   ].map(opt => (
                     <button
                       key={opt.value}
@@ -349,7 +349,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
                       disabled={readOnly}
                       onClick={() => handleChange('return_intent', opt.value)}
                       className={`p-5 rounded-2xl border text-left transition-all ${formData.return_intent === opt.value
-                        ? 'border-[#009900] bg-[#009900] text-white shadow-xl'
+                        ? 'border-[#059669] bg-[#059669] text-white shadow-xl'
                         : 'border-slate-100 bg-slate-50/50 text-slate-600'
                         }`}
                     >
@@ -377,7 +377,7 @@ export const InpatientSatisfactionForm: React.FC<Props> = ({
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="flex items-center gap-3 px-16 py-5 bg-[#009900] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+                className="flex items-center gap-3 px-16 py-5 bg-[#059669] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
               >
                 {saving ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

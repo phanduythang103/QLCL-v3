@@ -13,8 +13,8 @@ export const TeamSelectModal: React.FC<TeamSelectModalProps> = ({ teams, onSelec
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div className="max-h-[92dvh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in slide-in-from-bottom-4 sm:zoom-in duration-300">
         {/* Header */}
-        <div className="bg-gradient-to-br from-[#009900] to-[#007700] p-5 sm:p-6 text-white relative">
-          <button 
+        <div className="bg-gradient-to-br from-[#059669] to-[#007700] p-5 sm:p-6 text-white relative">
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
           >
@@ -42,20 +42,20 @@ export const TeamSelectModal: React.FC<TeamSelectModalProps> = ({ teams, onSelec
               <button
                 key={index}
                 onClick={() => onSelect(team)}
-                className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-100 hover:border-[#009900] hover:bg-green-50 transition-all group text-left"
+                className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-100 hover:border-[#059669] hover:bg-green-50 transition-all group text-left"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-[#009900]/10 flex items-center justify-center text-slate-400 group-hover:text-[#009900] transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-[#059669]/10 flex items-center justify-center text-slate-400 group-hover:text-[#059669] transition-colors">
                     <span className="font-black text-sm">{index + 1}</span>
                   </div>
                   <div>
-                    <span className="block text-sm font-black text-slate-800 uppercase leading-none mb-1 group-hover:text-[#009900] transition-colors">
+                    <span className="block text-sm font-black text-slate-800 uppercase leading-none mb-1 group-hover:text-[#059669] transition-colors">
                       {team}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tổ chấm điểm chất lượng</span>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-slate-300 group-hover:text-[#009900] transition-all transform group-hover:translate-x-1" />
+                <ChevronRight size={18} className="text-slate-300 group-hover:text-[#059669] transition-all transform group-hover:translate-x-1" />
               </button>
             ))}
 
@@ -89,7 +89,7 @@ export const TeamSelectModal: React.FC<TeamSelectModalProps> = ({ teams, onSelec
           <p className="text-[10px] text-slate-400 font-bold uppercase italic tabular-nums leading-relaxed max-w-[200px]">
             Hệ thống sẽ lọc 83 tiêu chí theo phân công của tổ bạn đã chọn.
           </p>
-          <button 
+          <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-xl text-xs font-black uppercase text-slate-500 hover:bg-white transition-all border border-transparent hover:border-slate-200"
           >

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, Search, Edit2, Trash2, ChevronDown, CheckCircle2, 
+import {
+  Plus, Search, Edit2, Trash2, ChevronDown, CheckCircle2,
   FileText, Target, BarChart3, ArrowLeft, RefreshCw, Eye, Save,
   FileDown, Clock, MoreHorizontal, Filter, Calendar, Users,
   AlertCircle, ArrowUpRight, Activity, Pause
 } from 'lucide-react';
-import { 
-  Document, Packer, Paragraph, TextRun, AlignmentType, 
-  Table, TableRow, TableCell, WidthType, BorderStyle, 
+import {
+  Document, Packer, Paragraph, TextRun, AlignmentType,
+  Table, TableRow, TableCell, WidthType, BorderStyle,
   VerticalAlign, Header, Footer
 } from 'docx';
 import { saveAs } from 'file-saver';
@@ -83,7 +83,7 @@ export const ImprovementModule: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch data independently to prevent one failure from blocking everything
       const results = await Promise.allSettled([
         fetchKeHoachCaiTien(),
@@ -127,9 +127,9 @@ export const ImprovementModule: React.FC = () => {
         // Handled by switch(view) below or similar
       } else {
         return (
-          <KhctclReport 
-            plans={khctclPlans} 
-            reports={baoCaoReports} 
+          <KhctclReport
+            plans={khctclPlans}
+            reports={baoCaoReports}
             onCreateReport={() => setView('CREATE_REPORT')}
             onViewReport={(report) => { setEditingBaoCao(report); setView('VIEW_REPORT'); }}
             onEditReport={(report) => { setEditingBaoCao(report); setView('CREATE_REPORT'); }}
@@ -143,7 +143,7 @@ export const ImprovementModule: React.FC = () => {
       case 'CREATE_REPORT':
       case 'VIEW_REPORT':
         return (
-          <BaoCaoTienDoForm 
+          <BaoCaoTienDoForm
             plans={khctclPlans}
             initialData={editingBaoCao}
             isViewOnly={view === 'VIEW_REPORT'}
@@ -153,33 +153,33 @@ export const ImprovementModule: React.FC = () => {
         );
       case 'VIEW_PLAN':
         return (
-          <KhctclView 
-            item={editingKhctcl!} 
-            onBack={() => setView('LIST')} 
+          <KhctclView
+            item={editingKhctcl!}
+            onBack={() => setView('LIST')}
             onEdit={() => setView('KHCTCL_FORM')}
           />
         );
       case 'KHCTCL_FORM':
         return (
-          <KhctclForm 
-            initialData={editingKhctcl} 
-            onCancel={() => { setView('LIST'); setEditingKhctcl(null); }} 
-            onSaved={() => { setView('LIST'); setEditingKhctcl(null); loadData(); }} 
+          <KhctclForm
+            initialData={editingKhctcl}
+            onCancel={() => { setView('LIST'); setEditingKhctcl(null); }}
+            onSaved={() => { setView('LIST'); setEditingKhctcl(null); loadData(); }}
           />
         );
       default:
         return (
-          <ImprovementList 
-            plans={plans} 
+          <ImprovementList
+            plans={plans}
             khctclPlans={khctclPlans}
-            loading={loading} 
-            error={error} 
-            onCreate={() => setView('KHCTCL_FORM')} 
-            onReport={() => setView('CREATE_REPORT')} 
+            loading={loading}
+            error={error}
+            onCreate={() => setView('KHCTCL_FORM')}
+            onReport={() => setView('CREATE_REPORT')}
             onCreateKhctcl={() => { setEditingKhctcl(null); setView('KHCTCL_FORM'); }}
             onEditKhctcl={(item) => { setEditingKhctcl(item); setView('KHCTCL_FORM'); }}
             onViewKhctcl={(item) => { setEditingKhctcl(item); setView('VIEW_PLAN'); }}
-            onRefresh={loadData} 
+            onRefresh={loadData}
             onUpdateStatus={(item) => setStatusPopup(item)}
           />
         );
@@ -220,9 +220,9 @@ export const ImprovementModule: React.FC = () => {
 
       {renderKhctclView()}
       {statusPopup && (
-        <StatusPopup 
-          item={statusPopup} 
-          onClose={() => setStatusPopup(null)} 
+        <StatusPopup
+          item={statusPopup}
+          onClose={() => setStatusPopup(null)}
           onUpdated={loadData}
         />
       )}
@@ -230,9 +230,9 @@ export const ImprovementModule: React.FC = () => {
   );
 };
 
-const KhctclReport: React.FC<{ 
-  plans: Khctcl[], 
-  reports: BaoCaoTienDoCtcl[], 
+const KhctclReport: React.FC<{
+  plans: Khctcl[],
+  reports: BaoCaoTienDoCtcl[],
   onCreateReport: () => void,
   onViewReport: (report: BaoCaoTienDoCtcl) => void,
   onEditReport: (report: BaoCaoTienDoCtcl) => void,
@@ -240,10 +240,10 @@ const KhctclReport: React.FC<{
 }> = ({ plans, reports, onCreateReport, onViewReport, onEditReport, onRefresh }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'Quản trị viên' || user?.role === 'admin';
-  
+
   // Filter reports: admin sees all, others only see their unit's reports
-  const visibleReports = isAdmin 
-    ? reports 
+  const visibleReports = isAdmin
+    ? reports
     : reports.filter(r => r.don_vi_bao_cao === user?.department);
 
   const stats = {
@@ -307,7 +307,7 @@ const KhctclReport: React.FC<{
             <p className="text-xl font-black text-blue-600 leading-tight mt-0.5">{stats.ongoing}</p>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 transition-all hover:shadow-md group">
           <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
             <Pause size={18} />
@@ -331,14 +331,14 @@ const KhctclReport: React.FC<{
 
       {/* Detail List with Progress */}
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-        <div className="px-8 py-6 bg-[#009900] text-white flex justify-between items-center">
+        <div className="px-8 py-6 bg-[#059669] text-white flex justify-between items-center">
           <div className="flex items-center gap-3">
             <BarChart3 size={24} />
             <h3 className="text-title text-white">Lịch sử báo cáo tiến độ</h3>
           </div>
-          <button 
+          <button
             onClick={onCreateReport}
-            className="flex items-center gap-2 bg-white text-[#009900] px-6 py-2 rounded-xl font-black shadow-lg hover:shadow-xl transition-all active:scale-95"
+            className="flex items-center gap-2 bg-white text-[#059669] px-6 py-2 rounded-xl font-black shadow-lg hover:shadow-xl transition-all active:scale-95"
           >
             <Plus size={20} /> Thêm báo cáo mới
           </button>
@@ -371,21 +371,21 @@ const KhctclReport: React.FC<{
                   </div>
                 </div>
                 <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button 
+                  <button
                     onClick={() => onViewReport(report)}
                     className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all border border-slate-200"
                     title="Xem chi tiết"
                   >
                     <Eye size={18} /> <span>Xem</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => onEditReport(report)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all border border-blue-200"
                     title="Chỉnh sửa"
                   >
                     <Edit2 size={18} /> <span>Sửa</span>
                   </button>
-                  <button 
+                  <button
                     onClick={async () => {
                       if (window.confirm('Bạn có chắc muốn xóa báo cáo này?')) {
                         await deleteBaoCaoTienDoCtcl(report.id!);
@@ -434,14 +434,14 @@ const KhctclReport: React.FC<{
                     <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(plan.ngay_ket_thuc!).toLocaleDateString('vi-VN')}</span>
                   </div>
                 </div>
-                
+
                 <div className="w-full md:w-80 space-y-3">
                   <div className="flex justify-between items-end">
                     <span className="text-sm font-black text-slate-600">Tiến độ ước tính</span>
                     <span className="text-2xl font-black text-slate-800">{getProgressValue(plan.trang_thai)}%</span>
                   </div>
                   <div className="w-full bg-slate-100 h-4 rounded-full overflow-hidden p-1 shadow-inner">
-                    <div 
+                    <div
                       className={`h-full rounded-full transition-all duration-1000 ${getStatusColor(plan.trang_thai)} shadow-lg shadow-black/5`}
                       style={{ width: `${getProgressValue(plan.trang_thai)}%` }}
                     ></div>
@@ -474,7 +474,7 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
   const handleExportWord = async () => {
     try {
       setExporting(true);
-      
+
       const doc = new Document({
         sections: [{
           properties: {
@@ -581,11 +581,11 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
             }),
             new Paragraph({
               indent: { left: 400 },
-              children: [new TextRun({ 
-                text: `Thời gian hoàn thành: Từ ngày ${item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '....'} đến ngày ${item.ngay_ket_thuc ? new Date(item.ngay_ket_thuc).toLocaleDateString('vi-VN') : '....'}`, 
+              children: [new TextRun({
+                text: `Thời gian hoàn thành: Từ ngày ${item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '....'} đến ngày ${item.ngay_ket_thuc ? new Date(item.ngay_ket_thuc).toLocaleDateString('vi-VN') : '....'}`,
                 bold: true,
-                size: 28, 
-                font: "Times New Roman" 
+                size: 28,
+                font: "Times New Roman"
               })],
               spacing: { after: 200 },
             }),
@@ -671,7 +671,7 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
 
       const blob = await Packer.toBlob(doc);
       saveAs(blob, `KHCTCL_${item.ten_van_de.substring(0, 30)}.docx`);
-      
+
     } catch (err: any) {
       alert("Lỗi xuất Word: " + err.message);
     } finally {
@@ -806,8 +806,8 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
             <ArrowLeft size={20} /> Quay lại
           </button>
           <div className="flex gap-4">
-            <button 
-               onClick={handleExportWord} 
+            <button
+               onClick={handleExportWord}
                disabled={exporting}
                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 font-black transition-all shadow-xl shadow-blue-200 active:scale-95 disabled:opacity-50"
             >
@@ -862,8 +862,8 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
                 </div>
                 {(item.ngay_bat_dau || item.ngay_ket_thuc) && (
                   <p className="font-bold">
-                    Thời gian hoàn thành: Từ ngày {item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '.....'} 
-                    {' đến ngày '} 
+                    Thời gian hoàn thành: Từ ngày {item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '.....'}
+                    {' đến ngày '}
                     {item.ngay_ket_thuc ? new Date(item.ngay_ket_thuc).toLocaleDateString('vi-VN') : '.....'}
                   </p>
                 )}
@@ -969,8 +969,8 @@ const StatusPopup: React.FC<{ item: Khctcl, onClose: () => void, onUpdated: () =
                     key={s}
                     onClick={() => setStatus(s)}
                     className={`px-4 py-3 rounded-2xl font-black text-sm transition-all border-2 ${
-                      status === s 
-                      ? 'bg-[#108545] text-white border-[#108545] shadow-lg shadow-[#108545]/20 scale-105' 
+                      status === s
+                      ? 'bg-[#108545] text-white border-[#108545] shadow-lg shadow-[#108545]/20 scale-105'
                       : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
                     }`}
                   >
@@ -981,7 +981,7 @@ const StatusPopup: React.FC<{ item: Khctcl, onClose: () => void, onUpdated: () =
           </div>
           <div className="flex gap-4 pt-4">
              <button onClick={onClose} className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-black text-sm hover:bg-slate-100 transition-all">Bỏ qua</button>
-             <button 
+             <button
                onClick={handleUpdate}
                disabled={loading}
                className="flex-1 py-4 bg-[#108545] text-white rounded-2xl font-black text-sm hover:bg-[#0e723b] shadow-xl shadow-[#108545]/10 active:scale-95 transition-all disabled:opacity-50"
@@ -1010,15 +1010,15 @@ interface ImprovementListProps {
   onRefresh: () => void;
 }
 
-const ImprovementList: React.FC<ImprovementListProps> = ({ 
-  khctclPlans, 
-  loading, 
-  error, 
-  onCreateKhctcl, 
-  onEditKhctcl, 
+const ImprovementList: React.FC<ImprovementListProps> = ({
+  khctclPlans,
+  loading,
+  error,
+  onCreateKhctcl,
+  onEditKhctcl,
   onViewKhctcl,
   onUpdateStatus,
-  onRefresh 
+  onRefresh
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'Quản trị viên' || user?.role === 'admin';
@@ -1060,7 +1060,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
           <AlertCircle className="shrink-0" size={24} />
           <div className="font-bold text-[14pt]">
             <p>Đã xảy ra lỗi khi tải dữ liệu: {error}</p>
-            <button 
+            <button
               onClick={onRefresh}
               className="mt-2 text-sm underline hover:text-red-800 transition-colors"
             >
@@ -1091,7 +1091,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-[#009900] text-white font-bold uppercase text-[14px] tracking-widest">
+            <thead className="bg-[#059669] text-white font-bold uppercase text-[14px] tracking-widest">
               <tr>
                 <th className="px-8 py-5 w-48 rounded-tl-[2rem]">Thời gian</th>
                 <th className="px-8 py-5 min-w-[280px]">Đơn vị thực hiện</th>
@@ -1111,8 +1111,8 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                       <span className="text-slate-600 font-bold">{new Date(item.ngay_lap_ke_hoach).toLocaleDateString('vi-VN')}</span>
                       {(item.ngay_bat_dau || item.ngay_ket_thuc) && (
                         <p className="text-[10px] text-slate-400 uppercase">
-                          {item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '?'} 
-                          {' → '} 
+                          {item.ngay_bat_dau ? new Date(item.ngay_bat_dau).toLocaleDateString('vi-VN') : '?'}
+                          {' → '}
                           {item.ngay_ket_thuc ? new Date(item.ngay_ket_thuc).toLocaleDateString('vi-VN') : '?'}
                         </p>
                       )}
@@ -1134,26 +1134,26 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                   </td>
                   <td className="px-4 py-4 text-center">
                     <div className="grid grid-cols-2 gap-2 max-w-[280px] mx-auto">
-                      <button 
-                        onClick={() => onViewKhctcl(item)} 
-                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-slate-200/50" 
+                      <button
+                        onClick={() => onViewKhctcl(item)}
+                        className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-slate-200/50"
                         title="Xem chi tiết"
                       >
                         <Eye size={16} /> Xem
                       </button>
                       {canEdit(item) && (
-                        <button 
-                          onClick={() => onUpdateStatus(item)} 
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-emerald-200/50" 
+                        <button
+                          onClick={() => onUpdateStatus(item)}
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-emerald-200/50"
                           title="Cập nhật trạng thái"
                         >
                           <RefreshCw size={16} /> Update
                         </button>
                       )}
                       {canEdit(item) ? (
-                        <button 
-                          onClick={() => onEditKhctcl(item)} 
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-blue-200/50" 
+                        <button
+                          onClick={() => onEditKhctcl(item)}
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-blue-200/50"
                           title="Chỉnh sửa nội dung"
                         >
                           <Edit2 size={16} /> Sửa
@@ -1164,9 +1164,9 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
                         </div>
                       )}
                       {canEdit(item) && (
-                        <button 
-                          onClick={() => handleDeleteKhctcl(item.id!)} 
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-red-200/50" 
+                        <button
+                          onClick={() => handleDeleteKhctcl(item.id!)}
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all active:scale-90 font-bold text-[11px] uppercase tracking-tight border border-red-200/50"
                           title="Xóa kế hoạch"
                         >
                           <Trash2 size={16} /> Xóa
@@ -1220,31 +1220,31 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
               </h4>
 
               <div className="grid grid-cols-2 gap-2 pt-2">
-                <button 
-                  onClick={() => onViewKhctcl(item)} 
+                <button
+                  onClick={() => onViewKhctcl(item)}
                   className="flex items-center justify-center gap-2 px-3 py-3 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-tight border border-slate-200"
                 >
                   <Eye size={14} /> Chi tiết
                 </button>
                 {canEdit(item) && (
-                  <button 
-                    onClick={() => onUpdateStatus(item)} 
+                  <button
+                    onClick={() => onUpdateStatus(item)}
                     className="flex items-center justify-center gap-2 px-3 py-3 bg-emerald-50 text-emerald-700 rounded-xl font-black text-[10px] uppercase tracking-tight border border-emerald-200"
                   >
                     <RefreshCw size={14} /> Trạng thái
                   </button>
                 )}
                 {canEdit(item) && (
-                  <button 
-                    onClick={() => onEditKhctcl(item)} 
+                  <button
+                    onClick={() => onEditKhctcl(item)}
                     className="flex items-center justify-center gap-2 px-3 py-3 bg-blue-50 text-blue-700 rounded-xl font-black text-[10px] uppercase tracking-tight border border-blue-200"
                   >
                     <Edit2 size={14} /> Sửa
                   </button>
                 )}
                 {canEdit(item) && (
-                  <button 
-                    onClick={() => handleDeleteKhctcl(item.id!)} 
+                  <button
+                    onClick={() => handleDeleteKhctcl(item.id!)}
                     className="flex items-center justify-center gap-2 px-3 py-3 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-tight border border-red-200"
                   >
                     <Trash2 size={14} /> Xóa
@@ -1264,7 +1264,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
       </div>
 
       {/* Hidden card per user request */}
-      {/* 
+      {/*
       <div className="bg-gradient-to-br from-[#108545]/5 to-[#108545]/10 border border-[#108545]/20 rounded-[2rem] p-8 flex items-center justify-between shadow-sm">
         <div className="flex gap-6 items-center">
           <div className="p-4 bg-white rounded-2xl text-[#108545] shadow-lg">
@@ -1278,7 +1278,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
         <button className="flex items-center gap-3 bg-white text-[#108545] px-8 py-4 rounded-2xl font-black shadow-md hover:shadow-xl transition-all active:scale-95 text-[14pt]">
           Xem chi tiết <ArrowUpRight size={24} />
         </button>
-      </div> 
+      </div>
       */}
     </div>
   );
@@ -1288,7 +1288,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
 const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl | null, onCancel: () => void, onSaved: () => void }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState<Omit<Khctcl, 'id' | 'created_at' | 'nguoi_tao_id'>>({
     ngay_lap_ke_hoach: initialData?.ngay_lap_ke_hoach || new Date().toISOString().split('T')[0],
     don_vi: initialData?.don_vi || '',
@@ -1370,8 +1370,8 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
       <div className="bg-white border-b border-slate-200 py-6 px-10 shadow-sm">
         <div className="flex justify-between items-center max-w-7xl mx-auto">
           <div className="flex items-center gap-6">
-            <button 
-              onClick={onCancel} 
+            <button
+              onClick={onCancel}
               className="p-3 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl transition-all active:scale-95 border border-slate-200"
               title="Quay lại"
             >
@@ -1426,7 +1426,7 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
             </div>
             <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">Thông tin chung</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-3 group">
               <label className="text-[14pt] font-black text-slate-500 flex items-center gap-2 group-focus-within:text-[#108545] transition-colors">
@@ -1649,27 +1649,27 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
 };
 
 // --- Sub-component: BaoCaoTienDoForm ---
-const BaoCaoTienDoForm = ({ plans, initialData, onCancel, onSaved, isViewOnly = false }: { 
-  plans: Khctcl[], 
-  initialData?: BaoCaoTienDoCtcl | null, 
-  onCancel: () => void, 
+const BaoCaoTienDoForm = ({ plans, initialData, onCancel, onSaved, isViewOnly = false }: {
+  plans: Khctcl[],
+  initialData?: BaoCaoTienDoCtcl | null,
+  onCancel: () => void,
   onSaved: () => void,
   isViewOnly?: boolean
 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  
+
   // Filter plans that belong to the current user's department and are in progress
   const filteredPlans = plans.filter(p => {
     const pDept = p.don_vi?.trim().toLowerCase() || '';
     const uDept = user?.department?.trim().toLowerCase() || '';
     const pStatus = p.trang_thai?.trim() || '';
-    
+
     if (!uDept) return false;
 
     const isCorrectDept = pDept === uDept || pDept.includes(uDept) || uDept.includes(pDept);
     const isInProgress = pStatus === 'Đang thực hiện' || pStatus === 'Dự thảo';
-    
+
     return isCorrectDept && isInProgress;
   });
 
@@ -1738,8 +1738,8 @@ const BaoCaoTienDoForm = ({ plans, initialData, onCancel, onSaved, isViewOnly = 
               {isViewOnly ? 'Đóng' : 'Hủy'}
             </button>
             {!isViewOnly && (
-              <button 
-                onClick={handleSave} 
+              <button
+                onClick={handleSave}
                 disabled={loading}
                 className="px-10 py-3 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:shadow-xl hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
               >

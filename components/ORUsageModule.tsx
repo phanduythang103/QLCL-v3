@@ -224,10 +224,10 @@ export const ORUsageModule: React.FC = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="indicator-quick-stats grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {[
-          { label: 'Hiệu suất TB', value: avgEfficiency, unit: '%', icon: Activity, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'TG Chết TB', value: avgDowntime, unit: 'phút', icon: Clock, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Tổng giờ mổ', value: filteredRecords.reduce((a, b) => a + Number(b.gio_mo_thuc_te), 0), unit: 'giờ', icon: Target, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Số phòng mổ', value: new Set(filteredRecords.map(r => r.phong_mo_so)).size, unit: 'phòng', icon: Layout, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
+          { label: 'Hiệu suất TB', value: avgEfficiency, unit: '%', icon: Activity, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
+          { label: 'TG Chết TB', value: avgDowntime, unit: 'phút', icon: Clock, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
+          { label: 'Tổng giờ mổ', value: filteredRecords.reduce((a, b) => a + Number(b.gio_mo_thuc_te), 0), unit: 'giờ', icon: Target, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
+          { label: 'Số phòng mổ', value: new Set(filteredRecords.map(r => r.phong_mo_so)).size, unit: 'phòng', icon: Layout, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
           <div key={label} className="indicator-quick-stat-card bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center md:items-center gap-3 md:gap-5 text-center md:text-left">
             <div className={`indicator-quick-stat-icon w-10 h-10 md:w-14 md:h-14 ${bg} ${color} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
@@ -246,7 +246,7 @@ export const ORUsageModule: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h3 className="text-sm font-black uppercase text-slate-800 flex items-center gap-2">
-              <BarChart2 size={18} className="text-[#009900]" />
+              <BarChart2 size={18} className="text-[#059669]" />
               Xu hướng hiệu suất sử dụng phòng mổ
             </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Dữ liệu phân tích theo {chartMode === 'WEEK' ? 'ngày' : chartMode === 'MONTH' ? 'ngày' : chartMode === 'QUARTER' ? 'tháng' : 'quý'}</p>
@@ -262,7 +262,7 @@ export const ORUsageModule: React.FC = () => {
                 key={m.id}
                 onClick={() => setChartMode(m.id as any)}
                 className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                  chartMode === m.id ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                  chartMode === m.id ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 {m.label}
@@ -275,32 +275,32 @@ export const ORUsageModule: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 30, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
+              <YAxis
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
               />
-              <RechartsTooltip 
+              <RechartsTooltip
                 cursor={{fill: '#F8FAFC'}}
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#009900' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#059669' }}
                 labelStyle={{ fontSize: '10px', fontWeight: 800, color: '#64748B', marginBottom: '4px', textTransform: 'uppercase' }}
                 formatter={(val: number | undefined) => [`${val || 0}%`, 'Hiệu suất']}
               />
               <Bar dataKey="val" radius={[6, 6, 0, 0]} barSize={chartMode === 'YEAR' || chartMode === 'QUARTER' ? 40 : 20}>
                 {chartData.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#009900' : '#009900/60'} />
+                  <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#059669' : '#059669/60'} />
                 ))}
                 <LabelList dataKey="val" position="top" offset={10} style={{ fontSize: '10px', fontWeight: 900, fill: '#64748B' }} />
               </Bar>
-              <Line type="monotone" dataKey="val" stroke="#009900" strokeWidth={2} dot={{ fill: '#009900', r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} />
+              <Line type="monotone" dataKey="val" stroke="#059669" strokeWidth={2} dot={{ fill: '#059669', r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -309,10 +309,10 @@ export const ORUsageModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mt-6">
         <div className="p-6 border-b border-slate-50 flex items-center justify-between">
           <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2">
-            <TrendingDown size={18} className="text-[#009900]" /> 
+            <TrendingDown size={18} className="text-[#059669]" />
             Phân tích thời gian chết gần đây
           </h3>
-          <button onClick={() => setActiveTab('PHAN_TICH')} className="text-[#009900] text-xs font-black uppercase hover:underline">Xem chi tiết</button>
+          <button onClick={() => setActiveTab('PHAN_TICH')} className="text-[#059669] text-xs font-black uppercase hover:underline">Xem chi tiết</button>
         </div>
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
@@ -332,7 +332,7 @@ export const ORUsageModule: React.FC = () => {
                   <td className="px-6 py-4 text-xs font-black text-slate-800">Phòng {r.phong_mo_so}</td>
                   <td className="px-6 py-4 text-xs font-black text-slate-600">{r.chuyen_khoa}</td>
                   <td className="px-6 py-4 text-right">
-                    <span className="text-xs font-black text-[#009900]">{r.total_downtime} phút</span>
+                    <span className="text-xs font-black text-[#059669]">{r.total_downtime} phút</span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex flex-wrap justify-end gap-1">
@@ -365,7 +365,7 @@ export const ORUsageModule: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black uppercase text-slate-400">TG Chết</p>
-                  <p className="text-sm font-black text-[#009900]">{r.total_downtime}p</p>
+                  <p className="text-sm font-black text-[#059669]">{r.total_downtime}p</p>
                 </div>
               </div>
             </div>
@@ -383,12 +383,12 @@ export const ORUsageModule: React.FC = () => {
       <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div className="relative flex-1 min-w-[280px]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm theo phòng, khoa, ghi chú..." 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20" 
+          <input
+            placeholder="Tìm theo phòng, khoa, ghi chú..."
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
           />
         </div>
-        <button 
+        <button
           onClick={handleAdd}
           className="bg-rose-600 text-white px-6 py-3 rounded-2xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all"
         >
@@ -400,7 +400,7 @@ export const ORUsageModule: React.FC = () => {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-widest border-b border-[#009900]">
+              <tr className="bg-[#059669] text-white text-[10px] uppercase tracking-widest border-b border-[#059669]">
                 <th className="px-6 py-4 font-black">Ngày</th>
                 <th className="px-6 py-4 font-black">Phòng mổ</th>
                 <th className="px-6 py-4 font-black">Chuyên khoa</th>
@@ -419,7 +419,7 @@ export const ORUsageModule: React.FC = () => {
                   <td className="px-6 py-4 text-xs font-bold text-center">{r.gio_mo_thuc_te}h</td>
                   <td className="px-6 py-4 text-xs font-bold text-center">{r.gio_hoat_dong_dinh_muc}h</td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-black text-[#009900]">{r.hieu_suat}%</span>
+                    <span className="text-sm font-black text-[#059669]">{r.hieu_suat}%</span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -449,7 +449,7 @@ export const ORUsageModule: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl">
                 <div>
                   <p className="text-[8px] font-black uppercase text-slate-400">Hiệu suất</p>
-                  <p className="text-sm font-black text-[#009900]">{r.hieu_suat}%</p>
+                  <p className="text-sm font-black text-[#059669]">{r.hieu_suat}%</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[8px] font-black uppercase text-slate-400">Giờ mổ</p>
@@ -458,8 +458,8 @@ export const ORUsageModule: React.FC = () => {
               </div>
               <div className="col-span-2">
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                    r.danh_gia === 'Lãng phí nguồn lực' ? 'bg-orange-50 text-orange-600' : 
-                    r.danh_gia === 'Nguy cơ áp lực do quá tải' ? 'bg-red-50 text-red-600' : 
+                    r.danh_gia === 'Lãng phí nguồn lực' ? 'bg-orange-50 text-orange-600' :
+                    r.danh_gia === 'Nguy cơ áp lực do quá tải' ? 'bg-red-50 text-red-600' :
                     'bg-green-50 text-green-600'
                   }`}>
                     {r.danh_gia}
@@ -480,7 +480,7 @@ export const ORUsageModule: React.FC = () => {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-[#009900]/10 rounded-2xl flex items-center justify-center text-[#009900] shadow-sm shrink-0 border border-[#009900]/20">
+            <div className="w-14 h-14 bg-[#059669]/10 rounded-2xl flex items-center justify-center text-[#059669] shadow-sm shrink-0 border border-[#059669]/20">
               <Layout size={28} />
             </div>
             <div>
@@ -523,7 +523,7 @@ export const ORUsageModule: React.FC = () => {
                   key={p.id}
                   onClick={() => applyPreset(p.id)}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                    filterPreset === p.id ? 'bg-[#009900] text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    filterPreset === p.id ? 'bg-[#059669] text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                   }`}
                 >
                   {p.label}
@@ -577,7 +577,7 @@ export const ORUsageModule: React.FC = () => {
           <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#009900]/10 rounded-xl flex items-center justify-center text-[#009900]">
+                <div className="w-10 h-10 bg-[#059669]/10 rounded-xl flex items-center justify-center text-[#059669]">
                   <Plus size={20} />
                 </div>
                 <div>
@@ -585,30 +585,30 @@ export const ORUsageModule: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Vui lòng nhập đầy đủ thông tin</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="p-3 text-slate-400 hover:bg-white hover:text-red-500 rounded-2xl transition-all shadow-sm"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Calendar size={12} /> Ngày báo cáo</label>
-                  <input 
-                    type="date" 
-                    value={form.ngay_bao_cao} 
-                    onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })} 
-                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20" 
-                    required 
+                  <input
+                    type="date"
+                    value={form.ngay_bao_cao}
+                    onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })}
+                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><User size={12} /> Người báo cáo</label>
-                  <input 
-                    value={form.nguoi_bao_cao} 
+                  <input
+                    value={form.nguoi_bao_cao}
                     readOnly
                     className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold opacity-70"
                   />
@@ -618,12 +618,12 @@ export const ORUsageModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Phòng mổ số</label>
-                  <input 
+                  <input
                     placeholder="VD: 01, 02..."
-                    value={form.phong_mo_so} 
-                    onChange={e => setForm({ ...form, phong_mo_so: e.target.value })} 
-                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20" 
-                    required 
+                    value={form.phong_mo_so}
+                    onChange={e => setForm({ ...form, phong_mo_so: e.target.value })}
+                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
+                    required
                     list="ds-phong-mo-usage"
                   />
                   <datalist id="ds-phong-mo-usage">
@@ -635,12 +635,12 @@ export const ORUsageModule: React.FC = () => {
                 <div className="space-y-1.5 relative group/select-usage">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Chuyên khoa phụ trách (Chọn nhiều)</label>
                   <div className="relative">
-                    <div 
+                    <div
                       tabIndex={0}
                       className="w-full px-5 py-3 bg-slate-100 rounded-2xl text-[10px] font-black min-h-[46px] flex flex-wrap gap-1 items-center cursor-pointer hover:bg-slate-200 transition-colors border border-transparent focus:ring-2 focus:ring-rose-500/20"
                     >
                       {form.chuyen_khoa ? form.chuyen_khoa.split(',').map(s => s.trim()).map(s => (
-                        <span key={s} className="bg-[#009900] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 animate-in zoom-in-95">
+                        <span key={s} className="bg-[#059669] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 animate-in zoom-in-95">
                           {s}
                           <X size={10} className="cursor-pointer hover:text-green-200" onClick={(e) => {
                             e.stopPropagation();
@@ -651,15 +651,15 @@ export const ORUsageModule: React.FC = () => {
                       )) : <span className="text-slate-400 italic font-normal">Chọn khoa...</span>}
                       <ChevronDown size={14} className="ml-auto text-slate-400 group-focus-within/select-usage:rotate-180 transition-transform" />
                     </div>
-                    
+
                     <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-50 invisible group-focus-within/select-usage:visible opacity-0 group-focus-within/select-usage:opacity-100 transition-all scale-95 group-focus-within/select-usage:scale-100 max-h-64 overflow-y-auto custom-scrollbar">
                       <div className="grid grid-cols-1 gap-1">
                         {units.map(u => {
                           const isSelected = form.chuyen_khoa.split(',').map(s => s.trim()).includes(u.ten_don_vi);
                           return (
-                            <label key={u.id} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors ${isSelected ? 'bg-green-50 text-[#009900]' : 'hover:bg-slate-50 text-slate-600'}`}>
-                              <input 
-                                type="checkbox" 
+                            <label key={u.id} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors ${isSelected ? 'bg-green-50 text-[#059669]' : 'hover:bg-slate-50 text-slate-600'}`}>
+                              <input
+                                type="checkbox"
                                 checked={isSelected}
                                 onChange={(e) => {
                                   const current = form.chuyen_khoa ? form.chuyen_khoa.split(',').map(s => s.trim()).filter(s => s) : [];
@@ -671,7 +671,7 @@ export const ORUsageModule: React.FC = () => {
                                   }
                                   setForm({ ...form, chuyen_khoa: current.join(', ') });
                                 }}
-                                className="w-4 h-4 rounded border-slate-300 text-[#009900] focus:ring-[#009900]"
+                                className="w-4 h-4 rounded border-slate-300 text-[#059669] focus:ring-[#059669]"
                               />
                               <span className="text-[10px] font-black uppercase tracking-wider">{u.ten_don_vi}</span>
                             </label>
@@ -686,65 +686,65 @@ export const ORUsageModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Tổng giờ mổ thực tế (h)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     step="0.1"
-                    value={form.gio_mo_thuc_te || ''} 
-                    onChange={e => setForm({ ...form, gio_mo_thuc_te: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-rose-500/20 shadow-sm" 
-                    required 
+                    value={form.gio_mo_thuc_te || ''}
+                    onChange={e => setForm({ ...form, gio_mo_thuc_te: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-rose-500/20 shadow-sm"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Giờ hoạt động định mức (h)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     step="0.1"
-                    value={form.gio_hoat_dong_dinh_muc || ''} 
-                    onChange={e => setForm({ ...form, gio_hoat_dong_dinh_muc: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-rose-500/20 shadow-sm" 
-                    required 
+                    value={form.gio_hoat_dong_dinh_muc || ''}
+                    onChange={e => setForm({ ...form, gio_hoat_dong_dinh_muc: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-rose-500/20 shadow-sm"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5 bg-[#009900]/10 p-6 rounded-3xl border border-[#009900]/20 flex items-center justify-between">
+              <div className="space-y-1.5 bg-[#059669]/10 p-6 rounded-3xl border border-[#059669]/20 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase text-[#009900] tracking-widest">Hiệu suất và Đánh giá</p>
-                  <p className="text-3xl font-black text-[#009900]">
+                  <p className="text-[10px] font-black uppercase text-[#059669] tracking-widest">Hiệu suất và Đánh giá</p>
+                  <p className="text-3xl font-black text-[#059669]">
                     {calcOREfficiency(form).hieu_suat}%
                   </p>
                   <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg ${
-                    calcOREfficiency(form).danh_gia === 'Bình thường' ? 'bg-[#009900]/20 text-[#009900]' : 'bg-red-100 text-red-700'
+                    calcOREfficiency(form).danh_gia === 'Bình thường' ? 'bg-[#059669]/20 text-[#059669]' : 'bg-red-100 text-red-700'
                   }`}>
                     {calcOREfficiency(form).danh_gia}
                   </span>
                 </div>
-                <div className="text-right text-[10px] font-bold text-[#009900] uppercase leading-relaxed max-w-[200px]">
+                <div className="text-right text-[10px] font-bold text-[#059669] uppercase leading-relaxed max-w-[200px]">
                   {`Nếu <75%: Lãng phí\nNếu >90%: Quá tải\nCảnh báo: Tối ưu từ 75-90%`}
                 </div>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><FileText size={12} /> Ghi chú</label>
-                <textarea 
-                  value={form.ghi_chu || ''} 
-                  onChange={e => setForm({ ...form, ghi_chu: e.target.value })} 
-                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20 min-h-[80px]" 
+                <textarea
+                  value={form.ghi_chu || ''}
+                  onChange={e => setForm({ ...form, ghi_chu: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rose-500/20 min-h-[80px]"
                 />
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex gap-4">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-4 text-slate-400 font-black uppercase text-[11px] tracking-widest hover:bg-slate-50 rounded-2xl transition-all"
                 >
                   Hủy bỏ
                 </button>
-                <button 
-                  type="submit" 
-                  className="flex-[2] py-4 bg-[#009900] text-white font-black uppercase text-[11px] tracking-widest rounded-3xl shadow-lg shadow-[#009900]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                <button
+                  type="submit"
+                  className="flex-[2] py-4 bg-[#059669] text-white font-black uppercase text-[11px] tracking-widest rounded-3xl shadow-lg shadow-[#059669]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={18} /> {editingRecord ? 'Cập nhật' : 'Lưu số liệu'}
                 </button>

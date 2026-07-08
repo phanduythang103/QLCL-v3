@@ -25,7 +25,7 @@ export const NKVMModule: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [viewOnly, setViewOnly] = useState(false);
   const unitRef = useRef<HTMLDivElement>(null);
-  
+
   // Overview Filters
   const [overviewDateFilter, setOverviewDateFilter] = useState({
     type: 'thisMonth',
@@ -46,11 +46,11 @@ export const NKVMModule: React.FC = () => {
         nam_sinh: '',
         ma_hsba: '',
         ngay_phau_thuat: '',
-        loai_phau_thuat: '', 
+        loai_phau_thuat: '',
         dau_hieu_lam_sang: '',
         can_thiep: '',
         ket_qua_vi_sinh: '',
-        phan_loai_nkvm: '', 
+        phan_loai_nkvm: '',
       });
     }
   }, [showModal, user, isEditMode, viewOnly]);
@@ -135,7 +135,7 @@ export const NKVMModule: React.FC = () => {
     try {
       const { id, created_at, tong_so_ca_nkvm, ty_le_nkvm, ...rest } = newDsRecord;
       const recordToSave = { ...rest };
-      
+
       if (isEditMode && id) {
         await updateDsnKvm(id, recordToSave);
       } else {
@@ -178,18 +178,18 @@ export const NKVMModule: React.FC = () => {
       filtered = filtered.filter(r => {
         if (!r.ngay_giam_sat) return false;
         const d = new Date(r.ngay_giam_sat);
-        
+
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
+
         switch (overviewDateFilter.type) {
           case 'thisWeek': {
-            const day = startOfToday.getDay() || 7; 
-            if (day !== 1) startOfToday.setHours(-24 * (day - 1)); 
+            const day = startOfToday.getDay() || 7;
+            if (day !== 1) startOfToday.setHours(-24 * (day - 1));
             return d >= startOfToday;
           }
           case 'lastWeek': {
-            const day = startOfToday.getDay() || 7; 
+            const day = startOfToday.getDay() || 7;
             const startOfLastWeek = new Date(startOfToday);
             startOfLastWeek.setDate(startOfLastWeek.getDate() - day - 6);
             const endOfLastWeek = new Date(startOfLastWeek);
@@ -251,7 +251,7 @@ export const NKVMModule: React.FC = () => {
   const overviewFilteredRecords = useMemo(() => getFilteredOverviewRecords(), [records, overviewKhoaFilter, overviewDateFilter]);
   const overviewPositiveCases = useMemo(() => overviewFilteredRecords.filter(r => r.phan_loai_nkvm && r.phan_loai_nkvm.trim() !== ''), [overviewFilteredRecords]);
 
-  const COLORS = ['#009900', '#2563eb', '#ea580c', '#eab308', '#8b5cf6'];
+  const COLORS = ['#059669', '#2563eb', '#ea580c', '#eab308', '#8b5cf6'];
   const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
   const renderOverview = () => {
@@ -299,21 +299,21 @@ export const NKVMModule: React.FC = () => {
     for (let i = overviewTrendMonths - 1; i >= 0; i--) {
         const d = new Date(nowTrend.getFullYear(), nowTrend.getMonth() - i, 1);
         const monthStr = `T${d.getMonth() + 1}/${d.getFullYear().toString().slice(-2)}`;
-        
+
         let baseDsRecords = dsRecords;
         if (overviewKhoaFilter) {
             baseDsRecords = baseDsRecords.filter(r => r.khoa === overviewKhoaFilter);
         }
-        
+
         const monthDsRecords = baseDsRecords.filter(r => {
             if (!r.ngay_bao_cao) return false;
             const rd = new Date(r.ngay_bao_cao);
             return rd.getMonth() === d.getMonth() && rd.getFullYear() === d.getFullYear();
         });
-        
+
         const nk = monthDsRecords.reduce((sum, r) => sum + (r.tong_so_ca_nkvm || 0), 0);
         const avgRate = monthDsRecords.length > 0 ? (monthDsRecords.reduce((s, r) => s + (Number(r.ty_le_nkvm) || 0), 0) / monthDsRecords.length).toFixed(1) : 0;
-        
+
         trendData.push({
             name: monthStr,
             nk: nk,
@@ -334,10 +334,10 @@ export const NKVMModule: React.FC = () => {
             </div>
             <div className="relative">
                 <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <select 
+                <select
                     value={overviewKhoaFilter}
                     onChange={(e) => setOverviewKhoaFilter(e.target.value)}
-                    className="pl-10 pr-8 py-2 w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] appearance-none"
+                    className="pl-10 pr-8 py-2 w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] appearance-none"
                 >
                     <option value="">Tất cả khoa/phòng</option>
                     {units.map(u => (
@@ -438,7 +438,7 @@ export const NKVMModule: React.FC = () => {
                )}
             </div>
           </div>
-          
+
           {/* Biểu đồ Cột: Loại phẫu thuật */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
             <h4 className="text-label font-black text-black uppercase mb-4 border-b border-slate-100 pb-2">Đặc điểm loại phẫu thuật</h4>
@@ -470,10 +470,10 @@ export const NKVMModule: React.FC = () => {
               <h4 className="text-label font-black text-black uppercase">Xu hướng NKVM theo thời gian gần đây</h4>
               <div className="flex gap-2">
                   {[3, 6, 9, 12].map(m => (
-                      <button 
+                      <button
                         key={m}
                         onClick={() => setOverviewTrendMonths(m)}
-                        className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-colors ${overviewTrendMonths === m ? 'bg-[#009900] text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                        className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-colors ${overviewTrendMonths === m ? 'bg-[#059669] text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                       >
                           {m} Tháng
                       </button>
@@ -488,7 +488,7 @@ export const NKVMModule: React.FC = () => {
                     <XAxis dataKey="name" scale="band" tick={{fill: '#64748B', fontSize: 10}} />
                     <YAxis yAxisId="left" tick={{fill: '#64748B'}} />
                     <YAxis yAxisId="right" orientation="right" tick={{fill: '#006600'}} unit="%" />
-                    <RechartsTooltip 
+                    <RechartsTooltip
                       cursor={{ fill: '#f1f5f9' }}
                       content={({ active, payload, label }: any) => {
                           if (active && payload && payload.length) {
@@ -526,23 +526,23 @@ export const NKVMModule: React.FC = () => {
       <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex-1 relative max-w-md">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm phiếu giám sát..." 
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] transition-all outline-none"
+            <input
+              type="text"
+              placeholder="Tìm kiếm phiếu giám sát..."
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] transition-all outline-none"
             />
           </div>
         <div className="flex gap-2">
           <button onClick={loadAllData} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50">
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
-          <button 
+          <button
             onClick={() => {
               setIsEditMode(false);
               setViewOnly(false);
               setShowModal(true);
             }}
-            className="bg-[#009900] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
+            className="bg-[#059669] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
           >
             <Plus size={16} /> Ghi nhận giám sát
           </button>
@@ -551,7 +551,7 @@ export const NKVMModule: React.FC = () => {
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-xs text-left table-standardized">
-          <thead className="bg-[#009900] text-white font-bold uppercase text-table">
+          <thead className="bg-[#059669] text-white font-bold uppercase text-table">
             <tr>
               <th className="p-3">Ngày GS</th>
               <th className="p-3">Người GS</th>
@@ -588,7 +588,7 @@ export const NKVMModule: React.FC = () => {
                 </td>
                 <td className="p-3 text-right">
                   <div className="flex justify-end gap-1">
-                    <button 
+                    <button
                       onClick={() => {
                         setNewRecord(r);
                         setIsEditMode(false);
@@ -600,7 +600,7 @@ export const NKVMModule: React.FC = () => {
                     >
                       <Search size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         setNewRecord(r);
                         setIsEditMode(true);
@@ -612,7 +612,7 @@ export const NKVMModule: React.FC = () => {
                     >
                       <ClipboardList size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => r.id && handleDelete(r.id, false)}
                       className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Xóa"
@@ -637,22 +637,22 @@ export const NKVMModule: React.FC = () => {
       <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex-1 relative max-w-md">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm phiếu báo cáo..." 
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] transition-all outline-none"
+          <input
+            type="text"
+            placeholder="Tìm kiếm phiếu báo cáo..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] transition-all outline-none"
           />
         </div>
         <div className="flex gap-2">
             <button onClick={loadAllData} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50">
               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
             </button>
-            <button 
+            <button
               onClick={() => {
                   setIsEditMode(false);
                   setShowDsModal(true);
               }}
-              className="bg-[#009900] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
+              className="bg-[#059669] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
             >
               <Plus size={16} /> Báo cáo Nhiễm khuẩn
             </button>
@@ -662,7 +662,7 @@ export const NKVMModule: React.FC = () => {
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm mt-4">
         {/* Desktop View */}
         <table className="w-full text-xs text-left hidden md:table">
-          <thead className="bg-[#009900] text-white font-bold uppercase text-center text-table">
+          <thead className="bg-[#059669] text-white font-bold uppercase text-center text-table">
             <tr>
               <th className="p-3 text-left">Ngày tháng</th>
               <th className="p-3 text-left">Khoa</th>
@@ -679,7 +679,7 @@ export const NKVMModule: React.FC = () => {
             {dsRecords.map((item, idx) => (
               <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors">
                 <td className="p-3 text-left text-black/60">{item.ngay_bao_cao ? new Date(item.ngay_bao_cao).toLocaleDateString('vi-VN') : '-'}</td>
-                <td className="p-3 text-left text-[#009900]">{item.khoa}</td>
+                <td className="p-3 text-left text-[#059669]">{item.khoa}</td>
                 <td className="p-3 font-mono">{item.tong_so_ca_pt}</td>
                 <td className="p-3 font-mono">{item.so_ca_nkvm_nong}</td>
                 <td className="p-3 font-mono">{item.so_ca_nkvm_sau}</td>
@@ -688,7 +688,7 @@ export const NKVMModule: React.FC = () => {
                 <td className="p-3 text-red-600 font-black font-mono bg-red-50/50">{item.ty_le_nkvm || 0}%</td>
                 <td className="p-3 text-right">
                   <div className="flex justify-end gap-1">
-                    <button 
+                    <button
                       onClick={() => {
                         setNewDsRecord(item);
                         setIsEditMode(true);
@@ -699,7 +699,7 @@ export const NKVMModule: React.FC = () => {
                     >
                       <ClipboardList size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => item.id && handleDelete(item.id, true)}
                       className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Xóa"
@@ -723,7 +723,7 @@ export const NKVMModule: React.FC = () => {
               <div key={item.id || idx} className="p-4 bg-white space-y-3">
                 <div className="flex justify-between items-start border-b border-slate-100 pb-2">
                   <div className="flex flex-col">
-                    <span className="text-table font-bold text-[#009900] uppercase truncate">
+                    <span className="text-table font-bold text-[#059669] uppercase truncate">
                       {item.khoa}
                     </span>
                     <span className="text-[10px] font-bold text-slate-500">
@@ -731,7 +731,7 @@ export const NKVMModule: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex bg-slate-100/50 rounded-lg p-1 border border-slate-200">
-                     <button 
+                     <button
                         onClick={() => {
                           setNewDsRecord(item);
                           setIsEditMode(true);
@@ -741,7 +741,7 @@ export const NKVMModule: React.FC = () => {
                       >
                         <ClipboardList size={14} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => item.id && handleDelete(item.id, true)}
                         className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                       >
@@ -749,13 +749,13 @@ export const NKVMModule: React.FC = () => {
                       </button>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-bold pt-1">
                    <div className="flex items-center justify-between col-span-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
                       <span className="text-black/60 uppercase text-[10px]">Tổng số ca PT:</span>
                       <span className="font-mono text-[13px]">{item.tong_so_ca_pt}</span>
                    </div>
-                   
+
                    <div className="col-span-2 flex items-center gap-2 mt-1 px-1">
                       <div className="flex-1 flex justify-between items-center text-[10px]">
                          <span className="text-slate-500">Nông:</span>
@@ -816,8 +816,8 @@ export const NKVMModule: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as NKVMTab)}
               className={`indicator-subtab-button ${
-                activeTab === tab.id 
-                  ? 'indicator-subtab-button-active' 
+                activeTab === tab.id
+                  ? 'indicator-subtab-button-active'
                   : ''
               }`}
             >
@@ -837,7 +837,7 @@ export const NKVMModule: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className={`bg-white rounded-2xl w-full ${viewOnly ? 'max-w-3xl' : 'max-w-4xl'} shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#009900] text-white">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#059669] text-white">
               <h3 className="text-main-title font-bold uppercase flex items-center gap-2">
                 <CheckSquare size={20} />
                 {viewOnly ? 'Hồ sơ Giám sát Nhiễm khuẩn vết mổ' : isEditMode ? 'Cập nhật Giám sát' : 'Ghi nhận Giám sát'}
@@ -846,7 +846,7 @@ export const NKVMModule: React.FC = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className={`p-6 overflow-y-auto ${viewOnly ? 'bg-slate-50/50' : 'space-y-6'}`}>
               {viewOnly ? (
                 // --- KNOWLEDGE BASE / LANDING PAGE VIEW ---
@@ -854,7 +854,7 @@ export const NKVMModule: React.FC = () => {
                   {/* Hành chính */}
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="bg-slate-100/50 px-4 py-3 border-b border-slate-200">
-                      <h4 className="text-label font-black text-[#009900] uppercase tracking-wide flex items-center gap-2">
+                      <h4 className="text-label font-black text-[#059669] uppercase tracking-wide flex items-center gap-2">
                         1. Thông tin Hành chính
                       </h4>
                     </div>
@@ -877,7 +877,7 @@ export const NKVMModule: React.FC = () => {
                   {/* Người bệnh */}
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="bg-slate-100/50 px-4 py-3 border-b border-slate-200">
-                      <h4 className="text-label font-black text-[#009900] uppercase tracking-wide flex items-center gap-2">
+                      <h4 className="text-label font-black text-[#059669] uppercase tracking-wide flex items-center gap-2">
                         2. Thông tin Người bệnh
                       </h4>
                     </div>
@@ -906,9 +906,9 @@ export const NKVMModule: React.FC = () => {
                   </div>
 
                   {/* Giám sát chuyên môn */}
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden border-l-4 border-l-[#009900]">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden border-l-4 border-l-[#059669]">
                     <div className="bg-slate-100/50 px-4 py-3 border-b border-slate-200">
-                      <h4 className="text-label font-black text-[#009900] uppercase tracking-wide flex items-center gap-2">
+                      <h4 className="text-label font-black text-[#059669] uppercase tracking-wide flex items-center gap-2">
                         3. Kết quả Giám sát NKVM
                       </h4>
                     </div>
@@ -935,7 +935,7 @@ export const NKVMModule: React.FC = () => {
                           ) : <span className="text-slate-400 italic">Không can thiệp</span>}
                         </div>
                       </div>
-                      
+
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                         <div className="flex flex-col gap-1">
                           <span className="text-[10px] font-bold text-slate-500 uppercase">Kết quả Vi sinh</span>
@@ -945,7 +945,7 @@ export const NKVMModule: React.FC = () => {
 
                       <div className={`p-4 rounded-lg flex items-center justify-between border ${newRecord.phan_loai_nkvm ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
                          <span className={`text-label font-black uppercase ${newRecord.phan_loai_nkvm ? 'text-red-800' : 'text-green-800'}`}>Kết luận Nhóm NKVM</span>
-                         <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase ${newRecord.phan_loai_nkvm ? 'bg-red-600 text-white shadow-md' : 'bg-[#009900] text-white'}`}>
+                         <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase ${newRecord.phan_loai_nkvm ? 'bg-red-600 text-white shadow-md' : 'bg-[#059669] text-white'}`}>
                             {newRecord.phan_loai_nkvm || 'Không Nhiễm Khuẩn'}
                          </span>
                       </div>
@@ -958,35 +958,35 @@ export const NKVMModule: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-100 pb-6">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/40">Ngày giám sát *</label>
-                      <input 
-                        type="date" 
+                      <input
+                        type="date"
                         value={newRecord.ngay_giam_sat}
                         onChange={e => setNewRecord({...newRecord, ngay_giam_sat: e.target.value})}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/40">Người giám sát *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Tên người giám sát..."
                         value={newRecord.nguoi_giam_sat}
                         onChange={e => setNewRecord({...newRecord, nguoi_giam_sat: e.target.value})}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                     </div>
                     <div className="space-y-1 relative" ref={unitRef}>
                       <label className="text-[10px] font-black uppercase text-black/40">Khoa GS *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Chọn khoa/phòng..."
                         value={newRecord.khoa_duoc_giam_sat}
                         onChange={e => {
                           const val = e.target.value;
                           setNewRecord({...newRecord, khoa_duoc_giam_sat: val});
                           if (val.trim()) {
-                            const filtered = units.filter(u => 
-                              u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) || 
+                            const filtered = units.filter(u =>
+                              u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) ||
                               u.ma_don_vi.toLowerCase().includes(val.toLowerCase())
                             );
                             setFilteredUnits(filtered.slice(0, 5));
@@ -998,7 +998,7 @@ export const NKVMModule: React.FC = () => {
                         onFocus={() => {
                           if (newRecord.khoa_duoc_giam_sat) setShowUnitSuggestions(true);
                         }}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                       {showUnitSuggestions && filteredUnits.length > 0 && (
                         <div className="absolute z-[60] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden max-h-40 overflow-y-auto">
@@ -1023,41 +1023,41 @@ export const NKVMModule: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6 border-b border-slate-100">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/40">Họ tên NB *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Tên bệnh nhân..."
                         value={newRecord.ten_nguoi_benh}
                         onChange={e => setNewRecord({...newRecord, ten_nguoi_benh: e.target.value})}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/40">Năm sinh</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="VD: 1990"
                         value={newRecord.nam_sinh || ''}
                         onChange={e => setNewRecord({...newRecord, nam_sinh: e.target.value})}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/40">Mã HSBA</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Mã hồ sơ..."
                         value={newRecord.ma_hsba || ''}
                         onChange={e => setNewRecord({...newRecord, ma_hsba: e.target.value})}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/40">Ngày phẫu thuật</label>
-                      <input 
-                        type="date" 
+                      <input
+                        type="date"
                         value={newRecord.ngay_phau_thuat || ''}
                         onChange={e => setNewRecord({...newRecord, ngay_phau_thuat: e.target.value})}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                       />
                     </div>
                   </div>
@@ -1069,12 +1069,12 @@ export const NKVMModule: React.FC = () => {
                         <div className="grid grid-cols-3 gap-2">
                             {['Sạch', 'Sạch - nhiễm', 'Nhiễm'].map(opt => (
                                <label key={opt} className="flex items-center gap-2 text-table font-bold cursor-pointer">
-                                  <input 
-                                    type="radio" name="loai_phau_thuat" 
+                                  <input
+                                    type="radio" name="loai_phau_thuat"
                                     value={opt}
                                     checked={newRecord.loai_phau_thuat === opt}
                                     onChange={e => setNewRecord({...newRecord, loai_phau_thuat: e.target.value})}
-                                    className="w-4 h-4 text-[#009900] focus:ring-[#009900]"
+                                    className="w-4 h-4 text-[#059669] focus:ring-[#059669]"
                                   />
                                   {opt}
                                </label>
@@ -1088,7 +1088,7 @@ export const NKVMModule: React.FC = () => {
                               const isChecked = (newRecord.dau_hieu_lam_sang || '').includes(opt);
                               return (
                                 <label key={opt} className="flex items-center gap-2 text-table font-bold cursor-pointer">
-                                    <input 
+                                    <input
                                       type="checkbox"
                                       checked={isChecked}
                                       onChange={e => {
@@ -1097,7 +1097,7 @@ export const NKVMModule: React.FC = () => {
                                         else current = current.filter(item => item !== opt);
                                         setNewRecord({...newRecord, dau_hieu_lam_sang: current.join(', ')});
                                       }}
-                                      className="w-4 h-4 text-[#009900] focus:ring-[#009900] rounded"
+                                      className="w-4 h-4 text-[#059669] focus:ring-[#059669] rounded"
                                     />
                                     {opt}
                                 </label>
@@ -1115,7 +1115,7 @@ export const NKVMModule: React.FC = () => {
                               const isChecked = (newRecord.can_thiep || '').includes(opt);
                               return (
                                 <label key={opt} className="flex items-center gap-2 text-table font-bold cursor-pointer">
-                                    <input 
+                                    <input
                                       type="checkbox"
                                       checked={isChecked}
                                       onChange={e => {
@@ -1124,7 +1124,7 @@ export const NKVMModule: React.FC = () => {
                                         else current = current.filter(item => item !== opt);
                                         setNewRecord({...newRecord, can_thiep: current.join(', ')});
                                       }}
-                                      className="w-4 h-4 text-[#009900] focus:ring-[#009900] rounded"
+                                      className="w-4 h-4 text-[#059669] focus:ring-[#059669] rounded"
                                     />
                                     {opt}
                                 </label>
@@ -1134,12 +1134,12 @@ export const NKVMModule: React.FC = () => {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase text-black/40">Kết quả vi sinh</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder="Ghi nhận..."
                           value={newRecord.ket_qua_vi_sinh || ''}
                           onChange={e => setNewRecord({...newRecord, ket_qua_vi_sinh: e.target.value})}
-                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                         />
                       </div>
                       <div className="space-y-1 p-3 bg-red-50 border border-red-100 rounded-lg">
@@ -1147,8 +1147,8 @@ export const NKVMModule: React.FC = () => {
                         <div className="grid grid-cols-1 gap-2 mt-1">
                             {['Nông', 'Sâu', 'Cơ quan - Khoang cơ thể', 'Không NKVM'].map(opt => (
                                <label key={opt} className="flex items-center gap-2 text-table font-bold cursor-pointer text-red-900">
-                                  <input 
-                                    type="radio" name="phan_loai_nkvm" 
+                                  <input
+                                    type="radio" name="phan_loai_nkvm"
                                     value={opt === 'Không NKVM' ? '' : opt}
                                     checked={(newRecord.phan_loai_nkvm || 'Không NKVM') === opt || (!newRecord.phan_loai_nkvm && opt === 'Không NKVM')}
                                     onChange={e => setNewRecord({...newRecord, phan_loai_nkvm: e.target.value})}
@@ -1166,19 +1166,19 @@ export const NKVMModule: React.FC = () => {
             </div>
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="px-6 py-2 rounded-lg text-table font-black uppercase text-slate-500 hover:bg-slate-100 transition-all outline-none"
               >
                 Đóng
               </button>
               {!viewOnly && (
-                <button 
+                <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="px-8 py-2 bg-[#009900] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
+                  className="px-8 py-2 bg-[#059669] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
                 >
-                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />} 
+                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
                   {isEditMode ? 'Cập nhật' : 'Lưu dữ liệu'}
                 </button>
               )}
@@ -1190,7 +1190,7 @@ export const NKVMModule: React.FC = () => {
       {showDsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#009900] text-white">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#059669] text-white">
               <h3 className="text-main-title font-bold uppercase flex items-center gap-2">
                 <ClipboardList size={20} />
                 {isEditMode ? 'Cập nhật' : 'Thêm mới'} Báo cáo Tổng hợp NKVM
@@ -1199,30 +1199,30 @@ export const NKVMModule: React.FC = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-6">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Ngày báo cáo *</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={newDsRecord.ngay_bao_cao || ''}
                     onChange={e => setNewDsRecord({...newDsRecord, ngay_bao_cao: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                   />
                 </div>
                 <div className="space-y-1 relative" ref={unitRef}>
                   <label className="text-[10px] font-black uppercase text-black/40">Khoa *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Chọn khoa/phòng..."
                     value={newDsRecord.khoa || ''}
                     onChange={e => {
                       const val = e.target.value;
                       setNewDsRecord({...newDsRecord, khoa: val});
                       if (val.trim()) {
-                        const filtered = units.filter(u => 
-                          u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) || 
+                        const filtered = units.filter(u =>
+                          u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) ||
                           u.ma_don_vi.toLowerCase().includes(val.toLowerCase())
                         );
                         setFilteredUnits(filtered.slice(0, 5));
@@ -1234,7 +1234,7 @@ export const NKVMModule: React.FC = () => {
                     onFocus={() => {
                       if (newDsRecord.khoa) setShowUnitSuggestions(true);
                     }}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                   />
                   {showUnitSuggestions && filteredUnits.length > 0 && (
                     <div className="absolute z-[60] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden max-h-40 overflow-y-auto">
@@ -1258,49 +1258,49 @@ export const NKVMModule: React.FC = () => {
 
               <div className="space-y-4">
                 {/* 1. Tổng số ca phẫu thuật */}
-                <div className="bg-[#009900]/5 p-4 rounded-xl border border-[#009900]/20 space-y-2">
-                  <label className="text-[12px] font-black uppercase text-[#009900]">1. Tổng số ca phẫu thuật *</label>
-                  <input 
+                <div className="bg-[#059669]/5 p-4 rounded-xl border border-[#059669]/20 space-y-2">
+                  <label className="text-[12px] font-black uppercase text-[#059669]">1. Tổng số ca phẫu thuật *</label>
+                  <input
                     type="number" min="0"
                     value={newDsRecord.tong_so_ca_pt !== undefined ? newDsRecord.tong_so_ca_pt : 0}
                     onChange={e => setNewDsRecord({...newDsRecord, tong_so_ca_pt: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-table font-black focus:ring-2 focus:ring-[#009900] outline-none text-center text-xl shadow-inner transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-table font-black focus:ring-2 focus:ring-[#059669] outline-none text-center text-xl shadow-inner transition-all"
                   />
                 </div>
-                
+
                 {/* 2. Số ca Nhiễm khuẩn */}
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                   <label className="text-[12px] font-black uppercase text-black/60 mb-3 block">2. Số ca Nhiễm khuẩn (Theo loại)</label>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/50 text-center block">Nông</label>
-                      <input 
+                      <input
                         type="number" min="0"
                         value={newDsRecord.so_ca_nkvm_nong !== undefined ? newDsRecord.so_ca_nkvm_nong : 0}
                         onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_nong: parseInt(e.target.value) || 0})}
-                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center transition-all"
+                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none text-center transition-all"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/50 text-center block">Sâu</label>
-                      <input 
+                      <input
                         type="number" min="0"
                         value={newDsRecord.so_ca_nkvm_sau !== undefined ? newDsRecord.so_ca_nkvm_sau : 0}
                         onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_sau: parseInt(e.target.value) || 0})}
-                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center transition-all"
+                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none text-center transition-all"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-black/50 text-center block">Cơ quan</label>
-                      <input 
+                      <input
                         type="number" min="0"
                         value={newDsRecord.so_ca_nkvm_co_quan !== undefined ? newDsRecord.so_ca_nkvm_co_quan : 0}
                         onChange={e => setNewDsRecord({...newDsRecord, so_ca_nkvm_co_quan: parseInt(e.target.value) || 0})}
-                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none text-center transition-all"
+                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none text-center transition-all"
                       />
                     </div>
-                    
+
                     <div className="space-y-1 pt-1 md:pt-0">
                       <label className="text-[10px] font-black uppercase text-red-600/80 text-center block">Tổng (Tự tính)</label>
                       <div className="w-full px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-table font-black text-red-700 text-center shadow-inner">
@@ -1313,18 +1313,18 @@ export const NKVMModule: React.FC = () => {
             </div>
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-              <button 
+              <button
                 onClick={() => setShowDsModal(false)}
                 className="px-6 py-2 rounded-lg text-table font-black uppercase text-slate-500 hover:bg-slate-100 transition-all outline-none"
               >
                 Đóng
               </button>
-              <button 
+              <button
                   onClick={handleSaveDs}
                   disabled={loading}
-                  className="px-8 py-2 bg-[#009900] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
+                  className="px-8 py-2 bg-[#059669] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
                 >
-                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />} 
+                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
                   {isEditMode ? 'Cập nhật' : 'Lưu dữ liệu'}
               </button>
             </div>

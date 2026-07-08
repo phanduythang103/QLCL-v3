@@ -341,7 +341,7 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-6 animate-in fade-in duration-700 pb-10">
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard title="Nhân sự QLCL" value={nhanSuTotal.toString()} icon={<Users size={22} />} accent="#009900" bgColor="#f0fdf4" />
+        <StatCard title="Nhân sự QLCL" value={nhanSuTotal.toString()} icon={<Users size={22} />} accent="#059669" bgColor="#f0fdf4" />
         <StatCard title="Sự cố y khoa" value={suCoTotal.toString()} subtext="Tổng ghi nhận" icon={<AlertTriangle size={22} />} accent="#d97706" bgColor="#fffbeb" />
         <StatCard
           title="Cải tiến CL"
@@ -365,7 +365,7 @@ export const Dashboard: React.FC = () => {
           <div className="ql-card p-6 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+                <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
                 <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Mức độ hài lòng</h3>
               </div>
 

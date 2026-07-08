@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
+import {
   Building2, Users, FileText, CheckCircle2, AlertTriangle, XCircle,
   Plus, Search, Edit2, Trash2, Calendar, FileDown, Eye, Filter,
   TrendingDown, TrendingUp, Minus, Activity, Target, Scissors
@@ -27,7 +27,7 @@ export const PtLoai2Module: React.FC = () => {
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PtLoai2 | null>(null);
-  
+
   const { user } = useAuth();
 
   const loadData = async () => {
@@ -65,7 +65,7 @@ export const PtLoai2Module: React.FC = () => {
               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Phân tích cơ cấu kỹ thuật phẫu thuật</p>
             </div>
           </div>
-          
+
           <div className="indicator-subtab-list indicator-subtab-list-2">
             <button
               onClick={() => setActiveTab('OVERVIEW')}
@@ -100,8 +100,8 @@ export const PtLoai2Module: React.FC = () => {
           <>
             {activeTab === 'OVERVIEW' && <OverviewTab data={data} departments={departments} />}
             {activeTab === 'LIST' && (
-              <ListTab 
-                data={data} 
+              <ListTab
+                data={data}
                 onView={(item: PtLoai2) => { setEditingItem(item); setIsFormOpen(true); }}
                 onEdit={(item: PtLoai2) => { setEditingItem(item); setIsFormOpen(true); }}
                 onDelete={async (id: string) => {
@@ -118,10 +118,10 @@ export const PtLoai2Module: React.FC = () => {
       </div>
 
       {isFormOpen && (
-        <PtLoai2FormModal 
-          item={editingItem} 
+        <PtLoai2FormModal
+          item={editingItem}
           isReadOnly={editingItem !== null && isFormOpen === true && (document.activeElement?.textContent?.includes('Xem') || (window as any)._isViewing)}
-          onClose={() => { setIsFormOpen(false); (window as any)._isViewing = false; }} 
+          onClose={() => { setIsFormOpen(false); (window as any)._isViewing = false; }}
           onSaved={() => { setIsFormOpen(false); loadData(); (window as any)._isViewing = false; }}
           currentUser={user}
           departmentList={departmentList}
@@ -156,7 +156,7 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
 
     // Filter by date
     if (dateFilter === 'ALL') return result;
-    
+
     const now = new Date();
     let start = new Date(0);
     let end = new Date(now.getFullYear() + 10, 0, 1); // Far future
@@ -200,7 +200,7 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
     let tongLoaiDB = 0;
     let tongLoai1 = 0;
     let tongLoai2 = 0;
-    
+
     filteredData.forEach(item => {
       tongSoPT += item.tong_so_pt || 0;
       tongLoai2TroLen += item.tong_pt_loai_2_tro_len || 0;
@@ -229,7 +229,7 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 md:pb-0 hide-scrollbar">
           <Filter size={16} className="text-slate-400 shrink-0 mr-2" />
-          <select 
+          <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
             className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none min-w-[140px]"
@@ -246,15 +246,15 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
 
           {dateFilter === 'CUSTOM' && (
             <div className="flex items-center gap-2 animate-in slide-in-from-left-4 duration-300">
-              <input 
-                type="date" 
+              <input
+                type="date"
                 value={customStart}
                 onChange={e => setCustomStart(e.target.value)}
                 className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none w-[130px]"
               />
               <span className="text-slate-400 font-medium">-</span>
-              <input 
-                type="date" 
+              <input
+                type="date"
                 value={customEnd}
                 onChange={e => setCustomEnd(e.target.value)}
                 className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none w-[130px]"
@@ -265,7 +265,7 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
           <div className="w-px h-6 bg-slate-200 hidden md:block mx-1"></div>
 
           <Building2 size={16} className="text-slate-400 shrink-0 mr-1 hidden md:block" />
-          <select 
+          <select
             value={departmentFilter}
             onChange={(e) => setDepartmentFilter(e.target.value)}
             className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none min-w-[180px]"
@@ -276,7 +276,7 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
             ))}
           </select>
         </div>
-        
+
         <div className="shrink-0 text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
           Có {filteredData.length} báo cáo
         </div>
@@ -386,7 +386,7 @@ const OverviewTab = ({ data, departments }: { data: PtLoai2[], departments: DmDo
 const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: PtLoai2[], onView: (item: PtLoai2) => void, onEdit: (item: PtLoai2) => void, onDelete: (id: string) => void, onAddNew: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filtered = data.filter((item) => 
+  const filtered = data.filter((item) =>
     (item.khoa || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (item.nguoi_bao_cao || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -414,7 +414,7 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: PtLoai2[]
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-[#009900] text-white font-bold uppercase text-table">
+          <thead className="bg-[#059669] text-white font-bold uppercase text-table">
             <tr>
               <th className="p-4 rounded-tl-xl whitespace-nowrap">Ngày báo cáo</th>
               <th className="p-4 whitespace-nowrap">Khoa</th>
@@ -485,7 +485,7 @@ const PtLoai2FormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, dep
     pt_loai_2: item?.pt_loai_2 || '',
     ghi_chu: item?.ghi_chu || ''
   });
-  
+
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string|null>(null);
 
@@ -549,7 +549,7 @@ const PtLoai2FormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, dep
 
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {err && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200">{err}</div>}
-          
+
           <form id="pt-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
@@ -564,15 +564,15 @@ const PtLoai2FormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, dep
 
             <div className="space-y-1.5 border-t border-slate-100 pt-5">
               <label className="text-xs font-bold text-slate-600 uppercase">Khoa thực hiện</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 list="khoa-suggestions"
-                value={formData.khoa} 
-                onChange={e => setFormData({...formData, khoa: e.target.value})} 
-                disabled={isReadOnly} 
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-bold text-slate-800 disabled:bg-slate-50 disabled:cursor-not-allowed" 
-                placeholder="VD: Khoa Ngoại thần kinh, Khoa Mắt..." 
-                required 
+                value={formData.khoa}
+                onChange={e => setFormData({...formData, khoa: e.target.value})}
+                disabled={isReadOnly}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-bold text-slate-800 disabled:bg-slate-50 disabled:cursor-not-allowed"
+                placeholder="VD: Khoa Ngoại thần kinh, Khoa Mắt..."
+                required
               />
               <datalist id="khoa-suggestions">
                 {departmentList.map((k: string) => (
@@ -600,7 +600,7 @@ const PtLoai2FormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, dep
                 <input type="number" min="0" value={formData.pt_loai_2} onChange={e => setFormData({...formData, pt_loai_2: e.target.value})} disabled={isReadOnly} className="w-full border border-emerald-200 rounded-xl px-4 py-2 bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 font-bold text-emerald-700 disabled:bg-slate-100 disabled:cursor-not-allowed" placeholder="0" required />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black text-indigo-700 uppercase tracking-wider flex items-center gap-1">
@@ -610,7 +610,7 @@ const PtLoai2FormModal = ({ item, isReadOnly, onClose, onSaved, currentUser, dep
                   {tongLoai2TroLen}
                 </div>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black text-indigo-700 uppercase tracking-wider flex items-center gap-1">
                   <Target size={12} /> Tỷ lệ %

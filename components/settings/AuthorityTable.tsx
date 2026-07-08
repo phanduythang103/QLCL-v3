@@ -72,7 +72,7 @@ const AuthorityTable = () => {
             } else {
                 await addCoQuanBanHanh({
                     ten_co_quan: formData.ten_co_quan.trim(),
-                    // mo_ta: formData.mo_ta.trim() 
+                    // mo_ta: formData.mo_ta.trim()
                 });
             }
 
@@ -119,7 +119,7 @@ const AuthorityTable = () => {
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#009900] text-white rounded-lg text-input font-black hover:bg-[#0d6e39] transition-colors shadow-sm uppercase"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg text-input font-black hover:bg-[#0d6e39] transition-colors shadow-sm uppercase"
                 >
                     <Plus size={16} /> Thêm mới
                 </button>
@@ -128,7 +128,7 @@ const AuthorityTable = () => {
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest border-b border-[#0d6e39] h-12">
+                        <thead className="bg-[#059669] text-white font-black uppercase text-table tracking-widest border-b border-[#0d6e39] h-12">
                             <tr>
                                 <th className="px-6 py-4 w-16 text-center">STT</th>
                                 <th className="px-6 py-4">Tên cơ quan ban hành</th>
@@ -219,7 +219,7 @@ const AuthorityTable = () => {
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                 className="px-4 py-2 bg-[#009900] text-white rounded-lg text-input font-black hover:bg-[#0d6e39] transition-colors disabled:opacity-50 flex items-center gap-2 uppercase shadow-md"
+                                 className="px-4 py-2 bg-[#059669] text-white rounded-lg text-input font-black hover:bg-[#0d6e39] transition-colors disabled:opacity-50 flex items-center gap-2 uppercase shadow-md"
                             >
                                 {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={16} />}
                                 {saving ? 'Đang lưu...' : 'Lưu'}

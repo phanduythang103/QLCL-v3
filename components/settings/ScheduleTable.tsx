@@ -168,7 +168,7 @@ export default function ScheduleTable() {
               </select>
               {form.tu_ngay && form.den_ngay && (
                 <p className="text-table text-black/40 mt-1 font-bold uppercase tracking-tight">
-                  Trạng thái tự động: <span className="font-black text-[#009900]">{getAutoStatus(form.tu_ngay, form.den_ngay)}</span>
+                  Trạng thái tự động: <span className="font-black text-[#059669]">{getAutoStatus(form.tu_ngay, form.den_ngay)}</span>
                 </p>
               )}
             </div>
@@ -197,7 +197,7 @@ export default function ScheduleTable() {
               </select>
             </div>
             <div className="flex gap-2 items-end">
-              <button type="submit" className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
+              <button type="submit" className="flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
                 <Check size={16} /> {editingId ? 'Cập nhật' : 'Thêm mới'}
               </button>
               <button type="button" onClick={resetForm} className="px-4 py-2 border border-slate-200 rounded-lg text-input font-black text-black hover:bg-slate-50 uppercase shadow-sm">Hủy</button>
@@ -207,14 +207,14 @@ export default function ScheduleTable() {
       )}
 
       {!showForm && (
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#009900] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
+        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-lg hover:bg-[#0d6e39] text-input font-black uppercase shadow-md">
           <Plus size={16} /> Thêm lịch giám sát
         </button>
       )}
 
       <div className="hidden bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm md:block">
         <table className="w-full text-sm text-left">
-          <thead className="bg-[#009900] text-white font-black uppercase text-table h-12">
+          <thead className="bg-[#059669] text-white font-black uppercase text-table h-12">
             <tr>
               <th className="px-4 py-3 w-12 text-center">#</th>
               <th className="px-4 py-3">Từ ngày</th>

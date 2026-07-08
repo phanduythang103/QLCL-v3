@@ -207,12 +207,12 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
                 <FileText size={18} /> <span className="hidden md:inline">Xuất Excel</span>
               </button>
             )}
-            {activeTab === 'DANH_SACH' && (
+            {viewMode === 'LIST' && (
               <button
-                onClick={() => { setEditingItem(null); setViewMode('FORM'); }}
-                className="flex items-center gap-2 bg-[#009900] hover:bg-[#0d6e39] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-green-200 active:scale-95"
+                onClick={() => { setEditingItem(null); setActiveTab('DANH_SACH'); setViewMode('FORM'); }}
+                className="flex items-center gap-2 bg-[#059669] hover:bg-[#0d6e39] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-green-200 active:scale-95"
               >
-                <Plus size={18} /> Thêm
+                <Plus size={18} /> Thêm giám sát mới
               </button>
             )}
           </div>
@@ -225,7 +225,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               <select
                 value={filterConfig.timeRange}
                 onChange={e => setFilterConfig({ ...filterConfig, timeRange: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
               >
                 {['Hôm nay', 'Tuần này', 'Tháng này', 'Quý này', 'Năm này', 'Tùy chọn'].map(time => (
                   <option key={time} value={time}>{time}</option>
@@ -241,7 +241,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
                     type="date"
                     value={filterConfig.fromDate}
                     onChange={e => setFilterConfig({ ...filterConfig, fromDate: e.target.value })}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
                   />
                 </div>
                 <div className="space-y-1">
@@ -250,7 +250,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
                     type="date"
                     value={filterConfig.toDate}
                     onChange={e => setFilterConfig({ ...filterConfig, toDate: e.target.value })}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
                   />
                 </div>
               </>
@@ -261,7 +261,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               <select
                 value={filterConfig.department}
                 onChange={e => setFilterConfig({ ...filterConfig, department: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
               >
                 <option value="Tất cả">Tất cả khoa</option>
                 {departmentList.map(dept => (
@@ -275,7 +275,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               <select
                 value={filterConfig.orTable}
                 onChange={e => setFilterConfig({ ...filterConfig, orTable: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
               >
                 <option value="Tất cả">Tất cả phòng</option>
                 {orTableList.map(or => (
@@ -288,7 +288,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin w-8 h-8 border-4 border-[#009900] border-t-transparent rounded-full"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-[#059669] border-t-transparent rounded-full"></div>
           </div>
         ) : error ? (
           <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 font-bold">Lỗi: {error}</div>
@@ -340,7 +340,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
   <button
     onClick={onClick}
     className={`supervision-tab-button flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active
-      ? 'bg-white text-[#009900] shadow-lg shadow-green-100 border border-green-50'
+      ? 'bg-white text-[#059669] shadow-lg shadow-green-100 border border-green-50'
       : 'text-slate-400 hover:text-slate-600'
       }`}
   >
@@ -473,9 +473,9 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
                 <Line
                   type="monotone"
                   dataKey="rate"
-                  stroke="#009900"
+                  stroke="#059669"
                   strokeWidth={4}
-                  dot={{ r: 4, fill: '#009900', strokeWidth: 2, stroke: '#fff' }}
+                  dot={{ r: 4, fill: '#059669', strokeWidth: 2, stroke: '#fff' }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                   name="Tỷ lệ đạt (%)"
                 />
@@ -488,7 +488,7 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
         <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-              <BarChart size={18} className="text-[#009900]" />
+              <BarChart size={18} className="text-[#059669]" />
               Số ca giám sát (Ca)
             </h3>
           </div>
@@ -515,13 +515,13 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
                 />
                 <Bar
                   dataKey="count"
-                  fill="#009900"
+                  fill="#059669"
                   radius={[6, 6, 0, 0]}
                   name="Số ca giám sát"
                   opacity={0.8}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.rate === 100 ? '#009900' : '#4ade80'} />
+                    <Cell key={`cell-${index}`} fill={entry.rate === 100 ? '#059669' : '#4ade80'} />
                   ))}
                 </Bar>
                 <Line
@@ -544,7 +544,7 @@ const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
 const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) => {
   const colors: Record<string, string> = {
     slate: 'bg-slate-50 text-slate-600',
-    green: 'bg-green-50 text-[#009900]',
+    green: 'bg-green-50 text-[#059669]',
     amber: 'bg-amber-50 text-amber-600',
     blue: 'bg-blue-50 text-blue-600',
     indigo: 'bg-indigo-50 text-indigo-600'
@@ -613,7 +613,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="p-6 border-b border-slate-100 bg-slate-50/30">
         <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-          <FileText className="text-[#009900]" size={18} />
+          <FileText className="text-[#059669]" size={18} />
           Phiếu tổng hợp chỉ số giám sát
         </h2>
       </div>
@@ -635,7 +635,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
                 <td className="p-6 text-center text-table font-normal text-slate-600">{row.a}</td>
                 <td className="p-6 text-center text-table font-normal text-slate-600">{row.b}</td>
                 <td className="p-6 text-center">
-                  <span className={`text-table font-normal ${row.rate >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                  <span className={`text-table font-normal ${row.rate >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
                     {row.rate.toFixed(1)}%
                   </span>
                 </td>
@@ -661,7 +661,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
               </tr>
             )}
           </tbody>
-          <tfoot className="bg-[#009900] text-white font-black">
+          <tfoot className="bg-[#059669] text-white font-black">
             <tr>
               <td className="p-6 text-table uppercase tracking-widest">Toàn viện</td>
               <td className="p-6 text-center text-table">{totals.a}</td>
@@ -681,7 +681,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
               <h3 className="text-sm font-black text-slate-800 uppercase">{row.department}</h3>
               <div className="text-right">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Tỷ lệ đạt</p>
-                <span className={`text-lg font-black ${row.rate >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                <span className={`text-lg font-black ${row.rate >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
                   {row.rate.toFixed(1)}%
                 </span>
               </div>
@@ -701,7 +701,7 @@ const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
           </div>
         ))}
         {/* Mobile Total Row */}
-        <div className="p-4 bg-[#009900] text-white space-y-2">
+        <div className="p-4 bg-[#059669] text-white space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-[10px] font-black uppercase tracking-widest">Toàn viện</span>
             <span className="text-lg font-black">{totals.rate.toFixed(1)}%</span>
@@ -768,7 +768,7 @@ const SurgeryList = ({ data, onView, onEdit, onDelete }: {
                 <td className="p-6 text-table font-normal text-slate-800 uppercase">{item.ho_ten_nguoi_benh}</td>
                 <td className="p-6 text-table font-normal text-slate-600">Bàn {item.ban_mo_so}</td>
                 <td className="p-6 text-center">
-                  <span className={`text-table font-normal ${Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                  <span className={`text-table font-normal ${Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
                     {Number(item.ty_le_tuan_thu).toFixed(0)}%
                   </span>
                 </td>
@@ -802,7 +802,7 @@ const SurgeryList = ({ data, onView, onEdit, onDelete }: {
               <div className="text-right space-y-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Bàn mổ {item.ban_mo_so}</p>
                 <div className="pt-2">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${Number(item.ty_le_tuan_thu) >= 100 ? 'bg-green-100 text-[#009900]' : 'bg-amber-100 text-amber-600'}`}>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${Number(item.ty_le_tuan_thu) >= 100 ? 'bg-green-100 text-[#059669]' : 'bg-amber-100 text-amber-600'}`}>
                     {Number(item.ty_le_tuan_thu).toFixed(0)}% Đạt
                   </span>
                 </div>
@@ -970,7 +970,7 @@ const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, department
       <div className="w-full flex flex-col h-full">
 
         {/* Main Header - Premium Green Layout */}
-        <div className="bg-[#009900] p-8 text-white relative overflow-hidden">
+        <div className="bg-[#059669] p-8 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <ShieldCheck size={160} />
           </div>
@@ -1205,7 +1205,7 @@ const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete 
           <DetailField label="Tên người bệnh" value={item.ho_ten_nguoi_benh} uppercase />
           <DetailField label="Kíp PT" value={item.kip_phau_thuat} />
           <DetailField label="Người giám sát" value={item.nguoi_giam_sat} />
-          <DetailField label="Kết quả chung" value={`Đạt ${item.tong_dat}/13 tiêu chí (${item.ty_le_tuan_thu}%)`} color={Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#009900]' : 'text-amber-600'} />
+          <DetailField label="Kết quả chung" value={`Đạt ${item.tong_dat}/13 tiêu chí (${item.ty_le_tuan_thu}%)`} color={Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#059669]' : 'text-amber-600'} />
         </div>
 
         <div className="overflow-hidden border border-slate-200 rounded-2xl shadow-sm">
@@ -1235,7 +1235,7 @@ const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete 
                         <td className="p-4 text-center border-r border-slate-200 text-slate-400 font-bold">{idx + 1}</td>
                         <td className="p-4 border-r border-slate-200 font-bold text-slate-700 leading-tight">{c.label}</td>
                         <td className="p-4 text-center border-r border-slate-200">
-                          {isDat && <div className="mx-auto w-6 h-6 bg-[#009900] text-white rounded-full flex items-center justify-center shadow-lg shadow-green-100"><CheckCircle2 size={14} /></div>}
+                          {isDat && <div className="mx-auto w-6 h-6 bg-[#059669] text-white rounded-full flex items-center justify-center shadow-lg shadow-green-100"><CheckCircle2 size={14} /></div>}
                         </td>
                         <td className="p-4 text-center border-r border-slate-200">
                           {!isDat && <div className="mx-auto w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-100"><XCircle size={14} /></div>}

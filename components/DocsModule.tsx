@@ -35,49 +35,9 @@ interface FormModalProps {
 }
 
 export const DocsModule: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<MainTab>('LIBRARY');
-
   return (
-    <div className="docs-module space-y-6">
-      {/* Module Navigation */}
-      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
-        <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1">
-          <button
-            onClick={() => setActiveTab('LIBRARY')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label font-black transition-all duration-200 ${activeTab === 'LIBRARY'
-              ? 'bg-[#009900] text-white shadow-md shadow-green-200 ring-1 ring-[#009900]'
-              : 'text-[#009900] hover:bg-white hover:shadow-sm'
-              }`}
-          >
-            <FileText size={18} /> Thư viện Văn bản
-          </button>
-          <button
-            onClick={() => setActiveTab('TRAINING')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label font-black transition-all duration-200 ${activeTab === 'TRAINING'
-              ? 'bg-[#009900] text-white shadow-md shadow-green-200 ring-1 ring-[#009900]'
-              : 'text-[#009900] hover:bg-white hover:shadow-sm'
-              }`}
-          >
-            <GraduationCap size={18} /> Đào tạo
-          </button>
-          <button
-            onClick={() => setActiveTab('SHARING')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label font-black transition-all duration-200 ${activeTab === 'SHARING'
-              ? 'bg-[#009900] text-white shadow-md shadow-green-200 ring-1 ring-[#009900]'
-              : 'text-[#009900] hover:bg-white hover:shadow-sm'
-              }`}
-          >
-            <Lightbulb size={18} /> Góc Chia sẻ/Diễn đàn QLCL
-          </button>
-        </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="animate-in fade-in duration-300">
-        {activeTab === 'LIBRARY' && <DocumentLibrary />}
-        {activeTab === 'TRAINING' && <TrainingCenter />}
-        {activeTab === 'SHARING' && <KnowledgeSharing />}
-      </div>
+    <div className="docs-page min-h-full w-full">
+      <DocumentLibrary />
     </div>
   );
 };
@@ -202,7 +162,7 @@ const DocumentLibrary = () => {
       file_van_ban: doc.file_van_ban || '',
       phan_loai: doc.phan_loai || 'BYT'
     });
-    // Store ID for update logic if needed, currently addThuVienVb handles insert. 
+    // Store ID for update logic if needed, currently addThuVienVb handles insert.
     // We might need to update addThuVienVb to handle upsert or add updateThuVienVb support properly.
     // For now, assuming basic edit populates form. Ideally we need an editingId state.
     setEditingId(doc.id);
@@ -252,16 +212,16 @@ const DocumentLibrary = () => {
   // FormModal moved outside
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-      <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between bg-slate-50/50">
+    <div className="min-h-full w-full bg-white">
+      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3 w-full lg:w-auto">
           <label className="text-xs font-black text-slate-500 uppercase whitespace-nowrap">Bộ lọc:</label>
-          <div className="relative flex-1 lg:w-64">
-            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#009900] transition-colors" />
+          <div className="relative flex-1 lg:w-80">
+            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#059669] transition-colors" />
             <select
               value={docCategory}
               onChange={(e) => setDocCategory(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-black text-black outline-none focus:ring-2 focus:ring-[#009900]/20 focus:border-[#009900] transition-all appearance-none cursor-pointer"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-black text-black outline-none focus:ring-2 focus:ring-[#059669]/20 focus:border-[#059669] transition-all appearance-none cursor-pointer"
             >
               <option value="ALL">Tất cả cơ quan ban hành</option>
               {uniqueAgencies.map(agency => (
@@ -278,18 +238,18 @@ const DocumentLibrary = () => {
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
           <div className="flex gap-2">
             {canCreate('DOCS') && (
-              <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-[#009900] text-white rounded-lg text-label font-black hover:bg-[#008800] transition-colors shadow-sm">
+              <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3 py-2 bg-[#059669] text-white rounded-lg text-label font-black hover:bg-[#008800] transition-colors shadow-sm">
                 <Plus size={16} /> <span>Thêm văn bản</span>
               </button>
             )}
-            <div className="relative w-full sm:w-64">
+            <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm số hiệu, trích yếu..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-table text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#009900]"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-table text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#059669]"
               />
             </div>
           </div>
@@ -308,8 +268,8 @@ const DocumentLibrary = () => {
       {!loading && !error && (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="table-standardized">
+          <div className="hidden md:block w-full overflow-x-auto">
+            <table className="table-standardized w-full min-w-[980px]">
               <thead>
                 <tr>
                   <th className="px-3 py-2 w-32">Số hiệu</th>
@@ -321,7 +281,7 @@ const DocumentLibrary = () => {
                 {pagedDocs.map((doc) => (
                   <tr key={doc.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-3 py-3 font-mono text-table text-black truncate w-32" title={doc.so_hieu_vb}>{doc.so_hieu_vb}</td>
-                    <td className="px-3 py-3 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
+                    <td className="px-4 py-3 cursor-pointer" onClick={() => setSelectedDoc(doc)}>
                       <div className="text-black text-table line-clamp-2 hover:text-green-700 hover:underline transition-all" title="Bấm để xem chi tiết">{doc.ten_vb}</div>
                     </td>
                     <td className="px-3 py-2 text-right">
@@ -347,7 +307,7 @@ const DocumentLibrary = () => {
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden space-y-3 p-2">
+          <div className="md:hidden space-y-3 p-3">
             {pagedDocs.map((doc) => (
               <div key={doc.id} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start gap-2">
@@ -387,7 +347,7 @@ const DocumentLibrary = () => {
           </div>
           {/* Pagination controls */}
           {totalRows > 0 && (
-            <div className="flex flex-wrap justify-between items-center gap-2 p-2 text-xs">
+            <div className="flex flex-wrap justify-between items-center gap-2 border-t border-slate-200 bg-white px-4 py-3 text-xs">
               <span>Trang {page}/{totalPages || 1}</span>
               <div className="flex gap-1">
                 <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-2 py-1 rounded border text-slate-600 disabled:opacity-50">Trước</button>
@@ -396,7 +356,7 @@ const DocumentLibrary = () => {
               <span>Hiển thị {pagedDocs.length} / {totalRows} văn bản</span>
             </div>
           )}
-          <div className="p-4 border-t border-slate-200 bg-slate-50 text-center text-xs text-slate-500">
+          <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 text-center text-xs text-slate-500">
             Hiển thị {filteredDocs.length} văn bản
           </div>
         </>
@@ -431,7 +391,7 @@ const DocumentLibrary = () => {
 };
 
 // --- SUB-COMPONENT: TRAINING CENTER ---
-const TrainingCenter = () => {
+export const TrainingCenter = () => {
   const { canCreate } = usePermissions();
   const { user } = useAuth();
   const [items, setItems] = useState<DaoTao[]>([]);
@@ -600,7 +560,7 @@ const TrainingCenter = () => {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+      <div className="min-h-full w-full bg-white">
         <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row gap-3 justify-between bg-slate-50/50">
           <div>
             <h3 className="text-main-title text-black flex items-center gap-2 uppercase">
@@ -617,11 +577,11 @@ const TrainingCenter = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm tiêu đề, nội dung..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-table text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#009900]"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-table text-black focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-[#059669]"
               />
             </div>
             {canCreate('DOCS') && (
-              <button onClick={() => { setEditingId(null); setFormData(initialFormData); setFileUpload(null); setShowForm(true); }} className="flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] text-white rounded-lg text-label font-black hover:bg-[#008800] transition-colors shadow-sm">
+              <button onClick={() => { setEditingId(null); setFormData(initialFormData); setFileUpload(null); setShowForm(true); }} className="flex items-center justify-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg text-label font-black hover:bg-[#008800] transition-colors shadow-sm">
                 <Plus size={16} /> Thêm nội dung
               </button>
             )}
@@ -672,7 +632,7 @@ const TrainingCenter = () => {
                             <Download size={14} /> File
                           </button>
                         )}
-                        <button onClick={() => setSelectedItem(item)} className="flex items-center gap-1 text-[#009900] font-bold hover:underline">
+                        <button onClick={() => setSelectedItem(item)} className="flex items-center gap-1 text-[#059669] font-bold hover:underline">
                           <Eye size={14} /> Xem
                         </button>
                       </div>
@@ -853,7 +813,7 @@ const TrainingDetailModal = ({ item, embedUrl, onClose, onEdit, onDelete, onOpen
 };
 
 // --- SUB-COMPONENT: KNOWLEDGE SHARING ---
-const KnowledgeSharing = () => {
+export const KnowledgeSharing = () => {
   const { canCreate, canUpdate, canDelete } = usePermissions();
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

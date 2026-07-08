@@ -83,7 +83,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
     >
       <div className="max-w-7xl mx-auto w-full min-h-full flex flex-col p-3 md:p-8 space-y-5 md:space-y-8">
         {/* SCYK Style Header - Now with Actions & Results */}
-        <div className="bg-[#009900] rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl shadow-emerald-900/20 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 md:gap-6 relative group border border-white/20">
+        <div className="bg-[#059669] rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl shadow-emerald-900/20 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 md:gap-6 relative group border border-white/20">
           <div className="flex items-start md:items-center gap-3 md:gap-4 text-white w-full lg:w-auto min-w-0">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-sm shrink-0">
               <ClipboardCheck size={22} className="md:w-7 md:h-7" />
@@ -159,7 +159,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="col-span-1 md:col-span-1 bg-white hover:bg-emerald-50 text-[#009900] px-4 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all active:scale-95 disabled:opacity-50 border border-white"
+                className="col-span-1 md:col-span-1 bg-white hover:bg-emerald-50 text-[#059669] px-4 md:px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all active:scale-95 disabled:opacity-50 border border-white"
               >
                 {saving ? 'Đang lưu...' : <><Save size={18} /> Lưu đánh giá</>}
               </button>
@@ -170,7 +170,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
         <form className="space-y-10">
           {/* Section: GENERAL INFO (Matching Scyk style) */}
           <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#009900]/20"></div>
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#059669]/20"></div>
             <h3 className="text-sm font-black text-blue-700 uppercase tracking-tight flex items-center gap-2 mb-2">
               <FileText className="text-blue-600" size={20} />
               Thông tin chung
@@ -184,7 +184,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
                   type="date"
                   value={formData.ngay_danh_gia}
                   onChange={e => setFormData({ ...formData, ngay_danh_gia: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#009900] outline-none transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#059669] outline-none transition-all"
                 />
               </div>
               <div className="space-y-2">
@@ -215,7 +215,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
                   {/* Group Header matching the image */}
                   <div
                     onClick={() => handleToggleGroup(group.k)}
-                    className="bg-[#009900] p-4 flex justify-between items-center cursor-pointer hover:bg-[#008800] transition-colors"
+                    className="bg-[#059669] p-4 flex justify-between items-center cursor-pointer hover:bg-[#008800] transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-sm text-white font-black text-xl shadow-lg">
@@ -243,13 +243,13 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
                           >
                             <div className="w-full md:w-auto flex items-center gap-3">
                               {/* ID Circle */}
-                              <div className="shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-emerald-100 bg-white flex items-center justify-center text-[9px] md:text-xs font-black text-slate-400 group-hover:border-[#009900] group-hover:text-[#009900] transition-all">
+                              <div className="shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-emerald-100 bg-white flex items-center justify-center text-[9px] md:text-xs font-black text-slate-400 group-hover:border-[#059669] group-hover:text-[#059669] transition-all">
                                 {item.k}
                               </div>
 
                               {/* Content Text (Mobile Title Style) */}
                               <div className="flex-1 md:hidden">
-                                <span className="text-[9px] font-black text-[#009900] uppercase tracking-widest">Tiêu chí {item.k}</span>
+                                <span className="text-[9px] font-black text-[#059669] uppercase tracking-widest">Tiêu chí {item.k}</span>
                               </div>
                             </div>
 
@@ -265,7 +265,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
                                 type="button"
                                 onClick={() => !readOnly && setFormData({ ...formData, [fieldName]: true })}
                                 className={`flex-1 md:flex-none px-5 md:px-7 py-2 md:py-2.5 rounded-xl text-[10px] font-black uppercase transition-all border-2 shadow-sm ${formData[fieldName] === true
-                                  ? 'bg-[#009900] border-[#009900] text-white shadow-emerald-200'
+                                  ? 'bg-[#059669] border-[#059669] text-white shadow-emerald-200'
                                   : 'bg-white border-slate-100 text-slate-400'
                                   }`}
                               >
@@ -303,7 +303,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
               value={formData.ghi_chu}
               onChange={e => setFormData({ ...formData, ghi_chu: e.target.value })}
               placeholder="Nhập ghi chú hoặc ý kiến bổ sung của đoàn đánh giá..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-[#009900] outline-none transition-all resize-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-[#059669] outline-none transition-all resize-none"
             />
           </div>
 
@@ -311,7 +311,7 @@ export const TieuChiCoBanForm: React.FC<Props> = ({
             <button
               type="button"
               onClick={scrollToTop}
-              className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-[#009900] hover:border-[#009900] transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-[#059669] hover:border-[#059669] transition-all shadow-sm active:scale-95"
             >
               <ArrowUp size={14} /> Lên đầu trang
             </button>

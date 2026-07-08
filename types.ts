@@ -8,6 +8,8 @@ export enum ModuleType {
   DASHBOARD = 'DASHBOARD',
   HR = 'HR', // Quản lý nhân sự
   DOCS = 'DOCS', // Văn bản - Thư viện
+  TRAINING = 'TRAINING', // Dao tao lien tuc
+  SHARING = 'SHARING', // Goc chia se
   ASSESSMENT = 'ASSESSMENT', // Đánh giá chất lượng
   INCIDENTS = 'INCIDENTS', // Sự cố y khoa
   IMPROVEMENT = 'IMPROVEMENT', // Cải tiến chất lượng

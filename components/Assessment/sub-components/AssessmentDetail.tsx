@@ -108,7 +108,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
     <div className="bg-white md:rounded-2xl border border-slate-200 shadow-sm flex flex-col animate-in fade-in duration-500 min-h-[600px] overflow-hidden">
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="px-4 py-3 md:px-6 md:py-4 bg-[#009900] text-white flex justify-between items-center gap-3 shadow-md print:hidden md:rounded-t-2xl">
+        <div className="px-4 py-3 md:px-6 md:py-4 bg-[#059669] text-white flex justify-between items-center gap-3 shadow-md print:hidden md:rounded-t-2xl">
           <div className="flex min-w-0 items-center gap-3">
             <Printer size={20} className="shrink-0" />
             <div className="min-w-0">
@@ -143,9 +143,9 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
             <div className="space-y-4 border-b border-slate-100 pb-6 md:text-center md:pb-10">
               <h1 className="text-lg md:text-3xl font-black text-slate-900 uppercase leading-tight">Kết quả đánh giá chất lượng bệnh viện</h1>
               <div className="grid grid-cols-2 gap-2 text-xs font-bold text-slate-500 uppercase md:flex md:justify-center md:gap-8 md:text-sm md:tracking-widest">
-                <p className="col-span-2 rounded-xl bg-slate-50 p-3 md:col-span-1 md:bg-transparent md:p-0">Đơn vị: <span className="block mt-1 text-[#009900] md:inline md:mt-0">{sheetInfo?.don_vi_duoc_danh_gia}</span></p>
-                <p className="rounded-xl bg-slate-50 p-3 md:bg-transparent md:p-0">Ngày: <span className="block mt-1 text-[#009900] md:inline md:mt-0">{sheetInfo?.ngay_danh_gia}</span></p>
-                <p className="rounded-xl bg-emerald-50 p-3 md:bg-transparent md:p-0">Điểm TB: <span className="block mt-1 text-lg text-[#009900] md:inline md:mt-0 md:text-inherit">{sheetInfo?.score || '0'}</span></p>
+                <p className="col-span-2 rounded-xl bg-slate-50 p-3 md:col-span-1 md:bg-transparent md:p-0">Đơn vị: <span className="block mt-1 text-[#059669] md:inline md:mt-0">{sheetInfo?.don_vi_duoc_danh_gia}</span></p>
+                <p className="rounded-xl bg-slate-50 p-3 md:bg-transparent md:p-0">Ngày: <span className="block mt-1 text-[#059669] md:inline md:mt-0">{sheetInfo?.ngay_danh_gia}</span></p>
+                <p className="rounded-xl bg-emerald-50 p-3 md:bg-transparent md:p-0">Điểm TB: <span className="block mt-1 text-lg text-[#059669] md:inline md:mt-0 md:text-inherit">{sheetInfo?.score || '0'}</span></p>
               </div>
             </div>
 
@@ -156,7 +156,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                 <button
                   type="button"
                   onClick={toggleAllCriteria}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase text-[#009900] shadow-sm transition-colors hover:bg-emerald-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase text-[#059669] shadow-sm transition-colors hover:bg-emerald-50"
                 >
                   {allExpanded ? 'Thu gọn tất cả' : 'Mở tất cả nội dung'}
                 </button>
@@ -165,7 +165,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                 const phanScore = scoreSummary.find(item => item.name === phan);
                 return (
                 <div key={phan} className="space-y-4">
-                  <h2 className="bg-[#009900] text-white px-4 py-3 md:px-6 rounded-xl font-black uppercase text-xs md:text-sm tracking-wide md:tracking-widest shadow-lg flex items-center justify-between gap-3">
+                  <h2 className="bg-[#059669] text-white px-4 py-3 md:px-6 rounded-xl font-black uppercase text-xs md:text-sm tracking-wide md:tracking-widest shadow-lg flex items-center justify-between gap-3">
                     <span>{phan}</span>
                     <span className="shrink-0 rounded-md bg-white/15 px-2.5 py-1 text-[10px]">
                       {phanScore?.level === null || phanScore?.level === undefined ? 'Chưa chấm' : `Đạt mức ${formatScore(phanScore.level)}`}
@@ -176,7 +176,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                       const chapterScore = phanScore?.chapters.find(item => item.name === chuong);
                       return (
                       <div key={chuong} className="space-y-3">
-                        <h3 className="bg-[#009900] text-white font-black uppercase text-xs rounded-xl px-4 py-3 leading-relaxed flex items-center justify-between gap-3 shadow-sm">
+                        <h3 className="bg-[#059669] text-white font-black uppercase text-xs rounded-xl px-4 py-3 leading-relaxed flex items-center justify-between gap-3 shadow-sm">
                           <span>{chuong}</span>
                           <span className="shrink-0 rounded-md bg-white/15 px-2.5 py-1 text-[10px]">
                             {chapterScore?.level === null || chapterScore?.level === undefined ? 'Chưa chấm' : `Đạt mức ${formatScore(chapterScore.level)}`}
@@ -192,7 +192,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                               <div key={tc} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
                                 <button
                                   onClick={() => toggleTC(tcKey)}
-                                className="w-full flex items-start justify-between gap-3 bg-[#009900] px-4 py-4 text-white transition-colors hover:bg-[#007700] md:px-5"
+                                className="w-full flex items-start justify-between gap-3 bg-[#059669] px-4 py-4 text-white transition-colors hover:bg-[#007700] md:px-5"
                               >
                                   <span className="font-black text-xs uppercase text-left leading-relaxed flex-1">
                                     {tc}
@@ -219,7 +219,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                                       <tbody className="divide-y divide-slate-100">
                                         {items.map((item: KqDanhGia83) => (
                                           <tr key={item.ma_tieu_muc} className="group">
-                                            <td className="py-3 font-black text-[#009900]">{item.nhom}</td>
+                                            <td className="py-3 font-black text-[#059669]">{item.nhom}</td>
                                             <td className="py-3 font-bold text-slate-600 pr-4">{item.tieu_muc}</td>
                                             <td className="py-3 text-center">
                                               <StatusBadge status={item.dat_muc} compact />
@@ -245,7 +245,7 @@ export const AssessmentDetail: React.FC<AssessmentDetailProps> = ({
                                         <div key={item.ma_tieu_muc} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                                           <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0">
-                                              <span className="inline-flex rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase text-[#009900]">{item.nhom || 'Mức 1'}</span>
+                                              <span className="inline-flex rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase text-[#059669]">{item.nhom || 'Mức 1'}</span>
                                               <p className="mt-2 text-[13px] font-bold leading-relaxed text-slate-700">{item.tieu_muc}</p>
                                             </div>
                                             <div className="shrink-0">

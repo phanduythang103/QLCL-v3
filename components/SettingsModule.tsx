@@ -15,7 +15,7 @@ import ScheduleTable from './settings/ScheduleTable';
 import AuthorityTable from './settings/AuthorityTable';
 import ThemeSettings from './settings/ThemeSettings';
 import NotificationTable from './settings/NotificationTable';
-import Criteria83Config from './Criteria83Config'; 
+import Criteria83Config from './Criteria83Config';
 import { SurveyPublicConfig } from './settings/SurveyPublicConfig';
 import { AssessmentTeamConfig } from './settings/AssessmentTeamConfig';
 import { useNavigation, SettingTab } from '../contexts/NavigationContext';
@@ -122,7 +122,7 @@ export const SettingsModule: React.FC = () => {
                 key={item.id}
                 onClick={() => setActiveTab(item.id as SettingTab)}
                 className={`min-w-0 flex items-center justify-between gap-2 rounded-xl border p-3 text-label font-black transition-all uppercase ${activeTab === item.id
-                  ? 'bg-[#009900] text-white border-[#009900] shadow-lg shadow-green-900/20'
+                  ? 'bg-[#059669] text-white border-[#059669] shadow-lg shadow-green-900/20'
                   : 'text-black bg-white border-slate-200 hover:bg-slate-50 hover:text-black'
                   }`}
               >
@@ -305,7 +305,7 @@ const PermissionManager = () => {
           // Xử lý module cha
           const sourceMPerm = getPerm(module, null); // Lấy từ state 'permissions' của người đang chọn
           const targetMPermRow = userExistingPerms.find(p => p.module === module && !p.sub_module);
-          
+
           toSave.push({
             module,
             sub_module: null,
@@ -333,7 +333,7 @@ const PermissionManager = () => {
 
         await upsertPermissionsForUser(uid, toSave);
       }));
-      
+
       setMessage(`Đã ghi thêm quyền cho ${targetUserIds.length} người dùng!`);
       setIsCopyModalOpen(false);
     } catch (err) {
@@ -383,13 +383,13 @@ const PermissionManager = () => {
             <div className="p-6 text-center"><Loader2 className="animate-spin mx-auto text-slate-300" size={24} /></div>
           ) : filteredUsers.map(u => (
             <button key={u.id} onClick={() => setSelectedUserId(u.id)}
-              className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-all hover:bg-slate-50 ${selectedUserId === u.id ? 'bg-green-50 border-l-4 border-[#009900]' : 'border-l-4 border-transparent'}`}>
+              className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-all hover:bg-slate-50 ${selectedUserId === u.id ? 'bg-green-50 border-l-4 border-[#059669]' : 'border-l-4 border-transparent'}`}>
               <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
                 {u.avatar ? <img src={u.avatar} alt="" className="w-full h-full object-cover" />
                   : <span className="text-sm font-black text-slate-500">{u.full_name?.[0]?.toUpperCase()}</span>}
               </div>
               <div className="min-w-0">
-                <p className={`text-[11px] font-black truncate ${selectedUserId === u.id ? 'text-[#009900]' : 'text-slate-800'}`}>{u.full_name}</p>
+                <p className={`text-[11px] font-black truncate ${selectedUserId === u.id ? 'text-[#059669]' : 'text-slate-800'}`}>{u.full_name}</p>
                 <p className="text-[10px] text-slate-400 font-bold truncate">{u.department || 'Chưa có đơn vị'}</p>
                 <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${getRoleBadge(u.role)}`}>{u.role}</span>
               </div>
@@ -426,7 +426,7 @@ const PermissionManager = () => {
                   <Copy size={14} /> Sao chép cho người khác
                 </button>
                 <button onClick={handleSave} disabled={saving || loadingPerms}
-                  className="flex items-center justify-center gap-2 bg-[#009900] text-white px-5 py-2 rounded-xl text-[11px] font-black uppercase transition-all shadow-lg hover:bg-[#0d6e39] disabled:opacity-50">
+                  className="flex items-center justify-center gap-2 bg-[#059669] text-white px-5 py-2 rounded-xl text-[11px] font-black uppercase transition-all shadow-lg hover:bg-[#0d6e39] disabled:opacity-50">
                   {saving ? <><Loader2 className="animate-spin" size={14} />Đang lưu...</> : <><Save size={14} />Lưu quyền</>}
                 </button>
               </div>
@@ -434,10 +434,10 @@ const PermissionManager = () => {
 
             <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto shadow-sm flex-1 custom-scrollbar">
               {loadingPerms ? (
-                <div className="flex items-center justify-center py-16"><Loader2 className="animate-spin text-[#009900]" size={28} /></div>
+                <div className="flex items-center justify-center py-16"><Loader2 className="animate-spin text-[#059669]" size={28} /></div>
               ) : (
                 <table className="w-full min-w-[640px] text-left">
-                  <thead className="bg-[#009900] text-white font-black uppercase text-[10px] tracking-widest sticky top-0 z-10">
+                  <thead className="bg-[#059669] text-white font-black uppercase text-[10px] tracking-widest sticky top-0 z-10">
                     <tr>
                       <th className="px-5 py-3">Module / Chức năng</th>
                       {FIELDS.map(f => <th key={f} className="px-4 py-3 text-center w-16">{FIELD_LABELS[f]}</th>)}
@@ -484,7 +484,7 @@ const PermissionManager = () => {
                               <tr key={sub.id} className="border-b border-slate-50 hover:bg-green-50/30 transition-colors">
                                 <td className="pl-12 pr-5 py-2.5">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-1 h-1 rounded-full bg-[#009900]/40" />
+                                    <div className="w-1 h-1 rounded-full bg-[#059669]/40" />
                                     <span className="text-[11px] font-bold text-slate-600">{sub.label}</span>
                                   </div>
                                 </td>
@@ -655,7 +655,7 @@ const CopyPermissionsModal = ({ users, onClose, onConfirm, loading, sourceName }
           <button
             onClick={() => onConfirm(selected)}
             disabled={loading || selected.length === 0}
-            className="flex-[2] flex items-center justify-center gap-2 bg-[#009900] text-white px-4 py-3 rounded-xl text-sm font-black uppercase transition-all shadow-lg hover:bg-[#0d6e39] disabled:opacity-50 disabled:scale-100 active:scale-95 tracking-wider"
+            className="flex-[2] flex items-center justify-center gap-2 bg-[#059669] text-white px-4 py-3 rounded-xl text-sm font-black uppercase transition-all shadow-lg hover:bg-[#0d6e39] disabled:opacity-50 disabled:scale-100 active:scale-95 tracking-wider"
           >
             {loading ? <><Loader2 className="animate-spin" size={18} /> Đang sao chép...</> : <><CheckCircle2 size={18} /> Xác nhận sao chép</>}
           </button>

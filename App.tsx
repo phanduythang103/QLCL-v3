@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, ChevronRight, Settings, X, LogOut, Activity, Home, ArrowLeft, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, ChevronRight, Settings, X, LogOut, Activity, Home, ArrowLeft, Calendar, Lightbulb, GraduationCap } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';
@@ -12,6 +12,7 @@ import { ImprovementModule } from './components/ImprovementModule';
 import { IndicatorsModule } from './components/IndicatorsModule';
 import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
+import { ContinuousTraining } from './components/ContinuousTraining';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
 import { HeaderUserMenu } from './components/HeaderUserMenu';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
@@ -194,6 +195,13 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
 // --- Main Sidebar Component ---
 const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, mobileSidebarOpen, setMobileOpen, canAccessSettings }: { currentModule: ModuleType; handleModuleChange: (module: ModuleType) => void; collapsed: boolean; setCollapsed: (collapsed: boolean) => void; mobileSidebarOpen: boolean; setMobileOpen: (open: boolean) => void; canAccessSettings: boolean; }) => {
   const { canView } = usePermissions();
+  const [appVersion, setAppVersion] = useState(() => localStorage.getItem('appVersion') || 'Phiên bản 16042026-01');
+
+  useEffect(() => {
+    const handleVersionChange = () => setAppVersion(localStorage.getItem('appVersion') || 'Phiên bản 16042026-01');
+    window.addEventListener('appVersionChange', handleVersionChange);
+    return () => window.removeEventListener('appVersionChange', handleVersionChange);
+  }, []);
 
   return (
     <aside className={`fixed lg:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-600 transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
@@ -222,12 +230,14 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
         {canView(ModuleType.DASHBOARD) && <NavItem icon={<LayoutDashboard size={20} />} label="Trang chủ" active={currentModule === ModuleType.DASHBOARD} onClick={() => handleModuleChange(ModuleType.DASHBOARD)} collapsed={collapsed} />}
         {canView(ModuleType.HR) && <NavItem icon={<Users size={20} />} label="Quản lý Nhân sự" active={currentModule === ModuleType.HR} onClick={() => handleModuleChange(ModuleType.HR)} collapsed={collapsed} />}
-        {canView(ModuleType.DOCS) && <NavItem icon={<BookOpen size={20} />} label="Văn bản & Đào tạo" active={currentModule === ModuleType.DOCS} onClick={() => handleModuleChange(ModuleType.DOCS)} collapsed={collapsed} />}
+        {canView(ModuleType.DOCS, 'LIBRARY') && <NavItem icon={<BookOpen size={20} />} label="Văn bản & Tài liệu" active={currentModule === ModuleType.DOCS} onClick={() => handleModuleChange(ModuleType.DOCS)} collapsed={collapsed} />}
         {canView(ModuleType.ASSESSMENT) && <NavItem icon={<ClipboardCheck size={20} />} label="Đánh giá Chất lượng" active={currentModule === ModuleType.ASSESSMENT} onClick={() => handleModuleChange(ModuleType.ASSESSMENT)} collapsed={collapsed} />}
         {canView(ModuleType.INCIDENTS) && <NavItem icon={<AlertTriangle size={20} />} label="Sự cố Y khoa" active={currentModule === ModuleType.INCIDENTS} onClick={() => handleModuleChange(ModuleType.INCIDENTS)} collapsed={collapsed} />}
         {canView(ModuleType.IMPROVEMENT) && <NavItem icon={<TrendingUp size={20} />} label="Cải tiến Chất lượng" active={currentModule === ModuleType.IMPROVEMENT} onClick={() => handleModuleChange(ModuleType.IMPROVEMENT)} collapsed={collapsed} />}
         {canView(ModuleType.INDICATORS) && <IndicatorsNav collapsed={collapsed} active={currentModule === ModuleType.INDICATORS} onSelectModule={() => handleModuleChange(ModuleType.INDICATORS)} />}
         {canView(ModuleType.SUPERVISION) && <SupervisionNav collapsed={collapsed} active={currentModule === ModuleType.SUPERVISION} onSelectModule={() => handleModuleChange(ModuleType.SUPERVISION)} />}
+        {canView(ModuleType.DOCS, 'TRAINING') && <NavItem icon={<GraduationCap size={20} />} label="Đào tạo liên tục" active={currentModule === ModuleType.TRAINING} onClick={() => handleModuleChange(ModuleType.TRAINING)} collapsed={collapsed} />}
+        {canView(ModuleType.DOCS, 'SHARING') && <NavItem icon={<Lightbulb size={20} />} label="Góc chia sẻ" active={currentModule === ModuleType.SHARING} onClick={() => handleModuleChange(ModuleType.SHARING)} collapsed={collapsed} />}
         {canView(ModuleType.REPORTS) && <NavItem icon={<FileText size={20} />} label="Báo cáo Tổng hợp" active={currentModule === ModuleType.REPORTS} onClick={() => handleModuleChange(ModuleType.REPORTS)} collapsed={collapsed} />}
         <div className="pt-4 mt-4 border-t border-white/20">
           {(canAccessSettings || canView(ModuleType.SETTINGS)) && (
@@ -236,7 +246,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         </div>
       </div>
       <div className="p-4 border-t border-white/20 bg-primary-600 flex justify-center text-[12px] text-white/80 uppercase whitespace-nowrap overflow-hidden">
-        {!collapsed && <span>Phiên bản 16042026-01</span>}
+        {!collapsed && <span>{appVersion}</span>}
       </div>
     </aside>
   );
@@ -581,6 +591,8 @@ const AppContent: React.FC = () => {
       case ModuleType.DASHBOARD: return <Dashboard />;
       case ModuleType.HR: return <HRModule />;
       case ModuleType.DOCS: return <DocsModule />;
+      case ModuleType.TRAINING: return <ContinuousTraining />;
+      case ModuleType.SHARING: return <DocsModule />;
       case ModuleType.INCIDENTS: return <Incidents />;
       case ModuleType.ASSESSMENT: return <AssessmentModule />;
       case ModuleType.SUPERVISION: return <Supervision />;
@@ -597,7 +609,9 @@ const AppContent: React.FC = () => {
     switch (currentModule) {
       case ModuleType.DASHBOARD: return 'Tổng quan';
       case ModuleType.HR: return 'Quản lý Nhân sự';
-      case ModuleType.DOCS: return 'Văn bản & Đào tạo';
+      case ModuleType.DOCS: return 'Văn bản & Tài liệu';
+      case ModuleType.TRAINING: return 'Đào tạo liên tục';
+      case ModuleType.SHARING: return 'Góc chia sẻ';
       case ModuleType.ASSESSMENT: return 'Đánh giá Chất lượng';
       case ModuleType.INCIDENTS: return 'Sự cố Y khoa';
       case ModuleType.IMPROVEMENT: return 'Cải tiến Chất lượng';
@@ -611,7 +625,9 @@ const AppContent: React.FC = () => {
 
   const mobileModuleItems = [
     { label: 'NHÂN SỰ', module: ModuleType.HR, icon: Users, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-300', permission: ModuleType.HR },
-    { label: 'VĂN BẢN', module: ModuleType.DOCS, icon: BookOpen, iconClass: 'text-sky-500', bgClass: 'bg-sky-300', permission: ModuleType.DOCS },
+    { label: 'VĂN BẢN', module: ModuleType.DOCS, icon: BookOpen, iconClass: 'text-sky-500', bgClass: 'bg-sky-300', permission: ModuleType.DOCS, subPermission: 'LIBRARY' },
+    { label: 'ĐÀO TẠO\nLIÊN TỤC', module: ModuleType.TRAINING, icon: GraduationCap, iconClass: 'text-yellow-500', bgClass: 'bg-yellow-300', permission: ModuleType.DOCS, subPermission: 'TRAINING' },
+    { label: 'GÓC\nCHIA SẺ', module: ModuleType.SHARING, icon: Lightbulb, iconClass: 'text-pink-500', bgClass: 'bg-pink-300', permission: ModuleType.DOCS, subPermission: 'SHARING' },
     { label: 'ĐÁNH GIÁ\nCHẤT LƯỢNG', module: ModuleType.ASSESSMENT, icon: ClipboardCheck, iconClass: 'text-purple-500', bgClass: 'bg-purple-300', permission: ModuleType.ASSESSMENT },
     { label: 'SỰ CỐ\nY KHOA', module: ModuleType.INCIDENTS, icon: AlertTriangle, iconClass: 'text-red-500', bgClass: 'bg-red-300', permission: ModuleType.INCIDENTS },
     { label: 'CẢI TIẾN\nCHẤT LƯỢNG', module: ModuleType.IMPROVEMENT, icon: TrendingUp, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-300', permission: ModuleType.IMPROVEMENT },
@@ -623,7 +639,9 @@ const AppContent: React.FC = () => {
 
   const filteredMobileModules = mobileModuleItems.filter(item => {
     const normalizedLabel = item.label.replace(/\n/g, ' ').toLowerCase();
-    const hasPermission = item.requiresSettingsAccess ? (canAccessSettings || canView(item.permission)) : canView(item.permission);
+    const hasPermission = item.requiresSettingsAccess 
+        ? (canAccessSettings || canView(item.permission, item.subPermission)) 
+        : canView(item.permission, item.subPermission);
     return hasPermission && normalizedLabel.includes(mobileSearch.trim().toLowerCase());
   });
 

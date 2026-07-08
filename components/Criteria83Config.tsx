@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-    ChevronRight, ChevronDown, CheckSquare, Square, 
+import {
+    ChevronRight, ChevronDown, CheckSquare, Square,
     Users, Briefcase, Save, RefreshCw, Search,
     CheckCircle2, AlertCircle, Loader2, X, Building2, Copy,
     Eye, LayoutList
@@ -14,8 +14,8 @@ const naturalSort = (a: string, b: string) => {
 };
 
 // --- Specialized Component: Unit Detail Modal ---
-const UnitDetailModal: React.FC<{ 
-    unitCode: string; 
+const UnitDetailModal: React.FC<{
+    unitCode: string;
     data: { phan: string; chuong: string; tieu_chi: string; items: Data83tc[] }[];
     onClose: () => void;
     onRemoveChapter: (phan: string, chuong: string) => void;
@@ -34,9 +34,9 @@ const UnitDetailModal: React.FC<{
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4">
             <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
                 {/* Header Section */}
-                <div className="bg-gradient-to-r from-[#009900] to-[#007700] p-8 text-white relative shrink-0">
-                    <button 
-                        onClick={onClose} 
+                <div className="bg-gradient-to-r from-[#059669] to-[#007700] p-8 text-white relative shrink-0">
+                    <button
+                        onClick={onClose}
                         className="absolute right-5 top-5 bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all"
                     >
                         <X size={20} />
@@ -62,7 +62,7 @@ const UnitDetailModal: React.FC<{
                         {Object.keys(byPhan).sort(naturalSort).map(phan => (
                             <div key={phan} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                                 <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-                                    <ChevronDown size={18} className="text-[#009900]" />
+                                    <ChevronDown size={18} className="text-[#059669]" />
                                     <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{phan}</span>
                                 </div>
                                 <div className="p-4 space-y-4">
@@ -70,7 +70,7 @@ const UnitDetailModal: React.FC<{
                                         <div key={chuong} className="ml-2 border-l-2 border-slate-50 pl-4 py-1 group/chuong relative">
                                             <div className="flex items-center justify-between mb-3">
                                                 <p className="text-[11px] font-black text-slate-400 uppercase italic leading-relaxed">{chuong}</p>
-                                                <button 
+                                                <button
                                                     onClick={() => onRemoveChapter(phan, chuong)}
                                                     className="opacity-0 group-hover/chuong:opacity-100 flex items-center gap-1.5 bg-red-50 text-red-600 px-2 py-1 rounded-lg text-[9px] font-black uppercase hover:bg-red-100 transition-all border border-red-100"
                                                     title="Gỡ đơn vị khỏi chương này"
@@ -81,11 +81,11 @@ const UnitDetailModal: React.FC<{
                                             <div className="space-y-4">
                                                 {Object.keys(byPhan[phan][chuong]).sort(naturalSort).map(tieuChi => (
                                                     <div key={tieuChi} className="flex gap-4">
-                                                        <div className="mt-1 shrink-0 bg-green-50 p-1.5 rounded-lg text-[#009900]">
+                                                        <div className="mt-1 shrink-0 bg-green-50 p-1.5 rounded-lg text-[#059669]">
                                                             <CheckCircle2 size={14} />
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-black text-[#009900] uppercase tracking-tight mb-1">{tieuChi}</p>
+                                                            <p className="text-xs font-black text-[#059669] uppercase tracking-tight mb-1">{tieuChi}</p>
                                                             <p className="text-[10px] font-bold text-slate-400 italic">
                                                                 {byPhan[phan][chuong][tieuChi].length} tiểu mục phụ trách trực tiếp
                                                             </p>
@@ -124,8 +124,8 @@ const MultiSelect: React.FC<{
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
 
-    const filteredOptions = options.filter(opt => 
-        opt.label.toLowerCase().includes(search.toLowerCase()) || 
+    const filteredOptions = options.filter(opt =>
+        opt.label.toLowerCase().includes(search.toLowerCase()) ||
         opt.value.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -140,7 +140,7 @@ const MultiSelect: React.FC<{
     return (
         <div className="space-y-2 relative">
             <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider block ml-1">{label}</label>
-            <div 
+            <div
                 className={`min-h-[48px] p-2 border border-slate-200 rounded-xl bg-white cursor-pointer flex flex-wrap gap-2 transition-all ${isOpen ? 'ring-2 ring-green-500/20 border-green-500' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
             >
@@ -152,10 +152,10 @@ const MultiSelect: React.FC<{
                         return (
                             <div key={val} className="bg-green-100 text-[#008800] px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 border border-green-200 uppercase">
                                 {opt?.label || val}
-                                <X 
-                                    size={12} 
-                                    className="cursor-pointer hover:text-red-500" 
-                                    onClick={(e) => { e.stopPropagation(); toggleOption(val); }} 
+                                <X
+                                    size={12}
+                                    className="cursor-pointer hover:text-red-500"
+                                    onClick={(e) => { e.stopPropagation(); toggleOption(val); }}
                                 />
                             </div>
                         );
@@ -165,9 +165,9 @@ const MultiSelect: React.FC<{
             {isOpen && !disabled && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl z-[110] overflow-hidden">
                     <div className="p-3 border-b border-slate-100 bg-slate-50">
-                        <input 
-                            type="text" 
-                            placeholder="Tìm kiếm đơn vị..." 
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm đơn vị..."
                             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-green-500"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -179,7 +179,7 @@ const MultiSelect: React.FC<{
                             <div className="p-4 text-center text-slate-400 text-xs italic">Không tìm thấy đơn vị nào</div>
                         ) : (
                             filteredOptions.map(opt => (
-                                <div 
+                                <div
                                     key={opt.value}
                                     onClick={(e) => { e.stopPropagation(); toggleOption(opt.value); }}
                                     className={`px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors ${selectedValues.includes(opt.value) ? 'bg-green-50' : ''}`}
@@ -188,7 +188,7 @@ const MultiSelect: React.FC<{
                                         <span className="text-[11px] font-black text-slate-800 uppercase">{opt.label}</span>
                                         <span className="text-[9px] font-bold text-slate-400 uppercase">{opt.value}</span>
                                     </div>
-                                    {selectedValues.includes(opt.value) && <CheckCircle2 size={16} className="text-[#009900]" />}
+                                    {selectedValues.includes(opt.value) && <CheckCircle2 size={16} className="text-[#059669]" />}
                                 </div>
                             ))
                         )}
@@ -206,17 +206,17 @@ const Criteria83Config: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    
+
     const [expandedPhan, setExpandedPhan] = useState<string[]>([]);
     const [expandedChuong, setExpandedChuong] = useState<string[]>([]);
     const [expandedTieuChi, setExpandedTieuChi] = useState<string[]>([]);
 
     const [showBatchModal, setShowBatchModal] = useState(false);
     const [configTarget, setConfigTarget] = useState<'KHOA' | 'TO'>('KHOA'); // Toggle selection
-    const [batchForm, setBatchForm] = useState<{ phu_trach: string[]; to_cham_diem: string[]; don_vi_phoi_hop: string[] }>({ 
-        phu_trach: [], 
-        to_cham_diem: [], 
-        don_vi_phoi_hop: [] 
+    const [batchForm, setBatchForm] = useState<{ phu_trach: string[]; to_cham_diem: string[]; don_vi_phoi_hop: string[] }>({
+        phu_trach: [],
+        to_cham_diem: [],
+        don_vi_phoi_hop: []
     });
     const [isClearPhuTrach, setIsClearPhuTrach] = useState(false);
     const [isClearToChamDiem, setIsClearToChamDiem] = useState(false);
@@ -240,13 +240,13 @@ const Criteria83Config: React.FC = () => {
         setLoading(true);
         try {
             const [data, unitData, teamsRes] = await Promise.all([
-                fetchData83tc(), 
+                fetchData83tc(),
                 fetchDmDonVi(),
                 supabase.from('assessment_team_members').select('team_name')
             ]);
             setDataList(data);
             setUnits(unitData);
-            
+
             const uniqueTeams = Array.from(new Set((teamsRes.data || []).map((t: any) => t.team_name))).filter(Boolean);
             setTeams(uniqueTeams as string[]);
         } catch (err) {
@@ -259,8 +259,8 @@ const Criteria83Config: React.FC = () => {
     useEffect(() => { loadData(); }, []);
 
     const groupedData = useMemo(() => {
-        const filtered = dataList.filter(item => 
-            !searchTerm || 
+        const filtered = dataList.filter(item =>
+            !searchTerm ||
             item.tieu_muc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.ma_tieu_muc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.tieu_chi?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -288,11 +288,11 @@ const Criteria83Config: React.FC = () => {
     const unitGroupedData = useMemo(() => {
         const configured = dataList.filter(item => item.phu_trach || item.to_cham_diem);
         const byTarget: Record<string, Data83tc[]> = {};
-        
+
         configured.forEach(item => {
             const depts = (item.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
             const teams = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
-            
+
             // Collect all unique targets for this item
             const allTargets = Array.from(new Set([...depts, ...teams]));
             allTargets.forEach(target => {
@@ -384,7 +384,7 @@ const Criteria83Config: React.FC = () => {
                 // Remove from phu_trach
                 const pts = (item.phu_trach || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
                 updates.phu_trach = pts.length > 0 ? pts.join(', ') : null;
-                
+
                 // Remove from to_cham_diem
                 const tos = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
                 updates.to_cham_diem = tos.length > 0 ? tos.join(', ') : null;
@@ -415,7 +415,7 @@ const Criteria83Config: React.FC = () => {
                 const updates: any = {};
                 const pts = (item.phu_trach || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
                 updates.phu_trach = pts.length > 0 ? pts.join(', ') : null;
-                
+
                 const tos = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(s => s && s !== targetCode);
                 updates.to_cham_diem = tos.length > 0 ? tos.join(', ') : null;
 
@@ -442,26 +442,26 @@ const Criteria83Config: React.FC = () => {
         try {
             // Need unique updates for each record if appending
             const tasks: Promise<any>[] = [];
-            
+
             for (const id of selectedIds) {
                 const item = dataList.find(d => d.id === id);
                 if (!item) continue;
 
                 const updates: any = {};
-                
+
                 if (configTarget === 'KHOA') {
-                    if (isClearPhuTrach) { 
-                        updates.phu_trach = null; 
-                    } else if (batchForm.phu_trach.length > 0) { 
+                    if (isClearPhuTrach) {
+                        updates.phu_trach = null;
+                    } else if (batchForm.phu_trach.length > 0) {
                         const existing = (item.phu_trach || '').split(',').map(s => s.trim()).filter(Boolean);
                         const merged = Array.from(new Set([...existing, ...batchForm.phu_trach]));
                         updates.phu_trach = merged.join(', ');
                     }
                 } else {
-                    if (isClearToChamDiem) { 
-                        updates.to_cham_diem = null; 
-                        updates.phu_trach = null; 
-                    } else if (batchForm.to_cham_diem.length > 0) { 
+                    if (isClearToChamDiem) {
+                        updates.to_cham_diem = null;
+                        updates.phu_trach = null;
+                    } else if (batchForm.to_cham_diem.length > 0) {
                         // Update to_cham_diem
                         const existingTo = (item.to_cham_diem || '').split(',').map(s => s.trim()).filter(Boolean);
                         const mergedTo = Array.from(new Set([...existingTo, ...batchForm.to_cham_diem]));
@@ -474,9 +474,9 @@ const Criteria83Config: React.FC = () => {
                     }
                 }
 
-                if (isClearDonViPhoiHop) { 
-                    updates.don_vi_phoi_hop = null; 
-                } else if (batchForm.don_vi_phoi_hop.length > 0) { 
+                if (isClearDonViPhoiHop) {
+                    updates.don_vi_phoi_hop = null;
+                } else if (batchForm.don_vi_phoi_hop.length > 0) {
                     const existing = (item.don_vi_phoi_hop || '').split(',').map(s => s.trim()).filter(Boolean);
                     const merged = Array.from(new Set([...existing, ...batchForm.don_vi_phoi_hop]));
                     updates.don_vi_phoi_hop = merged.join(', ');
@@ -486,12 +486,12 @@ const Criteria83Config: React.FC = () => {
                     tasks.push(supabase.from('data83tc').update(updates).eq('id', id));
                 }
             }
-            
+
             if (tasks.length > 0) {
                 await Promise.all(tasks);
                 await loadData();
             }
-            
+
             setSelectedIds([]);
             setShowBatchModal(false);
             setBatchForm({ phu_trach: [], to_cham_diem: [], don_vi_phoi_hop: [] });
@@ -522,13 +522,13 @@ const Criteria83Config: React.FC = () => {
             <div className="flex w-full flex-wrap gap-1 rounded-xl bg-slate-100 p-1 sm:w-fit">
                 <button
                     onClick={() => setActiveTab('config')}
-                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-black uppercase transition-all sm:flex-none sm:px-5 ${activeTab === 'config' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-black uppercase transition-all sm:flex-none sm:px-5 ${activeTab === 'config' ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     <span className="flex items-center justify-center gap-2"><CheckSquare size={14} /> Cấu hình chi tiết</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('summary')}
-                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-black uppercase transition-all sm:flex-none sm:px-5 ${activeTab === 'summary' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 rounded-lg px-4 py-2 text-xs font-black uppercase transition-all sm:flex-none sm:px-5 ${activeTab === 'summary' ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     <span className="flex items-center justify-center gap-2"><Building2 size={14} /> Danh sách đã cấu hình</span>
                 </button>
@@ -543,7 +543,7 @@ const Criteria83Config: React.FC = () => {
                             <input type="text" placeholder="Tìm kiếm tiêu chí..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-bold bg-white" />
                         </div>
-                        <button onClick={loadData} className="p-2.5 text-slate-500 hover:text-[#009900] hover:bg-green-50 rounded-xl border border-slate-200 transition-all shadow-sm bg-white" title="Tải lại dữ liệu">
+                        <button onClick={loadData} className="p-2.5 text-slate-500 hover:text-[#059669] hover:bg-green-50 rounded-xl border border-slate-200 transition-all shadow-sm bg-white" title="Tải lại dữ liệu">
                             <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
                         </button>
                     </div>
@@ -551,7 +551,7 @@ const Criteria83Config: React.FC = () => {
                     {selectedIds.length > 0 && (
                         <div className="bg-slate-900 text-white p-4 rounded-2xl flex flex-col gap-3 shadow-xl sticky top-4 z-40 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="bg-[#009900] p-2 rounded-lg"><CheckSquare size={20} /></div>
+                                <div className="bg-[#059669] p-2 rounded-lg"><CheckSquare size={20} /></div>
                                 <div>
                                     <p className="font-black text-sm uppercase">Đã chọn {selectedIds.length} mục</p>
                                     <p className="text-slate-400 text-xs font-bold italic">Sẵn sàng cập nhật hàng loạt thông tin</p>
@@ -559,7 +559,7 @@ const Criteria83Config: React.FC = () => {
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <button onClick={() => setSelectedIds([])} className="px-4 py-2 text-slate-400 hover:text-white font-bold text-xs uppercase">Hủy chọn</button>
-                                <button onClick={() => setShowBatchModal(true)} className="bg-[#009900] hover:bg-[#008800] text-white px-6 py-2 rounded-xl font-black text-xs uppercase transition-all shadow-lg flex items-center justify-center gap-2">
+                                <button onClick={() => setShowBatchModal(true)} className="bg-[#059669] hover:bg-[#008800] text-white px-6 py-2 rounded-xl font-black text-xs uppercase transition-all shadow-lg flex items-center justify-center gap-2">
                                     <Users size={16} /> Cập nhật hàng loạt
                                 </button>
                             </div>
@@ -582,7 +582,7 @@ const Criteria83Config: React.FC = () => {
                                     <div key={phan}>
                                         <div onClick={() => setExpandedPhan(prev => prev.includes(phan) ? prev.filter(p => p !== phan) : [...prev, phan])}
                                             className="bg-slate-50/80 hover:bg-slate-100/80 px-6 py-4 flex items-center gap-3 cursor-pointer transition-colors border-b border-slate-100">
-                                            {expandedPhan.includes(phan) ? <ChevronDown size={18} className="text-[#009900]" /> : <ChevronRight size={18} className="text-slate-400" />}
+                                            {expandedPhan.includes(phan) ? <ChevronDown size={18} className="text-[#059669]" /> : <ChevronRight size={18} className="text-slate-400" />}
                                             <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{phan}</span>
                                             <span className="ml-auto bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">{Object.keys(groupedData[phan]).length} Chương</span>
                                         </div>
@@ -601,7 +601,7 @@ const Criteria83Config: React.FC = () => {
                                                                 }} className={`p-1 rounded transition-all ${
                                                                     (() => {
                                                                         const allChuongIds = Object.values(groupedData[phan][chuong]).flat().map((i: any) => i.id).filter(Boolean);
-                                                                        return allChuongIds.every((id: any) => selectedIds.includes(id)) ? 'text-[#009900]' : 'text-slate-300 hover:text-slate-400';
+                                                                        return allChuongIds.every((id: any) => selectedIds.includes(id)) ? 'text-[#059669]' : 'text-slate-300 hover:text-slate-400';
                                                                     })()
                                                                 }`}>
                                                                     {(() => {
@@ -609,7 +609,7 @@ const Criteria83Config: React.FC = () => {
                                                                         return allChuongIds.every((id: any) => selectedIds.includes(id)) ? <CheckSquare size={16} /> : <Square size={16} />;
                                                                     })()}
                                                                 </div>
-                                                                {expandedChuong.includes(chuong) ? <ChevronDown size={16} className="text-[#009900]" /> : <ChevronRight size={16} className="text-slate-400" />}
+                                                                {expandedChuong.includes(chuong) ? <ChevronDown size={16} className="text-[#059669]" /> : <ChevronRight size={16} className="text-slate-400" />}
                                                                 <span className="text-xs font-black text-slate-600 uppercase italic leading-relaxed">{chuong}</span>
                                                             </div>
                                                             <span className="text-[9px] font-bold text-slate-400 uppercase opacity-0 group-hover:opacity-100 transition-opacity">Chọn nhanh theo Chương</span>
@@ -624,13 +624,13 @@ const Criteria83Config: React.FC = () => {
                                                                         <div key={tieuChi} className="ml-6 mb-2">
                                                                             <div className="flex items-center px-6 py-3 bg-green-50/30 hover:bg-green-50/50 rounded-lg mr-4 transition-colors">
                                                                                 <button onClick={() => toggleSelectAll(allIds, !isAllSelected)}
-                                                                                    className={`mr-3 p-1 rounded transition-all ${isAllSelected ? 'text-[#009900]' : 'text-slate-300 hover:text-slate-400'}`}>
+                                                                                    className={`mr-3 p-1 rounded transition-all ${isAllSelected ? 'text-[#059669]' : 'text-slate-300 hover:text-slate-400'}`}>
                                                                                     {isAllSelected ? <CheckSquare size={18} /> : <Square size={18} />}
                                                                                 </button>
                                                                                 <div onClick={() => setExpandedTieuChi(prev => prev.includes(tieuChi) ? prev.filter(t => t !== tieuChi) : [...prev, tieuChi])}
                                                                                     className="flex-1 flex items-center gap-3 cursor-pointer">
                                                                                     {expandedTieuChi.includes(tieuChi) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                                                                    <span className="text-xs font-black text-[#009900] uppercase tracking-tight">{tieuChi}</span>
+                                                                                    <span className="text-xs font-black text-[#059669] uppercase tracking-tight">{tieuChi}</span>
                                                                                     <span className="text-[10px] text-slate-400 font-bold bg-white px-2 py-0.5 rounded border border-slate-100">{items.length} tiểu mục</span>
                                                                                 </div>
                                                                             </div>
@@ -651,7 +651,7 @@ const Criteria83Config: React.FC = () => {
                                                                                                 <tr key={item.id} className={`hover:bg-slate-50/50 transition-colors ${selectedIds.includes(item.id!) ? 'bg-green-50/20' : ''}`}>
                                                                                                     <td className="px-4 py-3">
                                                                                                         <button onClick={() => setSelectedIds(prev => prev.includes(item.id!) ? prev.filter(id => id !== item.id!) : [...prev, item.id!])}
-                                                                                                            className={`p-1 rounded transition-all ${selectedIds.includes(item.id!) ? 'text-[#009900]' : 'text-slate-300 hover:text-slate-400'}`}>
+                                                                                                            className={`p-1 rounded transition-all ${selectedIds.includes(item.id!) ? 'text-[#059669]' : 'text-slate-300 hover:text-slate-400'}`}>
                                                                                                             {selectedIds.includes(item.id!) ? <CheckSquare size={16} /> : <Square size={16} />}
                                                                                                         </button>
                                                                                                     </td>
@@ -744,15 +744,15 @@ const Criteria83Config: React.FC = () => {
                             <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
                                     <th className="px-6 py-4 w-12">
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 const allCodes = Object.keys(unitGroupedData);
                                                 setSelectedSummaryUnits(selectedSummaryUnits.length === allCodes.length ? [] : allCodes);
                                             }}
-                                            className="text-slate-400 hover:text-[#009900]"
+                                            className="text-slate-400 hover:text-[#059669]"
                                         >
-                                            {selectedSummaryUnits.length === Object.keys(unitGroupedData).length && Object.keys(unitGroupedData).length > 0 
-                                                ? <CheckSquare size={18} className="text-[#009900]" /> 
+                                            {selectedSummaryUnits.length === Object.keys(unitGroupedData).length && Object.keys(unitGroupedData).length > 0
+                                                ? <CheckSquare size={18} className="text-[#059669]" />
                                                 : <Square size={18} />}
                                         </button>
                                     </th>
@@ -773,7 +773,7 @@ const Criteria83Config: React.FC = () => {
                                     Object.keys(unitGroupedData).map(unitCode => {
                                         const groups = unitGroupedData[unitCode];
                                         const unitName = units.find(u => u.ma_don_vi === unitCode)?.ten_don_vi || "";
-                                        
+
                                         // Stats calculation
                                         const nPhan = new Set(groups.map(g => g.phan)).size;
                                         const nChuong = new Set(groups.map(g => g.chuong)).size;
@@ -795,9 +795,9 @@ const Criteria83Config: React.FC = () => {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`p-2 rounded-lg ${
-                                                            isSelected 
-                                                                ? 'bg-blue-100 text-blue-600' 
-                                                                : units.some(u => u.ma_don_vi === unitCode) ? 'bg-green-50 text-[#009900]' : 'bg-blue-50 text-blue-600'
+                                                            isSelected
+                                                                ? 'bg-blue-100 text-blue-600'
+                                                                : units.some(u => u.ma_don_vi === unitCode) ? 'bg-green-50 text-[#059669]' : 'bg-blue-50 text-blue-600'
                                                         }`}>
                                                             {units.some(u => u.ma_don_vi === unitCode) ? <Building2 size={16} /> : <Users size={16} />}
                                                         </div>
@@ -852,7 +852,7 @@ const Criteria83Config: React.FC = () => {
                                                             onClick={() => setViewingUnitDetail(unitCode)}
                                                             className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-200 font-black text-[10px] uppercase transition-all shadow-sm group"
                                                         >
-                                                            <Eye size={14} className="text-[#009900]" />
+                                                            <Eye size={14} className="text-[#059669]" />
                                                             Chi tiết
                                                         </button>
                                                     </div>
@@ -871,7 +871,7 @@ const Criteria83Config: React.FC = () => {
             {showBatchModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
-                        <div className="bg-[#009900] p-6 text-white text-center relative">
+                        <div className="bg-[#059669] p-6 text-white text-center relative">
                             <button onClick={() => setShowBatchModal(false)} className="absolute right-4 top-4 hover:bg-white/20 p-1 rounded-lg transition-colors"><X size={20} /></button>
                             <Users className="mx-auto mb-3 opacity-80" size={40} />
                             <h3 className="text-xl font-black uppercase">Cập nhật hàng loạt</h3>
@@ -880,12 +880,12 @@ const Criteria83Config: React.FC = () => {
                         <div className="max-h-[70vh] space-y-6 overflow-y-auto p-5 sm:space-y-8 sm:p-8">
                             {/* Toggle switch between Khoa and Tổ */}
                             <div className="flex p-1 bg-slate-100 rounded-xl">
-                                <button 
+                                <button
                                     onClick={() => setConfigTarget('KHOA')}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase transition-all ${configTarget === 'KHOA' ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase transition-all ${configTarget === 'KHOA' ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <Building2 size={14} /> Các Khoa/Phòng
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setConfigTarget('TO')}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-black uppercase transition-all ${configTarget === 'TO' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <Users size={14} /> Các Tổ chấm điểm
@@ -902,13 +902,13 @@ const Criteria83Config: React.FC = () => {
                                             <span className={`text-[10px] font-black uppercase ${isClearPhuTrach ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
                                         </label>
                                     </div>
-                                    <MultiSelect 
-                                        label="" 
-                                        options={units.map(u => ({ value: u.ma_don_vi, label: u.ten_don_vi }))} 
-                                        selectedValues={batchForm.phu_trach} 
-                                        onChange={(vals) => setBatchForm(prev => ({ ...prev, phu_trach: vals }))} 
-                                        disabled={isClearPhuTrach} 
-                                        placeholder="Chọn đơn vị chủ trì..." 
+                                    <MultiSelect
+                                        label=""
+                                        options={units.map(u => ({ value: u.ma_don_vi, label: u.ten_don_vi }))}
+                                        selectedValues={batchForm.phu_trach}
+                                        onChange={(vals) => setBatchForm(prev => ({ ...prev, phu_trach: vals }))}
+                                        disabled={isClearPhuTrach}
+                                        placeholder="Chọn đơn vị chủ trì..."
                                     />
                                 </div>
                             ) : (
@@ -921,13 +921,13 @@ const Criteria83Config: React.FC = () => {
                                             <span className={`text-[10px] font-black uppercase ${isClearToChamDiem ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
                                         </label>
                                     </div>
-                                    <MultiSelect 
-                                        label="" 
-                                        options={teams.map(t => ({ value: t, label: t }))} 
-                                        selectedValues={batchForm.to_cham_diem} 
-                                        onChange={(vals) => setBatchForm(prev => ({ ...prev, to_cham_diem: vals }))} 
-                                        disabled={isClearToChamDiem} 
-                                        placeholder="Chọn tổ chấm điểm..." 
+                                    <MultiSelect
+                                        label=""
+                                        options={teams.map(t => ({ value: t, label: t }))}
+                                        selectedValues={batchForm.to_cham_diem}
+                                        onChange={(vals) => setBatchForm(prev => ({ ...prev, to_cham_diem: vals }))}
+                                        disabled={isClearToChamDiem}
+                                        placeholder="Chọn tổ chấm điểm..."
                                     />
                                 </div>
                             )}
@@ -944,13 +944,13 @@ const Criteria83Config: React.FC = () => {
                                                 <span className={`text-[10px] font-black uppercase ${isClearDonViPhoiHop ? 'text-red-500' : 'text-slate-400'}`}>Xóa dữ liệu</span>
                                             </label>
                                         </div>
-                                        <MultiSelect 
-                                            label="" 
-                                            options={units.map(u => ({ value: u.ma_don_vi, label: u.ten_don_vi }))} 
-                                            selectedValues={batchForm.don_vi_phoi_hop} 
-                                            onChange={(vals) => setBatchForm(prev => ({ ...prev, don_vi_phoi_hop: vals }))} 
-                                            disabled={isClearDonViPhoiHop} 
-                                            placeholder="Chọn các đơn vị phối hợp..." 
+                                        <MultiSelect
+                                            label=""
+                                            options={units.map(u => ({ value: u.ma_don_vi, label: u.ten_don_vi }))}
+                                            selectedValues={batchForm.don_vi_phoi_hop}
+                                            onChange={(vals) => setBatchForm(prev => ({ ...prev, don_vi_phoi_hop: vals }))}
+                                            disabled={isClearDonViPhoiHop}
+                                            placeholder="Chọn các đơn vị phối hợp..."
                                         />
                                     </div>
                                 </>
@@ -959,7 +959,7 @@ const Criteria83Config: React.FC = () => {
                             <div className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center">
                                 <button onClick={() => setShowBatchModal(false)} className="flex-1 px-6 py-4 border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase hover:bg-slate-50 transition-all">Hủy bỏ</button>
                                 <button onClick={handleBatchUpdate} disabled={updating || (configTarget === 'KHOA' && !isClearPhuTrach && !isClearDonViPhoiHop && batchForm.phu_trach.length === 0 && batchForm.don_vi_phoi_hop.length === 0) || (configTarget === 'TO' && !isClearToChamDiem && batchForm.to_cham_diem.length === 0)}
-                                    className="flex-[2] bg-[#009900] hover:bg-[#008800] text-white px-6 py-4 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none">
+                                    className="flex-[2] bg-[#059669] hover:bg-[#008800] text-white px-6 py-4 rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none">
                                     {updating ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                                     Xác nhận cập nhật
                                 </button>
@@ -1005,8 +1005,8 @@ const Criteria83Config: React.FC = () => {
                                     key={khoi}
                                     onClick={() => setCopyModalKhoi(khoi!)}
                                     className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all border ${
-                                        copyModalKhoi === khoi 
-                                            ? 'bg-blue-600 border-blue-600 text-white shadow-sm' 
+                                        copyModalKhoi === khoi
+                                            ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
                                             : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300'
                                     }`}
                                 >
@@ -1027,7 +1027,7 @@ const Criteria83Config: React.FC = () => {
                                         onClick={() => {
                                             const currentFiltered = units.filter(u => copyModalKhoi === 'Tất cả' || u.khoi === copyModalKhoi).map(u => u.ma_don_vi);
                                             const allVisibleSelected = currentFiltered.every(code => copyTargetUnits.includes(code));
-                                            
+
                                             if (allVisibleSelected) {
                                                 // Unselect only the visible ones
                                                 setCopyTargetUnits(prev => prev.filter(code => !currentFiltered.includes(code)));
@@ -1040,8 +1040,8 @@ const Criteria83Config: React.FC = () => {
                                     >
                                         {(() => {
                                             const currentFiltered = units.filter(u => copyModalKhoi === 'Tất cả' || u.khoi === copyModalKhoi).map(u => u.ma_don_vi);
-                                            return currentFiltered.length > 0 && currentFiltered.every(code => copyTargetUnits.includes(code)) 
-                                                ? 'Bỏ chọn tất cả (Khối này)' 
+                                            return currentFiltered.length > 0 && currentFiltered.every(code => copyTargetUnits.includes(code))
+                                                ? 'Bỏ chọn tất cả (Khối này)'
                                                 : 'Chọn tất cả (Khối này)';
                                         })()}
                                     </button>
@@ -1096,10 +1096,10 @@ const Criteria83Config: React.FC = () => {
 
             {/* ===== UNIT DETAIL MODAL (Tab 2) ===== */}
             {viewingUnitDetail && (
-                <UnitDetailModal 
-                    unitCode={viewingUnitDetail} 
-                    data={unitGroupedData[viewingUnitDetail] || []} 
-                    onClose={() => setViewingUnitDetail(null)} 
+                <UnitDetailModal
+                    unitCode={viewingUnitDetail}
+                    data={unitGroupedData[viewingUnitDetail] || []}
+                    onClose={() => setViewingUnitDetail(null)}
                     onRemoveChapter={(phan, chuong) => handleRemoveChapterTarget(viewingUnitDetail, phan, chuong)}
                 />
             )}

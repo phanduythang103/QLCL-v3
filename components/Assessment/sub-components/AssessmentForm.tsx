@@ -97,36 +97,36 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       <div className="bg-white border border-slate-200 shadow-sm md:shadow-xl sticky top-0 z-20 -mx-3 px-4 py-3 md:mx-0 md:p-8 md:rounded-2xl">
         <div className="mb-3 flex items-center justify-between gap-3 md:hidden">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#009900]">Phiếu chấm điểm 83 tiêu chí</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#059669]">Phiếu chấm điểm 83 tiêu chí</p>
             <p className="mt-0.5 text-xs font-bold text-slate-500">{evaluationProgress.evaluated}/{evaluationProgress.total} tiêu chí đã chấm</p>
           </div>
           <button
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="shrink-0 rounded-xl bg-[#009900] px-3 py-2 text-[10px] font-black uppercase text-white shadow-md disabled:bg-slate-300"
+            className="shrink-0 rounded-xl bg-[#059669] px-3 py-2 text-[10px] font-black uppercase text-white shadow-md disabled:bg-slate-300"
           >
             {saving ? 'Đang lưu...' : 'Lưu phiếu'}
           </button>
         </div>
         <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-slate-100 md:hidden">
-          <div className="h-full rounded-full bg-[#009900] transition-all duration-300" style={{ width: `${evaluationProgress.percent}%` }} />
+          <div className="h-full rounded-full bg-[#059669] transition-all duration-300" style={{ width: `${evaluationProgress.percent}%` }} />
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 md:gap-6">
         <div className="grid grid-cols-2 md:flex md:flex-wrap items-end gap-2 md:gap-4 text-sm font-black uppercase text-slate-800">
           <div className="flex min-w-0 flex-col gap-1">
             <label className="text-[10px] text-slate-400">Ngày đánh giá</label>
-            <input type="date" value={ngayDanhGia} onChange={(e) => setNgayDanhGia(e.target.value)} className="min-w-0 w-full bg-slate-50 border-none rounded-xl px-3 py-2.5 text-xs md:px-4 md:py-2 md:text-sm focus:ring-2 ring-[#009900]" />
+            <input type="date" value={ngayDanhGia} onChange={(e) => setNgayDanhGia(e.target.value)} className="min-w-0 w-full bg-slate-50 border-none rounded-xl px-3 py-2.5 text-xs md:px-4 md:py-2 md:text-sm focus:ring-2 ring-[#059669]" />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <label className="text-[10px] text-slate-400">Người đánh giá</label>
-            <input type="text" value={nguoiDanhGia} onChange={(e) => setNguoiDanhGia(e.target.value)} className="min-w-0 w-full bg-slate-50 border-none rounded-xl px-3 py-2.5 text-xs md:px-4 md:py-2 md:text-sm focus:ring-2 ring-[#009900]" />
+            <input type="text" value={nguoiDanhGia} onChange={(e) => setNguoiDanhGia(e.target.value)} className="min-w-0 w-full bg-slate-50 border-none rounded-xl px-3 py-2.5 text-xs md:px-4 md:py-2 md:text-sm focus:ring-2 ring-[#059669]" />
           </div>
           <div className="col-span-2 flex min-w-0 flex-col gap-1 md:col-span-1">
             <label className="text-[10px] text-slate-400">Đơn vị được đánh giá</label>
             {isAdmin ? (
-              <select value={donViDuocDanhGia} onChange={(e) => setDonViDuocDanhGia(e.target.value)} className="min-w-0 w-full bg-slate-50 border-none rounded-xl px-3 py-2.5 text-xs md:px-4 md:py-2 md:text-sm focus:ring-2 ring-[#009900]">
+              <select value={donViDuocDanhGia} onChange={(e) => setDonViDuocDanhGia(e.target.value)} className="min-w-0 w-full bg-slate-50 border-none rounded-xl px-3 py-2.5 text-xs md:px-4 md:py-2 md:text-sm focus:ring-2 ring-[#059669]">
                 <option value="">-- Chọn đơn vị --</option>
                 {units.map(u => <option key={u.ma_don_vi} value={`${u.ma_don_vi} - ${u.ten_don_vi}`}>{u.ma_don_vi} - {u.ten_don_vi}</option>)}
               </select>
@@ -137,7 +137,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </div>
         <div className="hidden md:flex items-center gap-4">
           <button onClick={onCancel} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition-all active:scale-95">Hủy</button>
-          <button onClick={onSave} disabled={saving} className="bg-[#009900] text-white px-8 py-3 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-[#007700] transition-all flex items-center gap-2 active:scale-95 disabled:bg-slate-200">
+          <button onClick={onSave} disabled={saving} className="bg-[#059669] text-white px-8 py-3 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-[#007700] transition-all flex items-center gap-2 active:scale-95 disabled:bg-slate-200">
             {saving ? <RefreshCw className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
             Lưu phiếu ngay
           </button>
@@ -156,14 +156,14 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                 onClick={() => setExpandedPhan(isPhanOpen ? null : phan)}
                 className="w-full text-left bg-slate-50/80 hover:bg-slate-100/80 px-3 py-3.5 md:px-6 md:py-4 flex items-start md:items-center gap-2.5 md:gap-3 transition-colors border-b border-slate-100"
               >
-                <div className={`mt-0.5 md:mt-0 ${isPhanOpen ? 'text-[#009900]' : 'text-slate-400'}`}>
+                <div className={`mt-0.5 md:mt-0 ${isPhanOpen ? 'text-[#059669]' : 'text-slate-400'}`}>
                   {isPhanOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                 </div>
                 <h2 className="text-xs md:text-sm font-black uppercase text-slate-800 tracking-tight leading-relaxed flex-1">{phan}</h2>
                 <span className={`shrink-0 rounded-md px-2.5 py-1 text-[10px] font-black uppercase ${
                   phanScore?.level === null
                     ? 'bg-slate-200 text-slate-500'
-                    : 'bg-[#009900] text-white'
+                    : 'bg-[#059669] text-white'
                 }`}>
                   {phanScore?.level === null ? 'Chưa chấm' : `Đạt mức ${formatScore(phanScore?.level)}`}
                 </span>
@@ -181,7 +181,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                           onClick={() => setExpandedChuong(isChuongOpen ? null : chuong)}
                           className="px-3 py-3.5 md:px-6 md:py-3 flex items-start md:items-center gap-2.5 md:gap-3 w-full hover:bg-slate-50 transition-colors text-left"
                         >
-                          <div className={`mt-0.5 md:mt-0 ${isChuongOpen ? 'text-[#009900]' : 'text-slate-400'}`}>
+                          <div className={`mt-0.5 md:mt-0 ${isChuongOpen ? 'text-[#059669]' : 'text-slate-400'}`}>
                             {isChuongOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                           </div>
                           <h3 className="text-[11px] md:text-xs font-black text-slate-600 uppercase italic leading-relaxed flex-1">{chuong}</h3>
@@ -206,10 +206,10 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                                     onClick={() => setExpandedTieuChi(isTCOpen ? null : tieuChi)}
                                     className="w-full flex items-start md:items-center gap-2.5 md:gap-3 px-3 py-3.5 md:px-6 md:py-4 hover:bg-slate-50 transition-colors"
                                   >
-                                    <div className={`mt-0.5 md:mt-0 ${isTCOpen ? 'text-[#009900]' : 'text-slate-400'}`}>
+                                    <div className={`mt-0.5 md:mt-0 ${isTCOpen ? 'text-[#059669]' : 'text-slate-400'}`}>
                                       {isTCOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                     </div>
-                                    <span className="font-bold text-[11px] md:text-xs text-[#009900] uppercase tracking-wide leading-relaxed text-left flex-1">{tieuChi}</span>
+                                    <span className="font-bold text-[11px] md:text-xs text-[#059669] uppercase tracking-wide leading-relaxed text-left flex-1">{tieuChi}</span>
                                     <span className={`shrink-0 rounded-md px-2.5 py-1 text-[10px] font-black uppercase ${
                                       criterionScore?.level === null
                                         ? 'bg-slate-100 text-slate-400'
@@ -244,7 +244,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                                                     type="checkbox"
                                                     checked={isSelected && !isNotMet}
                                                     onChange={(e) => onScoreChange(tc.ma_tieu_muc!, 'dat_muc', e.target.checked ? 'Đạt' : 'Chưa đạt')}
-                                                    className="hidden md:block mt-1 w-5 h-5 rounded border-slate-300 text-[#009900] focus:ring-[#009900] cursor-pointer"
+                                                    className="hidden md:block mt-1 w-5 h-5 rounded border-slate-300 text-[#059669] focus:ring-[#059669] cursor-pointer"
                                                   />
 
                                                   <div className="min-w-0 flex-1 space-y-1">
@@ -288,7 +288,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                                                               className="flex-1 bg-transparent border-none text-[11px] text-slate-600 focus:ring-0 placeholder:italic p-0 resize-none"
                                                             />
                                                           </div>
-                                                          <button type="button" aria-label="Thêm ảnh minh chứng" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-400 hover:text-[#009900] transition-colors">
+                                                          <button type="button" aria-label="Thêm ảnh minh chứng" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-400 hover:text-[#059669] transition-colors">
                                                             <Camera size={16} />
                                                           </button>
                                                         </div>
@@ -296,7 +296,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
                                                     </div>
                                                   </div>
 
-                                                  <div className="hidden md:block text-[14px] font-black text-[#009900] bg-slate-100 px-2 py-1 rounded-md">
+                                                  <div className="hidden md:block text-[14px] font-black text-[#059669] bg-slate-100 px-2 py-1 rounded-md">
                                                     {tc.muc}
                                                   </div>
                                                 </div>
@@ -326,7 +326,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <button onClick={onCancel} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-black uppercase text-sm hover:bg-slate-200 transition-all active:scale-95">
           Hủy
         </button>
-        <button onClick={onSave} disabled={saving} className="bg-[#009900] text-white px-10 py-3 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-[#007700] transition-all flex items-center gap-2 active:scale-95 disabled:bg-slate-200">
+        <button onClick={onSave} disabled={saving} className="bg-[#059669] text-white px-10 py-3 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-[#007700] transition-all flex items-center gap-2 active:scale-95 disabled:bg-slate-200">
           {saving ? <RefreshCw className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
           {saving ? 'Đang lưu...' : 'Lưu phiếu chấm điểm'}
         </button>
@@ -337,7 +337,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
           <button onClick={onCancel} className="min-h-12 flex-1 rounded-xl bg-slate-100 px-4 text-xs font-black uppercase text-slate-600 active:scale-[0.98]">
             Hủy
           </button>
-          <button onClick={onSave} disabled={saving} className="min-h-12 flex-[2] rounded-xl bg-[#009900] px-4 text-xs font-black uppercase text-white shadow-lg shadow-emerald-900/20 transition-all active:scale-[0.98] disabled:bg-slate-300">
+          <button onClick={onSave} disabled={saving} className="min-h-12 flex-[2] rounded-xl bg-[#059669] px-4 text-xs font-black uppercase text-white shadow-lg shadow-emerald-900/20 transition-all active:scale-[0.98] disabled:bg-slate-300">
             <span className="flex items-center justify-center gap-2">
               {saving ? <RefreshCw className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
               {saving ? 'Đang lưu...' : `Lưu phiếu (${evaluationProgress.percent}%)`}

@@ -329,7 +329,7 @@ export default function UsersTable() {
           <div className="flex gap-2">
             <button
               onClick={handleBulkUpdate}
-              className="bg-[#009900] text-white px-4 py-1.5 rounded-lg font-black uppercase text-[10px] hover:bg-[#0d6e39] transition-all flex items-center gap-2"
+              className="bg-[#059669] text-white px-4 py-1.5 rounded-lg font-black uppercase text-[10px] hover:bg-[#0d6e39] transition-all flex items-center gap-2"
             >
               <Save size={14} /> Cập nhật
             </button>
@@ -353,7 +353,7 @@ export default function UsersTable() {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex justify-between items-center mb-6">
             <h4 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
-              <UserIcon size={20} className="text-[#009900]" />
+              <UserIcon size={20} className="text-[#059669]" />
               {editingId ? 'Cập nhật tài khoản' : 'Đăng ký tài khoản mới'}
             </h4>
             <button onClick={resetForm} className="text-slate-400 hover:text-red-500 transition-colors bg-slate-50 p-2 rounded-full"><X size={20} /></button>
@@ -366,7 +366,7 @@ export default function UsersTable() {
                 placeholder="Ví dụ: nva123"
                 value={form.username}
                 onChange={e => setForm(f => ({ ...f, username: e.target.value.toLowerCase() }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -377,7 +377,7 @@ export default function UsersTable() {
                 placeholder={editingId ? "Để trống nếu không đổi" : "Tối thiểu 6 ký tự"}
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -387,7 +387,7 @@ export default function UsersTable() {
                 placeholder="Nhập họ và tên đầy đủ"
                 value={form.full_name}
                 onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none transition-all"
               />
             </div>
             <div className="space-y-1.5 relative">
@@ -402,7 +402,7 @@ export default function UsersTable() {
                   setShowDeptDropdown(true);
                 }}
                 onFocus={() => setShowDeptDropdown(true)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none transition-all"
               />
               <ChevronDown className="absolute right-4 top-[42px] text-slate-400" size={16} />
 
@@ -421,7 +421,7 @@ export default function UsersTable() {
                         }}
                         className="w-full px-4 py-2.5 text-left text-table font-bold hover:bg-green-50 rounded-xl transition-colors border-b border-slate-50 last:border-0 uppercase group"
                       >
-                        <span className="text-[#009900] group-hover:scale-110 transition-transform">{dept.ma_don_vi}</span> - {dept.ten_don_vi}
+                        <span className="text-[#059669] group-hover:scale-110 transition-transform">{dept.ma_don_vi}</span> - {dept.ten_don_vi}
                       </button>
                     ))}
                 </div>
@@ -433,7 +433,7 @@ export default function UsersTable() {
               <select
                 value={form.role}
                 onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none appearance-none"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none appearance-none"
               >
                 <option value="Quản trị viên">Quản trị viên</option>
                 <option value="Người dùng">Người dùng</option>
@@ -445,7 +445,7 @@ export default function UsersTable() {
               <select
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none appearance-none"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none appearance-none"
               >
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -456,7 +456,7 @@ export default function UsersTable() {
               <select
                 value={form.status}
                 onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none appearance-none"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none appearance-none"
               >
                 <option value="Hoạt động">Hoạt động</option>
                 <option value="Khóa">Khóa</option>
@@ -469,7 +469,7 @@ export default function UsersTable() {
                 placeholder="Ghi chú thêm về nhân sự..."
                 value={form.notes}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#009900] outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-800 focus:ring-2 focus:ring-[#059669] outline-none transition-all"
               />
             </div>
 
@@ -494,7 +494,7 @@ export default function UsersTable() {
               <button
                 type="submit"
                 disabled={uploadingAvatar}
-                className="flex-1 flex items-center justify-center gap-3 bg-[#009900] text-white px-8 py-4 rounded-2xl font-black uppercase text-sm shadow-xl shadow-green-900/10 hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 transition-all"
+                className="flex-1 flex items-center justify-center gap-3 bg-[#059669] text-white px-8 py-4 rounded-2xl font-black uppercase text-sm shadow-xl shadow-green-900/10 hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 transition-all"
               >
                 {uploadingAvatar ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white" /> : <Save size={20} />}
                 {editingId ? 'Lưu thay đổi' : 'Khởi tạo tài khoản'}
@@ -515,7 +515,7 @@ export default function UsersTable() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-5 rounded-3xl border border-slate-200 shadow-sm gap-4">
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-xl hover:bg-[#0d6e39] font-black text-input uppercase shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
+            className="flex items-center gap-2 bg-[#059669] text-white px-6 py-3 rounded-xl hover:bg-[#0d6e39] font-black text-input uppercase shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
           >
             <Plus size={20} /> Đăng ký người dùng
           </button>
@@ -526,7 +526,7 @@ export default function UsersTable() {
                 placeholder="Tìm tên hoặc tài khoản..."
                 value={filterName}
                 onChange={e => setFilterName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#009900] outline-none transition-all pl-10"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#059669] outline-none transition-all pl-10"
               />
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             </div>
@@ -534,7 +534,7 @@ export default function UsersTable() {
             <select
               value={filterRole}
               onChange={e => setFilterRole(e.target.value)}
-              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#009900] outline-none appearance-none"
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#059669] outline-none appearance-none"
             >
               <option value="">-- Tất cả vai trò --</option>
               <option value="Quản trị viên">Quản trị viên</option>
@@ -544,7 +544,7 @@ export default function UsersTable() {
             <select
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
-              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#009900] outline-none appearance-none"
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#059669] outline-none appearance-none"
             >
               <option value="">-- Tất cả đối tượng --</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -556,7 +556,7 @@ export default function UsersTable() {
       <div className="hidden bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50 md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-[#009900] text-white font-black uppercase text-[10px] tracking-widest">
+            <thead className="bg-[#059669] text-white font-black uppercase text-[10px] tracking-widest">
               <tr>
                 <th className="px-6 py-5 w-12 text-center">
                   <input
@@ -584,7 +584,7 @@ export default function UsersTable() {
                       type="checkbox"
                       checked={selectedUserIds.includes(user.id)}
                       onChange={() => toggleSelectUser(user.id)}
-                      className="w-4 h-4 rounded accent-[#009900] cursor-pointer"
+                      className="w-4 h-4 rounded accent-[#059669] cursor-pointer"
                     />
                   </td>
                   <td className="px-6 py-4 min-w-[180px]">
@@ -620,7 +620,7 @@ export default function UsersTable() {
                       <button onClick={() => setSelectedUserDetail(user)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Xem chi tiết">
                         <Eye size={14} /> Xem
                       </button>
-                      <button onClick={() => handleEdit(user)} className="flex items-center gap-1.5 px-3 py-1.5 text-[#009900] hover:bg-green-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Sửa">
+                      <button onClick={() => handleEdit(user)} className="flex items-center gap-1.5 px-3 py-1.5 text-[#059669] hover:bg-green-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Sửa">
                         <Edit2 size={14} /> Sửa
                       </button>
                       <button onClick={() => handleDelete(user.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Xóa">
@@ -651,14 +651,14 @@ export default function UsersTable() {
           filteredUsers.map((user) => (
             <div
               key={user.id}
-              className={`rounded-2xl border bg-white p-4 shadow-sm transition-colors ${selectedUserIds.includes(user.id) ? 'border-[#009900]/40 bg-green-50/40' : 'border-slate-200'}`}
+              className={`rounded-2xl border bg-white p-4 shadow-sm transition-colors ${selectedUserIds.includes(user.id) ? 'border-[#059669]/40 bg-green-50/40' : 'border-slate-200'}`}
             >
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
                   checked={selectedUserIds.includes(user.id)}
                   onChange={() => toggleSelectUser(user.id)}
-                  className="mt-3 h-4 w-4 rounded accent-[#009900] cursor-pointer"
+                  className="mt-3 h-4 w-4 rounded accent-[#059669] cursor-pointer"
                 />
                 <div className="w-11 h-11 rounded-2xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary-700 font-black text-[10px] uppercase overflow-hidden shrink-0">
                   {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.username.substring(0, 2)}
@@ -684,7 +684,7 @@ export default function UsersTable() {
                 <button onClick={() => setSelectedUserDetail(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase text-blue-600">
                   <Eye size={14} /> Xem
                 </button>
-                <button onClick={() => handleEdit(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#009900]">
+                <button onClick={() => handleEdit(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#059669]">
                   <Edit2 size={14} /> Sửa
                 </button>
                 <button onClick={() => handleDelete(user.id)} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-[10px] font-black uppercase text-red-600">
@@ -699,7 +699,7 @@ export default function UsersTable() {
       {selectedUserDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 bg-gradient-to-br from-[#009900] to-[#0d6e39] text-white flex justify-between items-center relative overflow-hidden">
+            <div className="p-8 bg-gradient-to-br from-[#059669] to-[#0d6e39] text-white flex justify-between items-center relative overflow-hidden">
               {/* Pattern overlay */}
               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
 
@@ -752,8 +752,8 @@ export default function UsersTable() {
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                       {isAdmin ? (
                         <div className="flex items-center gap-2">
-                          <Lock size={16} className="text-[#009900]" />
-                          <span className="font-mono font-black text-[#009900] tracking-[0.2em] text-lg">{selectedUserDetail.password}</span>
+                          <Lock size={16} className="text-[#059669]" />
+                          <span className="font-mono font-black text-[#059669] tracking-[0.2em] text-lg">{selectedUserDetail.password}</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-slate-300 italic">

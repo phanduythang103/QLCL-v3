@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  FileText, Plus, Search, Filter, 
-  ChevronRight, ChevronDown, Trash2, Edit2, Eye, 
+import {
+  FileText, Plus, Search, Filter,
+  ChevronRight, ChevronDown, Trash2, Edit2, Eye,
   CheckCircle2, XCircle, RefreshCw, Printer,
   Camera, ClipboardList, ListFilter, Minus
 } from 'lucide-react';
@@ -10,10 +10,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
 import { fetchData83tc, type Data83tc } from '../readData83tc';
 import { fetchDmDonVi, type DmDonVi } from '../readDmDonVi';
-import { 
-  fetchAssessmentSheets, 
-  fetchKqByPhieuId, 
-  deletePhieuDanhGia, 
+import {
+  fetchAssessmentSheets,
+  fetchKqByPhieuId,
+  deletePhieuDanhGia,
   saveKqDanhGia83Bulk,
   type KqDanhGia83,
   type AssessmentSheet
@@ -45,7 +45,7 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
          return itemLevel === level;
       });
       if (levelItems.length === 0) continue;
-      
+
       const allMet = levelItems.every(i => i.dat_muc === 'Đạt' || i.dat_muc === 'Không đánh giá');
       if (allMet) {
         maxLevel = level;
@@ -58,10 +58,10 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
 
   const hierarchyData = useMemo(() => {
     const hierarchy: any = {};
-    const evaluatedData = data.filter(item => 
+    const evaluatedData = data.filter(item =>
       item.dat_muc && (
-        item.dat_muc === 'Đạt' || 
-        item.dat_muc === 'Chưa đạt' || 
+        item.dat_muc === 'Đạt' ||
+        item.dat_muc === 'Chưa đạt' ||
         item.dat_muc === 'Không đánh giá'
       )
     );
@@ -84,7 +84,7 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col animate-in fade-in duration-500 min-h-[600px]">
       <div className="flex-1 flex flex-col">
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-[#009900] text-white flex justify-between items-center shadow-md print:hidden">
+        <div className="px-6 py-4 bg-[#059669] text-white flex justify-between items-center shadow-md print:hidden">
           <div className="flex items-center gap-3">
             <Printer size={24} />
             <div>
@@ -110,7 +110,7 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
           </div>
 
           <div className="mb-6">
-             <p className="font-black text-[#009900] text-[13pt]">Kết quả: Mức trung bình {sheetInfo?.score || '---'}</p>
+             <p className="font-black text-[#059669] text-[13pt]">Kết quả: Mức trung bình {sheetInfo?.score || '---'}</p>
           </div>
 
           {/* Excel-style Table */}
@@ -137,25 +137,25 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
                      <tr className="bg-slate-200 font-bold align-middle border-b border-black">
                        <td className="border-r border-black p-2 uppercase text-table" colSpan={3}>{phan}</td>
                      </tr>
- 
+
                      {Object.keys(hierarchyData[phan].chuongs).sort(naturalSort).map(chuong => (
                        <React.Fragment key={chuong}>
                          {/* Chương Row */}
                          <tr className="bg-slate-100 font-normal align-middle border-b border-black">
                            <td className="border-r border-black p-2 italic text-table pl-4" colSpan={3}>{chuong}</td>
                          </tr>
- 
+
                          {Object.keys(hierarchyData[phan].chuongs[chuong].tieuChis).sort(naturalSort).map(tc => {
                            const items = hierarchyData[phan].chuongs[chuong].tieuChis[tc];
                            const isExpanded = expandedTCs[tc];
                            const criteriaLevel = calculateCriteriaLevel(items);
-                           
+
                            return (
                              <React.Fragment key={tc}>
                                {/* Tiêu chí Row (Clickable) */}
-                               <tr 
+                               <tr
                                  onClick={() => toggleTC(tc)}
-                                 className="bg-white font-bold align-middle border-b border-black text-[#009900] cursor-pointer hover:bg-green-50 transition-colors"
+                                 className="bg-white font-bold align-middle border-b border-black text-[#059669] cursor-pointer hover:bg-green-50 transition-colors"
                                >
                                  <td className="border-r border-black p-2 pl-8 flex items-center gap-3 text-table">
                                    {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
@@ -170,7 +170,7 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
                                    </div>
                                  </td>
                                </tr>
- 
+
                                {/* Sub-items (Tiểu mục) - Shown ONLY if expanded */}
                                {isExpanded && items.map((item: KqDanhGia83) => (
                                  <tr key={item.id} className="align-top border-b border-black last:border-b-0 text-[11pt]">
@@ -210,9 +210,9 @@ const AssessmentDetailView = ({ phieuId, data, onClose, sheetInfo }: {
         </div>
 
         <div className="px-10 py-6 bg-slate-50 border-t border-slate-200 flex justify-end items-center gap-6 shadow-[-4px_0_15px_rgba(0,0,0,0.05)] print:hidden">
-          <button 
-            onClick={onClose} 
-            className="flex items-center gap-3 px-10 py-3 bg-[#009900] text-white rounded-xl hover:bg-[#007700] font-black transition-all text-xs shadow-lg shadow-green-200 active:scale-95"
+          <button
+            onClick={onClose}
+            className="flex items-center gap-3 px-10 py-3 bg-[#059669] text-white rounded-xl hover:bg-[#007700] font-black transition-all text-xs shadow-lg shadow-green-200 active:scale-95"
           >
             Đóng trang chi tiết
           </button>
@@ -265,7 +265,7 @@ const Criteria83Data83View = () => {
   if (loading) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-20 text-center shadow-sm">
-        <RefreshCw className="animate-spin inline-block text-[#009900] mb-4" size={32} />
+        <RefreshCw className="animate-spin inline-block text-[#059669] mb-4" size={32} />
         <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Đang tải danh mục 83 tiêu chí...</p>
       </div>
     );
@@ -293,8 +293,8 @@ const Criteria83Data83View = () => {
                 className={`w-full px-5 py-4 flex items-center justify-between transition-colors ${isPhanExpanded ? 'bg-green-50/30' : 'bg-white hover:bg-slate-50'}`}
               >
                 <div className="flex items-center gap-3">
-                  {isPhanExpanded ? <ChevronDown className="text-[#009900]" size={20} /> : <ChevronRight className="text-slate-400" size={20} />}
-                  <span className={`font-black text-sm uppercase tracking-tight ${isPhanExpanded ? 'text-[#009900]' : 'text-slate-700'}`}>
+                  {isPhanExpanded ? <ChevronDown className="text-[#059669]" size={20} /> : <ChevronRight className="text-slate-400" size={20} />}
+                  <span className={`font-black text-sm uppercase tracking-tight ${isPhanExpanded ? 'text-[#059669]' : 'text-slate-700'}`}>
                     {phanName}
                   </span>
                 </div>
@@ -317,8 +317,8 @@ const Criteria83Data83View = () => {
                           onClick={() => toggleChuong(chuongName)}
                           className="w-full flex items-center gap-3 pl-4 py-2 hover:bg-slate-50 rounded-lg transition-colors group"
                         >
-                          {isChuongExpanded ? <ChevronDown className="text-[#009900]" size={16} /> : <ChevronRight className="text-slate-400 group-hover:text-[#009900]" size={16} />}
-                          <span className={`font-black italic text-xs uppercase tracking-tight text-left ${isChuongExpanded ? 'text-[#009900]' : 'text-slate-600'}`}>
+                          {isChuongExpanded ? <ChevronDown className="text-[#059669]" size={16} /> : <ChevronRight className="text-slate-400 group-hover:text-[#059669]" size={16} />}
+                          <span className={`font-black italic text-xs uppercase tracking-tight text-left ${isChuongExpanded ? 'text-[#059669]' : 'text-slate-600'}`}>
                             {chuongName}
                           </span>
                         </button>
@@ -331,18 +331,18 @@ const Criteria83Data83View = () => {
                               return (
                                 <div key={tcName} className="overflow-hidden">
                                   {/* TIÊU CHÍ Level */}
-                                  <button 
+                                  <button
                                     onClick={() => toggleTieuChi(tcName)}
-                                    className={`w-full group relative border rounded-xl p-4 transition-all duration-200 flex items-center justify-between ${isTcExpanded ? 'bg-[#f0fff4] border-[#009900]/30 shadow-md' : 'bg-[#f8fffa] border-green-100/50 hover:border-[#009900]/30 hover:shadow-md'}`}
+                                    className={`w-full group relative border rounded-xl p-4 transition-all duration-200 flex items-center justify-between ${isTcExpanded ? 'bg-[#f0fff4] border-[#059669]/30 shadow-md' : 'bg-[#f8fffa] border-green-100/50 hover:border-[#059669]/30 hover:shadow-md'}`}
                                   >
                                     <div className="flex items-start gap-4">
                                       <div className="mt-1 flex items-center gap-1.5 flex-shrink-0">
                                         <div className="w-4 h-4 border-2 border-slate-300 rounded flex items-center justify-center">
-                                          {isTcExpanded && <div className="w-2 h-2 bg-[#009900] rounded-sm"></div>}
+                                          {isTcExpanded && <div className="w-2 h-2 bg-[#059669] rounded-sm"></div>}
                                         </div>
-                                        {isTcExpanded ? <ChevronDown className="text-[#009900]" size={14} /> : <ChevronRight className="text-slate-400" size={14} />}
+                                        {isTcExpanded ? <ChevronDown className="text-[#059669]" size={14} /> : <ChevronRight className="text-slate-400" size={14} />}
                                       </div>
-                                      <span className="font-black text-[13px] text-[#009900] uppercase leading-relaxed tracking-tight text-left">
+                                      <span className="font-black text-[13px] text-[#059669] uppercase leading-relaxed tracking-tight text-left">
                                         {tcName}
                                       </span>
                                     </div>
@@ -357,7 +357,7 @@ const Criteria83Data83View = () => {
                                       {tc.items.map((item: Data83tc) => (
                                         <div key={item.id} className="bg-slate-50/50 border border-slate-100 rounded-lg p-3 flex justify-between items-start gap-4 hover:bg-white transition-colors group/item">
                                           <div className="flex gap-3">
-                                            <span className="font-mono font-black text-[11px] text-[#009900] bg-white border border-green-100 px-2 py-0.5 rounded shadow-sm">
+                                            <span className="font-mono font-black text-[11px] text-[#059669] bg-white border border-green-100 px-2 py-0.5 rounded shadow-sm">
                                               {item.ma_tieu_muc}
                                             </span>
                                             <p className="text-[12px] font-bold text-slate-600 leading-relaxed group-hover/item:text-black">
@@ -491,15 +491,15 @@ const BasicStandardsView = () => {
 const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode: string) => void }) => {
   const { user } = useAuth();
   const isAdmin = !!user?.role && (
-    user.role.toLowerCase().includes('quản trị') || 
-    user.role.toLowerCase().includes('admin') || 
+    user.role.toLowerCase().includes('quản trị') ||
+    user.role.toLowerCase().includes('admin') ||
     user.role.toLowerCase().includes('manager')
   );
-  const uDept = user?.department || ""; 
-  const uDeptCode = uDept.split('-')[0].trim(); 
+  const uDept = user?.department || "";
+  const uDeptCode = uDept.split('-')[0].trim();
 
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
-  
+
   // Notify parent of view mode changes if callback provided
   useEffect(() => {
     if (onViewModeChange) onViewModeChange(viewMode);
@@ -667,7 +667,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
           const res = results[c.ma_tieu_muc!];
           const itemLevelStr = c.muc || '1';
           const itemLevel = parseInt(itemLevelStr.replace('Mức ', '')) || 1;
-          
+
           return {
             phieu_id: phieuId,
             ngay_danh_gia: ngayDanhGia,
@@ -678,7 +678,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
             tieu_chi: c.tieu_chi || "",
             ma_tieu_muc: c.ma_tieu_muc!,
             tieu_muc: c.tieu_muc || "",
-            nhom: c.muc || "", 
+            nhom: c.muc || "",
             dat_muc: res.dat_muc!,
             dat: res.dat_muc === "Đạt",
             khong_dat: res.dat_muc === "Chưa đạt",
@@ -732,14 +732,14 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
         <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-[12pt]">
           <div>
             <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2">
-              <FileText className="text-[#009900]" size={24} />
+              <FileText className="text-[#059669]" size={24} />
               Danh sách Phiếu đánh giá 83 tiêu chí
             </h3>
             <p className="text-slate-500 font-bold uppercase text-[10px]">Đơn vị: {uDept || 'Tất cả'}</p>
           </div>
           <button
             onClick={handleAddNew}
-            className="flex items-center gap-2 bg-[#009900] text-white px-6 py-2.5 rounded-xl hover:bg-[#007700] font-black transition-all shadow-lg active:scale-95"
+            className="flex items-center gap-2 bg-[#059669] text-white px-6 py-2.5 rounded-xl hover:bg-[#007700] font-black transition-all shadow-lg active:scale-95"
           >
             <Plus size={20} /> Tạo chấm điểm mới
           </button>
@@ -747,7 +747,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
 
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm text-[12pt]">
           <table className="w-full text-sm text-left">
-            <thead className="bg-[#009900] text-white font-black uppercase text-table tracking-widest h-12">
+            <thead className="bg-[#059669] text-white font-black uppercase text-table tracking-widest h-12">
               <tr>
                 <th className="px-6 py-4">Ngày đánh giá</th>
                 <th className="px-6 py-4">Đơn vị / Người đánh giá</th>
@@ -771,7 +771,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
                       <p className="text-[10px] text-slate-500 font-bold uppercase">{sheet.nguoi_danh_gia}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-black text-[#009900]">
+                      <span className="text-sm font-black text-[#059669]">
                         {sheet.score > 0 ? `Mức trung bình ${sheet.score}` : 'Chưa đánh giá'}
                       </span>
                     </td>
@@ -835,13 +835,13 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase">Đơn vị được đánh giá</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             list="unitsList"
-            value={donViDuocDanhGia} 
+            value={donViDuocDanhGia}
             onChange={e => setDonViDuocDanhGia(e.target.value)}
             placeholder="Chọn đơn vị..."
-            className="w-full px-3 py-2 border rounded-lg font-bold text-sm focus:ring-2 focus:ring-[#009900]/20 outline-none" 
+            className="w-full px-3 py-2 border rounded-lg font-bold text-sm focus:ring-2 focus:ring-[#059669]/20 outline-none"
           />
           <datalist id="unitsList">
             {units.map(u => (
@@ -860,7 +860,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
             <div key={phan} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               <button
                 onClick={() => setExpandedPhan(expandedPhan === phan ? null : phan)}
-                className={`w-full px-5 py-4 flex justify-between items-center font-black text-left uppercase text-sm tracking-wide transition-colors ${expandedPhan === phan ? 'bg-[#009900]/5 text-[#009900]' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                className={`w-full px-5 py-4 flex justify-between items-center font-black text-left uppercase text-sm tracking-wide transition-colors ${expandedPhan === phan ? 'bg-[#059669]/5 text-[#059669]' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
               >
                 <div className="flex items-center gap-3">
                   {expandedPhan === phan ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
@@ -876,7 +876,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
                       <div key={chuong} className="bg-white border border-slate-100 rounded-lg overflow-hidden">
                         <button
                           onClick={() => setExpandedChuong(expandedChuong === chuong ? null : chuong)}
-                          className={`w-full px-4 py-3 flex justify-between items-center font-bold text-left text-xs transition-colors border-l-4 ${expandedChuong === chuong ? 'border-[#009900] bg-green-50/10 text-[#009900]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                          className={`w-full px-4 py-3 flex justify-between items-center font-bold text-left text-xs transition-colors border-l-4 ${expandedChuong === chuong ? 'border-[#059669] bg-green-50/10 text-[#059669]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         >
                           <div className="flex items-center gap-2">
                             {expandedChuong === chuong ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -916,7 +916,7 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
                                             const res = results[item.ma_tieu_muc!] || {};
                                             return (
                                               <tr key={item.id} className="hover:bg-slate-50/20 transition-colors">
-                                                <td className="px-4 py-3 font-mono font-bold text-[#009900]">{item.ma_tieu_muc}</td>
+                                                <td className="px-4 py-3 font-mono font-bold text-[#059669]">{item.ma_tieu_muc}</td>
                                                 <td className="px-4 py-3 font-bold text-slate-700 leading-relaxed">{item.tieu_muc}</td>
                                                 <td className="px-4 py-3 text-center">
                                                   <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-black border border-amber-200 uppercase">{item.muc}</span>
@@ -968,10 +968,10 @@ const QualityAssessmentView = ({ onViewModeChange }: { onViewModeChange?: (mode:
       </div>
 
       <div className="flex justify-end bg-white p-6 rounded-xl border border-slate-200 shadow-md">
-        <button 
-          onClick={handleSaveAssessment} 
+        <button
+          onClick={handleSaveAssessment}
           disabled={saving || loading}
-          className="bg-[#009900] text-white px-12 py-3 rounded-xl font-black uppercase text-sm shadow-xl hover:bg-[#007700] transition-all flex items-center gap-3 active:scale-95 disabled:bg-slate-200"
+          className="bg-[#059669] text-white px-12 py-3 rounded-xl font-black uppercase text-sm shadow-xl hover:bg-[#007700] transition-all flex items-center gap-3 active:scale-95 disabled:bg-slate-200"
         >
           {saving ? <RefreshCw className="animate-spin" size={20}/> : <CheckCircle2 size={20}/>}
           Lưu phiếu chấm điểm
@@ -1000,26 +1000,26 @@ export const AssessmentModule: React.FC = () => {
       {/* Chỉ hiển thị Tab nếu đang ở chế độ danh sách */}
       {qualityViewMode === 'LIST' && (
         <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
-          <button 
-            onClick={() => setActiveTab('QUALITY_ASSESSMENT')} 
+          <button
+            onClick={() => setActiveTab('QUALITY_ASSESSMENT')}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-              activeTab === 'QUALITY_ASSESSMENT' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+              activeTab === 'QUALITY_ASSESSMENT' ? 'bg-[#059669] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
             }`}
           >
             <CheckCircle2 size={18} /> Chấm điểm 83 Tiêu chí
           </button>
-          <button 
-            onClick={() => setActiveTab('ASSESSMENT_REPORTS')} 
+          <button
+            onClick={() => setActiveTab('ASSESSMENT_REPORTS')}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-              activeTab === 'ASSESSMENT_REPORTS' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+              activeTab === 'ASSESSMENT_REPORTS' ? 'bg-[#059669] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
             }`}
           >
             <FileText size={18} /> Các bộ tiêu chuẩn khác
           </button>
-          <button 
-            onClick={() => setActiveTab('CRITERIA_83')} 
+          <button
+            onClick={() => setActiveTab('CRITERIA_83')}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs transition-all ${
-              activeTab === 'CRITERIA_83' ? 'bg-[#009900] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
+              activeTab === 'CRITERIA_83' ? 'bg-[#059669] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'
             }`}
           >
             <ListFilter size={18} /> Danh mục 83 Tiêu chí

@@ -77,7 +77,7 @@ export const PublicSurveyPage: React.FC = () => {
           const newSearch = params.toString();
           const cleanUrl = location.pathname + (newSearch ? `?${newSearch}` : '') + location.hash;
           console.log('🧹 Cleaning tracking parameters, redirecting to:', cleanUrl);
-          
+
           // Use replace to avoid polluting history
           navigate(cleanUrl, { replace: true });
         }
@@ -89,7 +89,7 @@ export const PublicSurveyPage: React.FC = () => {
 
   const fetchConfig = async (retryCount = 0) => {
     if (!slug) return;
-    
+
     if (!supabase) {
       console.error('❌ Supabase client not initialized');
       setError('Hệ thống đang bận. Vui lòng thử lại sau.');
@@ -181,7 +181,7 @@ export const PublicSurveyPage: React.FC = () => {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
         {!timedOut ? (
           <>
-            <Loader2 className="animate-spin text-[#009900] mb-4" size={40} />
+            <Loader2 className="animate-spin text-[#059669] mb-4" size={40} />
             <p className="text-slate-500 font-bold uppercase tracking-widest text-[13px]">Đang tải khảo sát...</p>
           </>
         ) : (
@@ -191,7 +191,7 @@ export const PublicSurveyPage: React.FC = () => {
             <p className="text-slate-500 mb-6 max-w-xs">Việc tải khảo sát đang mất nhiều thời gian hơn dự kiến.</p>
             <button
               onClick={() => fetchConfig()}
-              className="px-8 py-3 bg-[#009900] text-white rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-emerald-100"
+              className="px-8 py-3 bg-[#059669] text-white rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-emerald-100"
             >
               Thử tải lại
             </button>
@@ -221,7 +221,7 @@ export const PublicSurveyPage: React.FC = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#009900] flex flex-col items-center justify-center p-6 text-center text-white">
+      <div className="min-h-screen bg-[#059669] flex flex-col items-center justify-center p-6 text-center text-white">
         <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-8 animate-bounce">
           <CheckCircle2 className="text-white" size={48} />
         </div>
@@ -232,7 +232,7 @@ export const PublicSurveyPage: React.FC = () => {
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-12 px-10 py-4 bg-white text-[#009900] rounded-2xl font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+          className="mt-12 px-10 py-4 bg-white text-[#059669] rounded-2xl font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
         >
           Gửi thêm phiếu mới
         </button>

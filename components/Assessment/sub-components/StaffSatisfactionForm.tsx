@@ -106,7 +106,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
     return acc;
   }, {} as Record<string, typeof QUESTIONS>);
 
-  const themeColor = "#009900";
+  const themeColor = "#059669";
 
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen font-sans">
@@ -137,7 +137,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
         {/* Section 1: Thông tin chung */}
         <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full" />
+            <div className="w-2 h-8 bg-[#059669] rounded-full" />
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">1. THÔNG TIN CHUNG</h3>
           </div>
 
@@ -154,7 +154,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                     key={opt.value}
                     type="button"
                     onClick={() => handleChange('block', opt.value)}
-                    className={`px-6 py-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${formData.block === opt.value ? 'bg-[#009900] border-[#009900] text-white shadow-md' : 'bg-white border-slate-50 text-slate-500 hover:border-[#009900]/30'}`}
+                    className={`px-6 py-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${formData.block === opt.value ? 'bg-[#059669] border-[#059669] text-white shadow-md' : 'bg-white border-slate-50 text-slate-500 hover:border-[#059669]/30'}`}
                   >
                     {opt.label}
                   </button>
@@ -174,7 +174,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                     key={opt.value}
                     type="button"
                     onClick={() => handleChange('position', opt.value)}
-                    className={`px-6 py-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${formData.position === opt.value ? 'bg-[#009900] border-[#009900] text-white shadow-md' : 'bg-white border-slate-50 text-slate-500 hover:border-[#009900]/30'}`}
+                    className={`px-6 py-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${formData.position === opt.value ? 'bg-[#059669] border-[#059669] text-white shadow-md' : 'bg-white border-slate-50 text-slate-500 hover:border-[#059669]/30'}`}
                   >
                     {opt.label}
                   </button>
@@ -189,7 +189,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                 min="0"
                 value={formData.years}
                 onChange={(e) => handleChange('years', parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-50 p-6 rounded-2xl border border-slate-100 text-2xl font-black text-slate-800 focus:border-[#009900] outline-none transition-all shadow-inner"
+                className="w-full bg-slate-50 p-6 rounded-2xl border border-slate-100 text-2xl font-black text-slate-800 focus:border-[#059669] outline-none transition-all shadow-inner"
               />
             </div>
           </div>
@@ -198,14 +198,14 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
         {/* Section 2: Đánh giá */}
         <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full" />
+            <div className="w-2 h-8 bg-[#059669] rounded-full" />
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">2. ĐÁNH GIÁ MÔI TRƯỜNG LÀM VIỆC</h3>
           </div>
 
           <div className="divide-y divide-slate-100">
             {Object.entries(groupedQuestions).map(([groupName, questions]) => (
               <div key={groupName} className="py-10 first:pt-0 last:pb-0 space-y-6">
-                <h4 className="text-sm font-black text-[#009900] uppercase tracking-[0.2em] bg-emerald-50 px-4 py-2 rounded-lg inline-block">{groupName}</h4>
+                <h4 className="text-sm font-black text-[#059669] uppercase tracking-[0.2em] bg-emerald-50 px-4 py-2 rounded-lg inline-block">{groupName}</h4>
                 <div className="grid grid-cols-1 gap-2">
                   {questions.map((q) => (
                     <div key={q.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-6 bg-slate-50/50 rounded-3xl border border-slate-50 hover:bg-white hover:border-emerald-100 transition-all gap-6">
@@ -216,7 +216,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                             key={val}
                             type="button"
                             onClick={() => handleChange(q.id as any, val)}
-                            className={`w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 transition-all flex items-center justify-center text-xs font-black ${formData[q.id as keyof StaffSatisfactionSurvey] === val ? 'bg-[#009900] border-[#009900] text-white shadow-lg scale-110' : 'bg-white border-slate-100 text-slate-300 hover:border-emerald-300'}`}
+                            className={`w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 transition-all flex items-center justify-center text-xs font-black ${formData[q.id as keyof StaffSatisfactionSurvey] === val ? 'bg-[#059669] border-[#059669] text-white shadow-lg scale-110' : 'bg-white border-slate-100 text-slate-300 hover:border-emerald-300'}`}
                           >
                             {val}
                           </button>
@@ -233,7 +233,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
         {/* Section 3: Phân tích & Đề xuất */}
         <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full" />
+            <div className="w-2 h-8 bg-[#059669] rounded-full" />
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">3. PHÂN TÍCH & ĐỀ XUẤT CẢI TIẾN</h3>
           </div>
 
@@ -246,9 +246,9 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                     key={opt.value}
                     type="button"
                     onClick={() => handlePressureToggle(opt.value)}
-                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${formData.pressure?.includes(opt.value) ? 'bg-emerald-50 border-[#009900] text-[#009900]' : 'bg-white border-slate-50 text-slate-400 hover:border-emerald-200'}`}
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${formData.pressure?.includes(opt.value) ? 'bg-emerald-50 border-[#059669] text-[#059669]' : 'bg-white border-slate-50 text-slate-400 hover:border-emerald-200'}`}
                   >
-                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center ${formData.pressure?.includes(opt.value) ? 'bg-[#009900] border-[#009900]' : 'bg-white border-slate-200'}`}>
+                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center ${formData.pressure?.includes(opt.value) ? 'bg-[#059669] border-[#059669]' : 'bg-white border-slate-200'}`}>
                       {formData.pressure?.includes(opt.value) && <Info size={12} className="text-white" />}
                     </div>
                     <span className="text-[13px] font-black uppercase">{opt.label}</span>
@@ -278,7 +278,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                     key={opt.value}
                     type="button"
                     onClick={() => handleChange('stay_intent', opt.value)}
-                    className={`px-8 py-5 rounded-2xl border-2 text-left transition-all text-xs font-black uppercase ${formData.stay_intent === opt.value ? 'bg-[#009900] border-[#009900] text-white shadow-xl' : 'bg-white border-slate-50 text-slate-500'}`}
+                    className={`px-8 py-5 rounded-2xl border-2 text-left transition-all text-xs font-black uppercase ${formData.stay_intent === opt.value ? 'bg-[#059669] border-[#059669] text-white shadow-xl' : 'bg-white border-slate-50 text-slate-500'}`}
                   >
                     {opt.label}
                   </button>
@@ -292,7 +292,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
                 value={formData.suggestion}
                 onChange={(e) => handleChange('suggestion', e.target.value)}
                 placeholder="Vui lòng chia sẻ mong muốn/đề xuất chi tiết với Ban Giám đốc..."
-                className="w-full bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#009900] min-h-[150px] transition-all shadow-inner"
+                className="w-full bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] min-h-[150px] transition-all shadow-inner"
               />
             </div>
           </div>
@@ -303,7 +303,7 @@ export const StaffSatisfactionForm: React.FC<Props> = ({
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="group flex items-center gap-4 px-20 py-6 bg-[#009900] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:bg-slate-300"
+            className="group flex items-center gap-4 px-20 py-6 bg-[#059669] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:bg-slate-300"
           >
             {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={20} />}
             {saving ? 'Đang gửi...' : 'Xác nhận gửi khảo sát'}

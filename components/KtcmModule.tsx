@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
+import {
   Building2, Users, FileText, CheckCircle2, AlertTriangle, XCircle,
   Plus, Search, Edit2, Trash2, Calendar, FileDown, Eye, Filter,
   TrendingDown, TrendingUp, Minus, Activity, Target
@@ -20,7 +20,7 @@ export const KtcmModule: React.FC = () => {
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<KtcmTheoTuyen | null>(null);
-  
+
   const { user } = useAuth();
 
   const loadData = async () => {
@@ -58,7 +58,7 @@ export const KtcmModule: React.FC = () => {
               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mt-0.5">Giám sát & Đánh giá năng lực thực hiện kỹ thuật chuyên môn</p>
             </div>
           </div>
-          
+
           <div className="indicator-subtab-list indicator-subtab-list-2">
             <button
               onClick={() => setActiveTab('OVERVIEW')}
@@ -93,8 +93,8 @@ export const KtcmModule: React.FC = () => {
           <>
             {activeTab === 'OVERVIEW' && <OverviewTab data={data} />}
             {activeTab === 'LIST' && (
-              <ListTab 
-                data={data} 
+              <ListTab
+                data={data}
                 onView={(item: KtcmTheoTuyen) => { setEditingItem(item); setIsFormOpen(true); }}
                 onEdit={(item: KtcmTheoTuyen) => { setEditingItem(item); setIsFormOpen(true); }}
                 onDelete={async (id: string) => {
@@ -111,10 +111,10 @@ export const KtcmModule: React.FC = () => {
       </div>
 
       {isFormOpen && (
-        <KtcmFormModal 
-          item={editingItem} 
+        <KtcmFormModal
+          item={editingItem}
           isReadOnly={editingItem !== null && isFormOpen === true && (document.activeElement?.textContent?.includes('Xem') || (window as any)._isViewing)}
-          onClose={() => { setIsFormOpen(false); (window as any)._isViewing = false; }} 
+          onClose={() => { setIsFormOpen(false); (window as any)._isViewing = false; }}
           onSaved={() => { setIsFormOpen(false); loadData(); (window as any)._isViewing = false; }}
           currentUser={user}
         />
@@ -132,7 +132,7 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
   // Lọc dữ liệu theo thời gian
   const filteredData = useMemo(() => {
     if (dateFilter === 'ALL') return data;
-    
+
     const now = new Date();
     let start = new Date(0);
     let end = new Date(now.getFullYear() + 10, 0, 1); // Far future
@@ -174,7 +174,7 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
     let tongKyThuat = 0;
     let daThucHien = 0;
     let chuaThucHien = 0;
-    
+
     filteredData.forEach(item => {
       tongKyThuat += item.tong_so_ky_thuat || 0;
       daThucHien += item.so_ky_thuat_da_thuc_hien || 0;
@@ -201,7 +201,7 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 md:pb-0 hide-scrollbar">
           <Filter size={16} className="text-slate-400 shrink-0 mr-2" />
-          <select 
+          <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
             className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none min-w-[140px]"
@@ -218,15 +218,15 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
 
           {dateFilter === 'CUSTOM' && (
             <div className="flex items-center gap-2 animate-in slide-in-from-left-4 duration-300">
-              <input 
-                type="date" 
+              <input
+                type="date"
                 value={customStart}
                 onChange={e => setCustomStart(e.target.value)}
                 className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               />
               <span className="text-slate-400 font-medium">-</span>
-              <input 
-                type="date" 
+              <input
+                type="date"
                 value={customEnd}
                 onChange={e => setCustomEnd(e.target.value)}
                 className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none"
@@ -234,7 +234,7 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
             </div>
           )}
         </div>
-        
+
         <div className="shrink-0 text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
           Có {filteredData.length} báo cáo
         </div>
@@ -321,7 +321,7 @@ const OverviewTab = ({ data }: { data: KtcmTheoTuyen[] }) => {
 const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: KtcmTheoTuyen[], onView: (item: KtcmTheoTuyen) => void, onEdit: (item: KtcmTheoTuyen) => void, onDelete: (id: string) => void, onAddNew: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filtered = data.filter((item) => 
+  const filtered = data.filter((item) =>
     (item.chuyen_khoa_linh_vuc || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (item.nguoi_bao_cao || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -350,7 +350,7 @@ const ListTab = ({ data, onView, onEdit, onDelete, onAddNew }: { data: KtcmTheoT
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-[#009900] text-white text-[14px] uppercase font-bold">
+            <tr className="bg-[#059669] text-white text-[14px] uppercase font-bold">
               <th className="p-4 rounded-tl-xl whitespace-nowrap">Ngày báo cáo</th>
               <th className="p-4 whitespace-nowrap">Chuyên khoa/Lĩnh vực</th>
               <th className="p-4 text-center">Tổng số</th>
@@ -422,7 +422,7 @@ const KtcmFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser }: any)
     nguyen_nhan_chua_trien_khai: item?.nguyen_nhan_chua_trien_khai || '',
     ghi_chu: item?.ghi_chu || ''
   });
-  
+
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string|null>(null);
 
@@ -478,7 +478,7 @@ const KtcmFormModal = ({ item, isReadOnly, onClose, onSaved, currentUser }: any)
 
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {err && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200">{err}</div>}
-          
+
           <form id="ktcm-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">

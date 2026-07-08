@@ -224,7 +224,7 @@ export default function NotificationTable() {
                             setForm({ noi_dung: '', don_vi_thuc_hien: [], ngay_bat_dau: '', ngay_ket_thuc: '', ghi_chu: '', file_dinh_kem: '' });
                             setViewMode('FORM');
                         }}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-2xl hover:bg-[#0d6e39] text-input font-black uppercase transition-all shadow-xl shadow-green-900/20 active:scale-95"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#059669] text-white px-6 py-3 rounded-2xl hover:bg-[#0d6e39] text-input font-black uppercase transition-all shadow-xl shadow-green-900/20 active:scale-95"
                     >
                         <Plus size={20} />
                         Tạo thông báo
@@ -235,7 +235,7 @@ export default function NotificationTable() {
             {/* Content View: Table (Desktop) */}
             <div className="hidden lg:block bg-white rounded-3xl border border-blue-100 overflow-hidden shadow-sm">
                 <table className="w-full text-left border-collapse">
-                    <thead className="bg-[#009900] text-white uppercase text-[12px] tracking-widest h-10">
+                    <thead className="bg-[#059669] text-white uppercase text-[12px] tracking-widest h-10">
                         <tr>
                             <th className="px-6 py-3 border border-blue-200">Ngày tạo</th>
                             <th className="px-6 py-3 border border-blue-200">Nội dung</th>
@@ -367,7 +367,7 @@ export default function NotificationTable() {
                                     Quay lại danh sách
                                 </button>
                                 <h3 className="text-3xl font-black text-black uppercase flex items-center gap-3">
-                                    <div className="p-3 bg-green-50 text-[#009900] rounded-2xl">
+                                    <div className="p-3 bg-green-50 text-[#059669] rounded-2xl">
                                         <Bell size={32} />
                                     </div>
                                     {editingId ? 'Sửa thông báo' : 'Tạo thông báo mới'}
@@ -436,7 +436,7 @@ export default function NotificationTable() {
                                         <button
                                             type="button"
                                             onClick={() => setShowAddUnitModal(true)}
-                                            className="px-6 py-4 bg-green-100 text-[#009900] rounded-2xl text-input font-black uppercase hover:bg-green-200 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
+                                            className="px-6 py-4 bg-green-100 text-[#059669] rounded-2xl text-input font-black uppercase hover:bg-green-200 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <Plus size={20} /> Thêm khác
                                         </button>
@@ -483,7 +483,7 @@ export default function NotificationTable() {
                             </div>
 
                             <div className="flex gap-4 pt-8 border-t border-slate-100">
-                                <button type="submit" className="flex-1 flex items-center justify-center gap-3 bg-[#009900] text-white px-8 py-5 rounded-2xl hover:bg-[#0d6e39] text-input font-black uppercase shadow-xl shadow-green-900/20 active:scale-95 transition-all">
+                                <button type="submit" className="flex-1 flex items-center justify-center gap-3 bg-[#059669] text-white px-8 py-5 rounded-2xl hover:bg-[#0d6e39] text-input font-black uppercase shadow-xl shadow-green-900/20 active:scale-95 transition-all">
                                     <Check size={24} /> {editingId ? 'Lưu thay đổi' : 'Đăng thông báo'}
                                 </button>
                                 <button type="button" onClick={resetForm} className="px-10 py-5 bg-slate-100 text-black rounded-2xl text-input font-black uppercase hover:bg-slate-200 transition-all">
@@ -504,10 +504,10 @@ export default function NotificationTable() {
                                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                                 Quay lại danh sách
                             </button>
-                            
+
                             <div className="flex items-center gap-6 relative">
                                 <div className="w-20 h-20 rounded-3xl bg-white p-1.5 shadow-xl border border-slate-100">
-                                    <div className="w-full h-full rounded-2xl bg-[#009900] flex items-center justify-center text-white font-black text-3xl">
+                                    <div className="w-full h-full rounded-2xl bg-[#059669] flex items-center justify-center text-white font-black text-3xl">
                                         {selectedNoti.nguoi_tao_name?.charAt(0) || 'U'}
                                     </div>
                                 </div>
@@ -543,7 +543,7 @@ export default function NotificationTable() {
                                 <div className="p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm transition-all hover:shadow-md">
                                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thời gian bắt đầu</p>
                                     <p className="text-xl font-black text-slate-800 flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-[#009900]">
+                                        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-[#059669]">
                                           <Calendar size={20} />
                                         </div>
                                         {selectedNoti.ngay_bat_dau ? new Date(selectedNoti.ngay_bat_dau).toLocaleDateString('vi-VN') : '---'}
@@ -595,7 +595,7 @@ export default function NotificationTable() {
                                         href={selectedNoti.file_dinh_kem}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="flex-[1.5] flex items-center justify-center gap-3 px-10 py-5 bg-[#009900] text-white rounded-3xl text-[14px] font-black uppercase hover:bg-[#0d6e39] transition-all shadow-xl shadow-green-900/20 active:scale-95"
+                                        className="flex-[1.5] flex items-center justify-center gap-3 px-10 py-5 bg-[#059669] text-white rounded-3xl text-[14px] font-black uppercase hover:bg-[#0d6e39] transition-all shadow-xl shadow-green-900/20 active:scale-95"
                                     >
                                         <Eye size={24} />
                                         <span>Xem file công văn (PDF)</span>
