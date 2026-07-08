@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getContinuousTrainingHistory, getContinuousTrainingLessonsProgress, getTestAttemptDetails } from '../services/trainingService';
+import { getContinuousTrainingHistory, getContinuousTrainingLessonsProgress, getTestAttemptDetails, deleteLessonProgress, deleteTestAttempt } from '../services/trainingService';
 import { AttemptReview } from './TrainingHistoryDetails';
-import { Clock3, CheckCircle2, XCircle, FileText, Play } from 'lucide-react';
+import { Clock3, CheckCircle2, XCircle, FileText, Play, Trash2 } from 'lucide-react';
 
 export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string; isAdmin: boolean }) {
   const [tab, setTab] = useState<'LEARNING' | 'TESTS'>('LEARNING');
@@ -19,24 +19,40 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
     setPage(1);
   };
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const [tests, lessons] = await Promise.all([
-          getContinuousTrainingHistory(userId, isAdmin),
-          getContinuousTrainingLessonsProgress(userId, isAdmin)
-        ]);
-        setTestsHistory(tests || []);
-        setLessonsHistory(lessons || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [tests, lessons] = await Promise.all([
+        getContinuousTrainingHistory(userId, isAdmin),
+        getContinuousTrainingLessonsProgress(userId, isAdmin)
+      ]);
+      setTestsHistory(tests || []);
+      setLessonsHistory(lessons || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     load();
   }, [userId, isAdmin]);
+
+  const handleDelete = async (type: 'LEARNING' | 'TESTS', id: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bản ghi lịch sử này?')) return;
+    try {
+      if (type === 'LEARNING') {
+        await deleteLessonProgress(id);
+      } else {
+        await deleteTestAttempt(id);
+      }
+      await load();
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra khi xóa!');
+    }
+  };
 
   const handleReview = async (attempt: any) => {
     try {
@@ -102,6 +118,7 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                   <th className="px-4 py-3 font-bold border-b">Hoàn thành lúc</th>
                   <th className="px-4 py-3 font-bold border-b">Thời gian học</th>
                   <th className="px-4 py-3 font-bold border-b">Trạng thái</th>
+                  {isAdmin && <th className="px-4 py-3 font-bold border-b text-right">Thao tác</th>}
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -122,6 +139,13 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                         <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700"><Play size={12}/> Đang học</span>
                       )}
                     </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3 text-right">
+                        <button onClick={() => handleDelete('LEARNING', row.id)} className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 shadow-sm transition-colors" title="Xóa lịch sử">
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
                 {!displayData.length && (
@@ -163,7 +187,14 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => handleReview(row)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-sm transition-colors">Xem lại</button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => handleReview(row)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-sm transition-colors">Xem lại</button>
+                        {isAdmin && (
+                          <button onClick={() => handleDelete('TESTS', row.id)} className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 shadow-sm transition-colors" title="Xóa bài kiểm tra">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

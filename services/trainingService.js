@@ -680,3 +680,14 @@ export async function getTestAttemptDetails(attemptId) {
   }).filter(Boolean);
 }
 
+export async function deleteLessonProgress(progressId) {
+  const { error } = await supabase.from('training_lesson_progress').delete().eq('id', progressId);
+  if (error) throw error;
+  return true;
+}
+
+export async function deleteTestAttempt(attemptId) {
+  const { error } = await supabase.from('training_test_attempts').delete().eq('id', attemptId);
+  if (error) throw error;
+  return true;
+}
