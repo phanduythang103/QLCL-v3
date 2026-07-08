@@ -887,7 +887,7 @@ const IncidentStatistics = ({
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex flex-wrap items-center gap-3 w-full">
+        <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3 w-full">
           <div className="p-2 bg-primary-50 rounded-lg text-primary-600 hidden md:block">
             <Filter size={18} />
           </div>
@@ -907,7 +907,7 @@ const IncidentStatistics = ({
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-2">
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(Number(e.target.value))}
@@ -1493,7 +1493,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
 
                           <div className="space-y-3">
                             {/* Entry Header: Status + Timestamp */}
-                            <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-4">
                               <span className={`px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border ${
                                 log.trang_thai === 'Đã kết luận' ? 'bg-green-50 text-green-700 border-green-200' :
                                 log.trang_thai === 'Đang phân tích' ? 'bg-amber-50 text-amber-700 border-amber-200' :

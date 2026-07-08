@@ -652,7 +652,7 @@ export const ReportsModule: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3 w-full md:w-auto">
               <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
               <div className="relative flex-1 md:w-56">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />

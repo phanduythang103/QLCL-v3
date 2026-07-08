@@ -260,7 +260,7 @@ export const NotificationDashboard: React.FC = () => {
                         <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">
                             {schedules.map((item) => (
                                 <div key={item.id} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-md transition-all">
-                                    <div className="flex flex-wrap items-center gap-4 mb-4">
+                                    <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-4 mb-4">
                                         <span className="px-4 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-xl">
                                             {item.trang_thai || 'KẾ HOẠCH'}
                                         </span>

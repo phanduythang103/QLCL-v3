@@ -886,7 +886,7 @@ export const HRModule: React.FC = () => {
           </div>
         )}
         <div className="p-4 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-4">
             <span>
               Hiển thị {filteredStaff.length > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0} - {Math.min(currentPage * rowsPerPage, filteredStaff.length)} trong tổng số {filteredStaff.length} nhân sự
             </span>

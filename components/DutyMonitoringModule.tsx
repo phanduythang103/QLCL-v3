@@ -580,7 +580,7 @@ export const DutyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
            </div>
 
            {viewMode === 'LIST' && (
-             <div className="flex flex-wrap items-center gap-3">
+             <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3">
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
                <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-[#059669]">
                  <option value="">Tất cả khoa</option>

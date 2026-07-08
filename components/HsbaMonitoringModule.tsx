@@ -547,7 +547,7 @@ export const HsbaMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
            </div>
 
            {viewMode === 'LIST' && (
-             <div className="flex flex-wrap items-center gap-3">
+             <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3">
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
                <select
                  value={deptFilter}
