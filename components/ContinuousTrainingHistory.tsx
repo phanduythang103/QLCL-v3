@@ -11,6 +11,14 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
   const [selectedAttempt, setSelectedAttempt] = useState<any | null>(null);
   const [reviewData, setReviewData] = useState<any | null>(null);
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number | 'ALL'>(10);
+
+  const handleTabChange = (newTab: 'LEARNING' | 'TESTS') => {
+    setTab(newTab);
+    setPage(1);
+  };
+
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -70,11 +78,19 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
   return (
     <div className="space-y-4">
       <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
-        <button onClick={() => setTab('LEARNING')} className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${tab === 'LEARNING' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Thời gian học</button>
-        <button onClick={() => setTab('TESTS')} className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${tab === 'TESTS' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Bài kiểm tra đã làm</button>
+        <button onClick={() => handleTabChange('LEARNING')} className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${tab === 'LEARNING' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Thời gian học</button>
+        <button onClick={() => handleTabChange('TESTS')} className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${tab === 'TESTS' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Bài kiểm tra đã làm</button>
       </div>
 
       <div className="rounded-xl border bg-white overflow-hidden">
+        {(() => {
+          const currentData = tab === 'LEARNING' ? lessonsHistory : testsHistory;
+          const isAll = pageSize === 'ALL';
+          const displayData = isAll ? currentData : currentData.slice((page - 1) * (pageSize as number), page * (pageSize as number));
+          const totalPages = isAll ? 1 : Math.ceil(currentData.length / (pageSize as number));
+
+          return (
+            <>
         {tab === 'LEARNING' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
@@ -89,7 +105,7 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {lessonsHistory.map((row) => (
+                {displayData.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50">
                     {isAdmin && <td className="px-4 py-3 font-medium text-slate-900">{row.users?.full_name || 'Không rõ'}</td>}
                     <td className="px-4 py-3">
@@ -108,7 +124,7 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                     </td>
                   </tr>
                 ))}
-                {!lessonsHistory.length && (
+                {!displayData.length && (
                   <tr><td colSpan={isAdmin ? 6 : 5} className="px-4 py-8 text-center text-slate-500">Chưa có lịch sử học tập.</td></tr>
                 )}
               </tbody>
@@ -130,7 +146,7 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {testsHistory.map((row) => (
+                {displayData.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50">
                     {isAdmin && <td className="px-4 py-3 font-medium text-slate-900">{row.users?.full_name || 'Không rõ'}</td>}
                     <td className="px-4 py-3">
@@ -151,14 +167,60 @@ export function ContinuousTrainingHistory({ userId, isAdmin }: { userId?: string
                     </td>
                   </tr>
                 ))}
-                {!testsHistory.length && (
+                {!displayData.length && (
                   <tr><td colSpan={isAdmin ? 6 : 5} className="px-4 py-8 text-center text-slate-500">Chưa có lịch sử làm bài kiểm tra.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         )}
-      </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-slate-100 p-4 bg-slate-50/50 gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-500">Hiển thị</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value));
+                setPage(1);
+              }}
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-emerald-500"
+            >
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value="ALL">Tất cả</option>
+            </select>
+            <span className="text-xs font-medium text-slate-500">dòng</span>
+          </div>
+          {!isAll && totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+              >
+                Trước
+              </button>
+              <span className="px-3 text-xs font-medium text-slate-600">
+                Trang {page} / {totalPages}
+              </span>
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+              >
+                Sau
+              </button>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  })()}
+</div>
 
       {reviewData && (
         <AttemptReview attempt={reviewData} onClose={() => setReviewData(null)} />
