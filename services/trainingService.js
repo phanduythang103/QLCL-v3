@@ -134,9 +134,10 @@ function normalizeQuestionOptions(question) {
   return [];
 }
 function normalizeCorrectIndex(question, options) {
-  const direct = Number(question.correctAnswerIndex ?? question.correct_answer_index ?? question.correct_index);
+  const direct = Number(question.correctAnswerIndex != null ? question.correctAnswerIndex : (question.correct_answer_index != null ? question.correct_answer_index : question.correct_index));
   if (Number.isInteger(direct) && direct >= 0 && direct < options.length) return direct;
-  const answer = String(question.correct_answer ?? question.answer ?? question.correctAnswer ?? '').trim();
+  const answerRaw = question.correct_answer != null ? question.correct_answer : (question.answer != null ? question.answer : (question.correctAnswer != null ? question.correctAnswer : ''));
+  const answer = String(answerRaw).trim();
   const byText = options.findIndex(option => String(option).trim() === answer);
   return byText >= 0 ? byText : 0;
 }
@@ -452,7 +453,7 @@ export async function submitFinalTest({ attemptId, courseId, userId, questions, 
   const durationSeconds = Math.max(1, Math.round((submittedAt.getTime() - actualStartedAt.getTime()) / 1000));
   
   const correctCount = questions.reduce((sum, question) => {
-    const expected = Number(question.correct_answer_index ?? question.correct_answer ?? -1);
+    const expected = Number(question.correct_answer_index != null ? question.correct_answer_index : (question.correct_answer != null ? question.correct_answer : -1));
     return sum + (Number(answers[question.id]) === expected ? 1 : 0);
   }, 0);
   const totalQuestions = questions.length;
@@ -487,7 +488,7 @@ export async function submitFinalTest({ attemptId, courseId, userId, questions, 
   if (attemptError) throw attemptError;
 
   const answerRows = questions.map((question) => {
-    const expected = Number(question.correct_answer_index ?? question.correct_answer ?? -1);
+    const expected = Number(question.correct_answer_index != null ? question.correct_answer_index : (question.correct_answer != null ? question.correct_answer : -1));
     const selected = Number(answers[question.id]);
     return {
       attempt_id: attempt.id,
