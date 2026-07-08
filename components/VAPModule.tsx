@@ -133,7 +133,7 @@ export const VAPModule: React.FC = () => {
       newRecord.c5_hut_dom,
       newRecord.c6_bay_nuoc
     ];
-    
+
     const tong_dat = criteria.filter(c => c === true).length;
     const ty_le = Math.round((tong_dat / 6) * 100);
 
@@ -233,7 +233,7 @@ export const VAPModule: React.FC = () => {
     const totalCompliance = records.length > 0
       ? Math.round(records.reduce((acc, r) => acc + (r.ty_le_tuan_thu || 0), 0) / records.length)
       : 88;
-    
+
     const casesInMonth = vpbvList.length;
     const totalVentDays = vpbvList.reduce((acc, r) => acc + (r.ngay_may_tho_cong_don || 0), 0) || 625; // fallback for demo
     const vapRate = totalVentDays > 0 ? ((casesInMonth / totalVentDays) * 1000).toFixed(1) : '3.2';
@@ -277,8 +277,8 @@ export const VAPModule: React.FC = () => {
           <div className="h-48 flex items-end gap-4 px-4 overflow-hidden">
             {[4.5, 4.2, 3.8, 3.5, 3.2, parseFloat(vapRate.toString())].map((val, idx) => (
               <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                <div 
-                  className="w-full bg-blue-500 rounded-t-lg transition-all duration-1000" 
+                <div
+                  className="w-full bg-blue-500 rounded-t-lg transition-all duration-1000"
                   style={{ height: `${(val / 5) * 100}%` }}
                 ></div>
                 <span className="text-[10px] font-bold text-black/40 uppercase">T.{idx + 1}</span>
@@ -298,7 +298,7 @@ export const VAPModule: React.FC = () => {
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
-        <button 
+        <button
           onClick={() => {
             setIsEditMode(false);
             setViewOnly(false);
@@ -319,7 +319,7 @@ export const VAPModule: React.FC = () => {
             });
             setShowModal(true);
           }}
-          className="bg-[#009900] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
+          className="bg-[#059669] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
         >
           <Plus size={16} /> Ghi nhận giám sát
         </button>
@@ -327,7 +327,7 @@ export const VAPModule: React.FC = () => {
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-xs text-left">
-          <thead className="bg-[#009900] text-white font-black uppercase">
+          <thead className="bg-[#059669] text-white font-black uppercase">
             <tr>
               <th className="p-3">Ngày GS</th>
               <th className="p-3">Người GS</th>
@@ -356,13 +356,13 @@ export const VAPModule: React.FC = () => {
                   </span>
                 </td>
                 <td className="p-3 text-center">
-                  <span className="text-[#009900] text-[11px] font-black">
+                  <span className="text-[#059669] text-[11px] font-black">
                     {r.tong_dat}/{r.tong_tieu_chi} = {r.ty_le_tuan_thu}%
                   </span>
                 </td>
                 <td className="p-3 text-right">
                   <div className="flex justify-end gap-1">
-                    <button 
+                    <button
                       onClick={() => {
                         setNewRecord(r);
                         setIsEditMode(false);
@@ -374,7 +374,7 @@ export const VAPModule: React.FC = () => {
                     >
                       <Search size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         setNewRecord(r);
                         setIsEditMode(true);
@@ -386,7 +386,7 @@ export const VAPModule: React.FC = () => {
                     >
                       <ClipboardList size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => r.id && handleDeleteSupervision(r.id)}
                       className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Xóa"
@@ -411,13 +411,13 @@ export const VAPModule: React.FC = () => {
       <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex-1 relative max-w-md">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm bệnh nhân VPBV..." 
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] transition-all outline-none"
+          <input
+            type="text"
+            placeholder="Tìm kiếm bệnh nhân VPBV..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] transition-all outline-none"
           />
         </div>
-        <button 
+        <button
           onClick={() => {
             setIsEditMode(false);
             setViewOnly(false);
@@ -436,7 +436,7 @@ export const VAPModule: React.FC = () => {
             });
             setShowCaseModal(true);
           }}
-          className="bg-[#009900] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
+          className="bg-[#059669] text-white px-4 py-2 rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] flex items-center gap-2 shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none"
         >
           <Plus size={16} /> Thêm ca bệnh
         </button>
@@ -444,7 +444,7 @@ export const VAPModule: React.FC = () => {
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-xs text-left">
-          <thead className="bg-[#009900] text-white font-black uppercase">
+          <thead className="bg-[#059669] text-white font-black uppercase">
             <tr>
               <th className="p-3">Ngày báo cáo</th>
               <th className="p-3">Mã BA</th>
@@ -484,7 +484,7 @@ export const VAPModule: React.FC = () => {
                 </td>
                 <td className="p-3 text-right">
                   <div className="flex justify-end gap-1">
-                    <button 
+                    <button
                       onClick={() => {
                         setNewCase(item);
                         setIsEditMode(false);
@@ -496,7 +496,7 @@ export const VAPModule: React.FC = () => {
                     >
                       <Search size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         setNewCase(item);
                         setIsEditMode(true);
@@ -508,7 +508,7 @@ export const VAPModule: React.FC = () => {
                     >
                       <ClipboardList size={14} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => item.id && handleDeleteCase(item.id)}
                       className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Xóa"
@@ -554,8 +554,8 @@ export const VAPModule: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as VAPTab)}
               className={`indicator-subtab-button ${
-                activeTab === tab.id 
-                  ? 'indicator-subtab-button-active' 
+                activeTab === tab.id
+                  ? 'indicator-subtab-button-active'
                   : ''
               }`}
             >
@@ -577,50 +577,50 @@ export const VAPModule: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-main-title font-bold uppercase text-[#009900]">
+              <h3 className="text-main-title font-bold uppercase text-[#059669]">
                 {viewOnly ? 'Chi tiết' : isEditMode ? 'Cập nhật' : 'Ghi nhận'} giám sát dự phòng VAP
               </h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-red-500 transition-colors">
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto space-y-6">
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Ngày giám sát *</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={newRecord.ngay_giam_sat}
                     onChange={e => setNewRecord({...newRecord, ngay_giam_sat: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Người giám sát *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Tên người giám sát..."
                     value={newRecord.nguoi_giam_sat}
                     onChange={e => setNewRecord({...newRecord, nguoi_giam_sat: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="space-y-1 relative" ref={unitRef}>
                   <label className="text-[10px] font-black uppercase text-black/40">Khoa/Phòng GS *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Chọn khoa/phòng..."
                     value={newRecord.don_vi_duoc_gs}
                     onChange={e => {
                       const val = e.target.value;
                       setNewRecord({...newRecord, don_vi_duoc_gs: val});
                       if (val.trim()) {
-                        const filtered = units.filter(u => 
-                          u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) || 
+                        const filtered = units.filter(u =>
+                          u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) ||
                           u.ma_don_vi.toLowerCase().includes(val.toLowerCase())
                         );
                         setFilteredUnits(filtered.slice(0, 5));
@@ -633,7 +633,7 @@ export const VAPModule: React.FC = () => {
                       if (newRecord.don_vi_duoc_gs) setShowUnitSuggestions(true);
                     }}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                   {showUnitSuggestions && filteredUnits.length > 0 && (
                     <div className="absolute z-[60] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden max-h-40 overflow-y-auto">
@@ -655,23 +655,23 @@ export const VAPModule: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Họ tên NB *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Tên bệnh nhân..."
                     value={newRecord.ho_ten_nb}
                     onChange={e => setNewRecord({...newRecord, ho_ten_nb: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-black/40">Giới tính</label>
-                    <select 
+                    <select
                       value={newRecord.gioi_tinh}
                       onChange={e => setNewRecord({...newRecord, gioi_tinh: e.target.value as any})}
                       disabled={viewOnly}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                     >
                       <option value="Nam">Nam</option>
                       <option value="Nữ">Nữ</option>
@@ -680,21 +680,21 @@ export const VAPModule: React.FC = () => {
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-black/40">Phòng/Giường</label>
                     <div className="flex gap-1">
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="P..."
                         value={newRecord.phong_benh}
                         onChange={e => setNewRecord({...newRecord, phong_benh: e.target.value})}
                         disabled={viewOnly}
-                        className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                        className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                       />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="G..."
                         value={newRecord.giuong_benh}
                         onChange={e => setNewRecord({...newRecord, giuong_benh: e.target.value})}
                         disabled={viewOnly}
-                        className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                        className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                       />
                     </div>
                   </div>
@@ -703,8 +703,8 @@ export const VAPModule: React.FC = () => {
 
               {/* Checklist */}
               <div className="space-y-3">
-                <h4 className="text-[11px] font-black uppercase text-[#009900] border-b border-green-50 pb-1">Nội dung giám sát (Checklist)</h4>
-                
+                <h4 className="text-[11px] font-black uppercase text-[#059669] border-b border-green-50 pb-1">Nội dung giám sát (Checklist)</h4>
+
                 {[
                   { key: 'c1_dau_cao', label: '1. NB nằm đầu cao 30° - 45°' },
                   { key: 'c2_vs_rang_mieng', label: '2. Vệ sinh răng miệng sát khuẩn >= 2 lần/ngày' },
@@ -714,25 +714,25 @@ export const VAPModule: React.FC = () => {
                   { key: 'c6_bay_nuoc', label: '6. Đổ nước bẫy nước đúng cách' },
                 ].map(item => (
                   <div key={item.key} className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors group">
-                    <span className="text-table font-bold text-black group-hover:text-[#009900] transition-colors">{item.label}</span>
+                    <span className="text-table font-bold text-black group-hover:text-[#059669] transition-colors">{item.label}</span>
                     <div className="flex bg-slate-200 p-1 rounded-lg w-full md:w-auto md:min-w-[200px]">
-                      <button 
+                      <button
                         onClick={() => setNewRecord({...newRecord, [item.key]: false})}
                         disabled={viewOnly}
                         className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${
-                          !(newRecord as any)[item.key] 
-                            ? 'bg-red-500 text-white shadow-sm' 
+                          !(newRecord as any)[item.key]
+                            ? 'bg-red-500 text-white shadow-sm'
                             : 'text-black/40 hover:text-black'
                         } disabled:opacity-50`}
                       >
                         <X size={12} /> Không đạt
                       </button>
-                      <button 
+                      <button
                         onClick={() => setNewRecord({...newRecord, [item.key]: true})}
                         disabled={viewOnly}
                         className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-black uppercase transition-all ${
-                          (newRecord as any)[item.key] 
-                            ? 'bg-[#009900] text-white shadow-sm' 
+                          (newRecord as any)[item.key]
+                            ? 'bg-[#059669] text-white shadow-sm'
                             : 'text-black/40 hover:text-black'
                         } disabled:opacity-50`}
                       >
@@ -745,19 +745,19 @@ export const VAPModule: React.FC = () => {
             </div>
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="px-6 py-2 rounded-lg text-table font-black uppercase text-slate-500 hover:bg-slate-100 transition-all outline-none"
               >
                 Đóng
               </button>
               {!viewOnly && (
-                <button 
+                <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="px-8 py-2 bg-[#009900] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
+                  className="px-8 py-2 bg-[#059669] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
                 >
-                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />} 
+                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
                   {isEditMode ? 'Cập nhật' : 'Lưu dữ liệu'}
                 </button>
               )}
@@ -770,7 +770,7 @@ export const VAPModule: React.FC = () => {
       {showCaseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-4 bg-[#009900] text-white flex justify-between items-center">
+            <div className="p-4 bg-[#059669] text-white flex justify-between items-center">
               <h3 className="font-black uppercase flex items-center gap-2">
                 <ClipboardList size={20} /> {viewOnly ? 'Chi tiết' : isEditMode ? 'Cập nhật' : 'Ghi nhận'} ca bệnh VPBV/VAP
               </h3>
@@ -778,42 +778,42 @@ export const VAPModule: React.FC = () => {
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Ngày báo cáo *</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={newCase.ngay_bao_cao}
                     onChange={e => setNewCase({...newCase, ngay_bao_cao: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Mã bệnh án</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Mã BA..."
                     value={newCase.ma_ba || ''}
                     onChange={e => setNewCase({...newCase, ma_ba: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="space-y-1 relative" ref={unitRef}>
                   <label className="text-[10px] font-black uppercase text-black/40">Khoa điều trị *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Khoa..."
                     value={newCase.khoa}
                     onChange={e => {
                       const val = e.target.value;
                       setNewCase({...newCase, khoa: val});
                       if (val.trim()) {
-                        const filtered = units.filter(u => 
-                          u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) || 
+                        const filtered = units.filter(u =>
+                          u.ten_don_vi.toLowerCase().includes(val.toLowerCase()) ||
                           u.ma_don_vi.toLowerCase().includes(val.toLowerCase())
                         );
                         setFilteredUnits(filtered.slice(0, 5));
@@ -826,7 +826,7 @@ export const VAPModule: React.FC = () => {
                       if (newCase.khoa) setShowUnitSuggestions(true);
                     }}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                   {showUnitSuggestions && activeTab === 'LIST' && filteredUnits.length > 0 && (
                     <div className="absolute z-[60] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden max-h-40 overflow-y-auto">
@@ -850,23 +850,23 @@ export const VAPModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Họ tên NB *</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Họ và tên..."
                     value={newCase.ho_ten_nb}
                     onChange={e => setNewCase({...newCase, ho_ten_nb: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-black/40">Giới tính</label>
-                    <select 
+                    <select
                       value={newCase.gioi_tinh}
                       onChange={e => setNewCase({...newCase, gioi_tinh: e.target.value as any})}
                       disabled={viewOnly}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                     >
                       <option value="Nam">Nam</option>
                       <option value="Nữ">Nữ</option>
@@ -874,13 +874,13 @@ export const VAPModule: React.FC = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-black/40">Năm sinh</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       placeholder="Năm sinh..."
                       value={newCase.nam_sinh || ''}
                       onChange={e => setNewCase({...newCase, nam_sinh: parseInt(e.target.value) || undefined})}
                       disabled={viewOnly}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                     />
                   </div>
                 </div>
@@ -889,22 +889,22 @@ export const VAPModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Ngày nhập viện</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={newCase.ngay_nhap_vien || ''}
                     onChange={e => setNewCase({...newCase, ngay_nhap_vien: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Ngày khởi phát VP</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={newCase.ngay_khoi_phat_vp || ''}
                     onChange={e => setNewCase({...newCase, ngay_khoi_phat_vp: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
               </div>
@@ -912,11 +912,11 @@ export const VAPModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Phân loại NKBV</label>
-                  <select 
+                  <select
                     value={newCase.chan_doan_nkbv}
                     onChange={e => setNewCase({...newCase, chan_doan_nkbv: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   >
                     <option value="Viêm phổi bệnh viện">Viêm phổi bệnh viện</option>
                     <option value="Viêm phổi máy thở">Viêm phổi máy thở</option>
@@ -924,36 +924,36 @@ export const VAPModule: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Chẩn đoán xác định</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Chẩn đoán chi tiết..."
                     value={newCase.chan_doan_xac_dinh || ''}
                     onChange={e => setNewCase({...newCase, chan_doan_xac_dinh: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase text-black/40">Kết quả vi sinh vật</label>
-                <textarea 
+                <textarea
                   placeholder="Tên vi khuẩn, KS đồ..."
                   value={newCase.ket_qua_vsv || ''}
                   onChange={e => setNewCase({...newCase, ket_qua_vsv: e.target.value})}
                   disabled={viewOnly}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none h-16 resize-none disabled:opacity-70"
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none h-16 resize-none disabled:opacity-70"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Tình trạng</label>
-                  <select 
+                  <select
                     value={newCase.tinh_trang}
                     onChange={e => setNewCase({...newCase, tinh_trang: e.target.value})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   >
                     <option value="Đang điều trị">Đang điều trị</option>
                     <option value="Ổn định">Ổn định</option>
@@ -963,31 +963,31 @@ export const VAPModule: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-black/40">Số ngày MT cộng dồn</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={newCase.ngay_may_tho_cong_don || 0}
                     onChange={e => setNewCase({...newCase, ngay_may_tho_cong_don: parseInt(e.target.value) || 0})}
                     disabled={viewOnly}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none disabled:opacity-70"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none disabled:opacity-70"
                   />
                 </div>
               </div>
             </div>
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-              <button 
+              <button
                 onClick={() => setShowCaseModal(false)}
                 className="px-6 py-2 rounded-lg text-table font-black uppercase text-slate-500 hover:bg-slate-100 transition-all outline-none"
               >
                 Đóng
               </button>
               {!viewOnly && (
-                <button 
+                <button
                   onClick={handleSaveVpbv}
                   disabled={loading}
-                  className="px-8 py-2 bg-[#009900] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
+                  className="px-8 py-2 bg-[#059669] text-white rounded-lg text-table font-black uppercase hover:bg-[#0d6e39] shadow-xl shadow-green-900/10 active:scale-95 transition-all outline-none flex items-center gap-2"
                 >
-                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />} 
+                  {loading ? <RefreshCw className="animate-spin" size={16} /> : <Check size={16} />}
                   {isEditMode ? 'Cập nhật' : 'Lưu ca bệnh'}
                 </button>
               )}

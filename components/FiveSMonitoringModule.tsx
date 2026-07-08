@@ -41,7 +41,7 @@ export const SECTIONS_5S = [
 
 export const getPhanLoai = (score: number) => {
   if (score >= 90) return { label: 'Xuất sắc', color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' };
-  if (score >= 75) return { label: 'Tốt', color: 'text-[#009900]', bg: 'bg-green-50', border: 'border-green-200' };
+  if (score >= 75) return { label: 'Tốt', color: 'text-[#059669]', bg: 'bg-green-50', border: 'border-green-200' };
   if (score >= 50) return { label: 'Trung bình', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' };
   return { label: 'Yếu', color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200' };
 };
@@ -78,7 +78,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
 const StatCard = ({ icon, label, value, color }: any) => {
   const colors: Record<string, string> = {
     orange: 'bg-orange-50 text-orange-600',
-    green: 'bg-green-50 text-[#009900]',
+    green: 'bg-green-50 text-[#059669]',
     indigo: 'bg-indigo-50 text-indigo-600',
     amber: 'bg-amber-50 text-amber-600',
   };
@@ -157,7 +157,7 @@ const FiveSList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
       </div>
       <div className="hidden md:block overflow-x-auto">
         <table className="table-standardized">
-          <thead className="bg-[#009900] text-white">
+          <thead className="bg-[#059669] text-white">
             <tr>
               <th className="p-5">Ngày</th><th className="p-5">Đơn vị</th><th className="p-5">Khu vực</th>
               <th className="p-5 text-center">Điểm</th><th className="p-5 text-center">Phân loại</th><th className="p-5 text-right">Thao tác</th>
@@ -358,7 +358,7 @@ const FiveSFormView = ({ item, onClose, onSaved, currentUser, departmentList }: 
                   <span className="text-sm font-black text-slate-800 uppercase">{section.title}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-sm font-black ${sectionTotal === sectionMax ? 'text-[#009900]' : sectionTotal >= sectionMax * 0.75 ? 'text-amber-600' : 'text-rose-500'}`}>{sectionTotal}/{sectionMax}</span>
+                  <span className={`text-sm font-black ${sectionTotal === sectionMax ? 'text-[#059669]' : sectionTotal >= sectionMax * 0.75 ? 'text-amber-600' : 'text-rose-500'}`}>{sectionTotal}/{sectionMax}</span>
                   {isOpen ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
                 </div>
               </button>
@@ -495,7 +495,7 @@ const FiveSDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) 
                         <td className="p-3 border-2 border-slate-800 text-center font-bold text-slate-500">{idx + 1}</td>
                         <td className="p-3 border-2 border-slate-800 font-bold text-slate-700 leading-snug">{c.label}</td>
                         <td className="p-3 border-2 border-slate-800 text-center font-black text-slate-500">{c.max}</td>
-                        <td className={`p-3 border-2 border-slate-800 text-center font-black text-lg ${Number(item[`${c.id}_diem`]) === c.max ? 'text-[#009900]' : Number(item[`${c.id}_diem`]) >= c.max * 0.5 ? 'text-amber-600' : 'text-rose-500'}`}>
+                        <td className={`p-3 border-2 border-slate-800 text-center font-black text-lg ${Number(item[`${c.id}_diem`]) === c.max ? 'text-[#059669]' : Number(item[`${c.id}_diem`]) >= c.max * 0.5 ? 'text-amber-600' : 'text-rose-500'}`}>
                           {item[`${c.id}_diem`] ?? c.max}
                         </td>
                         <td className="p-3 border-2 border-slate-800 text-rose-600 font-bold italic text-xs leading-tight">
@@ -635,6 +635,11 @@ export const FiveSMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBac
             <TabButton active={activeTab === 'DANH_SACH'} onClick={() => { setActiveTab('DANH_SACH'); setViewMode('LIST'); }} icon={List} label="Danh sách" />
             <TabButton active={activeTab === 'REPORT'} onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }} icon={BarChart3} label="Tổng hợp" />
           </div>
+          {activeTab !== 'DANH_SACH' && viewMode === 'LIST' && (
+            <button onClick={() => { setEditingItem(null); setActiveTab('DANH_SACH'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-2xl bg-[#059669] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-green-200 transition-all hover:bg-[#0d6e39] active:scale-95">
+              <Plus size={18} /> Thêm giám sát mới
+            </button>
+          )}
         </div>
 
         {/* Filters */}

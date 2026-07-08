@@ -463,8 +463,8 @@ const UpdateStatusModal = ({ item, onClose, onSaved }: { item: any, onClose: () 
                       key={s}
                       onClick={() => setTrangThai(s)}
                       className={`px-4 py-2 rounded-xl border-2 transition-all text-sm font-bold lowercase ${
-                        isActive 
-                          ? `${colors} border-current shadow-md scale-105 active:scale-95` 
+                        isActive
+                          ? `${colors} border-current shadow-md scale-105 active:scale-95`
                           : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600'
                       }`}
                     >
@@ -485,7 +485,7 @@ const UpdateStatusModal = ({ item, onClose, onSaved }: { item: any, onClose: () 
                 className="w-full border border-slate-200 rounded-2xl px-5 py-4 text-[13px] font-bold text-slate-800 focus:ring-8 focus:ring-primary-500/5 focus:border-primary-500 transition-all outline-none resize-none bg-slate-50/30 shadow-inner"
               />
             </div>
-            
+
             {error && <div className="text-red-600 text-xs bg-red-50 p-4 rounded-2xl border border-red-200 animate-in shake duration-300">{error}</div>}
           </div>
         </div>
@@ -637,8 +637,8 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                     <td className="px-6 py-8 border border-slate-200 text-center">
                       <div className="flex flex-col gap-2.5 items-center">
                         <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg border border-slate-100">
-                          <Calendar size={14} className="text-[#009900]" />
-                          <span className="text-black font-black text-xs font-sans underline decoration-[#009900]/20 underline-offset-4 decoration-2">{inc.ngay_bao_cao ? new Date(inc.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}</span>
+                          <Calendar size={14} className="text-[#059669]" />
+                          <span className="text-black font-black text-xs font-sans underline decoration-[#059669]/20 underline-offset-4 decoration-2">{inc.ngay_bao_cao ? new Date(inc.ngay_bao_cao).toLocaleDateString('vi-VN') : '---'}</span>
                         </div>
                         <div className="text-[10px] font-mono font-black text-primary-700 bg-primary-50 px-2 py-0.5 rounded-lg border border-primary-100 uppercase tracking-tighter shadow-inner">#{inc.so_bc_ma_scyk || '---'}</div>
                       </div>
@@ -647,7 +647,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                     {/* COL 2: Unit info */}
                     <td className="px-6 py-8 border border-slate-200">
                       <div className="flex flex-col gap-2">
-                        <div className="text-black text-[13px] font-black uppercase tracking-tight leading-tight group-hover:text-[#009900] transition-colors">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
+                        <div className="text-black text-[13px] font-black uppercase tracking-tight leading-tight group-hover:text-[#059669] transition-colors">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
                         <div className="flex items-center gap-2">
                            <div className="text-[10px] text-slate-600 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/50 italic capitalize">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</div>
                         </div>
@@ -661,16 +661,16 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                     <td className="px-6 py-8 border border-slate-200 text-center">
                       <div className="flex flex-col gap-3 items-center">
                         <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tight shadow-sm border ${
-                          inc.nhom_bao_cao === 'Ngoài sự cố y khoa' 
-                          ? 'bg-amber-50 text-amber-600 border-amber-200' 
+                          inc.nhom_bao_cao === 'Ngoài sự cố y khoa'
+                          ? 'bg-amber-50 text-amber-600 border-amber-200'
                           : 'bg-blue-50 text-blue-600 border-blue-200'
                         }`}>
                           {inc.nhom_bao_cao || 'Sự cố y khoa'}
                         </span>
                         <div className="flex items-center gap-2">
                            <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                             inc.hinh_thuc_bao_cao === 'Bắt buộc' 
-                             ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm shadow-rose-100' 
+                             inc.hinh_thuc_bao_cao === 'Bắt buộc'
+                             ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm shadow-rose-100'
                              : 'bg-indigo-50 text-indigo-600 border-indigo-200'
                            }`}>
                              {inc.hinh_thuc_bao_cao === 'Bắt buộc' ? '🚀 Bắt buộc' : '🏥 Tự nguyện'}
@@ -689,7 +689,7 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                     {/* COL 5: Actions */}
                     <td className="px-6 py-8 border border-slate-200 text-center bg-slate-50/30">
                       <div className="grid grid-cols-2 gap-2 uppercase font-sans">
-                        <button onClick={() => onView(inc)} className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-[10px] font-black text-green-700 bg-green-50 hover:bg-[#009900] hover:text-white rounded-xl transition-all border border-green-200 shadow-sm active:scale-95 group/btn">
+                        <button onClick={() => onView(inc)} className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-[10px] font-black text-green-700 bg-green-50 hover:bg-[#059669] hover:text-white rounded-xl transition-all border border-green-200 shadow-sm active:scale-95 group/btn">
                           <Eye size={16} /> Xem
                         </button>
                         {canUpdate('INCIDENTS', 'LIST') && isOwnUnit && (
@@ -1134,7 +1134,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
   const MobileSection = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
     <section className="rounded-[1.5rem] border border-slate-100 bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#009900]/10 text-[#009900]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#059669]/10 text-[#059669]">
           {icon}
         </div>
         <h3 className="text-xs font-black uppercase tracking-wide text-slate-800">{title}</h3>
@@ -1146,9 +1146,9 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
   return (
     <div>
       <div className="max-w-[1400px] w-full mx-auto animate-in fade-in slide-in-from-right-4 duration-500 pb-20 mt-2 px-0 md:mt-4 md:px-0">
-        
+
         {/* Actions Bar - Page Header Style */}
-        <div className="bg-[#009900] px-4 py-4 text-white rounded-2xl mb-4 shadow-md flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:px-6 md:py-5 md:mb-8">
+        <div className="bg-[#059669] px-4 py-4 text-white rounded-2xl mb-4 shadow-md flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:px-6 md:py-5 md:mb-8">
           <div className="flex w-full min-w-0 items-center gap-3 md:w-auto md:gap-4">
             <div className="w-11 h-11 md:w-12 md:h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
                <FileText className="w-7 h-7 text-white" />
@@ -1158,13 +1158,13 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               <p className="truncate text-green-50 text-[10px] md:text-sm font-medium mt-0.5 tracking-widest uppercase opacity-80 decoration-white/30 underline underline-offset-4">ID: {item.so_bc_ma_scyk || '---'}</p>
             </div>
           </div>
-          
+
           <div className="grid w-full grid-cols-3 gap-2 md:flex md:w-auto md:flex-wrap md:items-center">
             <button onClick={onBack} className="flex min-h-11 items-center justify-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all md:px-4">
               <ArrowLeft size={16} /> Quay lại
             </button>
             {canUpdate('INCIDENTS') && (
-              <button onClick={onEdit} className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[#009900] shadow-sm transition-all hover:bg-emerald-50 active:scale-95 md:px-4">
+              <button onClick={onEdit} className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[#059669] shadow-sm transition-all hover:bg-emerald-50 active:scale-95 md:px-4">
                 <Edit2 size={16} /> Chỉnh sửa
               </button>
             )}
@@ -1188,7 +1188,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
 
             {/* Mobile-first readable detail cards */}
             <div className="space-y-4 md:hidden">
-              <section className="rounded-[1.75rem] bg-gradient-to-br from-[#009900] to-emerald-700 p-4 text-white shadow-lg shadow-emerald-900/10">
+              <section className="rounded-[1.75rem] bg-gradient-to-br from-[#059669] to-emerald-700 p-4 text-white shadow-lg shadow-emerald-900/10">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Mã báo cáo</p>
@@ -1290,7 +1290,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               {/* Box 1: Reporting Type */}
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-black p-6 space-y-4">
-                  <p className="bg-[#009900] text-white p-2 px-4 font-bold uppercase text-[10pt] -mx-6 -mt-6 mb-4">I. HÌNH THỨC BÁO CÁO:</p>
+                  <p className="bg-[#059669] text-white p-2 px-4 font-bold uppercase text-[10pt] -mx-6 -mt-6 mb-4">I. HÌNH THỨC BÁO CÁO:</p>
                   <div className="space-y-2 text-[12pt] font-medium pl-2">
                     <p className="flex items-center gap-2"><Chk c={item.hinh_thuc_bao_cao === 'Tự nguyện'} /> - Tự nguyện</p>
                     <p className="flex items-center gap-2"><Chk c={item.hinh_thuc_bao_cao === 'Bắt buộc'} /> - Bắt buộc</p>
@@ -1306,7 +1306,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               {/* Box 2: Patient & Target */}
               <div className="grid grid-cols-1 md:grid-cols-2 border-t-[1.5px] border-black">
                 <div className="border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-black p-6 space-y-3 text-[11pt]">
-                  <p className="font-bold uppercase bg-[#009900] text-white -mx-6 -mt-6 p-2 px-6 border-b-[1.5px] border-black text-[10pt]">1. Thông tin người bệnh</p>
+                  <p className="font-bold uppercase bg-[#059669] text-white -mx-6 -mt-6 p-2 px-6 border-b-[1.5px] border-black text-[10pt]">1. Thông tin người bệnh</p>
                   <p className="pt-3"><strong>Họ và tên:</strong> {item.ho_ten_nb || '..........................................................'}</p>
                   <p><strong>Số bệnh án:</strong> {item.so_benh_an || '................................'}</p>
                   <div className="flex flex-wrap gap-8">
@@ -1316,7 +1316,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                   <p><strong>Khoa/phòng đang điều trị:</strong> {item.khoa_phong || '................................'}</p>
                 </div>
                 <div className="p-6 space-y-3 text-[11pt]">
-                  <p className="font-bold uppercase bg-[#009900] text-white -mx-6 -mt-6 p-2 px-6 border-b-[1.5px] border-black text-[10pt]">2. Đối tượng xảy ra sự cố</p>
+                  <p className="font-bold uppercase bg-[#059669] text-white -mx-6 -mt-6 p-2 px-6 border-b-[1.5px] border-black text-[10pt]">2. Đối tượng xảy ra sự cố</p>
                   <div className="grid grid-cols-1 gap-2 pt-3 font-medium pl-2">
                     <p className="flex items-center gap-2"><Chk c={item.doi_tuong_xay_ra_sc === 'Người bệnh'} /> Người bệnh</p>
                     <p className="flex items-center gap-2"><Chk c={item.doi_tuong_xay_ra_sc === 'Người nhà/khách'} /> Người nhà / khách đến thăm</p>
@@ -1327,7 +1327,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               </div>
 
               {/* Box 3: Location */}
-              <div className="border-t-[1.5px] border-black p-2 px-6 font-bold bg-[#009900] text-white text-[10pt] uppercase tracking-widest border-b-[1.5px]">
+              <div className="border-t-[1.5px] border-black p-2 px-6 font-bold bg-[#059669] text-white text-[10pt] uppercase tracking-widest border-b-[1.5px]">
                 3. Nơi xảy ra sự cố:
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 text-[11pt]">
@@ -1352,14 +1352,14 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
 
               {/* Box 4: Descriptions */}
               <div className="border-t-[1.5px] border-black p-6 space-y-4 text-[11pt]">
-                <p className="bg-[#009900] text-white p-2 px-4 font-bold uppercase text-[10pt] -mx-6 -mt-6 mb-4">II. MÔ TẢ CHI TIẾT SỰ CỐ:</p>
+                <p className="bg-[#059669] text-white p-2 px-4 font-bold uppercase text-[10pt] -mx-6 -mt-6 mb-4">II. MÔ TẢ CHI TIẾT SỰ CỐ:</p>
                 <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl italic font-medium min-h-[120px] whitespace-pre-wrap leading-relaxed text-[12pt] text-slate-800 shadow-inner">
                   {item.mo_ta_su_co || '........................................................................................................................................................................................................................................................................................................................................'}
                 </div>
               </div>
 
               <div className="border-t-[1.5px] border-black p-6 space-y-6 text-[11pt]">
-                <p className="bg-[#009900] text-white p-2 px-4 font-bold uppercase text-[10pt] -mx-6 -mt-6 mb-4">III. BIỆN PHÁP XỬ LÝ / GIẢI PHÁP:</p>
+                <p className="bg-[#059669] text-white p-2 px-4 font-bold uppercase text-[10pt] -mx-6 -mt-6 mb-4">III. BIỆN PHÁP XỬ LÝ / GIẢI PHÁP:</p>
                 <div className="space-y-6">
                   <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50">
                     <p className="font-bold italic mb-2 text-blue-900 leading-tight border-b border-blue-100 pb-1">Xử lý ban đầu đã thực hiện:</p>
@@ -1373,23 +1373,23 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               </div>
 
               {/* Box 5: Notifications */}
-              <div className="border-t-[1.5px] border-black p-2 px-6 font-bold bg-[#009900] text-white text-[10pt] uppercase tracking-widest border-b-[1.5px]">
+              <div className="border-t-[1.5px] border-black p-2 px-6 font-bold bg-[#059669] text-white text-[10pt] uppercase tracking-widest border-b-[1.5px]">
                 IV. QUY TRÌNH THÔNG BÁO & GHI NHẬN:
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 text-[11pt]">
                  <div className="border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-black p-6 space-y-3">
-                    <p className="font-bold text-[#009900] text-[10pt] uppercase">1. BS điều trị / Người có trách nhiệm</p>
+                    <p className="font-bold text-[#059669] text-[10pt] uppercase">1. BS điều trị / Người có trách nhiệm</p>
                     <p className="flex gap-10 font-medium pl-2">
-                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_bs_dieu_tri === 'Có'} /> Có</p> 
-                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_bs_dieu_tri === 'Không'} /> Không</p> 
+                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_bs_dieu_tri === 'Có'} /> Có</p>
+                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_bs_dieu_tri === 'Không'} /> Không</p>
                        <p className="flex items-center gap-2"><Chk c={item.thong_bao_bs_dieu_tri === 'Không ghi nhận'} /> KGN</p>
                     </p>
                  </div>
                  <div className="p-6 space-y-3 border-b-[1.5px] md:border-b-0 border-black">
-                    <p className="font-bold text-[#009900] text-[10pt] uppercase">2. Ghi nhận vào HSBA</p>
+                    <p className="font-bold text-[#059669] text-[10pt] uppercase">2. Ghi nhận vào HSBA</p>
                     <p className="flex gap-10 font-medium pl-2">
-                       <p className="flex items-center gap-2"><Chk c={item.ghi_nhan_vao_hsba === 'Có'} /> Có</p> 
-                       <p className="flex items-center gap-2"><Chk c={item.ghi_nhan_vao_hsba === 'Không'} /> Không</p> 
+                       <p className="flex items-center gap-2"><Chk c={item.ghi_nhan_vao_hsba === 'Có'} /> Có</p>
+                       <p className="flex items-center gap-2"><Chk c={item.ghi_nhan_vao_hsba === 'Không'} /> Không</p>
                        <p className="flex items-center gap-2"><Chk c={item.ghi_nhan_vao_hsba === 'Không ghi nhận'} /> KGN</p>
                     </p>
                  </div>
@@ -1397,18 +1397,18 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
 
               <div className="grid grid-cols-1 md:grid-cols-2 border-t-[1.5px] border-black text-[11pt]">
                  <div className="border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-black p-6 space-y-3">
-                    <p className="font-bold text-[#009900] text-[10pt] uppercase">3. Thông báo cho người nhà</p>
+                    <p className="font-bold text-[#059669] text-[10pt] uppercase">3. Thông báo cho người nhà</p>
                     <p className="flex gap-10 font-medium pl-2">
-                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_nha === 'Có'} /> Có</p> 
-                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_nha === 'Không'} /> Không</p> 
+                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_nha === 'Có'} /> Có</p>
+                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_nha === 'Không'} /> Không</p>
                        <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_nha === 'Không ghi nhận'} /> KGN</p>
                     </p>
                  </div>
                  <div className="p-6 space-y-3">
-                    <p className="font-bold text-[#009900] text-[10pt] uppercase">4. Thông báo cho người bệnh</p>
+                    <p className="font-bold text-[#059669] text-[10pt] uppercase">4. Thông báo cho người bệnh</p>
                     <p className="flex gap-10 font-medium pl-2">
-                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_benh === 'Có'} /> Có</p> 
-                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_benh === 'Không'} /> Không</p> 
+                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_benh === 'Có'} /> Có</p>
+                       <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_benh === 'Không'} /> Không</p>
                        <p className="flex items-center gap-2"><Chk c={item.thong_bao_nguoi_benh === 'Không ghi nhận'} /> KGN</p>
                     </p>
                  </div>
@@ -1418,17 +1418,17 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               <div className="border-t-[1.5px] border-black p-6 text-[11pt]">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     <div>
-                       <p className="bg-[#009900] text-white p-2 px-4 font-bold uppercase text-[10pt] mb-4">V. Phân loại ban đầu về sự cố:</p>
+                       <p className="bg-[#059669] text-white p-2 px-4 font-bold uppercase text-[10pt] mb-4">V. Phân loại ban đầu về sự cố:</p>
                        <div className="flex gap-10 font-medium pl-2">
-                          <p className="flex items-center gap-2"><Chk c={item.phan_loai_ban_dau === 'Chưa xảy ra'} /> Chưa xảy ra</p> 
+                          <p className="flex items-center gap-2"><Chk c={item.phan_loai_ban_dau === 'Chưa xảy ra'} /> Chưa xảy ra</p>
                           <p className="flex items-center gap-2"><Chk c={item.phan_loai_ban_dau === 'Đã xảy ra'} /> Đã xảy ra</p>
                        </div>
                     </div>
                     <div>
-                       <p className="bg-[#009900] text-white p-2 px-4 font-bold uppercase text-[10pt] mb-4">VI. Mức độ ảnh hưởng ban đầu:</p>
+                       <p className="bg-[#059669] text-white p-2 px-4 font-bold uppercase text-[10pt] mb-4">VI. Mức độ ảnh hưởng ban đầu:</p>
                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-2">
-                          <p className="flex items-center gap-2"><Chk c={item.muc_do_anh_huong === 'Nặng'} /> <span className="text-red-700 font-bold">Nặng</span></p> 
-                          <p className="flex items-center gap-2"><Chk c={item.muc_do_anh_huong === 'Trung bình'} /> <span className="text-orange-700 font-bold">Trung bình</span></p> 
+                          <p className="flex items-center gap-2"><Chk c={item.muc_do_anh_huong === 'Nặng'} /> <span className="text-red-700 font-bold">Nặng</span></p>
+                          <p className="flex items-center gap-2"><Chk c={item.muc_do_anh_huong === 'Trung bình'} /> <span className="text-orange-700 font-bold">Trung bình</span></p>
                           <p className="flex items-center gap-2"><Chk c={item.muc_do_anh_huong === 'Nhẹ'} /> <span className="text-blue-700 font-bold">Nhẹ</span></p>
                        </div>
                     </div>
@@ -1436,7 +1436,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
               </div>
 
               {/* Box 7: Reporter */}
-              <div className="border-t-[1.5px] border-black bg-[#009900] text-white p-2 px-6 font-bold text-[10pt] uppercase tracking-widest border-b-[1.5px]">
+              <div className="border-t-[1.5px] border-black bg-[#059669] text-white p-2 px-6 font-bold text-[10pt] uppercase tracking-widest border-b-[1.5px]">
                  VII. Thông tin người báo cáo:
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 text-[11pt]">
@@ -1452,7 +1452,7 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                  </div>
               </div>
               <div className="border-t-[1.5px] border-black p-6 text-[11pt]">
-                 <p className="font-bold uppercase mb-4 text-[#009900] text-[10pt]">Đối tượng / Chức danh người báo cáo:</p>
+                 <p className="font-bold uppercase mb-4 text-[#059669] text-[10pt]">Đối tượng / Chức danh người báo cáo:</p>
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 font-medium pl-2">
                     <p className="flex items-center gap-2"><Chk c={item.nguoi_bao_cao_doi_tuong === 'Điều dưỡng'} /> Điều dưỡng</p>
                     <p className="flex items-center gap-2"><Chk c={item.nguoi_bao_cao_doi_tuong === 'Bác sỹ'} /> Bác sỹ</p>

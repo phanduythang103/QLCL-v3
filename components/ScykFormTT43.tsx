@@ -234,7 +234,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
       <div className="max-w-[1400px] w-full mx-auto">
 
         {/* Header */}
-        <div className="bg-[#009900] px-6 py-5 text-white rounded-2xl mb-6 shadow-sm">
+        <div className="bg-[#059669] px-6 py-5 text-white rounded-2xl mb-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
               <Hospital className="w-7 h-7 text-white" />

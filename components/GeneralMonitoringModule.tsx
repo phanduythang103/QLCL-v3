@@ -61,7 +61,7 @@ const defaultFormGsChung = (userName = ''): any => ({
 
 // ─── UI COMPONENTS ──────────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#059669] text-white border-[#059669] shadow-lg' : 'bg-white text-[#059669] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -97,9 +97,9 @@ const ImageUploaderGsChung = ({ images, onChange }: { images: string[]; onChange
     try {
       const urls = await Promise.all(Array.from(files).map(f => uploadGsChungImage(f)));
       onChange([...images, ...urls]);
-    } catch (err: any) { 
+    } catch (err: any) {
       console.error('Upload error:', err);
-      alert('Lỗi tải ảnh: ' + (err.message || 'Không xác định')); 
+      alert('Lỗi tải ảnh: ' + (err.message || 'Không xác định'));
     }
     finally { setUploading(false); e.target.value = ''; }
   };
@@ -111,7 +111,7 @@ const ImageUploaderGsChung = ({ images, onChange }: { images: string[]; onChange
           <button type="button" onClick={() => onChange(images.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
         </div>
       ))}
-      <label className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#009900] hover:text-[#009900] transition-all cursor-pointer ${uploading ? 'animate-pulse pointer-events-none' : ''}`}>
+      <label className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#059669] hover:text-[#059669] transition-all cursor-pointer ${uploading ? 'animate-pulse pointer-events-none' : ''}`}>
         <input type="file" hidden multiple accept="image/*" onChange={handleUpload} />
         {uploading ? <Loader2 size={24} className="animate-spin" /> : <Camera size={24} />}
         <span className="text-[8px] font-black mt-1 uppercase tracking-tighter">{uploading ? 'Đang tải...' : 'Thêm ảnh'}</span>
@@ -191,7 +191,7 @@ const GsChungErrorSummary = ({ data }: { data: GiamSatChung[] }) => {
       </div>
 
       <div className="flex justify-end pt-6">
-         <button onClick={handleExportExcel} className="flex items-center gap-2 bg-[#009900] text-white px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-emerald-700 transition-all active:scale-95"><BarChart3 size={18}/> Xuất báo cáo Excel</button>
+         <button onClick={handleExportExcel} className="flex items-center gap-2 bg-[#059669] text-white px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-emerald-700 transition-all active:scale-95"><BarChart3 size={18}/> Xuất báo cáo Excel</button>
       </div>
     </div>
   );
@@ -225,8 +225,8 @@ const GsChungOverview = ({ data }: { data: GiamSatChung[] }) => {
         <StatCard icon={<XCircle />} label="Tồn tại ghi nhận" value={stats.fail} color="rose" />
       </div>
       <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm h-96 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1 h-full bg-[#009900] opacity-20"/>
-        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-3"><TrendingUp size={18} className="text-[#009900]" /> Biểu đồ chất lượng giám sát</h3>
+        <div className="absolute top-0 left-0 w-1 h-full bg-[#059669] opacity-20"/>
+        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-3"><TrendingUp size={18} className="text-[#059669]" /> Biểu đồ chất lượng giám sát</h3>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={trendData}>
@@ -234,8 +234,8 @@ const GsChungOverview = ({ data }: { data: GiamSatChung[] }) => {
               <XAxis dataKey="date" tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 600}} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} />
               <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-              <Bar dataKey="avg" fill="#009900" opacity={0.6} radius={[6, 6, 0, 0]} name="Chất lượng TB" />
-              <Line type="monotone" dataKey="avg" stroke="#009900" strokeWidth={4} dot={{ r: 5, fill: '#009900', strokeWidth: 2, stroke: '#fff' }} name="Xu thế" />
+              <Bar dataKey="avg" fill="#059669" opacity={0.6} radius={[6, 6, 0, 0]} name="Chất lượng TB" />
+              <Line type="monotone" dataKey="avg" stroke="#059669" strokeWidth={4} dot={{ r: 5, fill: '#059669', strokeWidth: 2, stroke: '#fff' }} name="Xu thế" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -246,14 +246,14 @@ const GsChungOverview = ({ data }: { data: GiamSatChung[] }) => {
 
 const GsChungList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
   const [search, setSearch] = useState('');
-  const filtered = data.filter((d: any) => 
-    d.khoa_gs.toLowerCase().includes(search.toLowerCase()) || 
+  const filtered = data.filter((d: any) =>
+    d.khoa_gs.toLowerCase().includes(search.toLowerCase()) ||
     d.nguoi_gs.toLowerCase().includes(search.toLowerCase())
   );
   return (
     <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden animate-in fade-in duration-500">
       <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/30">
-        <button onClick={onAdd} className="bg-[#009900] hover:bg-emerald-700 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát mới</button>
+        <button onClick={onAdd} className="bg-[#059669] hover:bg-emerald-700 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát mới</button>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input placeholder="Tìm nhanh khoa hoặc người giám sát..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all placeholder:font-medium placeholder:text-slate-300" />
@@ -276,7 +276,7 @@ const GsChungList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-1.5">
                     <button onClick={() => onView(d)} className="p-2.5 text-indigo-600 hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100" title="Xem chi tiết"><Eye size={16} /></button>
-                    <button onClick={() => onEdit(d)} className="p-2.5 text-[#009900] hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100" title="Chỉnh sửa"><Edit2 size={16} /></button>
+                    <button onClick={() => onEdit(d)} className="p-2.5 text-[#059669] hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100" title="Chỉnh sửa"><Edit2 size={16} /></button>
                     <button onClick={() => onDelete(d.id)} className="p-2.5 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors" title="Xóa"><Trash2 size={16} /></button>
                   </div>
                 </td>
@@ -318,7 +318,7 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
     e.preventDefault();
     if (!form.khoa_gs) { alert('Vui lòng chọn đơn vị được giám sát'); return; }
     if (form.noi_dung_gs.some((i: any) => !i.label.trim())) { alert('Vui lòng nhập đầy đủ nội dung giám sát cho các hàng'); return; }
-    
+
     setSaving(true);
     try {
       const dataToSave = { ...form, ngay_giam_sat: new Date(form.ngay_giam_sat).toISOString() };
@@ -333,7 +333,7 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
     <div className="bg-white rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-500">
       <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-emerald-50/30">
          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-[#009900] rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-[#009900]/20"><ClipboardList size={28} /></div>
+            <div className="w-14 h-14 bg-[#059669] rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-[#059669]/20"><ClipboardList size={28} /></div>
             <div>
               <h2 className="text-main-title font-bold text-slate-800 leading-tight">Giám sát chung</h2>
               <p className="text-[10px] font-bold text-slate-900 mt-1">Giám sát quy trình và thực hành tại các đơn vị (Tiêu chuẩn chất lượng)</p>
@@ -405,7 +405,7 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start pt-4">
           <div className="space-y-3">
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 flex items-center gap-2"><Camera size={16} className="text-[#009900]" /> Hình ảnh minh chứng (Lưu tại gs_hsba)</label>
+             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 flex items-center gap-2"><Camera size={16} className="text-[#059669]" /> Hình ảnh minh chứng (Lưu tại gs_hsba)</label>
              <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 shadow-inner">
                 <ImageUploaderGsChung images={form.hinh_anh || []} onChange={urls => setForm({...form, hinh_anh: urls})} />
              </div>
@@ -423,12 +423,12 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
                  <div className={`w-20 h-20 rounded-[24px] flex items-center justify-center text-2xl font-black shadow-2xl transition-all group-hover:rotate-6 ${form.ty_le === 100 ? 'bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-amber-500 text-white shadow-amber-500/20'}`}>{Math.floor(form.ty_le)}<sup>%</sup></div>
               </div>
               <div className="max-w-[200px]">
-                 <p className="text-[12px] font-black text-slate-700 leading-relaxed uppercase tracking-tight">Kết quả: <span className="text-[#009900]">{form.tong_dat}</span> / <span className="text-slate-900">{form.tong_muc}</span> tiêu chí đạt chuẩn nghiệp vụ.</p>
+                 <p className="text-[12px] font-black text-slate-700 leading-relaxed uppercase tracking-tight">Kết quả: <span className="text-[#059669]">{form.tong_dat}</span> / <span className="text-slate-900">{form.tong_muc}</span> tiêu chí đạt chuẩn nghiệp vụ.</p>
               </div>
            </div>
            <div className="flex gap-4 w-full md:w-auto">
               <button type="button" onClick={onClose} className="flex-1 px-10 py-4.5 bg-white border-2 border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300 rounded-[24px] text-[12px] font-black uppercase tracking-widest transition-all active:scale-95">Hủy bỏ</button>
-              <button type="submit" disabled={saving} className="flex-1 px-16 py-4.5 bg-[#009900] text-white rounded-[24px] text-[12px] font-black uppercase tracking-widest shadow-2xl shadow-emerald-900/10 hover:bg-emerald-700 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">{saving ? 'Đang gửi...' : 'Lưu'}</button>
+              <button type="submit" disabled={saving} className="flex-1 px-16 py-4.5 bg-[#059669] text-white rounded-[24px] text-[12px] font-black uppercase tracking-widest shadow-2xl shadow-emerald-900/10 hover:bg-emerald-700 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">{saving ? 'Đang gửi...' : 'Lưu'}</button>
            </div>
         </div>
       </form>
@@ -439,12 +439,12 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
 const GsChungDetail = ({ item, onClose, onEdit }: any) => {
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-6 md:p-12 border border-slate-100 relative overflow-hidden animate-in fade-in zoom-in-98 duration-700 font-bold tracking-tight">
-      <div className="absolute top-0 left-0 w-full h-3 bg-[#009900]"/>
+      <div className="absolute top-0 left-0 w-full h-3 bg-[#059669]"/>
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="flex justify-between items-center no-print outline-none text-black">
-          <button onClick={onClose} className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#009900] transition-colors"><RotateCcw size={16}/> Quay về danh sách</button>
+          <button onClick={onClose} className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#059669] transition-colors"><RotateCcw size={16}/> Quay về danh sách</button>
           <div className="flex gap-4">
-             <button onClick={onEdit} className="px-8 py-3 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all">Sửa phiếu</button>
+             <button onClick={onEdit} className="px-8 py-3 bg-[#059669] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all">Sửa phiếu</button>
           </div>
         </div>
 
@@ -454,31 +454,31 @@ const GsChungDetail = ({ item, onClose, onEdit }: any) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 py-8 border-y-2 border-dashed border-slate-200 text-[13px] font-bold text-black">
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Khoa được giám sát</p><p className="border-l-4 border-[#009900] pl-4 text-base">{item.khoa_gs}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Đối tượng giám sát</p><p className="border-l-4 border-[#009900] pl-4 text-base">{item.doi_tuong_gs || '---'}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Cán bộ giám sát</p><p className="border-l-4 border-[#009900] pl-4 text-base">{item.nguoi_gs}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Thời điểm khảo sát</p><p className="border-l-4 border-[#009900] pl-4 text-base text-slate-500">{formatDateTime(item.ngay_giam_sat)}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Khoa được giám sát</p><p className="border-l-4 border-[#059669] pl-4 text-base">{item.khoa_gs}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Đối tượng giám sát</p><p className="border-l-4 border-[#059669] pl-4 text-base">{item.doi_tuong_gs || '---'}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Cán bộ giám sát</p><p className="border-l-4 border-[#059669] pl-4 text-base">{item.nguoi_gs}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Thời điểm khảo sát</p><p className="border-l-4 border-[#059669] pl-4 text-base text-slate-500">{formatDateTime(item.ngay_giam_sat)}</p></div>
         </div>
 
         <div className="space-y-6">
-           <table className="w-full border-collapse border-4 border-[#009900] text-table font-black">
-              <thead className="bg-[#009900] text-white uppercase text-center text-[10px] tracking-widest font-black">
-                 <tr><th className="p-4 border-2 border-[#009900] w-12">STT</th><th className="p-4 border-2 border-[#009900] text-left">NỘI DUNG GIÁM SÁT NGHIỆP VỤ</th><th className="p-4 border-2 border-[#009900] w-24">ĐẠT</th><th className="p-4 border-2 border-[#009900] w-24">K.ĐẠT</th><th className="p-4 border-2 border-[#009900]">CHI TIẾT VI PHẠM / KIẾN NGHỊ</th></tr>
+           <table className="w-full border-collapse border-4 border-[#059669] text-table font-black">
+              <thead className="bg-[#059669] text-white uppercase text-center text-[10px] tracking-widest font-black">
+                 <tr><th className="p-4 border-2 border-[#059669] w-12">STT</th><th className="p-4 border-2 border-[#059669] text-left">NỘI DUNG GIÁM SÁT NGHIỆP VỤ</th><th className="p-4 border-2 border-[#059669] w-24">ĐẠT</th><th className="p-4 border-2 border-[#059669] w-24">K.ĐẠT</th><th className="p-4 border-2 border-[#059669]">CHI TIẾT VI PHẠM / KIẾN NGHỊ</th></tr>
               </thead>
               <tbody>
                 {item.noi_dung_gs?.map((row: any, idx: number) => (
                   <tr key={row.id}>
-                    <td className="p-4 border-2 border-[#009900] text-center font-normal">{idx+1}</td>
-                    <td className="p-4 border-2 border-[#009900] text-slate-800 leading-relaxed text-[11px] font-bold">{row.label}</td>
-                    <td className="p-4 border-2 border-[#009900] text-center">{row.is_pass && <Check size={28} className="text-emerald-500 mx-auto stroke-[4]" />}</td>
-                    <td className="p-4 border-2 border-[#009900] text-center">{!row.is_pass && <X size={28} className="text-rose-600 mx-auto stroke-[4]" />}</td>
-                    <td className="p-4 border-2 border-[#009900] italic text-rose-600 text-xs font-bold">{row.note}</td>
+                    <td className="p-4 border-2 border-[#059669] text-center font-normal">{idx+1}</td>
+                    <td className="p-4 border-2 border-[#059669] text-slate-800 leading-relaxed text-[11px] font-bold">{row.label}</td>
+                    <td className="p-4 border-2 border-[#059669] text-center">{row.is_pass && <Check size={28} className="text-emerald-500 mx-auto stroke-[4]" />}</td>
+                    <td className="p-4 border-2 border-[#059669] text-center">{!row.is_pass && <X size={28} className="text-rose-600 mx-auto stroke-[4]" />}</td>
+                    <td className="p-4 border-2 border-[#059669] italic text-rose-600 text-xs font-bold">{row.note}</td>
                   </tr>
                 ))}
-                  <tr className="bg-[#009900] text-white text-lg font-black">
-                    <td colSpan={2} className="p-5 border-2 border-[#009900] uppercase text-right tracking-[0.2em] text-xs">KẾT QUẢ CHUNG (ĐẠT CHUẨN)</td>
-                    <td colSpan={2} className="p-5 border-2 border-[#009900] text-center text-3xl font-black">{item.tong_dat}/{item.tong_muc}</td>
-                    <td className="p-5 border-2 border-[#009900] text-emerald-100 text-center text-3xl font-black">{item.ty_le}<sup>%</sup></td>
+                  <tr className="bg-[#059669] text-white text-lg font-black">
+                    <td colSpan={2} className="p-5 border-2 border-[#059669] uppercase text-right tracking-[0.2em] text-xs">KẾT QUẢ CHUNG (ĐẠT CHUẨN)</td>
+                    <td colSpan={2} className="p-5 border-2 border-[#059669] text-center text-3xl font-black">{item.tong_dat}/{item.tong_muc}</td>
+                    <td className="p-5 border-2 border-[#059669] text-emerald-100 text-center text-3xl font-black">{item.ty_le}<sup>%</sup></td>
                   </tr>
               </tbody>
            </table>
@@ -487,13 +487,13 @@ const GsChungDetail = ({ item, onClose, onEdit }: any) => {
         {item.ket_luan && (
           <div className="space-y-4 pt-4">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Đánh giá chung & Kiến nghị bổ sung:</h3>
-            <div className="p-8 bg-emerald-50 border-r-8 border-[#009900] text-[14px] italic text-emerald-950 leading-relaxed font-bold whitespace-pre-wrap shadow-inner uppercase">{item.ket_luan}</div>
+            <div className="p-8 bg-emerald-50 border-r-8 border-[#059669] text-[14px] italic text-emerald-950 leading-relaxed font-bold whitespace-pre-wrap shadow-inner uppercase">{item.ket_luan}</div>
           </div>
         )}
 
         {item.hinh_anh?.length > 0 && (
            <div className="space-y-6 no-print border-t border-slate-100 pt-10">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-3"><Camera size={18} className="text-[#009900]"/> Hình ảnh minh chứng hiện trường</h3>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-3"><Camera size={18} className="text-[#059669]"/> Hình ảnh minh chứng hiện trường</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {item.hinh_anh.map((u: string, i: number) => (
                   <div key={i} className="aspect-square rounded-[32px] overflow-hidden border-8 border-white shadow-2xl transition-transform hover:scale-105">
@@ -560,7 +560,7 @@ export const GeneralMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onB
              <TabButton active={activeTab === 'LIST'} onClick={() => { setActiveTab('LIST'); setViewMode('LIST'); }} icon={List} label="Danh sách" />
              <TabButton active={activeTab === 'SUMMARY'} onClick={() => { setActiveTab('SUMMARY'); setViewMode('LIST'); }} icon={BarChart3} label="Báo cáo tổng hợp" />
            </div>
-           
+
            {viewMode === 'LIST' && (
              <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-[32px] border border-slate-100 shadow-sm">
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
@@ -569,12 +569,17 @@ export const GeneralMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onB
                  <option value="">Tất cả các khoa phòng</option>
                  {deptList.map((d: any) => <option key={d.id} value={d.ten_don_vi}>{d.ten_don_vi}</option>)}
                </select>
-             </div>
+
+               {activeTab !== 'LIST' && (
+                 <button onClick={() => { setEditingItem(null); setActiveTab('LIST'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-xl bg-[#059669] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[#008800] active:scale-95">
+                   <Plus size={16} /> Thêm giám sát mới
+                 </button>
+               )}             </div>
            )}
         </div>
 
         {loading ? (
-          <div className="flex flex-col justify-center items-center h-80 gap-4"><Loader2 className="animate-spin text-[#009900]" size={48} /><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Đang đồng bộ dữ liệu...</p></div>
+          <div className="flex flex-col justify-center items-center h-80 gap-4"><Loader2 className="animate-spin text-[#059669]" size={48} /><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Đang đồng bộ dữ liệu...</p></div>
         ) : (
           <div className="animate-in fade-in zoom-in-95 duration-500">
             {activeTab === 'OVERVIEW' ? <GsChungOverview data={filteredData} />

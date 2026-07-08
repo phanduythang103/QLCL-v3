@@ -35,7 +35,7 @@ export const KsNuoiConDetail: React.FC<Props> = ({ data, onBack }) => {
     return (
       <div className="flex flex-wrap gap-2">
         {values.map(v => (
-          <span key={v} className="px-3 py-1 bg-emerald-50 text-[#009900] text-[10px] md:text-[11px] font-black uppercase rounded-lg border border-emerald-100/50">
+          <span key={v} className="px-3 py-1 bg-emerald-50 text-[#059669] text-[10px] md:text-[11px] font-black uppercase rounded-lg border border-emerald-100/50">
             {OPTIONS[field][v - 1]}
           </span>
         ))}
@@ -48,7 +48,7 @@ export const KsNuoiConDetail: React.FC<Props> = ({ data, onBack }) => {
     return (
       <div className="flex gap-2">
         <span className="font-bold whitespace-nowrap">{label}:</span>
-        <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#009900] uppercase tracking-wide">
+        <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#059669] uppercase tracking-wide">
           {valText}
         </span>
       </div>
@@ -63,7 +63,7 @@ export const KsNuoiConDetail: React.FC<Props> = ({ data, onBack }) => {
         <div className="flex items-center justify-start no-print px-2 md:px-0">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
+            className="flex items-center gap-2 text-slate-500 hover:text-[#059669] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Quay lại
           </button>
@@ -89,7 +89,7 @@ export const KsNuoiConDetail: React.FC<Props> = ({ data, onBack }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 md:gap-y-4 gap-x-12 text-xs md:text-sm">
               <div className="flex gap-2">
                 <span className="font-bold whitespace-nowrap">Mã người bệnh:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#009900] uppercase tracking-wide">
+                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#059669] uppercase tracking-wide">
                   {data.patient_id || '...........................................'}
                 </span>
               </div>
@@ -207,13 +207,13 @@ export const KsNuoiConDetail: React.FC<Props> = ({ data, onBack }) => {
               <div className="md:col-span-2 flex flex-wrap gap-8 justify-around pt-8 border-t border-slate-100 mt-4">
                 <div className="text-center space-y-2">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dự định bú mẹ hoàn toàn</span>
-                  <div className="bg-emerald-50 text-[#009900] px-8 py-4 rounded-3xl border border-emerald-100 font-black text-3xl">
+                  <div className="bg-emerald-50 text-[#059669] px-8 py-4 rounded-3xl border border-emerald-100 font-black text-3xl">
                     {data.exclusive_months} <span className="text-sm">tháng</span>
                   </div>
                 </div>
                 <div className="text-center space-y-2">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng thời gian nuôi sữa mẹ</span>
-                  <div className="bg-emerald-50 text-[#009900] px-8 py-4 rounded-3xl border border-emerald-100 font-black text-3xl">
+                  <div className="bg-emerald-50 text-[#059669] px-8 py-4 rounded-3xl border border-emerald-100 font-black text-3xl">
                     {data.total_months} <span className="text-sm">tháng</span>
                   </div>
                 </div>

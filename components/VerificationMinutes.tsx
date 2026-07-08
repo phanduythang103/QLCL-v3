@@ -27,7 +27,7 @@ const SuggestionInput = ({ value, onChange, onSelect, list, placeholder }: {
         <div className="relative w-full">
             <input
                 type="text"
-                className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent"
+                className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#059669] outline-none py-2 sm:pb-1 bg-transparent"
                 value={value}
                 onChange={(e) => { onChange(e.target.value); setShow(true); }}
                 onFocus={() => setShow(true)}
@@ -141,9 +141,9 @@ const VerificationMinutes = () => {
         };
 
         // Convert 'Hồi ...' text to datetime input format if possible, otherwise use current
-        // Note: If we saved as text, we might need a parser. 
+        // Note: If we saved as text, we might need a parser.
         // For simplicity, let's assume we store ISO string or handle text manually.
-        // If strict match to UI "Hồi HH:mm ngày...", we might store formatted string. 
+        // If strict match to UI "Hồi HH:mm ngày...", we might store formatted string.
         // But for DB, ISO is better. Let's assume input text for now to match user expectation of "Text".
 
         setFormData(safeItem);
@@ -340,7 +340,7 @@ const VerificationMinutes = () => {
                         </button>
                         <div>
                             <h2 className="text-section font-black text-black uppercase flex items-center gap-2">
-                                <FileText className="text-[#009900]" size={20} />
+                                <FileText className="text-[#059669]" size={20} />
                                 Chi tiết Biên bản xác minh
                             </h2>
                             {linkedInc && <span className="text-table font-black text-black/40 uppercase">Liên kết SCYK: <span className="font-mono font-black text-blue-700">{linkedInc.so_bc_ma_scyk}</span></span>}
@@ -358,7 +358,7 @@ const VerificationMinutes = () => {
                         <button
                             onClick={() => handleExportPdf(viewingItem)}
                             disabled={exportLoading}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-[#009900] hover:bg-[#0d6e39] disabled:bg-green-400 text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/20 active:scale-95 transition-all"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-[#059669] hover:bg-[#0d6e39] disabled:bg-green-400 text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/20 active:scale-95 transition-all"
                         >
                             {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                             {exportLoading ? 'Đang xuất PDF...' : 'Xuất báo cáo PDF'}
@@ -373,14 +373,14 @@ const VerificationMinutes = () => {
                         <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <p className="text-table font-black text-black/40 uppercase mb-1">Thời gian bắt đầu</p>
                             <p className="text-input font-black text-black flex items-center gap-2">
-                                <Clock size={16} className="text-[#009900]" />
+                                <Clock size={16} className="text-[#059669]" />
                                 {new Date(viewingItem.thoi_gian_bat_dau).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
                             </p>
                         </div>
                         <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <p className="text-table font-black text-black/40 uppercase mb-1">Địa điểm</p>
                             <p className="text-input font-black text-black flex items-center gap-2">
-                                <MapPin size={16} className="text-[#009900]" />
+                                <MapPin size={16} className="text-[#059669]" />
                                 {viewingItem.dia_diem || 'Chưa cập nhật'}
                             </p>
                         </div>
@@ -389,7 +389,7 @@ const VerificationMinutes = () => {
                     {/* Thành phần đoàn */}
                     <div>
                         <h3 className="text-label font-black text-black uppercase mb-3 flex items-center gap-2">
-                            <Users size={16} className="text-[#009900]" /> Thành phần đoàn xác minh
+                            <Users size={16} className="text-[#059669]" /> Thành phần đoàn xác minh
                         </h3>
                         <div className="overflow-x-auto">
                             <table className="table-standardized">
@@ -411,7 +411,7 @@ const VerificationMinutes = () => {
                                                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${mem.vai_tro === 'CHU_TRI' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
                                                     mem.vai_tro === 'THU_KY' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                                         mem.vai_tro === 'NGUOI_CHUNG_KIEN' ? 'bg-slate-100 text-slate-700 border border-slate-200' :
-                                                            'bg-green-100 text-[#009900] border border-green-200'
+                                                            'bg-green-100 text-[#059669] border border-green-200'
                                                     }`}>
                                                     {mem.vai_tro === 'CHU_TRI' ? 'Chủ trì' :
                                                         mem.vai_tro === 'THU_KY' ? 'Thư ký' :
@@ -578,12 +578,12 @@ const VerificationMinutes = () => {
             <div className="bg-white rounded-none sm:rounded-xl shadow-lg border border-slate-200 overflow-hidden max-w-5xl mx-auto my-0 sm:my-4">
                 <div className="bg-white border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sticky top-0 z-10">
                     <h2 className="text-base sm:text-section font-black text-black uppercase flex items-center gap-2 leading-tight">
-                        <FileText className="text-[#009900] shrink-0" size={20} />
+                        <FileText className="text-[#059669] shrink-0" size={20} />
                         {editingItem ? 'Cập nhật Biên bản' : 'Lập Biên bản xác minh mới'}
                     </h2>
                     <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
                         <button onClick={() => setViewMode('LIST')} className="px-4 sm:px-6 py-2.5 hover:bg-slate-200 rounded-xl text-black text-table font-black uppercase transition-all active:scale-95 border border-slate-200 sm:border-transparent">Hủy bỏ</button>
-                        <button onClick={handleSave} className="px-4 sm:px-6 py-2.5 bg-[#009900] hover:bg-[#0d6e39] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <button onClick={handleSave} className="px-4 sm:px-6 py-2.5 bg-[#059669] hover:bg-[#0d6e39] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
                             <Save size={16} /> Lưu biên bản
                         </button>
                     </div>
@@ -627,7 +627,7 @@ const VerificationMinutes = () => {
                                 type="datetime-local"
                                 value={formData.thoi_gian_bat_dau}
                                 onChange={(e) => setFormData({ ...formData, thoi_gian_bat_dau: e.target.value })}
-                                className="w-full border border-slate-300 rounded-xl p-3 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm min-h-12"
+                                className="w-full border border-slate-300 rounded-xl p-3 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#059669] bg-white transition-all shadow-sm min-h-12"
                             />
                         </div>
                         <div className="space-y-1">
@@ -637,7 +637,7 @@ const VerificationMinutes = () => {
                                 placeholder="VD: Phòng họp Khoa Hồi sức tích cực..."
                                 value={formData.dia_diem}
                                 onChange={(e) => setFormData({ ...formData, dia_diem: e.target.value })}
-                                className="w-full border border-slate-300 rounded-xl p-3 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm min-h-12"
+                                className="w-full border border-slate-300 rounded-xl p-3 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#059669] bg-white transition-all shadow-sm min-h-12"
                             />
                         </div>
                     </div>
@@ -646,7 +646,7 @@ const VerificationMinutes = () => {
                     <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                             <h3 className="text-[12px] sm:text-label font-black text-black uppercase leading-tight">Thành phần đoàn xác minh</h3>
-                            <button onClick={addMember} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center justify-center sm:justify-start gap-1 rounded-xl border border-emerald-100 bg-white px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0"><Plus size={14} /> Thêm thành viên</button>
+                            <button onClick={addMember} className="text-[#059669] text-table font-black uppercase hover:underline flex items-center justify-center sm:justify-start gap-1 rounded-xl border border-emerald-100 bg-white px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0"><Plus size={14} /> Thêm thành viên</button>
                         </div>
                         <div className="space-y-3">
                             {formData.thanh_phan?.map((mem, idx) => (
@@ -668,11 +668,11 @@ const VerificationMinutes = () => {
                                         </div>
                                         <div className="md:col-span-3">
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Chức vụ</label>
-                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateMember(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#059669] outline-none py-2 sm:pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateMember(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
                                         </div>
                                         <div className="md:col-span-3">
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Đơn vị</label>
-                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateMember(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#059669] outline-none py-2 sm:pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateMember(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
                                         </div>
                                         <div className="md:col-span-3">
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Vai trò</label>
@@ -694,7 +694,7 @@ const VerificationMinutes = () => {
                     <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                             <h3 className="text-[12px] sm:text-label font-black text-black uppercase leading-tight">Với sự tham dự của (Khách mời)</h3>
-                            <button onClick={addAttendee} className="text-[#009900] text-table font-black uppercase hover:underline flex items-center justify-center sm:justify-start gap-1 rounded-xl border border-emerald-100 bg-white px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0"><Plus size={14} /> Thêm người tham dự</button>
+                            <button onClick={addAttendee} className="text-[#059669] text-table font-black uppercase hover:underline flex items-center justify-center sm:justify-start gap-1 rounded-xl border border-emerald-100 bg-white px-3 py-2 sm:border-0 sm:bg-transparent sm:p-0"><Plus size={14} /> Thêm người tham dự</button>
                         </div>
                         <div className="space-y-3">
                             {formData.nguoi_tham_du?.map((mem, idx) => (
@@ -716,11 +716,11 @@ const VerificationMinutes = () => {
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Chức vụ</label>
-                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateAttendee(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#059669] outline-none py-2 sm:pb-1 bg-transparent" value={mem.chuc_vu} onChange={(e) => updateAttendee(idx, 'chuc_vu', e.target.value)} placeholder="Chức vụ..." />
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-black text-black/40 uppercase block mb-1">Đơn vị</label>
-                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#009900] outline-none py-2 sm:pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateAttendee(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
+                                            <input type="text" className="w-full text-sm sm:text-input font-bold border-b border-slate-200 focus:border-[#059669] outline-none py-2 sm:pb-1 bg-transparent" value={mem.don_vi} onChange={(e) => updateAttendee(idx, 'don_vi', e.target.value)} placeholder="Khoa/Phòng..." />
                                         </div>
                                     </div>
                                     <button onClick={() => removeAttendee(idx)} className="text-red-500 sm:text-black/20 hover:text-red-500 p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all active:scale-95 rounded-lg bg-red-50 sm:bg-transparent"><X size={18} /></button>
@@ -738,7 +738,7 @@ const VerificationMinutes = () => {
                             <label className="text-label font-black text-black uppercase block ml-1">1. Nội dung xác minh</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm leading-relaxed"
+                                className="w-full border border-slate-300 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#059669] bg-white transition-all shadow-sm leading-relaxed"
                                 value={formData.noi_dung_xac_minh}
                                 onChange={(e) => setFormData({ ...formData, noi_dung_xac_minh: e.target.value })}
                                 placeholder="Tiến hành xác minh về việc..."
@@ -758,7 +758,7 @@ const VerificationMinutes = () => {
                             <label className="text-label font-bold text-black uppercase block ml-1">3. Ý kiến tham gia</label>
                             <textarea
                                 rows={3}
-                                className="w-full border border-slate-300 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#009900] bg-white transition-all shadow-sm leading-relaxed"
+                                className="w-full border border-slate-300 rounded-2xl p-4 text-sm sm:text-input font-bold text-black focus:ring-2 focus:ring-[#059669] bg-white transition-all shadow-sm leading-relaxed"
                                 value={formData.y_kien_tham_gia}
                                 onChange={(e) => setFormData({ ...formData, y_kien_tham_gia: e.target.value })}
                                 placeholder="Ý kiến của các thành viên khác (nếu có)..."
@@ -779,13 +779,13 @@ const VerificationMinutes = () => {
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
                     <input
-                        className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#009900] bg-slate-50/50 transition-all"
+                        className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl text-input font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#059669] bg-slate-50/50 transition-all"
                         placeholder="Tìm kiếm biên bản..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <button onClick={handleCreate} className="bg-[#009900] hover:bg-[#0d6e39] text-white px-6 py-2.5 rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center gap-2 transition-all active:scale-95">
+                <button onClick={handleCreate} className="bg-[#059669] hover:bg-[#0d6e39] text-white px-6 py-2.5 rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 flex items-center gap-2 transition-all active:scale-95">
                     <Plus size={18} /> Lập biên bản mới
                 </button>
             </div>
@@ -796,7 +796,7 @@ const VerificationMinutes = () => {
                     <div className="p-16 text-center text-black/20 flex flex-col items-center">
                         <FileText size={64} className="text-slate-100 mb-6" />
                         <p className="text-section font-black uppercase tracking-widest">Chưa có biên bản xác minh nào.</p>
-                        <button onClick={handleCreate} className="mt-6 px-6 py-2.5 bg-[#009900] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 active:scale-95 transition-all">Tạo ngay</button>
+                        <button onClick={handleCreate} className="mt-6 px-6 py-2.5 bg-[#059669] text-white rounded-xl text-input font-black uppercase shadow-xl shadow-green-900/10 active:scale-95 transition-all">Tạo ngay</button>
                     </div>
                 ) : (
                     <table className="table-standardized">
@@ -815,7 +815,7 @@ const VerificationMinutes = () => {
                                 .filter(i => {
                                     const matchesSearch = i.dia_diem.toLowerCase().includes(searchTerm.toLowerCase());
                                     if (isAdmin || !uDept) return matchesSearch;
-                                    
+
                                     const linkedInc = incidents.find(inc => inc.id === i.scyk_id);
                                     if (!linkedInc) return false; // Or true if orphans should be seen
                                     return matchesSearch && incidentMatchesUserDepartment(linkedInc, uDept);
@@ -833,8 +833,8 @@ const VerificationMinutes = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="text-black">{new Date(item.thoi_gian_bat_dau).toLocaleDateString('vi-VN')}</div>
-                                            <div className="text-[10px] text-black/40 flex items-center gap-1 mt-1 font-bold uppercase"><Clock size={12} className="text-[#009900]" /> {new Date(item.thoi_gian_bat_dau).toLocaleTimeString('vi-VN').slice(0, 5)}</div>
-                                            <div className="text-[10px] text-black/40 flex items-center gap-1 mt-1 font-bold uppercase"><MapPin size={12} className="text-[#009900]" /> {item.dia_diem}</div>
+                                            <div className="text-[10px] text-black/40 flex items-center gap-1 mt-1 font-bold uppercase"><Clock size={12} className="text-[#059669]" /> {new Date(item.thoi_gian_bat_dau).toLocaleTimeString('vi-VN').slice(0, 5)}</div>
+                                            <div className="text-[10px] text-black/40 flex items-center gap-1 mt-1 font-bold uppercase"><MapPin size={12} className="text-[#059669]" /> {item.dia_diem}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             {chuTri ? (
@@ -853,7 +853,7 @@ const VerificationMinutes = () => {
                                                     href={item.file_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#009900] hover:bg-[#0d6e39] text-white rounded-xl text-[10px] font-black uppercase transition-all shadow-xl shadow-green-900/10 active:scale-95"
+                                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#059669] hover:bg-[#0d6e39] text-white rounded-xl text-[10px] font-black uppercase transition-all shadow-xl shadow-green-900/10 active:scale-95"
                                                     title={item.file_name || 'Mở file PDF'}
                                                 >
                                                     <FileText size={14} /> Xem BC

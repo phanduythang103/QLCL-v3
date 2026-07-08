@@ -179,7 +179,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
     onSave(formData);
   };
 
-  const themeColor = "#009900";
+  const themeColor = "#059669";
 
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen">
@@ -209,7 +209,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
         {/* THÔNG TIN HÀNH CHÍNH */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">I. Thông tin hành chính</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -278,7 +278,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
         {/* THÔNG TIN NGƯỜI BỆNH */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">II. Thông tin người bệnh & Trẻ</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -325,7 +325,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                     type="button"
                     onClick={() => handleChange('delivery_type', opt.value)}
                     className={`flex-1 py-3 rounded-xl text-[13px] font-black uppercase transition-all ${formData.delivery_type === opt.value
-                      ? 'bg-[#009900] text-white shadow-md'
+                      ? 'bg-[#059669] text-white shadow-md'
                       : 'text-slate-500 hover:bg-slate-100'
                       }`}
                   >
@@ -360,7 +360,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
         {/* THỰC HÀNH NUÔI CON */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">III. Thực hành nuôi con bằng sữa mẹ</h3>
           </div>
 
@@ -375,11 +375,11 @@ export const KsNuoiConForm: React.FC<Props> = ({
                     type="button"
                     onClick={() => handleToggleArray('see_policy', idx + 1)}
                     className={`p-4 rounded-2xl border text-left text-sm font-bold transition-all flex items-start gap-3 ${formData.see_policy?.includes(idx + 1)
-                      ? 'border-[#009900] bg-emerald-50 text-[#009900] ring-1 ring-[#009900]'
+                      ? 'border-[#059669] bg-emerald-50 text-[#059669] ring-1 ring-[#059669]'
                       : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-emerald-200'
                       }`}
                   >
-                    <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.see_policy?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                    <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.see_policy?.includes(idx + 1) ? 'bg-[#059669] border-[#059669]' : 'border-slate-300'}`}>
                       {formData.see_policy?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
                     </div>
                     {label}
@@ -398,7 +398,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                     type="button"
                     onClick={() => handleToggleArray('see_media', idx + 1)}
                     className={`px-4 py-2 rounded-full border text-[13px] font-black uppercase transition-all ${formData.see_media?.includes(idx + 1)
-                      ? 'border-[#009900] bg-[#009900] text-white shadow-md'
+                      ? 'border-[#059669] bg-[#059669] text-white shadow-md'
                       : 'border-slate-200 bg-white text-slate-500 hover:border-emerald-300'
                       }`}
                   >
@@ -419,11 +419,11 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleToggleArray('consultation_time', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-sm font-bold transition-all flex items-center gap-3 ${formData.consultation_time?.includes(idx + 1)
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        ? 'border-[#059669] bg-emerald-50 text-[#059669]'
                         : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.consultation_time?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.consultation_time?.includes(idx + 1) ? 'bg-[#059669] border-[#059669]' : 'border-slate-300'}`}>
                         {formData.consultation_time?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
                       {label}
@@ -440,7 +440,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('reason_no_consult', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-sm font-bold transition-all ${formData.reason_no_consult === idx + 1
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        ? 'border-[#059669] bg-emerald-50 text-[#059669]'
                         : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
@@ -462,7 +462,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('cord_cut', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-sm font-bold transition-all ${formData.cord_cut === idx + 1
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        ? 'border-[#059669] bg-emerald-50 text-[#059669]'
                         : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
@@ -480,7 +480,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('skin_to_skin', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-sm font-bold transition-all ${formData.skin_to_skin === idx + 1
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        ? 'border-[#059669] bg-emerald-50 text-[#059669]'
                         : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
@@ -501,7 +501,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                     type="button"
                     onClick={() => handleChange('first_breastfeed', idx + 1)}
                     className={`p-4 rounded-2xl border text-left text-[13px] font-black uppercase transition-all ${formData.first_breastfeed === idx + 1
-                      ? 'border-[#009900] bg-[#009900] text-white shadow-lg'
+                      ? 'border-[#059669] bg-[#059669] text-white shadow-lg'
                       : 'border-slate-100 bg-slate-50 text-slate-500'
                       }`}
                   >
@@ -522,11 +522,11 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleToggleArray('support_person', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all flex items-center gap-3 ${formData.support_person?.includes(idx + 1)
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        ? 'border-[#059669] bg-emerald-50 text-[#059669]'
                         : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.support_person?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.support_person?.includes(idx + 1) ? 'bg-[#059669] border-[#059669]' : 'border-slate-300'}`}>
                         {formData.support_person?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
                       {label}
@@ -544,11 +544,11 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleToggleArray('support_type', idx + 1)}
                       className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all flex items-center gap-3 ${formData.support_type?.includes(idx + 1)
-                        ? 'border-[#009900] bg-emerald-50 text-[#009900]'
+                        ? 'border-[#059669] bg-emerald-50 text-[#059669]'
                         : 'border-slate-100 bg-slate-50 text-slate-600'
                         }`}
                     >
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.support_type?.includes(idx + 1) ? 'bg-[#009900] border-[#009900]' : 'border-slate-300'}`}>
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${formData.support_type?.includes(idx + 1) ? 'bg-[#059669] border-[#059669]' : 'border-slate-300'}`}>
                         {formData.support_type?.includes(idx + 1) && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
                       {label}
@@ -569,7 +569,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('other_food', idx + 1)}
                       className={`px-6 py-3 rounded-2xl border text-sm font-black uppercase transition-all ${formData.other_food === idx + 1
-                        ? 'bg-[#009900] border-[#009900] text-white'
+                        ? 'bg-[#059669] border-[#059669] text-white'
                         : 'bg-white border-slate-200 text-slate-500'
                         }`}
                     >
@@ -587,7 +587,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
                       type="button"
                       onClick={() => handleChange('suggest_formula', idx + 1)}
                       className={`flex-1 py-3 rounded-2xl border text-sm font-black uppercase transition-all ${formData.suggest_formula === idx + 1
-                        ? 'bg-[#009900] border-[#009900] text-white shadow-md'
+                        ? 'bg-[#059669] border-[#059669] text-white shadow-md'
                         : 'bg-white border-slate-200 text-slate-500'
                         }`}
                     >
@@ -603,7 +603,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
         {/* FEEDBACK & SUGGESTIONS */}
         <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
             <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">IV. Ý kiến và Đề xuất</h3>
           </div>
 
@@ -646,7 +646,7 @@ export const KsNuoiConForm: React.FC<Props> = ({
             type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="flex items-center gap-4 px-20 py-6 bg-[#009900] text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 hover:scale-105 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+            className="flex items-center gap-4 px-20 py-6 bg-[#059669] text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 hover:scale-105 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
           >
             {saving ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

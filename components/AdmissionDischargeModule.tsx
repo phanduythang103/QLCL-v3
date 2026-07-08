@@ -109,7 +109,7 @@ const defaultFormRaVao = (userName = ''): any => {
 
 // ─── UI COMPONENTS ──────────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#059669] text-white border-[#059669] shadow-lg' : 'bg-white text-[#059669] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -146,9 +146,9 @@ const ImageUploaderRaVao = ({ images, onChange }: { images: string[]; onChange: 
     try {
       const urls = await Promise.all(Array.from(files).map(f => uploadRaVaoVienImage(f)));
       onChange([...images, ...urls]);
-    } catch (err: any) { 
+    } catch (err: any) {
       console.error('Upload error:', err);
-      alert('Lỗi tải ảnh: ' + (err.message || 'Không xác định')); 
+      alert('Lỗi tải ảnh: ' + (err.message || 'Không xác định'));
     }
     finally { setUploading(false); e.target.value = ''; }
   };
@@ -181,7 +181,7 @@ const RaVaoErrorSummary = ({ data }: { data: GiamSatRaVaoVien[] }) => {
       const recordsWithError = data.filter(d => (d as any)[fieldId] === false);
       const count = recordsWithError.length;
       const depts = Array.from(new Set(recordsWithError.map(d => d.khoa_gs))).join(', ');
-      
+
       const specificNotes = Array.from(new Set(
         recordsWithError
           .map(d => (d as any)[noteField])
@@ -245,7 +245,7 @@ const RaVaoErrorSummary = ({ data }: { data: GiamSatRaVaoVien[] }) => {
                 <td className="p-4 text-center text-lg font-black text-rose-600">{s.rate}%</td>
                 <td className="p-4">
                   <p className="text-slate-500 text-xs italic mb-2 font-medium">Mô tả: {s.notes}</p>
-                  <p className="text-[12px] text-slate-900 font-bold uppercase tracking-tight flex items-center gap-2"><Building2 size={14} className="text-#009900"/> {s.depts || 'N/A'}</p>
+                  <p className="text-[12px] text-slate-900 font-bold uppercase tracking-tight flex items-center gap-2"><Building2 size={14} className="text-#059669"/> {s.depts || 'N/A'}</p>
                 </td>
               </tr>
             )) : (
@@ -256,7 +256,7 @@ const RaVaoErrorSummary = ({ data }: { data: GiamSatRaVaoVien[] }) => {
       </div>
 
       <div className="flex justify-end pt-6">
-         <button onClick={handleExportExcel} className="flex items-center gap-2 bg-#009900 text-white px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-emerald-700 transition-all hover:-translate-y-0.5 active:scale-95"><BarChart3 size={18}/> Xuất báo cáo Excel</button>
+         <button onClick={handleExportExcel} className="flex items-center gap-2 bg-#059669 text-white px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-emerald-700 transition-all hover:-translate-y-0.5 active:scale-95"><BarChart3 size={18}/> Xuất báo cáo Excel</button>
       </div>
     </div>
   );
@@ -290,8 +290,8 @@ const RaVaoOverview = ({ data }: { data: GiamSatRaVaoVien[] }) => {
         <StatCard icon={<XCircle />} label="Chưa hoàn thiện" value={stats.fail} color="rose" />
       </div>
       <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm h-96 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1 h-full bg-#009900 opacity-20"/>
-        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-3"><TrendingUp size={18} className="text-#009900" /> Diễn biến chất lượng giám sát ra vào viện</h3>
+        <div className="absolute top-0 left-0 w-1 h-full bg-#059669 opacity-20"/>
+        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-3"><TrendingUp size={18} className="text-#059669" /> Diễn biến chất lượng giám sát ra vào viện</h3>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={trendData}>
@@ -311,14 +311,14 @@ const RaVaoOverview = ({ data }: { data: GiamSatRaVaoVien[] }) => {
 
 const RaVaoList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
   const [search, setSearch] = useState('');
-  const filtered = data.filter((d: any) => 
-    d.khoa_gs.toLowerCase().includes(search.toLowerCase()) || 
+  const filtered = data.filter((d: any) =>
+    d.khoa_gs.toLowerCase().includes(search.toLowerCase()) ||
     d.nguoi_gs.toLowerCase().includes(search.toLowerCase())
   );
   return (
     <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden animate-in fade-in duration-500">
       <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/30">
-        <button onClick={onAdd} className="bg-[#009900] hover:bg-emerald-700 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát</button>
+        <button onClick={onAdd} className="bg-[#059669] hover:bg-emerald-700 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát</button>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input placeholder="Tìm nhanh khoa hoặc người giám sát..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all placeholder:font-medium placeholder:text-slate-300" />
@@ -327,7 +327,7 @@ const RaVaoList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
       <div className="overflow-x-auto">
         <table className="table-standardized">
           <thead>
-            <tr className="bg-[#009900] text-white"><th>Ngày giám sát</th><th>Khoa được giám sát</th><th>Cán bộ giám sát</th><th>Đối tượng</th><th className="text-center">Tỷ lệ đạt</th><th className="text-right">Thao tác</th></tr>
+            <tr className="bg-[#059669] text-white"><th>Ngày giám sát</th><th>Khoa được giám sát</th><th>Cán bộ giám sát</th><th>Đối tượng</th><th className="text-center">Tỷ lệ đạt</th><th className="text-right">Thao tác</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-50 font-bold">
             {filtered.map((d: any) => (
@@ -346,7 +346,7 @@ const RaVaoList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
                 <td className="p-4">
                   <div className="flex justify-end gap-1.5">
                     <button onClick={() => onView(d)} className="p-2.5 text-emerald-600 hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100" title="Xem chi tiết"><Eye size={16} /></button>
-                    <button onClick={() => onEdit(d)} className="p-2.5 text-[#009900] hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100" title="Chỉnh sửa"><Edit2 size={16} /></button>
+                    <button onClick={() => onEdit(d)} className="p-2.5 text-[#059669] hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100" title="Chỉnh sửa"><Edit2 size={16} /></button>
                     <button onClick={() => onDelete(d.id)} className="p-2.5 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors" title="Xóa"><Trash2 size={16} /></button>
                   </div>
                 </td>
@@ -396,7 +396,7 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
     <div className="bg-white rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-500">
       <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-emerald-50/30">
          <div className="flex items-center gap-5">
-           <div className="w-14 h-14 bg-[#009900] rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-[#009900]/20"><ClipboardList size={28} /></div>
+           <div className="w-14 h-14 bg-[#059669] rounded-[20px] flex items-center justify-center text-white shadow-xl shadow-[#059669]/20"><ClipboardList size={28} /></div>
            <div><h2 className="text-main-title font-bold text-slate-800 leading-tight">Giám sát Vào viện / Chuyển khoa / Chuyển viện / Ra viện</h2><p className="text-[10px] font-bold text-slate-900 mt-1">Nội dung giám sát chuyên môn theo quy định cấp cứu và Chế độ điều trị</p></div>
          </div>
          <button onClick={onClose} className="p-3 hover:bg-white rounded-2xl text-slate-300 hover:text-slate-900 transition-all active:scale-90"><X size={24} /></button>
@@ -421,12 +421,12 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
            </div>
            <div className="space-y-4 pt-4 border-t border-slate-200/60">
              <label className="text-[11px] font-bold text-slate-500 pl-2 flex items-center gap-2 italic">
-               <span className="w-1.5 h-1.5 rounded-full bg-[#009900]"></span>
+               <span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
                đối tượng giám sát (vui lòng chọn các đối tượng phù hợp)
              </label>
              <div className="flex flex-wrap gap-2.5 font-bold">
                 {['Vào viện', 'Chuyển khoa', 'Chuyển viện', 'Ra viện'].map(o => (
-                  <button key={o} type="button" onClick={() => toggleDoiTuong(o)} className={`px-5 py-2.5 rounded-2xl text-[10px] font-bold uppercase tracking-tight transition-all border-2 ${form.doi_tuong_gs?.includes(o) ? 'bg-[#009900] text-white border-[#009900] shadow-lg shadow-emerald-900/20' : 'bg-white text-slate-400 border-slate-100 hover:border-[#009900] hover:text-[#009900]'}`}>{o}</button>
+                  <button key={o} type="button" onClick={() => toggleDoiTuong(o)} className={`px-5 py-2.5 rounded-2xl text-[10px] font-bold uppercase tracking-tight transition-all border-2 ${form.doi_tuong_gs?.includes(o) ? 'bg-[#059669] text-white border-[#059669] shadow-lg shadow-emerald-900/20' : 'bg-white text-slate-400 border-slate-100 hover:border-[#059669] hover:text-[#059669]'}`}>{o}</button>
                 ))}
              </div>
            </div>
@@ -435,7 +435,7 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
         <div className="space-y-8">
           {SECTIONS_RA_VAO_VIEN.map((section, sIdx) => (
             <div key={sIdx} className="border border-slate-100 rounded-[32px] overflow-hidden shadow-sm bg-white">
-               <div className="bg-[#009900] text-white px-7 py-6 flex justify-between items-center shadow-lg shadow-emerald-900/10">
+               <div className="bg-[#059669] text-white px-7 py-6 flex justify-between items-center shadow-lg shadow-emerald-900/10">
                  <h3 className="text-[13px] font-black uppercase tracking-widest leading-none">{section.title}</h3>
                  <span className="px-3 py-1 bg-white/20 rounded-full text-[9px] font-black">{section.criteria.length} Mục</span>
                </div>
@@ -462,18 +462,18 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start pt-4 font-bold tracking-tight">
-          <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2 flex items-center gap-2"><Camera size={16} className="text-[#009900]" /> Hình ảnh minh chứng (Lưu buckets/gs-hsba)</label><div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 shadow-inner"><ImageUploaderRaVao images={form.hinh_anh_minh_chung || []} onChange={urls => setField('hinh_anh_minh_chung', urls)} /></div></div>
+          <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2 flex items-center gap-2"><Camera size={16} className="text-[#059669]" /> Hình ảnh minh chứng (Lưu buckets/gs-hsba)</label><div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 shadow-inner"><ImageUploaderRaVao images={form.hinh_anh_minh_chung || []} onChange={urls => setField('hinh_anh_minh_chung', urls)} /></div></div>
           <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Kết luận & Kiến nghị chung</label><textarea rows={6} value={form.ket_luan_chung} onChange={e => setField('ket_luan_chung', e.target.value)} placeholder="Tóm tắt kết quả buổi giám sát, những mặt làm được và những tồn tại cần khắc phục ngay..." className="w-full p-6 rounded-[32px] border border-slate-200 text-sm font-bold outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 shadow-inner bg-slate-50/50 transition-all placeholder:italic placeholder:font-medium" /></div>
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-10 border-t border-slate-100">
            <div className="flex items-center gap-10">
               <div className="text-center group"><p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest leading-none">Chỉ số tuân thủ</p><div className={`w-24 h-24 rounded-[32px] flex items-center justify-center text-4xl font-black shadow-2xl transition-all group-hover:rotate-6 ${form.ty_le_tuan_thu === 100 ? 'bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-amber-500 text-white shadow-amber-500/20'}`}>{form.ty_le_tuan_thu < 100 ? Math.floor(form.ty_le_tuan_thu) : 100}<sup>%</sup></div></div>
-              <div className="max-w-[200px]"><p className="text-[13px] font-bold text-slate-700 leading-relaxed">Kết quả: Đạt được <span className="text-[#009900] font-black">{form.tong_dat}</span> trong tổng số <span className="text-slate-900 font-black">14</span> tiêu chuẩn nghiệp vụ.</p></div>
+              <div className="max-w-[200px]"><p className="text-[13px] font-bold text-slate-700 leading-relaxed">Kết quả: Đạt được <span className="text-[#059669] font-black">{form.tong_dat}</span> trong tổng số <span className="text-slate-900 font-black">14</span> tiêu chuẩn nghiệp vụ.</p></div>
            </div>
            <div className="flex gap-4 w-full md:w-auto">
               <button type="button" onClick={onClose} className="flex-1 px-10 py-4.5 bg-white border-2 border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300 rounded-[24px] text-[12px] font-black uppercase tracking-widest transition-all active:scale-95">Đóng</button>
-              <button type="submit" disabled={saving} className="flex-1 px-16 py-4.5 bg-[#009900] text-white rounded-[24px] text-[12px] font-black uppercase tracking-widest shadow-2xl shadow-emerald-900/10 hover:bg-emerald-700 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">{saving ? 'Đang xử lý dữ liệu...' : 'Lưu kết quả giám sát'}</button>
+              <button type="submit" disabled={saving} className="flex-1 px-16 py-4.5 bg-[#059669] text-white rounded-[24px] text-[12px] font-black uppercase tracking-widest shadow-2xl shadow-emerald-900/10 hover:bg-emerald-700 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">{saving ? 'Đang xử lý dữ liệu...' : 'Lưu kết quả giám sát'}</button>
            </div>
         </div>
       </form>
@@ -484,13 +484,13 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
 const RaVaoDetail = ({ item, onClose, onEdit }: any) => {
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-6 md:p-12 border border-slate-100 relative overflow-hidden animate-in fade-in zoom-in-98 duration-700">
-      <div className="absolute top-0 left-0 w-full h-3 bg-[#009900]"/>
+      <div className="absolute top-0 left-0 w-full h-3 bg-[#059669]"/>
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="flex justify-between items-center no-print outline-none">
-          <button onClick={onClose} className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#009900] transition-colors"><RotateCcw size={16}/> Quay về danh sách</button>
+          <button onClick={onClose} className="flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#059669] transition-colors"><RotateCcw size={16}/> Quay về danh sách</button>
           <div className="flex gap-4">
              <button onClick={() => window.print()} className="px-8 py-3 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg hover:bg-black transition-all">In báo cáo</button>
-             <button onClick={onEdit} className="px-8 py-3 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all">Sửa thông tin</button>
+             <button onClick={onEdit} className="px-8 py-3 bg-[#059669] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all">Sửa thông tin</button>
           </div>
         </div>
 
@@ -502,9 +502,9 @@ const RaVaoDetail = ({ item, onClose, onEdit }: any) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8 border-y-2 border-dashed border-slate-200 text-[13px] font-bold tracking-tight">
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Khoa được giám sát</p><p className="text-slate-900 border-l-4 border-[#009900] pl-4 text-lg">{item.khoa_gs}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Người thực hiện giám sát</p><p className="text-slate-900 border-l-4 border-[#009900] pl-4 text-lg">{item.nguoi_gs}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Thời điểm ghi nhận</p><p className="text-slate-900 border-l-4 border-[#009900] pl-4 text-lg">{formatDateTime(item.ngay_giam_sat)}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Khoa được giám sát</p><p className="text-slate-900 border-l-4 border-[#059669] pl-4 text-lg">{item.khoa_gs}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Người thực hiện giám sát</p><p className="text-slate-900 border-l-4 border-[#059669] pl-4 text-lg">{item.nguoi_gs}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-none">Thời điểm ghi nhận</p><p className="text-slate-900 border-l-4 border-[#059669] pl-4 text-lg">{formatDateTime(item.ngay_giam_sat)}</p></div>
         </div>
 
         <div className="space-y-6">
@@ -515,7 +515,7 @@ const RaVaoDetail = ({ item, onClose, onEdit }: any) => {
               <tbody>
                 {SECTIONS_RA_VAO_VIEN.map((section, sIdx) => (
                   <React.Fragment key={sIdx}>
-                    <tr className="bg-[#009900] text-white"><td colSpan={5} className="p-6 border-2 border-slate-900 font-bold uppercase tracking-[0.15em] text-[12px] text-center shadow-inner">{section.title}</td></tr>
+                    <tr className="bg-[#059669] text-white"><td colSpan={5} className="p-6 border-2 border-slate-900 font-bold uppercase tracking-[0.15em] text-[12px] text-center shadow-inner">{section.title}</td></tr>
                     {section.criteria.map((c, cIdx) => (
                       <tr key={c.id} className="font-bold">
                         <td className="p-4 border-2 border-slate-900 text-center font-normal">{cIdx + 1}</td>
@@ -527,7 +527,7 @@ const RaVaoDetail = ({ item, onClose, onEdit }: any) => {
                     ))}
                   </React.Fragment>
                 ))}
-                  <tr className="bg-[#009900] text-white font-black text-lg">
+                  <tr className="bg-[#059669] text-white font-black text-lg">
                     <td colSpan={2} className="p-5 border-2 border-slate-900 uppercase text-right tracking-[0.2em] text-xs">TỔNG CỘNG (Số mục Đạt/14)</td>
                     <td colSpan={2} className="p-5 border-2 border-slate-900 text-center text-3xl font-black tracking-widest">{item.tong_dat}/14</td>
                     <td className="p-5 border-2 border-slate-900 text-emerald-500 text-center text-3xl font-black">{item.ty_le_tuan_thu}<sup>%</sup></td>
@@ -539,13 +539,13 @@ const RaVaoDetail = ({ item, onClose, onEdit }: any) => {
         {item.ket_luan_chung && (
           <div className="space-y-4 pt-4">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Kết luận & Đề xuất sau giám sát:</h3>
-            <div className="p-8 bg-emerald-50 border-r-8 border-[#009900] text-[14px] italic text-emerald-950 leading-relaxed font-bold whitespace-pre-wrap shadow-inner">{item.ket_luan_chung}</div>
+            <div className="p-8 bg-emerald-50 border-r-8 border-[#059669] text-[14px] italic text-emerald-950 leading-relaxed font-bold whitespace-pre-wrap shadow-inner">{item.ket_luan_chung}</div>
           </div>
         )}
 
         {item.hinh_anh_minh_chung?.length > 0 && (
            <div className="space-y-6 no-print border-t border-slate-100 pt-10">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-3"><Camera size={18} className="text-#009900"/> Hình ảnh minh chứng hiện trường</h3>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-3"><Camera size={18} className="text-#059669"/> Hình ảnh minh chứng hiện trường</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {item.hinh_anh_minh_chung.map((u: string, i: number) => (
                   <div key={i} className="aspect-square rounded-[32px] overflow-hidden border-8 border-white shadow-2xl transition-transform hover:scale-105">
@@ -615,7 +615,7 @@ export const AdmissionDischargeModule: React.FC<{ onBack?: () => void }> = ({ on
              <TabButton active={activeTab === 'LIST'} onClick={() => { setActiveTab('LIST'); setViewMode('LIST'); }} icon={List} label="Danh sách" />
              <TabButton active={activeTab === 'SUMMARY'} onClick={() => { setActiveTab('SUMMARY'); setViewMode('LIST'); }} icon={BarChart3} label="Báo cáo tổng hợp" />
            </div>
-           
+
            {viewMode === 'LIST' && (
              <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-[32px] border border-slate-100 shadow-sm">
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
@@ -624,12 +624,17 @@ export const AdmissionDischargeModule: React.FC<{ onBack?: () => void }> = ({ on
                  <option value="">Tất cả các khoa phòng</option>
                  {deptList.map((d: any) => <option key={d.id} value={d.ten_don_vi}>{d.ten_don_vi}</option>)}
                </select>
+               {activeTab !== 'LIST' && (
+                 <button onClick={() => { setEditingItem(null); setActiveTab('LIST'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-xl bg-[#059669] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[#008800] active:scale-95">
+                   <Plus size={16} /> Thêm giám sát mới
+                 </button>
+               )}
              </div>
            )}
         </div>
 
         {loading ? (
-          <div className="flex flex-col justify-center items-center h-80 gap-4"><Loader2 className="animate-spin text-#009900" size={48} /><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Đang đồng bộ dữ liệu...</p></div>
+          <div className="flex flex-col justify-center items-center h-80 gap-4"><Loader2 className="animate-spin text-#059669" size={48} /><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Đang đồng bộ dữ liệu...</p></div>
         ) : (
           <div className="animate-in fade-in zoom-in-95 duration-500">
             {activeTab === 'OVERVIEW' ? <RaVaoOverview data={filteredData} />

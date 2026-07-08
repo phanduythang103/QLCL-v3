@@ -61,7 +61,7 @@ export const KsMeSinhConDetail: React.FC<Props> = ({ data, onBack }) => {
                <span
                   key={val}
                   className={`w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full border border-slate-300 text-[8px] md:text-[10px] font-bold transition-all
-              ${scoreVal === val ? 'bg-[#009900] text-white border-[#009900] ring-2 ring-[#009900]/20 scale-110 md:scale-125' : 'text-slate-400 opacity-60'}`}
+              ${scoreVal === val ? 'bg-[#059669] text-white border-[#059669] ring-2 ring-[#059669]/20 scale-110 md:scale-125' : 'text-slate-400 opacity-60'}`}
                >
                   {val}
                </span>
@@ -78,7 +78,7 @@ export const KsMeSinhConDetail: React.FC<Props> = ({ data, onBack }) => {
             <div className="flex items-center justify-start no-print px-2 md:px-0">
                <button
                   onClick={onBack}
-                  className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
+                  className="flex items-center gap-2 text-slate-500 hover:text-[#059669] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
                >
                   <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Quay lại
                </button>
@@ -104,7 +104,7 @@ export const KsMeSinhConDetail: React.FC<Props> = ({ data, onBack }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 md:gap-y-4 gap-x-12 text-xs md:text-sm">
                      <div className="flex gap-2">
                         <span className="font-bold whitespace-nowrap">Mã người mẹ:</span>
-                        <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#009900] uppercase tracking-wide">
+                        <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#059669] uppercase tracking-wide">
                            {data.mother_id || '...........................................'}
                         </span>
                      </div>
@@ -203,9 +203,9 @@ export const KsMeSinhConDetail: React.FC<Props> = ({ data, onBack }) => {
                            </span>
                         </div>
                         <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center">
-                           <span className="text-[10px] font-black text-[#009900]/60 uppercase tracking-widest mb-1">Tỷ lệ hài lòng (%)</span>
-                           <div className="text-4xl font-black text-[#009900]">{data.satisfaction_percent}%</div>
-                           <p className="text-[9px] text-[#009900]/50 mt-2 font-bold italic leading-tight uppercase">
+                           <span className="text-[10px] font-black text-[#059669]/60 uppercase tracking-widest mb-1">Tỷ lệ hài lòng (%)</span>
+                           <div className="text-4xl font-black text-[#059669]">{data.satisfaction_percent}%</div>
+                           <p className="text-[9px] text-[#059669]/50 mt-2 font-bold italic leading-tight uppercase">
                               * (Trung bình dịch vụ + Hài lòng chung) / 2
                            </p>
                         </div>

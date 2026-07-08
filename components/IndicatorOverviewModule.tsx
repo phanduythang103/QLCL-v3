@@ -48,7 +48,7 @@ import { fetchTyLeDD } from '../readTyLeDD';
 
 // ─── Progress bar row (matching the reference image style) ───────────────────
 const BAR_COLORS = [
-  'bg-[#009900]',
+  'bg-[#059669]',
   'bg-indigo-500',
   'bg-violet-500',
   'bg-cyan-500',
@@ -146,7 +146,7 @@ const ChartRow = ({
   const hasData = value !== undefined && value !== null;
   const RowIcon = getRowIcon(iconIndex);
   const iconColor = color
-    .replace('bg-[#009900]', 'text-[#009900]')
+    .replace('bg-[#059669]', 'text-[#059669]')
     .replace('bg-indigo-500', 'text-indigo-500')
     .replace('bg-violet-500', 'text-violet-500')
     .replace('bg-cyan-500', 'text-cyan-500')
@@ -160,19 +160,19 @@ const ChartRow = ({
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2 min-w-0">
           <RowIcon size={15} className={`${iconColor} shrink-0`} />
-          <span className="text-table font-bold text-slate-800 group-hover:text-[#009900] transition-colors tracking-tight truncate lowercase first-letter:uppercase">
+          <span className="text-table font-bold text-slate-800 group-hover:text-[#059669] transition-colors tracking-tight truncate lowercase first-letter:uppercase">
             {label}
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-4">
           {target !== null && target !== undefined && (
-            <span className="text-[11px] text-[#009900] font-bold whitespace-nowrap">
+            <span className="text-[11px] text-[#059669] font-bold whitespace-nowrap">
               Mục tiêu: {target}{unit}
             </span>
           )}
           {hasData ? (
             <span className={`text-lg font-bold whitespace-nowrap ${status === 'EXCEEDED' ? 'text-indigo-600' :
-              status === 'SUCCESS' ? 'text-[#009900]' :
+              status === 'SUCCESS' ? 'text-[#059669]' :
                 status === 'WARNING' ? 'text-amber-600' :
                   status === 'FAILED' ? 'text-red-600' : 'text-slate-700'
               }`}>
@@ -209,7 +209,7 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
   const color = getBarColor(colorIdx);
   const RowIcon = getRowIcon(colorIdx);
   const iconColor = color
-    .replace('bg-[#009900]', 'text-[#009900]')
+    .replace('bg-[#059669]', 'text-[#059669]')
     .replace('bg-indigo-500', 'text-indigo-500')
     .replace('bg-violet-500', 'text-violet-500')
     .replace('bg-cyan-500', 'text-cyan-500')
@@ -223,7 +223,7 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
     : status === 'EXCEEDED'
       ? { label: 'Vượt chỉ tiêu', cls: 'bg-indigo-100 text-indigo-700 border-indigo-200' }
       : status === 'SUCCESS'
-        ? { label: 'Đạt', cls: 'bg-emerald-100 text-[#009900] border-emerald-200' }
+        ? { label: 'Đạt', cls: 'bg-emerald-100 text-[#059669] border-emerald-200' }
         : status === 'WARNING'
           ? { label: 'Cảnh báo', cls: 'bg-amber-100 text-amber-700 border-amber-200' }
           : { label: 'Không đạt', cls: 'bg-red-100 text-red-700 border-red-200' };
@@ -231,7 +231,7 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-all group ${onClick ? 'cursor-pointer hover:border-[#009900]/30 active:scale-[0.98]' : ''}`}
+      className={`bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-all group ${onClick ? 'cursor-pointer hover:border-[#059669]/30 active:scale-[0.98]' : ''}`}
     >
       {/* Header: icon + name + badge */}
       <div className="flex items-start justify-between gap-3 mb-4">
@@ -239,7 +239,7 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-slate-50`}>
             <RowIcon size={16} className={iconColor} />
           </div>
-          <span className="text-table font-bold text-slate-800 group-hover:text-[#009900] transition-colors leading-snug lowercase first-letter:uppercase">
+          <span className="text-table font-bold text-slate-800 group-hover:text-[#059669] transition-colors leading-snug lowercase first-letter:uppercase">
             {cfg.ten_chi_so}
           </span>
         </div>
@@ -250,14 +250,14 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
 
       {/* Mục tiêu + kết quả */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-lg text-[#009900] font-bold">
+        <span className="text-lg text-[#059669] font-bold">
           {cfg.muc_tieu !== null && cfg.muc_tieu !== undefined
             ? `MT: ${cfg.muc_tieu}${unit}`
             : 'Chưa đặt mục tiêu'}
         </span>
         {hasData ? (
           <span className={`text-lg font-bold ${status === 'EXCEEDED' ? 'text-indigo-600' :
-            status === 'SUCCESS' ? 'text-[#009900]' :
+            status === 'SUCCESS' ? 'text-[#059669]' :
               status === 'WARNING' ? 'text-amber-600' : 'text-red-600'
             }`}>
             {giaTri}{unit}
@@ -271,14 +271,14 @@ const IndicatorCard = ({ cfg, giaTri, colorIdx, onClick }: {
       <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
         <div
           className={`h-2 rounded-full ${status === 'EXCEEDED' ? 'bg-indigo-600' :
-            status === 'SUCCESS' ? 'bg-[#009900]' :
+            status === 'SUCCESS' ? 'bg-[#059669]' :
               'bg-red-500'
             } transition-all duration-700 ease-out`}
           style={{ width: hasData ? `${Math.max(pct, 3)}%` : '3%', opacity: hasData ? 1 : 0.2 }}
         />
       </div>
       {hasData && cfg.muc_tieu && (
-        <p className="text-[9px] text-[#009900] font-black mt-1.5 text-right">{Math.round(pct)}% mục tiêu</p>
+        <p className="text-[9px] text-[#059669] font-black mt-1.5 text-right">{Math.round(pct)}% mục tiêu</p>
       )}
     </div>
   );
@@ -606,7 +606,7 @@ const IndicatorOverviewModule: React.FC = () => {
               placeholder="Tìm tên chỉ số..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-table font-bold focus:ring-2 focus:ring-[#009900]/20 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-table font-bold focus:ring-2 focus:ring-[#059669]/20 transition-all"
             />
           </div>
 
@@ -623,7 +623,7 @@ const IndicatorOverviewModule: React.FC = () => {
                 key={val}
                 onClick={() => setTimePeriod(val)}
                 className={`indicator-overview-quick-filter-button px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${timePeriod === val
-                  ? 'bg-[#009900] text-white shadow-sm'
+                  ? 'bg-[#059669] text-white shadow-sm'
                   : 'text-slate-500 hover:bg-white hover:shadow-sm'
                   }`}
               >
@@ -637,7 +637,7 @@ const IndicatorOverviewModule: React.FC = () => {
             <select
               value={filterKhoa}
               onChange={e => setFilterKhoa(e.target.value)}
-              className="w-full pl-8 pr-8 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20 appearance-none cursor-pointer"
+              className="w-full pl-8 pr-8 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#059669]/20 appearance-none cursor-pointer"
             >
               <option value="">Tất cả đơn vị</option>
               {khoaOptions.map(k => <option key={k} value={k}>{k}</option>)}
@@ -655,14 +655,14 @@ const IndicatorOverviewModule: React.FC = () => {
                 type="date"
                 value={customFrom}
                 onChange={e => setCustomFrom(e.target.value)}
-                className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20 outline-none"
+                className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#059669]/20 outline-none"
               />
               <span className="text-slate-400 font-bold text-sm">–</span>
               <input
                 type="date"
                 value={customTo}
                 onChange={e => setCustomTo(e.target.value)}
-                className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20 outline-none"
+                className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#059669]/20 outline-none"
               />
             </div>
           </div>
@@ -672,7 +672,7 @@ const IndicatorOverviewModule: React.FC = () => {
         {rangeLabel && (
           <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5">
             <Calendar size={11} />
-            Phạm vi: <span className="text-[#009900] font-black">{rangeLabel}</span>
+            Phạm vi: <span className="text-[#059669] font-black">{rangeLabel}</span>
           </p>
         )}
       </div>
@@ -682,7 +682,7 @@ const IndicatorOverviewModule: React.FC = () => {
         {[
           { label: 'Tổng chỉ số', val: total, Icon: Target, color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200' },
           { label: 'Vượt chỉ tiêu', val: vuotCount, Icon: Star, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-200' },
-          { label: 'Đạt mục tiêu', val: `${datCount} (${overallRate}%)`, Icon: CheckCircle2, color: 'text-[#009900]', bg: 'bg-emerald-50 border-emerald-200' },
+          { label: 'Đạt mục tiêu', val: `${datCount} (${overallRate}%)`, Icon: CheckCircle2, color: 'text-[#059669]', bg: 'bg-emerald-50 border-emerald-200' },
           { label: 'Không đạt', val: chuaDatCount, Icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
           { label: 'Chờ dữ liệu', val: noDataCount, Icon: Minus, color: 'text-slate-400', bg: 'bg-slate-50 border-slate-200' },
         ].map(({ label, val, Icon, color, bg }) => (
@@ -699,7 +699,7 @@ const IndicatorOverviewModule: React.FC = () => {
       {/* ── Progress bar groups ── */}
       {loading ? (
         <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center">
-          <RefreshCw size={36} className="mx-auto mb-4 animate-spin text-[#009900]/30" />
+          <RefreshCw size={36} className="mx-auto mb-4 animate-spin text-[#059669]/30" />
           <p className="text-sm font-black uppercase tracking-widest text-slate-300">Đang tải dữ liệu...</p>
         </div>
       ) : enrichedRows.length === 0 ? (

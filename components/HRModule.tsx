@@ -752,7 +752,7 @@ export const HRModule: React.FC = () => {
             )}
             <div className="overflow-x-auto">
               <table className="table-standardized">
-                <thead className="bg-[#009900] text-white font-bold uppercase text-table">
+                <thead className="bg-[#059669] text-white font-bold uppercase text-table">
                   <tr>
                     <th className="w-12">
                       <input

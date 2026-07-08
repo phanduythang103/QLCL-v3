@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart2, 
-  ShieldCheck, 
-  AlertOctagon, 
-  Plus, 
-  Search, 
-  Filter, 
-  Calendar, 
-  User, 
-  MapPin, 
-  AlertTriangle, 
-  CheckCircle2, 
+import {
+  BarChart2,
+  ShieldCheck,
+  AlertOctagon,
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  User,
+  MapPin,
+  AlertTriangle,
+  CheckCircle2,
   Clock,
   Edit,
   Trash2,
@@ -175,9 +175,9 @@ export const FacilitySecurityModule: React.FC = () => {
       ngay_bao_cao: new Date().toISOString().split('T')[0],
       nguoi_bao_cao: user?.full_name || '',
       don_vi: user?.department || '',
-      thoi_gian_xay_ra: new Date().toLocaleString('vi-VN', { 
-        day: '2-digit', month: '2-digit', year: 'numeric', 
-        hour: '2-digit', minute: '2-digit', hour12: false 
+      thoi_gian_xay_ra: new Date().toLocaleString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
       }).replace(',', ''),
       vi_tri_xay_ra: '',
       mo_ta_dien_bien: '',
@@ -195,9 +195,9 @@ export const FacilitySecurityModule: React.FC = () => {
       ngay_bao_cao: item.ngay_bao_cao,
       nguoi_bao_cao: item.nguoi_bao_cao,
       don_vi: item.don_vi,
-      thoi_gian_xay_ra: new Date(item.thoi_gian_xay_ra).toLocaleString('vi-VN', { 
-        day: '2-digit', month: '2-digit', year: 'numeric', 
-        hour: '2-digit', minute: '2-digit', hour12: false 
+      thoi_gian_xay_ra: new Date(item.thoi_gian_xay_ra).toLocaleString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
       }).replace(',', ''),
       vi_tri_xay_ra: item.vi_tri_xay_ra,
       mo_ta_dien_bien: item.mo_ta_dien_bien,
@@ -278,7 +278,7 @@ export const FacilitySecurityModule: React.FC = () => {
   const renderOverview = () => {
     const totalSupervisions = supervisions.length;
     const totalReports = reports.length;
-    const avgPassRate = supervisions.length > 0 
+    const avgPassRate = supervisions.length > 0
       ? Math.round(supervisions.reduce((acc, curr) => {
           const pass = [curr.c1_dat, curr.c2_dat, curr.c3_dat, curr.c4_dat, curr.c5_dat, curr.c6_dat].filter(Boolean).length;
           return acc + (pass / 6) * 100;
@@ -326,10 +326,10 @@ export const FacilitySecurityModule: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
             <h3 className="text-slate-800 font-black uppercase tracking-wider text-sm flex items-center gap-2">
-              <TrendingUp size={20} className="text-[#009900]" />
+              <TrendingUp size={20} className="text-[#059669]" />
               Hoạt động giám sát gần nhất
             </h3>
-            <button onClick={() => setActiveTab('SUPERVISION')} className="text-[#009900] text-xs font-bold hover:underline">Xem tất cả</button>
+            <button onClick={() => setActiveTab('SUPERVISION')} className="text-[#059669] text-xs font-bold hover:underline">Xem tất cả</button>
           </div>
           <div className="p-0">
             {supervisions.slice(0, 3).map((item, idx) => {
@@ -346,7 +346,7 @@ export const FacilitySecurityModule: React.FC = () => {
                           <p className="text-slate-500 text-xs mt-0.5">{item.nguoi_giam_sat} • {item.ngay_giam_sat.split('-').reverse().join('/')}</p>
                        </div>
                     </div>
-                    <button onClick={() => { setViewingSupervision(item); setShowViewSupervisionModal(true); }} className="p-2 text-slate-400 hover:text-[#009900] transition-colors"><ChevronRight size={20} /></button>
+                    <button onClick={() => { setViewingSupervision(item); setShowViewSupervisionModal(true); }} className="p-2 text-slate-400 hover:text-[#059669] transition-colors"><ChevronRight size={20} /></button>
                  </div>
                );
             })}
@@ -365,9 +365,9 @@ export const FacilitySecurityModule: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
             <h3 className="text-slate-800 font-black uppercase tracking-wider text-sm flex items-center gap-2">
-               <ShieldCheck size={20} className="text-[#009900]" /> Giám sát An toàn & Vận hành
+               <ShieldCheck size={20} className="text-[#059669]" /> Giám sát An toàn & Vận hành
             </h3>
-            <button onClick={handleAddSupervision} className="bg-[#009900] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all active:scale-95">
+            <button onClick={handleAddSupervision} className="bg-[#059669] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-black uppercase tracking-wider hover:shadow-lg transition-all active:scale-95">
               <Plus size={16} /> Bảng kiểm mới
             </button>
           </div>
@@ -376,7 +376,7 @@ export const FacilitySecurityModule: React.FC = () => {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-[#009900] text-white uppercase tracking-widest text-[10px]">
+                <tr className="bg-[#059669] text-white uppercase tracking-widest text-[10px]">
                   <th className="px-6 py-4 font-black">Ngày GS</th>
                   <th className="px-6 py-4 font-black">Người GS</th>
                   <th className="px-6 py-4 font-black">Vị trí</th>
@@ -403,7 +403,7 @@ export const FacilitySecurityModule: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => { setViewingSupervision(item); setShowViewSupervisionModal(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-black uppercase text-slate-500 hover:text-[#009900] bg-slate-50 hover:bg-green-50 rounded-lg transition-colors"><Eye size={14} /> Xem</button>
+                            <button onClick={() => { setViewingSupervision(item); setShowViewSupervisionModal(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-black uppercase text-slate-500 hover:text-[#059669] bg-slate-50 hover:bg-green-50 rounded-lg transition-colors"><Eye size={14} /> Xem</button>
                             <button onClick={() => handleEditSupervision(item)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-black uppercase text-slate-500 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={14} /> Sửa</button>
                             <button onClick={() => handleDeleteSupervision(item.id)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-black uppercase text-slate-500 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} /> Xóa</button>
                          </div>
@@ -510,7 +510,7 @@ export const FacilitySecurityModule: React.FC = () => {
 
                      {/* Dòng 4: Các nút thao tác */}
                      <div className="flex items-center gap-2 pt-2 border-t border-slate-50 mt-auto">
-                        <button onClick={() => { setViewingReport(report); setShowViewReportModal(true); }} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 hover:text-[#009900] bg-slate-50 hover:bg-green-50 rounded-xl transition-colors border border-slate-100 hover:border-green-200">
+                        <button onClick={() => { setViewingReport(report); setShowViewReportModal(true); }} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 hover:text-[#059669] bg-slate-50 hover:bg-green-50 rounded-xl transition-colors border border-slate-100 hover:border-green-200">
                            <Eye size={13} /> Xem
                         </button>
                         <button onClick={() => handleEditReport(report)} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-xl transition-colors border border-slate-100 hover:border-blue-200">
@@ -560,7 +560,7 @@ export const FacilitySecurityModule: React.FC = () => {
       <div className="flex-1">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
-             <div className="w-10 h-10 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin"></div>
+             <div className="w-10 h-10 border-4 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin"></div>
              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Đang tải dữ liệu...</p>
           </div>
         ) : (
@@ -579,7 +579,7 @@ export const FacilitySecurityModule: React.FC = () => {
            <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                  <h3 className="text-slate-800 font-black uppercase tracking-wider text-sm flex items-center gap-2">
-                    <ShieldCheck size={18} className="text-[#009900]" />
+                    <ShieldCheck size={18} className="text-[#059669]" />
                     {editingSupervision ? 'Cập nhật bảng kiểm' : 'Bảng kiểm giám sát mới'}
                  </h3>
                  <button onClick={() => setShowSupervisionModal(false)} className="p-2 text-slate-400 hover:bg-white rounded-full transition-colors"><X size={20} /></button>
@@ -602,7 +602,7 @@ export const FacilitySecurityModule: React.FC = () => {
 
                  <div className="space-y-3">
                     <h4 className="text-xs font-black text-slate-800 uppercase pb-2 border-b border-slate-100 flex items-center gap-2">
-                       <Target size={16} className="text-[#009900]" /> Nội dung giám sát chi tiết
+                       <Target size={16} className="text-[#059669]" /> Nội dung giám sát chi tiết
                     </h4>
                     {[
                       { id: 'c1', label: '1. Hệ thống báo cháy và chữa cháy hoạt động tốt, còn hạn kiểm định' },
@@ -620,10 +620,10 @@ export const FacilitySecurityModule: React.FC = () => {
                             <span className="md:hidden text-[10px] font-black uppercase text-slate-400">Kết quả:</span>
                             <label className="flex items-center gap-2 cursor-pointer group">
                                <input type="checkbox" checked={(supervisionForm as any)[`${criteria.id}_dat`]} onChange={e => setSupervisionForm({...supervisionForm, [`${criteria.id}_dat`]: e.target.checked})} className="hidden" />
-                               <div className={`w-10 h-6 rounded-full p-1 transition-all duration-300 ${ (supervisionForm as any)[`${criteria.id}_dat`] ? 'bg-[#009900]' : 'bg-slate-300'}`}>
+                               <div className={`w-10 h-6 rounded-full p-1 transition-all duration-300 ${ (supervisionForm as any)[`${criteria.id}_dat`] ? 'bg-[#059669]' : 'bg-slate-300'}`}>
                                   <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${ (supervisionForm as any)[`${criteria.id}_dat`] ? 'translate-x-4' : ''}`}></div>
                                </div>
-                               <span className={`text-[10px] font-black uppercase ${ (supervisionForm as any)[`${criteria.id}_dat`] ? 'text-[#009900]' : 'text-slate-400'}`}>
+                               <span className={`text-[10px] font-black uppercase ${ (supervisionForm as any)[`${criteria.id}_dat`] ? 'text-[#059669]' : 'text-slate-400'}`}>
                                   {(supervisionForm as any)[`${criteria.id}_dat`] ? 'Đạt' : 'K.Đạt'}
                                </span>
                             </label>
@@ -637,7 +637,7 @@ export const FacilitySecurityModule: React.FC = () => {
 
                  <div className="pt-4 border-t border-slate-50 flex gap-3">
                     <button type="button" onClick={() => setShowSupervisionModal(false)} className="flex-1 py-3 text-slate-500 font-black uppercase text-[10px] tracking-wider hover:bg-slate-50 rounded-xl transition-colors flex items-center justify-center gap-2"><X size={16} /> Đóng</button>
-                    <button type="submit" className="flex-[2] py-3 bg-[#009900] text-white font-black uppercase text-[10px] tracking-wider rounded-xl shadow-lg shadow-green-900/20 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"><CheckCircle2 size={16} /> Lưu thông tin</button>
+                    <button type="submit" className="flex-[2] py-3 bg-[#059669] text-white font-black uppercase text-[10px] tracking-wider rounded-xl shadow-lg shadow-green-900/20 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"><CheckCircle2 size={16} /> Lưu thông tin</button>
                  </div>
               </form>
            </div>
@@ -650,7 +650,7 @@ export const FacilitySecurityModule: React.FC = () => {
            <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                  <h3 className="text-slate-800 font-black uppercase tracking-wider text-sm flex items-center gap-2">
-                    <Eye size={18} className="text-[#009900]" />
+                    <Eye size={18} className="text-[#059669]" />
                     Chi tiết bảng kiểm
                  </h3>
                  <button onClick={() => setShowViewSupervisionModal(false)} className="p-2 text-slate-400 hover:bg-white rounded-full transition-colors"><X size={20} /></button>
@@ -673,7 +673,7 @@ export const FacilitySecurityModule: React.FC = () => {
 
                  <div className="space-y-3">
                     <h4 className="text-xs font-black text-slate-800 uppercase pb-2 border-b border-slate-100 flex items-center gap-2 font-black">
-                       <Target size={16} className="text-[#009900]" /> Kết quả giám sát
+                       <Target size={16} className="text-[#059669]" /> Kết quả giám sát
                     </h4>
                     {[
                       { id: 'c1', label: '1. Hệ thống báo cháy và chữa cháy hoạt động tốt, còn hạn kiểm định' },
@@ -782,9 +782,9 @@ export const FacilitySecurityModule: React.FC = () => {
                             <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-white/80 rounded-full p-1 text-red-500 hover:bg-white transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"><X size={12} /></button>
                          </div>
                        ))}
-                       <label className={`w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#009900] hover:bg-green-50/30 transition-all ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
+                       <label className={`w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#059669] hover:bg-green-50/30 transition-all ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
                           {uploading ? (
-                             <div className="w-6 h-6 border-2 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin"></div>
+                             <div className="w-6 h-6 border-2 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin"></div>
                           ) : (
                              <>
                                <Plus size={20} className="text-slate-300" />
@@ -854,7 +854,7 @@ export const FacilitySecurityModule: React.FC = () => {
                     </div>
 
                     <div className="bg-green-50/30 p-5 rounded-2xl border border-green-50">
-                       <h4 className="text-[10px] font-black text-[#009900] uppercase tracking-widest mb-2 flex items-center gap-2"><Activity size={12} /> Biện pháp xử lý tức thời</h4>
+                       <h4 className="text-[10px] font-black text-[#059669] uppercase tracking-widest mb-2 flex items-center gap-2"><Activity size={12} /> Biện pháp xử lý tức thời</h4>
                        <p className="text-sm font-bold text-slate-700 leading-relaxed">{viewingReport.bien_phap_xu_ly}</p>
                     </div>
                  </div>

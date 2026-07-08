@@ -195,7 +195,7 @@ export const Supervision: React.FC = () => {
             <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
               <div>
                 <h2 className="text-main-title font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                  <LayoutGrid className="text-[#009900]" size={24} /> Các nội dung giám sát
+                  <LayoutGrid className="text-[#059669]" size={24} /> Các nội dung giám sát
                 </h2>
               </div>
             </div>
@@ -215,12 +215,12 @@ export const Supervision: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setCategory(item.id as any)}
-                  className="function-icon-tile group lg:min-h-0 lg:flex-row lg:items-start lg:justify-start lg:gap-4 lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-[#009900]/30 lg:hover:shadow-xl lg:hover:shadow-[#009900]/5">
+                  className="function-icon-tile group lg:min-h-0 lg:flex-row lg:items-start lg:justify-start lg:gap-4 lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-[#059669]/30 lg:hover:shadow-xl lg:hover:shadow-[#059669]/5">
                   <div className={`function-icon-box ${item.bgClass} lg:shadow-sm`}>
                     <item.icon size={28} className={item.iconClass} />
                   </div>
                   <div className="min-w-0 lg:flex-1">
-                    <h4 className="function-icon-label uppercase transition-colors group-hover:text-[#009900] lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
+                    <h4 className="function-icon-label uppercase transition-colors group-hover:text-[#059669] lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
                     <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
                   </div>
                 </button>
@@ -234,7 +234,7 @@ export const Supervision: React.FC = () => {
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden h-full">
             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 className="text-main-title font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                <FolderClock className="text-[#009900]" size={24} /> Lịch giám sát
+                <FolderClock className="text-[#059669]" size={24} /> Lịch giám sát
               </h2>
             </div>
             <div className="p-6 space-y-4">
@@ -251,14 +251,14 @@ export const Supervision: React.FC = () => {
                   });
                   setShowScheduleModal(true);
                 }}
-                className="w-full flex items-center justify-center gap-3 py-4 bg-[#009900] text-white rounded-2xl font-black uppercase text-sm shadow-lg shadow-green-900/10 hover:bg-[#0d6e39] hover:-translate-y-0.5 transition-all active:scale-95">
+                className="w-full flex items-center justify-center gap-3 py-4 bg-[#059669] text-white rounded-2xl font-black uppercase text-sm shadow-lg shadow-green-900/10 hover:bg-[#0d6e39] hover:-translate-y-0.5 transition-all active:scale-95">
                 <Plus size={20} /> Lên lịch giám sát mới
               </button> */}
 
               <div className="space-y-4 overflow-y-auto max-h-[600px] pr-2 no-scrollbar">
                 {schedules.slice(0, 5).map((s, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-4 hover:border-[#009900]/20 transition-all">
-                    <div className={`p-3 rounded-xl bg-white shadow-sm shrink-0 ${s.trang_thai === 'Quá hạn' ? 'text-red-500' : 'text-[#009900]'}`}>
+                  <div key={i} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-4 hover:border-[#059669]/20 transition-all">
+                    <div className={`p-3 rounded-xl bg-white shadow-sm shrink-0 ${s.trang_thai === 'Quá hạn' ? 'text-red-500' : 'text-[#059669]'}`}>
                       <Calendar size={20} />
                     </div>
                     <div className="min-w-0">
@@ -266,7 +266,7 @@ export const Supervision: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1 text-[10px] font-bold text-slate-400">
                         <Users size={12} /> {s.dv_duoc_gs}
                       </div>
-                      <p className={`text-[10px] font-black uppercase mt-2 ${s.trang_thai === 'Quá hạn' ? 'text-red-600' : 'text-[#009900]'}`}>
+                      <p className={`text-[10px] font-black uppercase mt-2 ${s.trang_thai === 'Quá hạn' ? 'text-red-600' : 'text-[#059669]'}`}>
                         📅 {formatDate(s.tu_ngay || '')} - {formatDate(s.den_ngay || '')}
                       </p>
                     </div>
@@ -275,7 +275,7 @@ export const Supervision: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowScheduleModal(true)}
-                className="w-full py-3 text-sm font-black text-[#009900] hover:bg-green-50 rounded-xl transition-all uppercase tracking-widest">
+                className="w-full py-3 text-sm font-black text-[#059669] hover:bg-green-50 rounded-xl transition-all uppercase tracking-widest">
                 Xem tất cả lịch
               </button>
             </div>
@@ -289,7 +289,7 @@ export const Supervision: React.FC = () => {
           <div className="bg-white rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-main-title font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                <Calendar className="text-[#009900]" size={24} /> Quản lý tất cả lịch giám sát
+                <Calendar className="text-[#059669]" size={24} /> Quản lý tất cả lịch giám sát
               </h2>
               <button onClick={() => setShowScheduleModal(false)} className="p-2 hover:bg-slate-200 rounded-xl transition-all"><X size={24} /></button>
             </div>
@@ -376,7 +376,7 @@ export const Supervision: React.FC = () => {
               {isAdmin && (editingSchedule !== null || scheduleForm.nd_giam_sat !== '' || scheduleForm.tu_ngay !== '') && (
                 <div className="mt-8 p-8 bg-slate-50 rounded-3xl border border-slate-200">
                   <h3 className="text-sm font-black text-black uppercase mb-6 tracking-widest flex items-center gap-2">
-                    {editingSchedule ? <Edit2 size={18} className="text-blue-600" /> : <Plus size={18} className="text-[#009900]" />}
+                    {editingSchedule ? <Edit2 size={18} className="text-blue-600" /> : <Plus size={18} className="text-[#059669]" />}
                     {editingSchedule ? 'Chỉnh sửa lịch' : 'Thêm lịch giám sát mới'}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -439,7 +439,7 @@ export const Supervision: React.FC = () => {
                           alert('Lỗi: ' + (err as Error).message);
                         }
                       }}
-                      className="px-10 py-3 bg-[#009900] text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-green-900/10 hover:bg-[#0d6e39] transition-all active:scale-95">
+                      className="px-10 py-3 bg-[#059669] text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-green-900/10 hover:bg-[#0d6e39] transition-all active:scale-95">
                       {editingSchedule ? 'Cập nhật lịch' : 'Lưu lịch mới'}
                     </button>
                   </div>

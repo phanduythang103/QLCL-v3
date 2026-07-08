@@ -1,14 +1,14 @@
 /* Design Tokens */
 :root {
   /* Colors */
-  --color-primary: #009900; /* System green */
+  --color-primary: #059669; /* System green */
   --color-primary-50: #eef9ee;
   --color-primary-100: #d7efd7;
   --color-primary-200: #b1dfb1;
   --color-primary-300: #80c980;
   --color-primary-400: #42af42;
   --color-primary-500: #159f15;
-  --color-primary-600: #009900;
+  --color-primary-600: #059669;
   --color-primary-700: #008800;
   --color-primary-800: #007700;
   --color-primary-900: #006600;

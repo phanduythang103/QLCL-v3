@@ -266,19 +266,19 @@ export const BedUsageModule: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 30, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
+              <YAxis
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
               />
-              <RechartsTooltip 
+              <RechartsTooltip
                 cursor={{fill: '#F8FAFC'}}
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                 itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#4f46e5' }}
@@ -300,7 +300,7 @@ export const BedUsageModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mt-6">
         <div className="p-6 border-b border-slate-50 flex items-center justify-between">
           <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2">
-            <Activity size={18} className="text-indigo-600" /> 
+            <Activity size={18} className="text-indigo-600" />
             Dữ liệu gần đây
           </h3>
           <button onClick={() => setActiveTab('DANH_SACH')} className="text-indigo-600 text-xs font-black uppercase hover:underline">Xem tất cả</button>
@@ -327,8 +327,8 @@ export const BedUsageModule: React.FC = () => {
                   <td className="px-6 py-4 text-xs font-bold text-center">{r.so_ngay_trong_ky}</td>
                   <td className="px-6 py-4 text-right">
                     <span className={`px-3 py-1 rounded-full text-xs font-black ${
-                      Number(r.cong_suat) > 90 ? 'bg-red-50 text-red-600' : 
-                      Number(r.cong_suat) > 80 ? 'bg-green-50 text-[#009900]' : 
+                      Number(r.cong_suat) > 90 ? 'bg-red-50 text-red-600' :
+                      Number(r.cong_suat) > 80 ? 'bg-green-50 text-[#059669]' :
                       'bg-blue-50 text-blue-600'
                     }`}>
                       {r.cong_suat}%
@@ -356,8 +356,8 @@ export const BedUsageModule: React.FC = () => {
                 <div className="text-right">
                   <p className="text-[10px] font-black uppercase text-slate-400">Công suất</p>
                   <p className={`text-sm font-black ${
-                    Number(r.cong_suat) > 90 ? 'text-red-600' : 
-                    Number(r.cong_suat) > 80 ? 'text-[#009900]' : 
+                    Number(r.cong_suat) > 90 ? 'text-red-600' :
+                    Number(r.cong_suat) > 80 ? 'text-[#059669]' :
                     'text-blue-600'
                   }`}>{r.cong_suat}%</p>
                 </div>
@@ -387,12 +387,12 @@ export const BedUsageModule: React.FC = () => {
       <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div className="relative flex-1 min-w-[280px]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm theo đơn vị, ghi chú..." 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
+          <input
+            placeholder="Tìm theo đơn vị, ghi chú..."
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
           />
         </div>
-        <button 
+        <button
           onClick={handleAdd}
           className="bg-indigo-600 text-white px-6 py-3 rounded-2xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all"
         >
@@ -465,8 +465,8 @@ export const BedUsageModule: React.FC = () => {
                 </div>
                 <div className="flex items-end justify-end">
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                    Number(r.cong_suat) > 90 ? 'bg-red-50 text-red-600' : 
-                    Number(r.cong_suat) > 80 ? 'bg-green-50 text-[#009900]' : 
+                    Number(r.cong_suat) > 90 ? 'bg-red-50 text-red-600' :
+                    Number(r.cong_suat) > 80 ? 'bg-green-50 text-[#059669]' :
                     'bg-blue-50 text-blue-600'
                   }`}>
                     {Number(r.cong_suat) > 90 ? 'Quá tải' : Number(r.cong_suat) > 80 ? 'Tốt' : 'Thấp'}
@@ -584,30 +584,30 @@ export const BedUsageModule: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Vui lòng nhập đầy đủ thông tin</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="p-3 text-slate-400 hover:bg-white hover:text-red-500 rounded-2xl transition-all shadow-sm"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Calendar size={12} /> Ngày báo cáo</label>
-                  <input 
-                    type="date" 
-                    value={form.ngay_bao_cao} 
-                    onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })} 
-                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
-                    required 
+                  <input
+                    type="date"
+                    value={form.ngay_bao_cao}
+                    onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })}
+                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><User size={12} /> Người báo cáo</label>
-                  <input 
-                    value={form.nguoi_bao_cao} 
+                  <input
+                    value={form.nguoi_bao_cao}
                     readOnly
                     className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold opacity-70"
                   />
@@ -616,13 +616,13 @@ export const BedUsageModule: React.FC = () => {
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Building2 size={12} /> Đơn vị</label>
-                <input 
+                <input
                   list="ds-don-vi"
                   placeholder="Nhập hoặc chọn đơn vị..."
-                  value={form.don_vi} 
-                  onChange={e => setForm({ ...form, don_vi: e.target.value })} 
-                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
-                  required 
+                  value={form.don_vi}
+                  onChange={e => setForm({ ...form, don_vi: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
+                  required
                 />
                 <datalist id="ds-don-vi">
                   {units.map(u => <option key={u.id} value={u.ten_don_vi}>{u.ma_don_vi} - {u.ten_don_vi}</option>)}
@@ -632,32 +632,32 @@ export const BedUsageModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Số giường</label>
-                  <input 
-                    type="number" 
-                    value={form.so_giuong || ''} 
-                    onChange={e => setForm({ ...form, so_giuong: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-indigo-500/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.so_giuong || ''}
+                    onChange={e => setForm({ ...form, so_giuong: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-indigo-500/20 shadow-sm"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Ngày ĐT thực tế</label>
-                  <input 
-                    type="number" 
-                    value={form.tong_ngay_dieu_tri_thuc_te || ''} 
-                    onChange={e => setForm({ ...form, tong_ngay_dieu_tri_thuc_te: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-indigo-500/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.tong_ngay_dieu_tri_thuc_te || ''}
+                    onChange={e => setForm({ ...form, tong_ngay_dieu_tri_thuc_te: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-indigo-500/20 shadow-sm"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5">Số ngày trong kỳ</label>
-                  <input 
-                    type="number" 
-                    value={form.so_ngay_trong_ky || ''} 
-                    onChange={e => setForm({ ...form, so_ngay_trong_ky: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-indigo-500/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.so_ngay_trong_ky || ''}
+                    onChange={e => setForm({ ...form, so_ngay_trong_ky: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-indigo-500/20 shadow-sm"
+                    required
                   />
                 </div>
               </div>
@@ -673,26 +673,26 @@ export const BedUsageModule: React.FC = () => {
                   Công thức: (Ngày ĐT thực tế / (Số giường * Số ngày trong kỳ)) * 100
                 </div>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><FileText size={12} /> Ghi chú</label>
-                <textarea 
-                  value={form.ghi_chu || ''} 
-                  onChange={e => setForm({ ...form, ghi_chu: e.target.value })} 
-                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[80px]" 
+                <textarea
+                  value={form.ghi_chu || ''}
+                  onChange={e => setForm({ ...form, ghi_chu: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[80px]"
                 />
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex gap-4">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-4 text-slate-400 font-black uppercase text-[11px] tracking-widest hover:bg-slate-50 rounded-2xl transition-all"
                 >
                   Hủy bỏ
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="flex-[2] py-4 bg-indigo-600 text-white font-black uppercase text-[11px] tracking-widest rounded-3xl shadow-lg shadow-indigo-900/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={18} /> {editingRecord ? 'Cập nhật' : 'Lưu số liệu'}

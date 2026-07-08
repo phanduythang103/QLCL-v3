@@ -120,7 +120,7 @@ export const ExamTimeModule: React.FC = () => {
     const range = getDateRange(dateFilter.type, dateFilter.startDate, dateFilter.endDate);
     return isDateInRange(r.ngay_giam_sat, range);
   });
-  
+
   const filteredAnalyses = analyses.filter(a => {
     const range = getDateRange(dateFilter.type, dateFilter.startDate, dateFilter.endDate);
     return isDateInRange(a.ngay_phan_tich, range);
@@ -229,7 +229,7 @@ export const ExamTimeModule: React.FC = () => {
       <div className="indicator-quick-stats grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Tổng phiếu GS', value: filteredRecords.length, unit: 'phiếu', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Thời gian trung bình', value: avgTime, unit: 'phút', icon: Clock, color: 'text-[#009900]', bg: 'bg-green-50' },
+          { label: 'Thời gian trung bình', value: avgTime, unit: 'phút', icon: Clock, color: 'text-[#059669]', bg: 'bg-green-50' },
           { label: 'Thời gian tối đa', value: maxTime, unit: 'phút', icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
           { label: 'Thời gian tối thiểu', value: minTime, unit: 'phút', icon: Target, color: 'text-purple-600', bg: 'bg-purple-50' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
@@ -250,7 +250,7 @@ export const ExamTimeModule: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h3 className="text-sm font-black uppercase text-slate-800 flex items-center gap-2">
-              <BarChart size={18} className="text-[#009900]" />
+              <BarChart size={18} className="text-[#059669]" />
               Xu hướng thời gian khám bệnh trung bình
             </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Dữ liệu phân tích theo thời gian</p>
@@ -266,7 +266,7 @@ export const ExamTimeModule: React.FC = () => {
                 key={m.id}
                 onClick={() => setChartMode(m.id as any)}
                 className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                  chartMode === m.id ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                  chartMode === m.id ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 {m.label}
@@ -279,32 +279,32 @@ export const ExamTimeModule: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 30, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
+              <YAxis
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
               />
-              <RechartsTooltip 
+              <RechartsTooltip
                 cursor={{fill: '#F8FAFC'}}
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#009900' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#059669' }}
                 labelStyle={{ fontSize: '10px', fontWeight: 800, color: '#64748B', marginBottom: '4px', textTransform: 'uppercase' }}
                 formatter={(val: number | undefined) => [`${val || 0} phút`, 'Trung bình']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]} barSize={chartMode === 'YEAR' || chartMode === 'QUARTER' ? 40 : 20}>
                 {chartData.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#009900' : '#86efac'} />
+                  <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#059669' : '#86efac'} />
                 ))}
                 <LabelList dataKey="avg" position="top" offset={10} style={{ fontSize: '10px', fontWeight: 900, fill: '#64748B' }} />
               </Bar>
-              <Line type="monotone" dataKey="avg" stroke="#009900" strokeWidth={2} dot={{ fill: '#009900', r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} />
+              <Line type="monotone" dataKey="avg" stroke="#059669" strokeWidth={2} dot={{ fill: '#059669', r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -314,8 +314,8 @@ export const ExamTimeModule: React.FC = () => {
         {/* Recent records */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div className="p-5 border-b border-slate-50 flex items-center justify-between">
-            <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2"><Activity size={18} className="text-[#009900]" /> Giám sát gần nhất</h3>
-            <button onClick={() => setActiveTab('GIAM_SAT')} className="text-[#009900] text-xs font-bold hover:underline">Tất cả</button>
+            <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2"><Activity size={18} className="text-[#059669]" /> Giám sát gần nhất</h3>
+            <button onClick={() => setActiveTab('GIAM_SAT')} className="text-[#059669] text-xs font-bold hover:underline">Tất cả</button>
           </div>
           <div className="divide-y divide-slate-50 flex-1">
             {filteredRecords.slice(0, 5).map(r => (
@@ -365,7 +365,7 @@ export const ExamTimeModule: React.FC = () => {
   const renderGiamSat = () => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-4">
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-wrap items-center gap-3">
-        <button onClick={handleAddGs} className="bg-[#009900] text-white px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all">
+        <button onClick={handleAddGs} className="bg-[#059669] text-white px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all">
           <Plus size={15} /> Thêm phiếu giám sát
         </button>
         <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
@@ -380,7 +380,7 @@ export const ExamTimeModule: React.FC = () => {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-wider">
+              <tr className="bg-[#059669] text-white text-[10px] uppercase tracking-wider">
                 <th className="px-4 py-3 font-black">Ngày giám sát</th>
                 <th className="px-4 py-3 font-black">Mã BN</th>
                 <th className="px-4 py-3 font-black">Giờ bắt đầu</th>
@@ -403,7 +403,7 @@ export const ExamTimeModule: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1.5 transition-opacity">
-                      <button onClick={() => setViewingGs(r)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-[#009900] bg-slate-50 hover:bg-green-50 rounded-lg transition-colors"><Eye size={12} /> Xem</button>
+                      <button onClick={() => setViewingGs(r)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-[#059669] bg-slate-50 hover:bg-green-50 rounded-lg transition-colors"><Eye size={12} /> Xem</button>
                       <button onClick={() => handleEditGs(r)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={12} /> Sửa</button>
                       <button onClick={() => handleDeleteGs(r.id)} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-black uppercase text-slate-500 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={12} /> Xóa</button>
                     </div>
@@ -429,7 +429,7 @@ export const ExamTimeModule: React.FC = () => {
                 </span>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => setViewingGs(r)} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 bg-slate-50 hover:bg-green-50 hover:text-[#009900] rounded-xl border border-slate-100 transition-colors"><Eye size={12} /> Xem</button>
+                <button onClick={() => setViewingGs(r)} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 bg-slate-50 hover:bg-green-50 hover:text-[#059669] rounded-xl border border-slate-100 transition-colors"><Eye size={12} /> Xem</button>
                 <button onClick={() => handleEditGs(r)} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 rounded-xl border border-slate-100 transition-colors"><Edit size={12} /> Sửa</button>
                 <button onClick={() => handleDeleteGs(r.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-slate-600 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-xl border border-slate-100 transition-colors"><Trash2 size={12} /> Xóa</button>
               </div>
@@ -515,7 +515,7 @@ export const ExamTimeModule: React.FC = () => {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-[#009900] shadow-sm">
+            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-[#059669] shadow-sm">
               <Clock size={24} />
             </div>
             <div>
@@ -535,7 +535,7 @@ export const ExamTimeModule: React.FC = () => {
       <div className="flex-1">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
-            <div className="w-10 h-10 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin" />
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Đang tải dữ liệu...</p>
           </div>
         ) : (
@@ -552,7 +552,7 @@ export const ExamTimeModule: React.FC = () => {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2"><Stethoscope size={18} className="text-[#009900]" />{editingGs ? 'Cập nhật phiếu giám sát' : 'Phiếu giám sát mới'}</h3>
+              <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2"><Stethoscope size={18} className="text-[#059669]" />{editingGs ? 'Cập nhật phiếu giám sát' : 'Phiếu giám sát mới'}</h3>
               <button onClick={() => setShowGsModal(false)} className="p-2 text-slate-400 hover:bg-white rounded-full transition-colors"><X size={20} /></button>
             </div>
             <form onSubmit={handleSaveGs} className="p-5 space-y-5 max-h-[80vh] overflow-y-auto custom-scrollbar">
@@ -609,8 +609,8 @@ export const ExamTimeModule: React.FC = () => {
 
               {/* Auto-calculated total */}
               <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[#009900]"><Clock size={16} /><span className="font-black text-sm uppercase tracking-wide">Tổng thời gian khám</span></div>
-                <span className="text-2xl font-black text-[#009900]">{fmtMin(calcTongThoiGian(gsForm.gio_dang_ky, gsForm.gio_nhan_thuoc))}</span>
+                <div className="flex items-center gap-2 text-[#059669]"><Clock size={16} /><span className="font-black text-sm uppercase tracking-wide">Tổng thời gian khám</span></div>
+                <span className="text-2xl font-black text-[#059669]">{fmtMin(calcTongThoiGian(gsForm.gio_dang_ky, gsForm.gio_nhan_thuoc))}</span>
               </div>
 
               <div className="space-y-1.5">
@@ -620,7 +620,7 @@ export const ExamTimeModule: React.FC = () => {
 
               <div className="pt-2 border-t border-slate-50 flex gap-3">
                 <button type="button" onClick={() => setShowGsModal(false)} className="flex-1 py-3 text-slate-500 font-black uppercase text-[10px] tracking-wider hover:bg-slate-50 rounded-xl transition-colors flex items-center justify-center gap-2"><X size={15} /> Đóng</button>
-                <button type="submit" className="flex-[2] py-3 bg-[#009900] text-white font-black uppercase text-[10px] tracking-wider rounded-xl shadow-lg shadow-green-900/20 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"><CheckCircle2 size={15} /> Lưu phiếu</button>
+                <button type="submit" className="flex-[2] py-3 bg-[#059669] text-white font-black uppercase text-[10px] tracking-wider rounded-xl shadow-lg shadow-green-900/20 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"><CheckCircle2 size={15} /> Lưu phiếu</button>
               </div>
             </form>
           </div>
@@ -632,7 +632,7 @@ export const ExamTimeModule: React.FC = () => {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2"><Eye size={16} className="text-[#009900]" /> Chi tiết phiếu giám sát</h3>
+              <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2"><Eye size={16} className="text-[#059669]" /> Chi tiết phiếu giám sát</h3>
               <button onClick={() => setViewingGs(null)} className="p-2 text-slate-400 hover:bg-white rounded-full transition-colors"><X size={20} /></button>
             </div>
             <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
@@ -654,8 +654,8 @@ export const ExamTimeModule: React.FC = () => {
               </div>
 
               <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-center justify-between">
-                <span className="text-sm font-black uppercase text-[#009900]">Tổng thời gian</span>
-                <span className="text-2xl font-black text-[#009900]">{fmtMin(viewingGs.tong_thoi_gian)}</span>
+                <span className="text-sm font-black uppercase text-[#059669]">Tổng thời gian</span>
+                <span className="text-2xl font-black text-[#059669]">{fmtMin(viewingGs.tong_thoi_gian)}</span>
               </div>
 
               {viewingGs.ghi_chu && <p className="text-xs text-slate-500 italic bg-slate-50 p-3 rounded-xl">Ghi chú: {viewingGs.ghi_chu}</p>}

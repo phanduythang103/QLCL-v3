@@ -111,7 +111,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
-        <div className="w-12 h-12 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin"></div>
         <p className="text-slate-500 font-black text-xs uppercase tracking-widest animate-pulse">Đang tải danh sách khảo sát...</p>
       </div>
     );
@@ -122,7 +122,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 gap-3 md:gap-6">
         <div className="bg-white p-3 md:p-6 rounded-[1rem] md:rounded-[2rem] border border-slate-100 shadow-xl flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-6 group hover:-translate-y-1 transition-all">
-          <div className="w-10 h-10 md:w-16 md:h-16 bg-emerald-50 rounded-lg md:rounded-2xl flex items-center justify-center text-[#009900] group-hover:scale-110 transition-transform shrink-0">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-emerald-50 rounded-lg md:rounded-2xl flex items-center justify-center text-[#059669] group-hover:scale-110 transition-transform shrink-0">
             <Users size={20} className="md:w-8 md:h-8" />
           </div>
           <div className="text-center md:text-left">
@@ -151,7 +151,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
             <select
               value={blockFilter}
               onChange={(e) => setBlockFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#009900] transition-all"
+              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
             >
               <option value="all">Tất cả Khối</option>
               <option value="clinical">Khối Lâm sàng</option>
@@ -162,7 +162,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
             <select
               value={positionFilter}
               onChange={(e) => setPositionFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#009900] transition-all"
+              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
             >
               <option value="all">Tất cả Vị trí</option>
               <option value="doctor">Bác sĩ</option>
@@ -182,7 +182,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
           )}
           <button
             onClick={onAddNew}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#009900] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg shadow-emerald-100 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#059669] text-white rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase shadow-lg shadow-emerald-100 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
           >
             <Plus size={16} className="md:w-[18px]" /> <span className="md:inline">Thêm phiếu</span>
           </button>
@@ -227,7 +227,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
                     >
                       <td className="px-4 md:px-6 py-5 hidden md:table-cell">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-emerald-50 rounded-lg text-[#009900]">
+                          <div className="p-2 bg-emerald-50 rounded-lg text-[#059669]">
                             <Calendar size={16} />
                           </div>
                           <span className="text-sm font-bold text-slate-700">{dateStr}</span>
@@ -235,7 +235,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
                       </td>
                       <td className="px-4 md:px-6 py-4 md:py-5">
                         <div className="flex flex-col gap-1">
-                          <span className="text-[10px] md:text-xs font-black text-[#009900] tracking-tight bg-emerald-50 px-2 md:px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+                          <span className="text-[10px] md:text-xs font-black text-[#059669] tracking-tight bg-emerald-50 px-2 md:px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
                             {fullCode}
                           </span>
                           <span className="text-[9px] font-bold text-slate-400 md:hidden">{dateStr}</span>
@@ -250,7 +250,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
                       </td>
                       <td className="px-4 md:px-6 py-5 text-right hidden md:table-cell">
                         <button
-                          className="inline-flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-[#009900] hover:bg-emerald-50 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
+                          className="inline-flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-[#059669] hover:bg-emerald-50 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider"
                           title="Xem chi tiết"
                         >
                           <Eye size={18} />

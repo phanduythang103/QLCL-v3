@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Clock, BarChart2, Search, Plus, Edit, Trash2, X,
   CheckCircle2, User, Calendar, Building2, AlertCircle,
-  TrendingDown, TrendingUp, Layout, FileText, ChevronDown, 
+  TrendingDown, TrendingUp, Layout, FileText, ChevronDown,
   ChevronRight, Activity, Target, Clipboard, Eye, Users
 } from 'lucide-react';
 import { fetchTyLeDD, TyLeDD, TyLeDDInput, addTyLeDD, updateTyLeDD, deleteTyLeDD } from '../readTyLeDD';
@@ -194,10 +194,10 @@ export const NurseRatioModule: React.FC = () => {
 
   // Aggregated Stats per Department
   const REGULATION_QUOTA = 0.3; // Default quota: 0.3 nurses per patient (approx 1:3)
-  
+
   const aggregatedData = React.useMemo(() => {
     const departmentStats: Record<string, { totalDD: number, totalNB: number, count: number }> = {};
-    
+
     // Use filtered records for aggregation
     filteredRecords.forEach(r => {
       if (!departmentStats[r.khoa]) {
@@ -276,10 +276,10 @@ export const NurseRatioModule: React.FC = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="nurse-ratio-stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {[
-          { label: 'Tỷ lệ ĐD/NB TB', value: avgRatio, unit: '', icon: Activity, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Tổng NB nội trú', value: totalNB, unit: 'NB', icon: User, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Tổng ĐD chuyên môn', value: totalDD, unit: 'ĐD', icon: Clipboard, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
-          { label: 'Số khoa báo cáo', value: new Set(filteredRecords.map(r => r.khoa)).size, unit: 'khoa', icon: Building2, color: 'text-[#009900]', bg: 'bg-[#009900]/10' },
+          { label: 'Tỷ lệ ĐD/NB TB', value: avgRatio, unit: '', icon: Activity, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
+          { label: 'Tổng NB nội trú', value: totalNB, unit: 'NB', icon: User, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
+          { label: 'Tổng ĐD chuyên môn', value: totalDD, unit: 'ĐD', icon: Clipboard, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
+          { label: 'Số khoa báo cáo', value: new Set(filteredRecords.map(r => r.khoa)).size, unit: 'khoa', icon: Building2, color: 'text-[#059669]', bg: 'bg-[#059669]/10' },
         ].map(({ label, value, unit, icon: Icon, color, bg }) => (
           <div key={label} className="nurse-ratio-stat-card bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-3 md:gap-5 text-center md:text-left">
             <div className={`nurse-ratio-stat-icon w-10 h-10 md:w-14 md:h-14 ${bg} ${color} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm`}>
@@ -296,7 +296,7 @@ export const NurseRatioModule: React.FC = () => {
       <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-sm font-black uppercase text-slate-800 flex items-center gap-2">
-            <BarChart2 size={18} className="text-[#009900]" />
+            <BarChart2 size={18} className="text-[#059669]" />
             Xu hướng tỷ số Điều dưỡng/Người bệnh
           </h3>
         </div>
@@ -304,28 +304,28 @@ export const NurseRatioModule: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartDataMap} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
+              <YAxis
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
               />
-              <RechartsTooltip 
+              <RechartsTooltip
                 cursor={{fill: '#F8FAFC'}}
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#009900' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#059669' }}
                 labelStyle={{ fontSize: '10px', fontWeight: 800, color: '#64748B', marginBottom: '4px', textTransform: 'uppercase' }}
                 formatter={(val: any) => [val, 'Tỷ lệ ĐD/NB']}
               />
               <Bar dataKey="ratio" radius={[6, 6, 0, 0]} barSize={40}>
                 {chartDataMap.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === chartDataMap.length - 1 ? '#009900' : '#00990060'} />
+                  <Cell key={`cell-${index}`} fill={index === chartDataMap.length - 1 ? '#059669' : '#05966960'} />
                 ))}
                 <LabelList dataKey="ratio" position="top" offset={10} style={{ fontSize: '10px', fontWeight: 900, fill: '#64748B' }} />
               </Bar>
@@ -346,19 +346,19 @@ export const NurseRatioModule: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartDataMap} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
+              <YAxis
+                axisLine={false}
+                tickLine={false}
                 tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 800}}
               />
-              <RechartsTooltip 
+              <RechartsTooltip
                 cursor={{fill: '#F8FAFC'}}
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                 itemStyle={{ fontSize: '12px', fontWeight: 900, color: '#2563EB' }}
@@ -380,7 +380,7 @@ export const NurseRatioModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mt-6">
         <div className="p-6 border-b border-slate-50 flex items-center justify-between">
           <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2">
-            <Activity size={18} className="text-[#009900]" /> 
+            <Activity size={18} className="text-[#059669]" />
             Bảng tổng hợp theo Khoa/Đơn vị
           </h3>
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
@@ -408,7 +408,7 @@ export const NurseRatioModule: React.FC = () => {
                   <td className="px-6 py-4 text-xs font-bold text-center text-slate-600">{d.avgDD.toFixed(1)}</td>
                   <td className="px-6 py-4 text-xs font-bold text-center text-slate-600">{d.avgNB.toFixed(1)}</td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-black text-[#009900] font-mono">{d.ratio.toFixed(2)}</span>
+                    <span className="text-sm font-black text-[#059669] font-mono">{d.ratio.toFixed(2)}</span>
                   </td>
                   <td className="px-6 py-4 text-xs font-bold text-center text-slate-400">{d.quota.toFixed(2)}</td>
                   <td className="px-6 py-4 text-right">
@@ -437,16 +437,16 @@ export const NurseRatioModule: React.FC = () => {
       <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm theo khoa, ngày..." 
+          <input
+            placeholder="Tìm theo khoa, ngày..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20 transition-all" 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#059669]/20 transition-all"
           />
         </div>
-        <button 
+        <button
           onClick={handleAdd}
-          className="bg-[#009900] text-white px-6 py-3 rounded-2xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all w-full md:w-auto justify-center"
+          className="bg-[#059669] text-white px-6 py-3 rounded-2xl flex items-center gap-2 text-xs font-black uppercase hover:shadow-lg active:scale-95 transition-all w-full md:w-auto justify-center"
         >
           <Plus size={18} /> Thêm báo cáo
         </button>
@@ -455,7 +455,7 @@ export const NurseRatioModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="hidden md:table-header-group">
-            <tr className="bg-[#009900] text-white text-[10px] uppercase tracking-widest border-b border-[#009900]">
+            <tr className="bg-[#059669] text-white text-[10px] uppercase tracking-widest border-b border-[#059669]">
               <th className="px-6 py-4 font-black">Ngày báo cáo</th>
               <th className="px-6 py-4 font-black">Khoa/Đơn vị</th>
               <th className="px-6 py-4 font-black text-center">NB nội trú</th>
@@ -471,18 +471,18 @@ export const NurseRatioModule: React.FC = () => {
               return (
                 <React.Fragment key={group.date}>
                   {/* Group Header Row */}
-                  <tr 
+                  <tr
                     onClick={() => toggleDate(group.date)}
                     className={`cursor-pointer transition-colors ${isOpen ? 'bg-slate-50/80 shadow-inner' : 'hover:bg-slate-50/50'}`}
                   >
                     {/* Desktop Header */}
                     <td className="hidden md:table-cell px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-1 rounded-md transition-transform duration-300 ${isOpen ? 'rotate-90 bg-[#009900] text-white' : 'text-slate-400 bg-slate-100'}`}>
+                        <div className={`p-1 rounded-md transition-transform duration-300 ${isOpen ? 'rotate-90 bg-[#059669] text-white' : 'text-slate-400 bg-slate-100'}`}>
                           <ChevronRight size={14} />
                         </div>
                         <span className="text-sm font-black text-slate-800">{group.date.split('-').reverse().join('/')}</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-[#009900] bg-[#009900]/10 px-2 py-0.5 rounded-full border border-[#009900]/10">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[#059669] bg-[#059669]/10 px-2 py-0.5 rounded-full border border-[#059669]/10">
                           {group.reports.length} báo cáo
                         </span>
                       </div>
@@ -498,12 +498,12 @@ export const NurseRatioModule: React.FC = () => {
                     <td className="md:hidden px-4 py-4" colSpan={2}>
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <div className={`p-1 rounded-md transition-transform duration-300 ${isOpen ? 'rotate-90 bg-[#009900] text-white' : 'text-slate-400 bg-slate-100 shadow-sm shrink-0'}`}>
+                          <div className={`p-1 rounded-md transition-transform duration-300 ${isOpen ? 'rotate-90 bg-[#059669] text-white' : 'text-slate-400 bg-slate-100 shadow-sm shrink-0'}`}>
                             <ChevronRight size={14} />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-xs font-black text-slate-800 tracking-tight">{group.date.split('-').reverse().join('/')}</span>
-                            <span className="text-[9px] font-bold text-[#009900] uppercase tracking-tighter italic">{group.reports.length} báo cáo</span>
+                            <span className="text-[9px] font-bold text-[#059669] uppercase tracking-tighter italic">{group.reports.length} báo cáo</span>
                           </div>
                         </div>
                         <div className="text-right border-l border-slate-100 pl-4">
@@ -514,7 +514,7 @@ export const NurseRatioModule: React.FC = () => {
                     </td>
 
                     <td className="hidden md:table-cell px-6 py-4 text-xs font-black text-center text-slate-600">{group.nb}</td>
-                    <td className="hidden md:table-cell px-6 py-4 text-xs font-black text-center text-[#009900]">{group.dd}</td>
+                    <td className="hidden md:table-cell px-6 py-4 text-xs font-black text-center text-[#059669]">{group.dd}</td>
                     <td className="hidden md:table-cell px-6 py-4 text-xs font-black text-center text-slate-400">{group.other}</td>
                     <td className="hidden md:table-cell px-6 py-4 text-right" colSpan={2}>
                       <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Click để xem chi tiết</span>
@@ -523,7 +523,7 @@ export const NurseRatioModule: React.FC = () => {
 
                   {/* Desktop Detailed Rows */}
                   {isOpen && group.reports.map(r => (
-                    <tr key={r.id} className="hidden md:table-row bg-white border-l-4 border-[#009900]/20 hover:bg-slate-50/30 transition-colors group/row">
+                    <tr key={r.id} className="hidden md:table-row bg-white border-l-4 border-[#059669]/20 hover:bg-slate-50/30 transition-colors group/row">
                       <td className="px-6 py-3 text-[10px] font-bold text-slate-400 pl-12 italic opacity-50">
                         {r.ngay_bao_cao.split('-').reverse().join('/')}
                       </td>
@@ -532,18 +532,18 @@ export const NurseRatioModule: React.FC = () => {
                       <td className="px-6 py-3 text-xs font-bold text-center text-slate-500">{r.so_dd_chuyen_mon}</td>
                       <td className="px-6 py-3 text-xs font-bold text-center text-slate-300">{r.so_dd_khong_chuyen_mon}</td>
                       <td className="px-6 py-3 text-right">
-                        <span className="text-sm font-black text-[#009900] font-mono">{r.ty_so_dd_nb}</span>
+                        <span className="text-sm font-black text-[#059669] font-mono">{r.ty_so_dd_nb}</span>
                       </td>
                       <td className="px-6 py-3 text-right">
                         <div className="flex items-center justify-end gap-2 transition-all">
-                          <button 
-                            onClick={() => handleEdit(r)} 
+                          <button
+                            onClick={() => handleEdit(r)}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all font-black uppercase text-[10px] tracking-wider"
                           >
                             <Edit size={14} /> Sửa
                           </button>
-                          <button 
-                            onClick={() => handleDelete(r.id)} 
+                          <button
+                            onClick={() => handleDelete(r.id)}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all font-black uppercase text-[10px] tracking-wider"
                           >
                             <Trash2 size={14} /> Xóa
@@ -580,7 +580,7 @@ export const NurseRatioModule: React.FC = () => {
                                     <td className="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600">{r.so_nb_noi_tru}</td>
                                     <td className="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600">{r.so_dd_chuyen_mon}</td>
                                     <td className="px-3 py-2.5 text-center">
-                                      <span className="text-[10px] font-black text-[#009900] font-mono">{r.ty_so_dd_nb}</span>
+                                      <span className="text-[10px] font-black text-[#059669] font-mono">{r.ty_so_dd_nb}</span>
                                     </td>
                                     <td className="px-3 py-2.5 text-right">
                                       <button onClick={() => handleEdit(r)} className="p-1.5 bg-blue-50 text-blue-600 rounded-md shadow-sm active:scale-95 transition-all"><Eye size={12} /></button>
@@ -613,7 +613,7 @@ export const NurseRatioModule: React.FC = () => {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-[#009900]/10 rounded-2xl flex items-center justify-center text-[#009900] shadow-sm shrink-0 border border-[#009900]/20">
+            <div className="w-14 h-14 bg-[#059669]/10 rounded-2xl flex items-center justify-center text-[#059669] shadow-sm shrink-0 border border-[#059669]/20">
               <Clipboard size={28} />
             </div>
             <div>
@@ -624,11 +624,11 @@ export const NurseRatioModule: React.FC = () => {
 
           <div className="nurse-ratio-filter-controls flex items-center gap-2">
             <div className="nurse-ratio-dept-filter relative group">
-              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#009900] transition-colors" size={14} />
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#059669] transition-colors" size={14} />
               <select
                 value={selectedDept}
                 onChange={e => setSelectedDept(e.target.value)}
-                className="nurse-ratio-dept-select pl-9 pr-8 py-2.5 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-[#009900]/10 focus:border-[#009900] appearance-none shadow-sm cursor-pointer min-w-[140px]"
+                className="nurse-ratio-dept-select pl-9 pr-8 py-2.5 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-[#059669]/10 focus:border-[#059669] appearance-none shadow-sm cursor-pointer min-w-[140px]"
               >
                 <option value="ALL">Tất cả khoa</option>
                 {uniqueDepts.map(d => (
@@ -669,7 +669,7 @@ export const NurseRatioModule: React.FC = () => {
                   key={p.id}
                   onClick={() => applyPreset(p.id)}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                    filterPreset === p.id ? 'bg-[#009900] text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 font-bold'
+                    filterPreset === p.id ? 'bg-[#059669] text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 font-bold'
                   }`}
                 >
                   {p.label}
@@ -681,11 +681,11 @@ export const NurseRatioModule: React.FC = () => {
               <div className="flex items-center gap-3 pt-4 border-t border-slate-50">
                 <div className="flex-1 space-y-1.5">
                   <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Từ ngày</label>
-                  <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setFilterPreset('CUSTOM'); }} className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-black focus:ring-2 focus:ring-[#009900]/10" />
+                  <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setFilterPreset('CUSTOM'); }} className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-black focus:ring-2 focus:ring-[#059669]/10" />
                 </div>
                 <div className="flex-1 space-y-1.5">
                   <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Đến ngày</label>
-                  <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setFilterPreset('CUSTOM'); }} className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-black focus:ring-2 focus:ring-[#009900]/10" />
+                  <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setFilterPreset('CUSTOM'); }} className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-black focus:ring-2 focus:ring-[#059669]/10" />
                 </div>
               </div>
             )}
@@ -704,7 +704,7 @@ export const NurseRatioModule: React.FC = () => {
       <div className="flex-1">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
-            <div className="w-12 h-12 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin" />
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest font-mono">Đang tải dữ liệu...</p>
           </div>
         ) : activeTab === 'OVERVIEW' ? (
@@ -721,7 +721,7 @@ export const NurseRatioModule: React.FC = () => {
           <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#009900]/10 rounded-xl flex items-center justify-center text-[#009900]">
+                <div className="w-10 h-10 bg-[#059669]/10 rounded-xl flex items-center justify-center text-[#059669]">
                   <Activity size={20} />
                 </div>
                 <div>
@@ -729,19 +729,19 @@ export const NurseRatioModule: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Vui lòng nhập đầy đủ các số liệu</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="p-3 text-slate-400 hover:bg-white hover:text-red-500 rounded-2xl transition-all shadow-sm"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSave} className="p-8 space-y-8 max-h-[85vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Calendar size={12} /> Ngày báo cáo</label>
-                  <input type="date" value={form.ngay_bao_cao} onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })} className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-[#009900]/20" required />
+                  <input type="date" value={form.ngay_bao_cao} onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })} className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-[#059669]/20" required />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><User size={12} /> Người báo cáo</label>
@@ -749,12 +749,12 @@ export const NurseRatioModule: React.FC = () => {
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Building2 size={12} /> Khoa/Đơn vị</label>
-                  <input 
-                    placeholder="Tên khoa thực hiện báo cáo..." 
-                    value={form.khoa} 
-                    onChange={e => setForm({ ...form, khoa: e.target.value })} 
-                    className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#009900]/20" 
-                    required 
+                  <input
+                    placeholder="Tên khoa thực hiện báo cáo..."
+                    value={form.khoa}
+                    onChange={e => setForm({ ...form, khoa: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#059669]/20"
+                    required
                   />
                 </div>
               </div>
@@ -762,46 +762,46 @@ export const NurseRatioModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Số NB nội trú</label>
-                  <input 
-                    type="number" 
-                    value={form.so_nb_noi_tru || ''} 
-                    onChange={e => setForm({ ...form, so_nb_noi_tru: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#009900]/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.so_nb_noi_tru || ''}
+                    onChange={e => setForm({ ...form, so_nb_noi_tru: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#059669]/20 shadow-sm"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">ĐD làm chuyên môn</label>
-                  <input 
-                    type="number" 
-                    value={form.so_dd_chuyen_mon || ''} 
-                    onChange={e => setForm({ ...form, so_dd_chuyen_mon: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#009900]/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.so_dd_chuyen_mon || ''}
+                    onChange={e => setForm({ ...form, so_dd_chuyen_mon: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#059669]/20 shadow-sm"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">ĐD không chuyên môn</label>
-                  <input 
-                    type="number" 
-                    value={form.so_dd_khong_chuyen_mon || ''} 
-                    onChange={e => setForm({ ...form, so_dd_khong_chuyen_mon: Number(e.target.value) })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#009900]/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.so_dd_khong_chuyen_mon || ''}
+                    onChange={e => setForm({ ...form, so_dd_khong_chuyen_mon: Number(e.target.value) })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-2xl text-xs font-black focus:ring-2 focus:ring-[#059669]/20 shadow-sm"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-between bg-[#009900]/10 -mx-8 -mb-8 p-8 mt-auto rounded-b-[40px]">
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-between bg-[#059669]/10 -mx-8 -mb-8 p-8 mt-auto rounded-b-[40px]">
                 <div>
-                  <p className="text-[10px] font-black uppercase text-[#009900]/60 tracking-widest">Tỷ số ĐD/NB tự tính</p>
-                  <p className="text-3xl font-black text-[#009900] font-mono">
+                  <p className="text-[10px] font-black uppercase text-[#059669]/60 tracking-widest">Tỷ số ĐD/NB tự tính</p>
+                  <p className="text-3xl font-black text-[#059669] font-mono">
                     {form.so_nb_noi_tru > 0 ? (form.so_dd_chuyen_mon / form.so_nb_noi_tru).toFixed(2) : '0.00'}
                   </p>
                 </div>
                 <div className="flex gap-4">
                   <button type="button" onClick={() => setShowModal(false)} className="px-8 py-4 text-slate-400 font-black uppercase text-[11px] tracking-widest hover:bg-white/80 rounded-2xl transition-all">Hủy</button>
-                  <button type="submit" className="px-10 py-4 bg-[#009900] text-white font-black uppercase text-[11px] tracking-widest rounded-3xl shadow-lg shadow-[#009900]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2">
+                  <button type="submit" className="px-10 py-4 bg-[#059669] text-white font-black uppercase text-[11px] tracking-widest rounded-3xl shadow-lg shadow-[#059669]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2">
                     <CheckCircle2 size={18} /> {editingRecord ? 'Cập nhật' : 'Lưu báo cáo'}
                   </button>
                 </div>

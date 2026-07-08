@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2, 
-  Users, CheckCircle2, AlertTriangle, XCircle, FileText, Image, 
+import {
+  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2,
+  Users, CheckCircle2, AlertTriangle, XCircle, FileText, Image,
   Upload, X, Camera, LayoutDashboard, List, Filter, RotateCcw,
   ClipboardCheck, AlertCircle, Save, User, ArrowLeft
 } from 'lucide-react';
@@ -91,19 +91,24 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="indicator-subtab-list indicator-subtab-list-2">
-            <TabButton 
-              active={activeTab === 'OVERVIEW'} 
-              onClick={() => setActiveTab('OVERVIEW')} 
-              icon={LayoutDashboard} 
-              label="Tổng quan" 
+            <TabButton
+              active={activeTab === 'OVERVIEW'}
+              onClick={() => setActiveTab('OVERVIEW')}
+              icon={LayoutDashboard}
+              label="Tổng quan"
             />
-            <TabButton 
-              active={activeTab === 'DANH_SACH'} 
-              onClick={() => setActiveTab('DANH_SACH')} 
-              icon={List} 
-              label="Danh sách" 
+            <TabButton
+              active={activeTab === 'DANH_SACH'}
+              onClick={() => setActiveTab('DANH_SACH')}
+              icon={List}
+              label="Danh sách"
             />
           </div>
+          {activeTab !== 'DANH_SACH' && (
+            <button onClick={() => { setEditingItem(null); setIsReadOnly(false); setActiveTab('DANH_SACH'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-2xl bg-[#059669] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-green-200 transition-all hover:bg-[#0d6e39] active:scale-95">
+              <Plus size={18} /> Thêm giám sát mới
+            </button>
+          )}
         </div>
 
         <div className="p-4 lg:p-4 pt-0 lg:pt-0 border-t lg:border-t-0 border-slate-100">
@@ -129,7 +134,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
               </datalist>
             </div>
             <div className="flex items-end">
-              <button 
+              <button
                 onClick={() => setFilterConfig({ type: 'thisMonth', startDate: '', endDate: '', department: 'Tất cả' })}
                 className="w-full p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl border border-dashed border-slate-300 transition-all text-[10px] font-black uppercase tracking-widest"
               >
@@ -148,8 +153,8 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
         ) : activeTab === 'OVERVIEW' ? (
           <VstOverview data={filteredData} />
         ) : (
-          <VstList 
-            data={filteredData} 
+          <VstList
+            data={filteredData}
             onAdd={() => { setEditingItem(null); setIsReadOnly(false); setViewMode('FORM'); }}
             onView={(item) => { setEditingItem(item); setIsReadOnly(true); setViewMode('FORM'); }}
             onEdit={(item) => { setEditingItem(item); setIsReadOnly(false); setViewMode('FORM'); }}
@@ -233,7 +238,7 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Additional Overview Content (Moment breakdown) */}
       <div className="vst-detail-stats bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
         <h3 className="vst-detail-title text-sm font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center justify-between">
@@ -259,10 +264,10 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
                 const totalCount = momentData.length;
                 const compCount = momentData.filter(m => m.compliance).length;
                 const techCount = momentData.filter(m => m.compliance && m.correct_technique).length;
-                
+
                 const compRate = totalCount > 0 ? (compCount / totalCount) * 100 : 0;
                 const techRate = compCount > 0 ? (techCount / compCount) * 100 : 0;
-                
+
                 return (
                     <div key={idx} className="vst-moment-stat group">
                         <div className="vst-moment-stat-header flex justify-between items-center mb-3">
@@ -300,9 +305,9 @@ const VstOverview = ({ data }: { data: GsVst[] }) => {
 
 const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onView: (item: GsVst) => void, onEdit: (item: GsVst) => void, onDelete: (id: string) => void, onAdd: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const searchedData = useMemo(() => {
-    return data.filter(item => 
+    return data.filter(item =>
       item.khoa_duoc_giam_sat.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.nguoi_duoc_giam_sat.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -311,7 +316,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
   return (
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/30">
-        <button 
+        <button
           onClick={onAdd}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100 active:scale-95 whitespace-nowrap"
         >
@@ -319,9 +324,9 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
         </button>
         <div className="relative flex-1 max-w-sm group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-          <input 
+          <input
             type="text"
-            placeholder="Tìm theo khoa, người được giám sát..." 
+            placeholder="Tìm theo khoa, người được giám sát..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
@@ -332,7 +337,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="table-standardized">
-          <thead className="bg-[#009900] text-white">
+          <thead className="bg-[#059669] text-white">
             <tr>
               <th className="p-4">Thời gian</th>
               <th className="p-4">Khoa được giám sát</th>
@@ -403,7 +408,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
           <div key={item.id} className="p-5 space-y-4">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#009900]/10 text-[#009900] rounded-xl flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 bg-[#059669]/10 text-[#059669] rounded-xl flex items-center justify-center shrink-0">
                   <Calendar size={18} />
                 </div>
                 <div>
@@ -450,13 +455,13 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
   );
 };
 
-const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentList }: { 
-  item: GsVst | null, 
-  isReadOnly: boolean, 
-  onClose: () => void, 
-  onSaved: () => void, 
-  currentUser: any, 
-  departmentList: string[] 
+const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentList }: {
+  item: GsVst | null,
+  isReadOnly: boolean,
+  onClose: () => void,
+  onSaved: () => void,
+  currentUser: any,
+  departmentList: string[]
 }) => {
   const [formData, setFormData] = useState<GsVst>({
     ngay_giam_sat: item?.ngay_giam_sat || new Date().toISOString().split('T')[0],
@@ -507,7 +512,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
         if (m.id === id) {
           const newVal = !m[field];
           const updated = { ...m, [field]: newVal };
-          
+
           // Ràng buộc: Nếu không tuân thủ thì không thể đúng kỹ thuật
           if (field === 'compliance' && !newVal) updated.correct_technique = false;
           // Ràng buộc: Nếu không có cơ hội thì không có tuân thủ/kỹ thuật
@@ -570,12 +575,12 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
     <div className="bg-white min-h-[calc(100vh-8rem)]">
       <div className="w-full flex flex-col h-full animate-in fade-in duration-500">
         <div className="flex flex-col h-full bg-white">
-          
+
           {/* Form Header - Emerald Theme */}
           <div className="bg-emerald-600 p-4 md:p-8 text-white flex justify-between items-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
             <div className="flex min-w-0 items-center gap-3 md:gap-5 relative z-10">
-              <button 
+              <button
                 onClick={onClose}
                 className="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-md rounded-xl md:rounded-2xl flex items-center justify-center shadow-inner hover:bg-white/30 transition-all active:scale-90 shrink-0"
               >
@@ -589,8 +594,8 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <p className="text-emerald-100 text-[9px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-widest opacity-80">Giám sát vệ sinh tay</p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-2xl transition-all active:scale-90 relative z-10 hidden md:block"
             >
               <X size={28}/>
@@ -605,12 +610,12 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
                   <Calendar size={14} /> Ngày giám sát
                 </label>
-                <input 
-                  type="date" 
-                  value={formData.ngay_giam_sat} 
-                  onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})} 
-                  disabled={isReadOnly} 
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all cursor-pointer" 
+                <input
+                  type="date"
+                  value={formData.ngay_giam_sat}
+                  onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})}
+                  disabled={isReadOnly}
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all cursor-pointer"
                 />
               </div>
 
@@ -618,12 +623,12 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
                   <User size={14} /> Người giám sát
                 </label>
-                <input 
-                  type="text" 
-                  value={formData.nguoi_giam_sat} 
-                  onChange={e => setFormData({...formData, nguoi_giam_sat: e.target.value})} 
-                  disabled={isReadOnly} 
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all" 
+                <input
+                  type="text"
+                  value={formData.nguoi_giam_sat}
+                  onChange={e => setFormData({...formData, nguoi_giam_sat: e.target.value})}
+                  disabled={isReadOnly}
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
                   placeholder="Họ tên người GS"
                 />
               </div>
@@ -635,9 +640,9 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <input
                   type="text"
                   list="vst-form-department-options"
-                  value={formData.khoa_duoc_giam_sat} 
-                  onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})} 
-                  disabled={isReadOnly} 
+                  value={formData.khoa_duoc_giam_sat}
+                  onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})}
+                  disabled={isReadOnly}
                   placeholder="Gõ để tìm hoặc nhập khoa/phòng"
                   className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
                 />
@@ -651,9 +656,9 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   <Users size={14} /> Đối tượng được giám sát
                 </label>
                 <div className="flex gap-2">
-                  <select 
-                    value={formData.doi_tuong} 
-                    onChange={e => setFormData({...formData, doi_tuong: e.target.value})} 
+                  <select
+                    value={formData.doi_tuong}
+                    onChange={e => setFormData({...formData, doi_tuong: e.target.value})}
                     disabled={isReadOnly}
                     className="w-24 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none text-center"
                   >
@@ -662,13 +667,13 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     <option value="Hộ lý">HL</option>
                     <option value="Khác">Khác</option>
                   </select>
-                  <input 
-                    type="text" 
-                    value={formData.nguoi_duoc_giam_sat} 
-                    onChange={e => setFormData({...formData, nguoi_duoc_giam_sat: e.target.value})} 
-                    disabled={isReadOnly} 
-                    className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all" 
-                    placeholder="Họ tên NVYT" 
+                  <input
+                    type="text"
+                    value={formData.nguoi_duoc_giam_sat}
+                    onChange={e => setFormData({...formData, nguoi_duoc_giam_sat: e.target.value})}
+                    disabled={isReadOnly}
+                    className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                    placeholder="Họ tên NVYT"
                   />
                 </div>
               </div>
@@ -681,7 +686,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     <CheckCircle2 size={18} className="text-emerald-600" /> Bảng quan sát chi tiết (5 Thời điểm)
                  </h3>
               </div>
-              
+
               <div className="overflow-hidden rounded-[24px] border border-slate-200 shadow-sm">
                 <table className="w-full text-left border-collapse table-fixed">
                   <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
@@ -695,8 +700,8 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   </thead>
                   <tbody className="text-sm">
                     {formData.checklist_data.moments.map((m: any) => (
-                      <tr 
-                        key={m.id} 
+                      <tr
+                        key={m.id}
                         className={`transition-all border-b last:border-0 ${m.co_hoi ? 'bg-emerald-50/40' : 'hover:bg-slate-50/50'}`}
                       >
                         <td className="p-4 border-r border-slate-100">
@@ -705,8 +710,8 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                           </span>
                         </td>
                         <td className="p-4 border-r border-slate-100 text-center">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             disabled={isReadOnly}
                             className="w-5 h-5 rounded cursor-pointer accent-blue-600"
                             checked={m.co_hoi}
@@ -714,8 +719,8 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                           />
                         </td>
                         <td className="p-4 border-r border-slate-100 text-center">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             disabled={isReadOnly || !m.co_hoi}
                             className="w-5 h-5 rounded cursor-pointer accent-emerald-600 disabled:opacity-30"
                             checked={m.compliance}
@@ -723,8 +728,8 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                           />
                         </td>
                         <td className="p-4 border-r border-slate-100 text-center">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             disabled={isReadOnly || !m.compliance}
                             className="w-5 h-5 rounded cursor-pointer accent-orange-500 disabled:opacity-30"
                             checked={m.correct_technique}
@@ -737,9 +742,9 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                               <p className="px-2 py-1 text-xs font-bold text-black">{m.note}</p>
                             ) : null
                           ) : (
-                            <input 
-                              type="text" 
-                              value={m.note} 
+                            <input
+                              type="text"
+                              value={m.note}
                               onChange={e => {
                                 const newMoments = formData.checklist_data.moments.map((item: any) => item.id === m.id ? { ...item, note: e.target.value } : item);
                                 setFormData({ ...formData, checklist_data: { moments: newMoments } });
@@ -785,7 +790,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   <div key={idx} className="relative aspect-square group rounded-[24px] overflow-hidden border border-slate-200">
                     <img src={url} alt="Evidence" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     {!isReadOnly && (
-                      <button 
+                      <button
                         type="button"
                         onClick={() => removeImage(url)}
                         className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0"
@@ -816,7 +821,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     {formData.ghi_chu_chung}
                   </p>
                 ) : (
-                  <textarea 
+                  <textarea
                     value={formData.ghi_chu_chung}
                     onChange={e => setFormData({...formData, ghi_chu_chung: e.target.value})}
                     className="w-full px-6 py-4 bg-slate-50 border-none rounded-[24px] font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all h-24 resize-none"
@@ -832,9 +837,9 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
         <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 shrink-0">
           <button onClick={onClose} className="px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-500 hover:bg-slate-200 transition-all active:scale-95 bg-white border border-slate-200">Quay lại</button>
           {!isReadOnly && (
-            <button 
-              type="submit" 
-              form="vst-form" 
+            <button
+              type="submit"
+              form="vst-form"
               disabled={saving || uploading}
               className="px-10 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl shadow-indigo-200 active:scale-95 disabled:opacity-50"
             >

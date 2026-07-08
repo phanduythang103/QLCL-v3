@@ -105,7 +105,7 @@ const defaultFormCapCuu = (userName = ''): any => {
 
 // ─── SHARED UI COMPONENTS ─────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#059669] text-white border-[#059669] shadow-lg' : 'bg-white text-[#059669] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -113,7 +113,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
 const StatCard = ({ icon, label, value, color }: any) => {
   const colors: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-[#009900]',
+    green: 'bg-green-50 text-[#059669]',
     red: 'bg-red-50 text-red-600',
     amber: 'bg-amber-50 text-amber-600',
     rose: 'bg-rose-50 text-rose-600',
@@ -128,7 +128,7 @@ const StatCard = ({ icon, label, value, color }: any) => {
 
 const DatKhongDatToggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
   <div className="flex gap-1.5 shrink-0">
-    <button type="button" onClick={() => onChange(true)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${value ? 'bg-[#009900] text-white border-[#009900] shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-green-300'}`}><CheckCircle2 size={12} /> Đạt</button>
+    <button type="button" onClick={() => onChange(true)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${value ? 'bg-[#059669] text-white border-[#059669] shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-green-300'}`}><CheckCircle2 size={12} /> Đạt</button>
     <button type="button" onClick={() => onChange(false)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${!value ? 'bg-red-500 text-white border-red-500 shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-red-300'}`}><XCircle size={12} /> K.Đạt</button>
   </div>
 );
@@ -142,9 +142,9 @@ const ImageUploaderCapCuu = ({ images, onChange }: { images: string[]; onChange:
     try {
       const urls = await Promise.all(Array.from(files).map(f => uploadCapCuuImage(f)));
       onChange([...images, ...urls]);
-    } catch (err: any) { 
+    } catch (err: any) {
       console.error('Upload error:', err);
-      alert('Lỗi tải ảnh: ' + (err.message || 'Không xác định')); 
+      alert('Lỗi tải ảnh: ' + (err.message || 'Không xác định'));
     }
     finally { setUploading(false); e.target.value = ''; }
   };
@@ -156,7 +156,7 @@ const ImageUploaderCapCuu = ({ images, onChange }: { images: string[]; onChange:
           <button type="button" onClick={() => onChange(images.filter((_, idx) => idx !== i))} className="absolute top-0.5 right-0.5 p-0.5 bg-rose-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"><X size={10} /></button>
         </div>
       ))}
-      <label className={`w-16 h-16 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#009900] hover:text-[#009900] transition-all cursor-pointer ${uploading ? 'animate-pulse pointer-events-none' : ''}`}>
+      <label className={`w-16 h-16 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#059669] hover:text-[#059669] transition-all cursor-pointer ${uploading ? 'animate-pulse pointer-events-none' : ''}`}>
         <input type="file" hidden multiple accept="image/*" onChange={handleUpload} />
         {uploading ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
         <span className="text-[7px] font-black mt-0.5">{uploading ? 'Tải...' : 'Thêm'}</span>
@@ -177,7 +177,7 @@ const CapCuuErrorSummary = ({ data }: { data: GiamSatCapCuu[] }) => {
       const recordsWithError = data.filter(d => (d as any)[fieldId] === false);
       const count = recordsWithError.length;
       const depts = Array.from(new Set(recordsWithError.map(d => d.don_vi_duoc_kiem_tra))).join(', ');
-      
+
       const specificNotes = Array.from(new Set(
         recordsWithError
           .map(d => (d as any)[noteField])
@@ -241,7 +241,7 @@ const CapCuuErrorSummary = ({ data }: { data: GiamSatCapCuu[] }) => {
                 <td className="p-4 border-2 border-slate-900 text-center text-lg font-black text-red-600">{s.rate}%</td>
                 <td className="p-4 border-2 border-slate-900">
                   <p className="text-slate-900 italic mb-2">Lỗi: {s.notes}</p>
-                  <p className="text-[12pt] text-slate-900 font-black uppercase tracking-tight flex items-center gap-2"><Building2 size={16} className="text-[#009900]"/> {s.depts || 'N/A'}</p>
+                  <p className="text-[12pt] text-slate-900 font-black uppercase tracking-tight flex items-center gap-2"><Building2 size={16} className="text-[#059669]"/> {s.depts || 'N/A'}</p>
                 </td>
               </tr>
             )) : (
@@ -252,7 +252,7 @@ const CapCuuErrorSummary = ({ data }: { data: GiamSatCapCuu[] }) => {
       </div>
 
       <div className="flex justify-end pt-6">
-         <button onClick={handleExportExcel} className="flex items-center gap-2 bg-[#009900] text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-green-700 transition-all"><BarChart3 size={16}/> Xuất Excel</button>
+         <button onClick={handleExportExcel} className="flex items-center gap-2 bg-[#059669] text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-green-700 transition-all"><BarChart3 size={16}/> Xuất Excel</button>
       </div>
     </div>
   );
@@ -286,15 +286,15 @@ const CapCuuOverview = ({ data }: { data: GiamSatCapCuu[] }) => {
         <StatCard icon={<AlertTriangle />} label="Lượt kíp có lỗi" value={stats.fail} color="red" />
       </div>
       <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm h-80">
-        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><TrendingUp size={16} className="text-[#009900]" /> Biểu đồ xu hướng chất lượng cấp cứu</h3>
+        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><TrendingUp size={16} className="text-[#059669]" /> Biểu đồ xu hướng chất lượng cấp cứu</h3>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={trendData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
             <XAxis dataKey="date" tick={{fontSize: 10, fill: '#94a3b8'}} />
             <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
             <Tooltip />
-            <Bar dataKey="avg" fill="#009900" opacity={0.6} radius={[4, 4, 0, 0]} name="Chất lượng TB" />
-            <Line type="monotone" dataKey="avg" stroke="#009900" strokeWidth={3} dot={{ r: 4 }} name="Trend" />
+            <Bar dataKey="avg" fill="#059669" opacity={0.6} radius={[4, 4, 0, 0]} name="Chất lượng TB" />
+            <Line type="monotone" dataKey="avg" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} name="Trend" />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -308,7 +308,7 @@ const CapCuuList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
   return (
     <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <button onClick={onAdd} className="bg-[#009900] hover:bg-green-700 text-white px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu mới</button>
+        <button onClick={onAdd} className="bg-[#059669] hover:bg-green-700 text-white px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu mới</button>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input placeholder="Tìm khoa, người giám sát..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10" />
@@ -325,9 +325,9 @@ const CapCuuList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
                 <td className="p-4 text-table font-normal text-slate-600">{formatDateTime(d.ngay_kiem_tra)}</td>
                 <td className="p-4 text-table font-normal text-slate-800 uppercase">{d.don_vi_duoc_kiem_tra}</td>
                 <td className="p-4 text-sm text-slate-400 font-normal">{d.nguoi_kiem_tra}</td>
-                <td className={`p-4 text-center font-bold text-lg ${d.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-amber-600'}`}>{d.ty_le_tuan_thu}%</td>
+                <td className={`p-4 text-center font-bold text-lg ${d.ty_le_tuan_thu === 100 ? 'text-[#059669]' : 'text-amber-600'}`}>{d.ty_le_tuan_thu}%</td>
                 <td className="p-4 flex justify-end gap-2">
-                  <button onClick={() => onView(d)} className="p-2 text-[#009900] hover:bg-green-50 rounded-xl"><Eye size={16} /></button>
+                  <button onClick={() => onView(d)} className="p-2 text-[#059669] hover:bg-green-50 rounded-xl"><Eye size={16} /></button>
                   <button onClick={() => onEdit(d)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"><Edit2 size={16} /></button>
                   <button onClick={() => onDelete(d.id)} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl"><Trash2 size={16} /></button>
                 </td>
@@ -370,7 +370,7 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
     <div className="bg-white rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden">
       <div className="p-7 border-b border-slate-50 flex justify-between items-center bg-green-50/50">
          <div className="flex items-center gap-4">
-           <div className="w-12 h-12 bg-[#009900] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200"><Zap size={22} /></div>
+           <div className="w-12 h-12 bg-[#059669] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200"><Zap size={22} /></div>
            <div><h2 className="text-main-title font-bold text-slate-800 uppercase">Giám sát Công tác cấp cứu</h2><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Theo quy trình xử trí và sẵn sàng cấp cứu (13 tiêu chí)</p></div>
          </div>
          <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl"><X size={22} /></button>
@@ -393,7 +393,7 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
         <div className="space-y-6">
           {SECTIONS_CAP_CUU.map((section, sIdx) => (
             <div key={sIdx} className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm">
-               <div className="bg-[#009900] text-white px-5 py-3"><h3 className="text-[10px] font-black uppercase tracking-widest">{section.title}</h3></div>
+               <div className="bg-[#059669] text-white px-5 py-3"><h3 className="text-[10px] font-black uppercase tracking-widest">{section.title}</h3></div>
                <div className="divide-y divide-slate-50">
                  {section.criteria.map((c, cIdx) => {
                    const isPass = form[c.id] !== false;
@@ -421,13 +421,13 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-slate-100">
            <div className="flex items-center gap-6">
-              <div className="text-center"><p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Tỷ lệ tuân thủ</p><p className={`text-3xl font-black ${form.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-amber-600'}`}>{form.ty_le_tuan_thu}%</p></div>
+              <div className="text-center"><p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Tỷ lệ tuân thủ</p><p className={`text-3xl font-black ${form.ty_le_tuan_thu === 100 ? 'text-[#059669]' : 'text-amber-600'}`}>{form.ty_le_tuan_thu}%</p></div>
               <div className="h-10 w-px bg-slate-100"/>
               <p className="text-sm font-bold text-slate-600 italic">Đạt được <b>{form.tong_dat}</b> trong tổng số 13 tiêu chuẩn.</p>
            </div>
            <div className="flex gap-3 w-full md:w-auto">
               <button type="button" onClick={onClose} className="flex-1 px-8 py-3.5 bg-white border border-slate-200 text-slate-500 rounded-2xl text-[11px] font-black uppercase tracking-widest">Đóng</button>
-              <button type="submit" disabled={saving} className="flex-1 px-12 py-3.5 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-green-100 disabled:opacity-50">{saving ? 'Đang xử lý...' : 'Lưu kết quả'}</button>
+              <button type="submit" disabled={saving} className="flex-1 px-12 py-3.5 bg-[#059669] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-green-100 disabled:opacity-50">{saving ? 'Đang xử lý...' : 'Lưu kết quả'}</button>
            </div>
         </div>
       </form>
@@ -438,12 +438,12 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
 const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-6 md:p-10 border border-slate-100 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-2 bg-[#009900]"/>
+      <div className="absolute top-0 left-0 w-full h-2 bg-[#059669]"/>
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="flex justify-between items-center no-print outline-none">
           <button onClick={onClose} className="flex items-center gap-2 text-slate-400 font-black uppercase text-[10px] tracking-widest"><RotateCcw size={14}/> Quay về danh sách</button>
           <div className="flex gap-3">
-             <button onClick={onEdit} className="px-6 py-3 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-green-100">Chỉnh sửa</button>
+             <button onClick={onEdit} className="px-6 py-3 bg-[#059669] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-green-100">Chỉnh sửa</button>
           </div>
         </div>
 
@@ -453,9 +453,9 @@ const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6 border-y border-dashed border-slate-200 text-sm font-bold uppercase tracking-tight">
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Khoa/Đơn vị giám sát</p><p className="text-slate-900 border-l-2 border-[#009900] pl-2">{item.don_vi_duoc_kiem_tra}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cán bộ giám sát</p><p className="text-slate-900 border-l-2 border-[#009900] pl-2">{item.nguoi_kiem_tra}</p></div>
-           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày/Giờ thực hiện</p><p className="text-slate-900 border-l-2 border-[#009900] pl-2">{formatDateTime(item.ngay_kiem_tra)}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Khoa/Đơn vị giám sát</p><p className="text-slate-900 border-l-2 border-[#059669] pl-2">{item.don_vi_duoc_kiem_tra}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cán bộ giám sát</p><p className="text-slate-900 border-l-2 border-[#059669] pl-2">{item.nguoi_kiem_tra}</p></div>
+           <div><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày/Giờ thực hiện</p><p className="text-slate-900 border-l-2 border-[#059669] pl-2">{formatDateTime(item.ngay_kiem_tra)}</p></div>
         </div>
 
         <div className="space-y-4">
@@ -466,12 +466,12 @@ const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
               <tbody>
                 {SECTIONS_CAP_CUU.map((section, sIdx) => (
                   <React.Fragment key={sIdx}>
-                    <tr className="bg-slate-100"><td colSpan={5} className="p-2 border-2 border-slate-900 font-bold text-[#009900] uppercase tracking-tighter text-table">{section.title}</td></tr>
+                    <tr className="bg-slate-100"><td colSpan={5} className="p-2 border-2 border-slate-900 font-bold text-[#059669] uppercase tracking-tighter text-table">{section.title}</td></tr>
                     {section.criteria.map((c, cIdx) => (
                       <tr key={c.id}>
                         <td className="p-3 border-2 border-slate-900 text-center font-normal">{cIdx + 1}</td>
                         <td className="p-3 border-2 border-slate-900 text-slate-800 leading-snug font-normal">{c.label}</td>
-                        <td className="p-3 border-2 border-slate-900 text-center font-normal">{item[c.id] && <Check size={20} className="text-[#009900] mx-auto" />}</td>
+                        <td className="p-3 border-2 border-slate-900 text-center font-normal">{item[c.id] && <Check size={20} className="text-[#059669] mx-auto" />}</td>
                         <td className="p-3 border-2 border-slate-900 text-center font-normal">{!item[c.id] && <X size={20} className="text-red-500 mx-auto" />}</td>
                         <td className="p-3 border-2 border-slate-900 italic text-red-500 text-sm font-normal">{item[`${c.id}_ghi_chu`]}</td>
                       </tr>
@@ -487,7 +487,7 @@ const CapCuuDetail = ({ item, onClose, onEdit }: any) => {
            </table>
         </div>
 
-        {item.ket_luan_chung && <div className="space-y-2"><h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Nhận xét & Kết luận chính:</h3><div className="p-6 bg-slate-50 border-r-4 border-[#009900] text-[12pt] italic text-slate-700 leading-relaxed font-black whitespace-pre-wrap">{item.ket_luan_chung}</div></div>}
+        {item.ket_luan_chung && <div className="space-y-2"><h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Nhận xét & Kết luận chính:</h3><div className="p-6 bg-slate-50 border-r-4 border-[#059669] text-[12pt] italic text-slate-700 leading-relaxed font-black whitespace-pre-wrap">{item.ket_luan_chung}</div></div>}
 
         {item.hinh_anh_minh_chung?.length > 0 && (
            <div className="space-y-4 no-print border-t pt-6"><h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2"><Camera size={16}/> Hình ảnh minh chứng hiện trường</h3><div className="grid grid-cols-2 md:grid-cols-4 gap-4">{item.hinh_anh_minh_chung.map((u: string, i: number) => <div key={i} className="aspect-square rounded-2xl overflow-hidden border-4 border-white shadow-xl shadow-slate-100"><img src={u} className="w-full h-full object-cover" alt=""/></div>)}</div></div>
@@ -548,7 +548,7 @@ export const EmergencyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ o
              <TabButton active={activeTab === 'LIST'} onClick={() => { setActiveTab('LIST'); setViewMode('LIST'); }} icon={List} label="Danh sách giám sát" />
              <TabButton active={activeTab === 'SUMMARY'} onClick={() => { setActiveTab('SUMMARY'); setViewMode('LIST'); }} icon={BarChart3} label="Báo cáo tổng hợp" />
            </div>
-           
+
            {viewMode === 'LIST' && (
              <div className="flex flex-wrap items-center gap-3">
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
@@ -556,12 +556,17 @@ export const EmergencyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ o
                  <option value="">Tất cả các khoa</option>
                  {deptList.map((d: any) => <option key={d.id} value={d.ten_don_vi}>{d.ten_don_vi}</option>)}
                </select>
-             </div>
+
+               {activeTab !== 'LIST' && (
+                 <button onClick={() => { setEditingItem(null); setActiveTab('LIST'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-xl bg-[#059669] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[#008800] active:scale-95">
+                   <Plus size={16} /> Thêm giám sát mới
+                 </button>
+               )}             </div>
            )}
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-[#009900]" size={32} /></div>
+          <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-[#059669]" size={32} /></div>
         ) : (
           <div className="animate-in fade-in zoom-in-95 duration-500">
             {activeTab === 'OVERVIEW' ? <CapCuuOverview data={filteredData} />

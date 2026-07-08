@@ -86,7 +86,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
 const StatCard = ({ icon, label, value, color }: any) => {
   const colors: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-[#009900]',
+    green: 'bg-green-50 text-[#059669]',
     red: 'bg-red-50 text-red-600',
     amber: 'bg-amber-50 text-amber-600',
   };
@@ -132,7 +132,7 @@ const DatKhongDatToggle = ({ value, onChange }: { value: boolean; onChange: (v: 
     <button
       type="button"
       onClick={() => onChange(true)}
-      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${value ? 'bg-[#009900] text-white border-[#009900] shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-green-300'}`}
+      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${value ? 'bg-[#059669] text-white border-[#059669] shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-green-300'}`}
     >
       <CheckCircle2 size={12} /> Đạt
     </button>
@@ -223,7 +223,7 @@ const NdnbTheoktList = ({ data, onView, onEdit, onDelete }: any) => {
           <tbody className="divide-y divide-slate-50">
             {filtered.map((d: GiamSatNdnbTheokt) => {
               const rate = d.ty_le_tuan_thu || 0;
-              const color = rate === 100 ? 'text-[#009900]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
+              const color = rate === 100 ? 'text-[#059669]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
               return (
                 <tr key={d.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4 text-sm font-bold text-slate-600">{new Date(d.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
@@ -245,7 +245,7 @@ const NdnbTheoktList = ({ data, onView, onEdit, onDelete }: any) => {
       <div className="md:hidden divide-y divide-slate-100">
         {filtered.map((d: GiamSatNdnbTheokt) => {
           const rate = d.ty_le_tuan_thu || 0;
-          const color = rate === 100 ? 'text-[#009900]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
+          const color = rate === 100 ? 'text-[#059669]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
           return (
             <div key={d.id} className="p-4 space-y-2">
               <div className="flex justify-between items-start">
@@ -361,7 +361,7 @@ const NdnbTheoktFormView = ({ item, onClose, onSaved, currentUser, departmentLis
           <div className="flex gap-4 items-center">
             <div className="text-center">
               <p className="text-[10px] font-black text-slate-400 uppercase">Tỷ lệ tuân thủ</p>
-              <p className={`text-2xl font-black ${form.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-red-500'}`}>{form.ty_le_tuan_thu}%</p>
+              <p className={`text-2xl font-black ${form.ty_le_tuan_thu === 100 ? 'text-[#059669]' : 'text-red-500'}`}>{form.ty_le_tuan_thu}%</p>
             </div>
             <div className="h-10 w-px bg-slate-200" />
             <div className="text-sm">Đạt <b>{form.tong_dat}</b>/{form.tong_tieu_chi} mục</div>

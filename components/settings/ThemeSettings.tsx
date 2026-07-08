@@ -26,6 +26,7 @@ export default function ThemeSettings() {
     const [coChuChinh, setCoChuChinh] = useState(48);
     const [coChuPhu, setCoChuPhu] = useState(24);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [appVersion, setAppVersion] = useState(() => localStorage.getItem('appVersion') || 'Phiên bản 16042026-01');
 
     // Fetch current settings
     useEffect(() => {
@@ -211,7 +212,7 @@ export default function ThemeSettings() {
                 <div className="space-y-6">
                     <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                         <h3 className="text-label font-black text-black uppercase mb-4 flex items-center gap-2">
-                            <ImageIcon size={20} className="text-[#009900]" />
+                            <ImageIcon size={20} className="text-[#059669]" />
                             Thông tin giao diện
                         </h3>
 
@@ -257,7 +258,7 @@ export default function ThemeSettings() {
                                         step="2"
                                         value={coChuChinh}
                                         onChange={(e) => setCoChuChinh(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#009900]"
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#059669]"
                                     />
                                 </div>
                                 <div>
@@ -271,9 +272,27 @@ export default function ThemeSettings() {
                                         step="1"
                                         value={coChuPhu}
                                         onChange={(e) => setCoChuPhu(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#009900]"
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#059669]"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Phiên bản hiển thị */}
+                            <div>
+                                <label className="block text-label font-bold text-black mb-2 uppercase">
+                                    Phiên bản hiển thị
+                                </label>
+                                <input
+                                    type="text"
+                                    value={appVersion}
+                                    onChange={(e) => {
+                                        setAppVersion(e.target.value);
+                                        localStorage.setItem('appVersion', e.target.value);
+                                        window.dispatchEvent(new Event('appVersionChange'));
+                                    }}
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg text-input font-bold text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                                    placeholder="VD: Phiên bản 16042026-01"
+                                />
                             </div>
 
                             {/* Upload ảnh */}
@@ -313,7 +332,7 @@ export default function ThemeSettings() {
                     <button
                         onClick={handleSave}
                         disabled={saving || uploading || !tieuDeChinh}
-                        className="w-full bg-[#009900] text-white py-3 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-xl shadow-green-900/20 active:scale-95"
+                        className="w-full bg-[#059669] text-white py-3 rounded-lg text-input font-black uppercase hover:bg-[#0d6e39] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-xl shadow-green-900/20 active:scale-95"
                     >
                         {saving || uploading ? (
                             <>

@@ -620,12 +620,12 @@ export const ReportsModule: React.FC = () => {
       {/* ── Category Selection ── */}
       <div className="bg-white rounded-[2.5rem] md:rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-50 p-6 md:p-8">
         <h3 className="text-section font-black text-slate-800 uppercase mb-6 flex items-center gap-2">
-          <Database size={20} className="text-[#009900]" /> Nội dung báo cáo
+          <Database size={20} className="text-[#059669]" /> Nội dung báo cáo
         </h3>
         <div className="grid grid-cols-3 md:grid-cols-10 gap-3">
           {categoryConfigs.map((cat) => (
             <button key={cat.id} onClick={() => { setSelectedCategory(cat.id); setSearchTerm(''); }}
-              className={`flex flex-col items-center gap-2 p-2 rounded-2xl transition-all ${selectedCategory === cat.id ? 'bg-slate-50 ring-2 ring-[#009900]/20 scale-105 shadow-inner' : 'hover:bg-slate-50'}`}
+              className={`flex flex-col items-center gap-2 p-2 rounded-2xl transition-all ${selectedCategory === cat.id ? 'bg-slate-50 ring-2 ring-[#059669]/20 scale-105 shadow-inner' : 'hover:bg-slate-50'}`}
             >
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: cat.bgColor, color: cat.color }}>
                 {React.cloneElement(cat.icon as any, { size: 22 })}
@@ -660,14 +660,14 @@ export const ReportsModule: React.FC = () => {
                   placeholder="Tìm kiếm nhanh..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
                 />
               </div>
               {isAdmin && (
               <button
                 onClick={handleExportExcel}
                 disabled={filteredData.length === 0}
-                className="flex items-center gap-2 px-5 py-2 bg-[#009900] text-white rounded-lg hover:bg-[#0d6e39] font-black text-xs uppercase shadow-md transition-all active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-[#059669] text-white rounded-lg hover:bg-[#0d6e39] font-black text-xs uppercase shadow-md transition-all active:scale-95 disabled:opacity-50"
               >
                 <FileSpreadsheet size={16} /> Xuất Excel
               </button>
@@ -732,9 +732,9 @@ export const ReportsModule: React.FC = () => {
       <div className="bg-white rounded-[2.5rem] md:rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-50 p-6 md:p-8">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-black text-slate-800 text-lg uppercase tracking-tight flex items-center gap-2">
-            <FileText size={18} className="text-[#009900]" /> Lịch sử xuất báo cáo
+            <FileText size={18} className="text-[#059669]" /> Lịch sử xuất báo cáo
           </h3>
-          <button onClick={loadHistory} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#009900] hover:bg-green-50 transition-all" title="Làm mới">
+          <button onClick={loadHistory} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#059669] hover:bg-green-50 transition-all" title="Làm mới">
             <RefreshCw size={18} />
           </button>
         </div>
@@ -747,7 +747,7 @@ export const ReportsModule: React.FC = () => {
           <div className="overflow-x-auto rounded-xl border border-slate-100">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-[#009900] text-white">
+                <tr className="bg-[#059669] text-white">
                   <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Ngày xuất BC</th>
                   <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Người xuất BC</th>
                   <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Nội dung BC</th>
@@ -758,7 +758,7 @@ export const ReportsModule: React.FC = () => {
                   <tr key={report.id} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-4 py-3 font-bold text-slate-700 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <FileSpreadsheet size={14} className="text-[#009900] opacity-60 group-hover:opacity-100" />
+                        <FileSpreadsheet size={14} className="text-[#059669] opacity-60 group-hover:opacity-100" />
                         {report.ngay_tao || '---'}
                       </div>
                     </td>

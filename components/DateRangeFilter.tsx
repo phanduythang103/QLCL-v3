@@ -34,7 +34,7 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ filter, onChange, cla
         <select
           value={filter.type}
           onChange={handleTypeChange}
-          className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] appearance-none outline-none"
+          className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] appearance-none outline-none"
         >
           <option value="all">Tất cả thời gian</option>
           <option value="thisWeek">Tuần này</option>
@@ -55,14 +55,14 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ filter, onChange, cla
             type="date"
             value={filter.startDate}
             onChange={(e) => onChange({ ...filter, startDate: e.target.value })}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
           />
           <span className="text-slate-400 font-bold">-</span>
           <input
             type="date"
             value={filter.endDate}
             onChange={(e) => onChange({ ...filter, endDate: e.target.value })}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#009900] outline-none"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-table font-bold focus:ring-2 focus:ring-[#059669] outline-none"
           />
         </div>
       )}

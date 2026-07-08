@@ -48,7 +48,7 @@ export const TeamAssessmentModule: React.FC<Props> = ({
         <button
           onClick={() => setActiveSubTab('OVERVIEW')}
           className={`flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center text-[9px] font-black uppercase leading-tight transition-all md:min-h-0 md:flex-row md:px-6 md:text-[10px] md:tracking-widest ${activeSubTab === 'OVERVIEW'
-            ? 'bg-emerald-50 text-[#009900] ring-1 ring-emerald-100 md:bg-white md:shadow-sm md:ring-0'
+            ? 'bg-emerald-50 text-[#059669] ring-1 ring-emerald-100 md:bg-white md:shadow-sm md:ring-0'
             : 'text-slate-400 hover:text-slate-600'
             }`}
         >
@@ -57,7 +57,7 @@ export const TeamAssessmentModule: React.FC<Props> = ({
         <button
           onClick={() => setActiveSubTab('ASSESSMENT_LIST')}
           className={`flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center text-[9px] font-black uppercase leading-tight transition-all md:min-h-0 md:flex-row md:px-6 md:text-[10px] md:tracking-widest ${activeSubTab === 'ASSESSMENT_LIST'
-            ? 'bg-emerald-50 text-[#009900] ring-1 ring-emerald-100 md:bg-white md:shadow-sm md:ring-0'
+            ? 'bg-emerald-50 text-[#059669] ring-1 ring-emerald-100 md:bg-white md:shadow-sm md:ring-0'
             : 'text-slate-400 hover:text-slate-600'
             }`}
         >
@@ -67,7 +67,7 @@ export const TeamAssessmentModule: React.FC<Props> = ({
           <button
             onClick={() => setActiveSubTab('CONFIG')}
             className={`flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center text-[9px] font-black uppercase leading-tight transition-all md:min-h-0 md:flex-row md:px-6 md:text-[10px] md:tracking-widest ${activeSubTab === 'CONFIG'
-              ? 'bg-emerald-50 text-[#009900] ring-1 ring-emerald-100 md:bg-white md:shadow-sm md:ring-0'
+              ? 'bg-emerald-50 text-[#059669] ring-1 ring-emerald-100 md:bg-white md:shadow-sm md:ring-0'
               : 'text-slate-400 hover:text-slate-600'
               }`}
           >
@@ -81,7 +81,7 @@ export const TeamAssessmentModule: React.FC<Props> = ({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#059669] active:scale-[0.98]"
           >
             <ArrowLeft size={14} /> Quay lại
           </button>
@@ -209,7 +209,7 @@ const OverviewView = ({ selectedTeam, onTeamChange, userTeams }: {
           <div className="mt-6 md:mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 w-full max-w-2xl text-left">
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
               <div className="w-9 h-9 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
-                <Users size={16} className="text-[#009900]" />
+                <Users size={16} className="text-[#059669]" />
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">Tổ trưởng</p>
@@ -217,14 +217,14 @@ const OverviewView = ({ selectedTeam, onTeamChange, userTeams }: {
               </div>
             </div>
             <div className="p-4 border-2 border-dashed border-slate-100 rounded-2xl flex items-center justify-center">
-              <button className="text-[9px] font-black text-[#009900] uppercase hover:underline">Chi tiết báo cáo <ArrowUpRight size={12} className="inline ml-1" /></button>
+              <button className="text-[9px] font-black text-[#059669] uppercase hover:underline">Chi tiết báo cáo <ArrowUpRight size={12} className="inline ml-1" /></button>
             </div>
           </div>
         </div>
 
         {/* Side Profile/Info */}
         <div className="col-span-2 lg:col-span-1 space-y-4">
-          <div className="bg-gradient-to-br from-[#009900] to-[#0d6e39] p-6 rounded-[2.25rem] text-white shadow-2xl shadow-emerald-200/50">
+          <div className="bg-gradient-to-br from-[#059669] to-[#0d6e39] p-6 rounded-[2.25rem] text-white shadow-2xl shadow-emerald-200/50">
             <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Thông tin tổ</p>
             <h4 className="text-lg font-black mt-1 leading-tight">Vui lòng chọn tổ đánh giá</h4>
             <div className="mt-6 space-y-3">
@@ -254,7 +254,7 @@ const AssessmentListView = ({ selectedTeam }: { selectedTeam: string | null }) =
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl min-h-[500px] flex flex-col items-center justify-center text-center">
       <div className="w-20 h-20 bg-emerald-50 rounded-[1.5rem] flex items-center justify-center mb-6">
-        <ListChecks size={32} className="text-[#009900]" />
+        <ListChecks size={32} className="text-[#059669]" />
       </div>
       <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Danh sách các đợt chấm điểm</h3>
       <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">Tính năng đang trong quá trình nâng cấp và kết nối dữ liệu</p>
@@ -319,13 +319,13 @@ const ConfigurationView = ({ selectedTeam, userTeams, onTeamChange }: any) => {
       {/* Header & Filter */}
       <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="bg-green-50 p-2.5 rounded-xl text-[#009900]">
+          <div className="bg-green-50 p-2.5 rounded-xl text-[#059669]">
             <Settings size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Danh mục tiêu chí theo tổ</h3>
-              <span className="bg-[#009900] text-white text-[9px] font-black px-2 py-0.5 rounded-full">
+              <span className="bg-[#059669] text-white text-[9px] font-black px-2 py-0.5 rounded-full">
                 {criteria.length} Mục
               </span>
             </div>
@@ -337,7 +337,7 @@ const ConfigurationView = ({ selectedTeam, userTeams, onTeamChange }: any) => {
           <button
             onClick={loadData}
             disabled={loading}
-            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-[#009900] hover:bg-green-50 transition-all disabled:opacity-50"
+            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-[#059669] hover:bg-green-50 transition-all disabled:opacity-50"
             title="Tải lại dữ liệu"
           >
             <Loader2 size={16} className={loading ? "animate-spin" : ""} />
@@ -383,7 +383,7 @@ const ConfigurationView = ({ selectedTeam, userTeams, onTeamChange }: any) => {
                   onClick={() => setExpandedPhan(prev => prev.includes(phan) ? prev.filter(p => p !== phan) : [...prev, phan])}
                   className="bg-slate-50/50 hover:bg-slate-100/50 px-6 py-4 flex items-center gap-3 cursor-pointer transition-colors border-b border-slate-100"
                 >
-                  {expandedPhan.includes(phan) ? <ChevronDown size={18} className="text-[#009900]" /> : <ChevronRight size={18} className="text-slate-400" />}
+                  {expandedPhan.includes(phan) ? <ChevronDown size={18} className="text-[#059669]" /> : <ChevronRight size={18} className="text-slate-400" />}
                   <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{phan}</span>
                 </div>
                 {expandedPhan.includes(phan) && (
@@ -394,14 +394,14 @@ const ConfigurationView = ({ selectedTeam, userTeams, onTeamChange }: any) => {
                           onClick={() => setExpandedChuong(prev => prev.includes(chuong) ? prev.filter(c => c !== chuong) : [...prev, chuong])}
                           className="px-6 py-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors"
                         >
-                          {expandedChuong.includes(chuong) ? <ChevronDown size={14} className="text-[#009900]" /> : <ChevronRight size={14} className="text-slate-400" />}
+                          {expandedChuong.includes(chuong) ? <ChevronDown size={14} className="text-[#059669]" /> : <ChevronRight size={14} className="text-slate-400" />}
                           <span className="text-[10px] font-bold text-slate-600 uppercase italic tracking-tight">{chuong}</span>
                         </div>
                         {expandedChuong.includes(chuong) && (
                           <div className="divide-y divide-slate-50">
                             {Object.keys(groupedData[phan][chuong]).sort(naturalSort).map(tieuChi => (
                               <div key={tieuChi} className="px-3 py-4 md:ml-6 md:pr-6 border-t border-slate-50 first:border-0">
-                                <p className="text-[10px] font-black text-[#009900] uppercase tracking-wider mb-3 leading-relaxed">{tieuChi}</p>
+                                <p className="text-[10px] font-black text-[#059669] uppercase tracking-wider mb-3 leading-relaxed">{tieuChi}</p>
                                 <div className="space-y-1 md:ml-4 overflow-hidden rounded-xl border border-slate-50">
                                   <table className="w-full text-left">
                                     <thead className="bg-slate-50/50 text-slate-400 font-black uppercase text-[9px] h-10 border-b border-slate-50">

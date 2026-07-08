@@ -720,13 +720,13 @@ main table thead th {
   content: "Góc chia sẻ";
 }
 
-.docs-module > div:first-of-type button.bg-\[\#009900\] {
+.docs-module > div:first-of-type button.bg-\[\#059669\] {
   border-color: rgba(0, 153, 0, 0.28);
   background: var(--color-primary-50);
   box-shadow: 0 10px 24px rgba(0, 153, 0, 0.1);
 }
 
-.docs-module > div:first-of-type button.bg-\[\#009900\]::after {
+.docs-module > div:first-of-type button.bg-\[\#059669\]::after {
   color: var(--color-primary);
   font-weight: 700;
 }
@@ -1350,9 +1350,9 @@ main form textarea:focus {
     overflow-wrap: anywhere;
   }
 
-  .mobile-module-content .indicator-overview-quick-filter-button.bg-\[\#009900\] {
-    border-color: #009900;
-    background: #009900;
+  .mobile-module-content .indicator-overview-quick-filter-button.bg-\[\#059669\] {
+    border-color: #059669;
+    background: #059669;
   }
 
   .mobile-module-content .indicator-quick-stats {
@@ -1631,7 +1631,7 @@ main form textarea:focus {
     box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
   }
 
-  .mobile-module-content .supervision-tab-button.bg-\[\#009900\],
+  .mobile-module-content .supervision-tab-button.bg-\[\#059669\],
   .mobile-module-content .supervision-tab-button.bg-white {
     border-color: rgba(0, 153, 0, 0.28) !important;
     background: var(--color-primary-50) !important;

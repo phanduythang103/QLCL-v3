@@ -212,7 +212,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
         <button
           onClick={() => setActiveTab(null)}
-          className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] uppercase transition-all mb-4 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"
+          className="flex items-center gap-2 text-slate-500 hover:text-[#059669] font-black text-[10px] uppercase transition-all mb-4 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"
         >
           <ArrowLeft size={14} /> Quay lại Dashboard Hài lòng
         </button>
@@ -252,7 +252,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
                 </div>
                 <div>
                   <h4 className="font-black text-slate-800 uppercase text-xs mb-1">Khảo sát hài lòng</h4>
-                  <p className="font-black text-[#009900] uppercase text-[10px] tracking-widest">{item.name}</p>
+                  <p className="font-black text-[#059669] uppercase text-[10px] tracking-widest">{item.name}</p>
                   {!publicConfigs[item.surveyType] && (
                     <p className="mt-2 text-[9px] font-black uppercase tracking-widest text-rose-500">Đang đóng</p>
                   )}
@@ -267,7 +267,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#059669] active:scale-[0.98]"
             >
               <ArrowLeft size={14} /> Quay lại
             </button>
@@ -278,7 +278,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
         <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-2 h-8 bg-[#009900] rounded-full"></div>
+              <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
               <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Thống kê hài lòng hệ thống</h3>
             </div>
             <div className="flex items-center gap-2">
@@ -356,7 +356,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#059669] active:scale-[0.98]"
             >
               <ArrowLeft size={14} /> Quay lại
             </button>

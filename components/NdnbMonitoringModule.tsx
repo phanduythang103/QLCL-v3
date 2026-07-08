@@ -68,7 +68,7 @@ const defaultForm = (userName = '', criteria: any[]): any => {
 
 // ─── COMMON SUBCOMPONENTS ─────────────────────────────────────────────────────
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
-  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#009900] text-white border-[#009900] shadow-lg' : 'bg-white text-[#009900] border-slate-200 hover:bg-slate-50'}`}>
+  <button onClick={onClick} className={`supervision-tab-button flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all border ${active ? 'bg-[#059669] text-white border-[#059669] shadow-lg' : 'bg-white text-[#059669] border-slate-200 hover:bg-slate-50'}`}>
     <Icon size={15} />{label}
   </button>
 );
@@ -76,7 +76,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
 const StatCard = ({ icon, label, value, color }: any) => {
   const colors: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-[#009900]',
+    green: 'bg-green-50 text-[#059669]',
     red: 'bg-red-50 text-red-600',
     amber: 'bg-amber-50 text-amber-600',
     emerald: 'bg-emerald-50 text-emerald-600',
@@ -120,7 +120,7 @@ const ImageUploader = ({ images, onChange }: { images: string[]; onChange: (urls
 
 const DatKhongDatToggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
   <div className="flex gap-1.5 shrink-0">
-    <button type="button" onClick={() => onChange(true)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${value ? 'bg-[#009900] text-white border-[#009900] shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-green-300'}`}><CheckCircle2 size={12} /> Đạt</button>
+    <button type="button" onClick={() => onChange(true)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${value ? 'bg-[#059669] text-white border-[#059669] shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-green-300'}`}><CheckCircle2 size={12} /> Đạt</button>
     <button type="button" onClick={() => onChange(false)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all border ${!value ? 'bg-red-500 text-white border-red-500 shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-red-300'}`}><XCircle size={12} /> K.Đạt</button>
   </div>
 );
@@ -192,7 +192,7 @@ const ModuleListView = ({ type, data, onView, onEdit, onDelete, onAdd }: any) =>
   return (
     <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <button onClick={onAdd} className="bg-[#009900] hover:bg-[#008800] text-white px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase shadow-lg shadow-green-100 flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát</button>
+        <button onClick={onAdd} className="bg-[#059669] hover:bg-[#008800] text-white px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase shadow-lg shadow-green-100 flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"><Plus size={18}/> Thêm phiếu giám sát</button>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input placeholder="Tìm khoa, người GS, đối tượng..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/10" />
@@ -200,13 +200,13 @@ const ModuleListView = ({ type, data, onView, onEdit, onDelete, onAdd }: any) =>
       </div>
       <div className="overflow-x-auto">
         <table className="table-standardized">
-          <thead className="bg-[#009900] text-white">
+          <thead className="bg-[#059669] text-white">
             <tr><th>Ngày</th><th>Khoa</th><th>Đối tượng</th><th>Người GS</th><th className="text-center">Tỷ lệ</th><th className="text-right">Thao tác</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map((d: any) => {
               const rate = d.ty_le_tuan_thu || 0;
-              const color = rate === 100 ? 'text-[#009900]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
+              const color = rate === 100 ? 'text-[#059669]' : rate >= 70 ? 'text-amber-600' : 'text-red-500';
               return (
                 <tr key={d.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4 text-table font-normal text-slate-600">{new Date(d.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
@@ -257,7 +257,7 @@ const ReportTab = ({ dataCriteria, dataTech }: any) => {
           <thead><tr><th className="text-left">Khoa</th><th className="text-center">Lượt</th><th className="text-center">Tỷ lệ</th></tr></thead>
           <tbody className="divide-y divide-slate-50">
             {data.slice(0, 5).map((r: any) => (
-              <tr key={r.dept}><td className="py-2 font-bold text-slate-700 truncate max-w-[120px]">{r.dept}</td><td className="py-2 text-center text-slate-500 font-bold">{r.count}</td><td className={`py-2 text-center font-black ${Number(r.avg) === 100 ? 'text-[#009900]' : 'text-red-500'}`}>{r.avg}%</td></tr>
+              <tr key={r.dept}><td className="py-2 font-bold text-slate-700 truncate max-w-[120px]">{r.dept}</td><td className="py-2 text-center text-slate-500 font-bold">{r.count}</td><td className={`py-2 text-center font-black ${Number(r.avg) === 100 ? 'text-[#059669]' : 'text-red-500'}`}>{r.avg}%</td></tr>
             ))}
           </tbody>
         </table>
@@ -354,6 +354,11 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
             <TabButton active={activeTab === 'TECHNIQUE'} onClick={() => { setActiveTab('TECHNIQUE'); setViewMode('LIST'); }} icon={Activity} label="Thời điểm & Kỹ thuật" />
             <TabButton active={activeTab === 'REPORT'} onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }} icon={BarChart3} label="Tổng hợp" />
           </div>
+          {(activeTab === 'OVERVIEW' || activeTab === 'REPORT') && viewMode === 'LIST' && (
+            <button onClick={() => { setEditingItem(null); setActiveTab('CRITERIA'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-2xl bg-[#059669] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-green-200 transition-all hover:bg-[#0d6e39] active:scale-95">
+              <Plus size={18} /> Thêm giám sát mới
+            </button>
+          )}
         </div>
 
         {/* Filters */}
@@ -363,10 +368,10 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Thời gian</label>
               <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
             </div>
-            
+
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Khoa giám sát</label>
-              <select 
+              <select
                 value={deptFilter}
                 onChange={e => setDeptFilter(e.target.value)}
                 className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none ring-blue-500/10 focus:ring-4 transition-all"
@@ -377,9 +382,9 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                 ))}
               </select>
             </div>
-            
+
             <div className="flex items-end">
-              <button 
+              <button
                 onClick={() => { setDateFilter({ type: 'thisMonth', startDate: '', endDate: '' }); setDeptFilter('Tất cả'); }}
                 className="w-full p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg border border-dashed border-slate-300 transition-all text-[10px] font-black uppercase tracking-widest"
               >
@@ -397,7 +402,7 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
           <div className="animate-in fade-in duration-500">
             {activeTab === 'OVERVIEW' && <CombinedOverview dataCriteria={filteredDataC} dataTech={filteredDataT} />}
             {activeTab === 'REPORT' && <ReportTab dataCriteria={filteredDataC} dataTech={filteredDataT} />}
-            
+
             {(activeTab === 'CRITERIA' || activeTab === 'TECHNIQUE') && (
               viewMode === 'LIST' ? (
                 <ModuleListView type={activeTab} data={activeTab === 'CRITERIA' ? filteredDataC : filteredDataT} onAdd={() => { setEditingItem(null); setViewMode('FORM'); }} onView={(i: any) => { setEditingItem(i); setViewMode('DETAIL'); }} onEdit={(i: any) => { setEditingItem(i); setViewMode('FORM'); }} onDelete={handleDelete} />
@@ -429,9 +434,9 @@ const MergedForm = ({ type, item, criteria, currentUser, departmentList, onSaved
 
   return (
     <div className="bg-white rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden">
-      <div className={`p-7 border-b border-slate-50 flex justify-between items-center bg-[#009900]/5`}>
+      <div className={`p-7 border-b border-slate-50 flex justify-between items-center bg-[#059669]/5`}>
         <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg bg-[#009900]`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg bg-[#059669]`}>
             {type === 'CRITERIA' ? <Users size={22} /> : <Activity size={22} />}
           </div>
           <div>
@@ -451,7 +456,7 @@ const MergedForm = ({ type, item, criteria, currentUser, departmentList, onSaved
         </div>
 
         <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">
-           <div className={`p-4 text-white text-[10px] font-black uppercase tracking-widest bg-[#009900]`}>Nội dung kiểm tra chi tiết</div>
+           <div className={`p-4 text-white text-[10px] font-black uppercase tracking-widest bg-[#059669]`}>Nội dung kiểm tra chi tiết</div>
            <div className="divide-y divide-slate-50">
              {criteria.map((c: any, i: number) => {
                const isPass = form[c.id] !== false;
@@ -477,13 +482,13 @@ const MergedForm = ({ type, item, criteria, currentUser, departmentList, onSaved
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-slate-100">
           <div className="flex items-center gap-6">
-             <div className="text-center"><p className="text-[9px] font-black text-slate-400 uppercase mb-1">Tuân thủ</p><p className={`text-3xl font-black ${form.ty_le_tuan_thu === 100 ? 'text-[#009900]' : 'text-red-500'}`}>{form.ty_le_tuan_thu}%</p></div>
+             <div className="text-center"><p className="text-[9px] font-black text-slate-400 uppercase mb-1">Tuân thủ</p><p className={`text-3xl font-black ${form.ty_le_tuan_thu === 100 ? 'text-[#059669]' : 'text-red-500'}`}>{form.ty_le_tuan_thu}%</p></div>
              <div className="h-10 w-px bg-slate-100"/>
              <div className="text-sm font-bold text-slate-600">Đạt {form.tong_dat}/{form.tong_tieu_chi} tiêu chí</div>
           </div>
           <div className="flex gap-3 w-full md:w-auto">
              <button type="button" onClick={onClose} className="flex-1 md:flex-none px-8 py-3.5 bg-white border border-slate-200 text-slate-500 rounded-2xl text-[11px] font-black uppercase">Đóng</button>
-             <button type="submit" className={`flex-1 md:flex-none px-12 py-3.5 text-white rounded-2xl text-[11px] font-black uppercase shadow-xl transition-all bg-[#009900] hover:bg-[#008800] shadow-green-100`}>Lưu phiếu</button>
+             <button type="submit" className={`flex-1 md:flex-none px-12 py-3.5 text-white rounded-2xl text-[11px] font-black uppercase shadow-xl transition-all bg-[#059669] hover:bg-[#008800] shadow-green-100`}>Lưu phiếu</button>
           </div>
         </div>
       </form>
@@ -496,13 +501,13 @@ const MergedDetail = ({ type, item, criteria, currentUser, onClose, onEdit }: an
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'Quản trị viên';
   return (
     <div className="bg-white rounded-[40px] shadow-2xl p-6 md:p-10 border border-slate-100 relative overflow-hidden">
-      <div className={`absolute top-0 left-0 w-full h-2 bg-[#009900]`}/>
+      <div className={`absolute top-0 left-0 w-full h-2 bg-[#059669]`}/>
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="flex justify-between items-center no-print">
           <button onClick={onClose} className="flex items-center gap-2 text-slate-400 font-black uppercase text-[10px]"><RotateCcw size={14}/> Quay lại</button>
           <div className="flex gap-3">
              <button onClick={() => window.print()} className="p-3 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-colors"><FileText size={18}/></button>
-             {isAdmin && <button onClick={onEdit} className={`px-6 py-3 text-white rounded-2xl text-[11px] font-black uppercase shadow-lg bg-[#009900] shadow-green-100`}>Sửa dữ liệu</button>}
+             {isAdmin && <button onClick={onEdit} className={`px-6 py-3 text-white rounded-2xl text-[11px] font-black uppercase shadow-lg bg-[#059669] shadow-green-100`}>Sửa dữ liệu</button>}
           </div>
         </div>
 
@@ -520,7 +525,7 @@ const MergedDetail = ({ type, item, criteria, currentUser, onClose, onEdit }: an
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border-4 border-slate-900 text-[12pt]">
-            <thead className="bg-[#009900] text-white font-bold uppercase text-table">
+            <thead className="bg-[#059669] text-white font-bold uppercase text-table">
                <tr><th className="p-4 border-2 border-slate-900 w-10">STT</th><th className="p-4 border-2 border-slate-900 text-left">Nội dung giám sát</th><th className="p-4 border-2 border-slate-900 w-24">Kết quả</th><th className="p-4 border-2 border-slate-900">Ghi chú vi phạm</th></tr>
             </thead>
             <tbody className="font-normal text-slate-700">
@@ -530,7 +535,7 @@ const MergedDetail = ({ type, item, criteria, currentUser, onClose, onEdit }: an
                    <tr key={c.id} className={!isPass ? 'bg-red-50' : ''}>
                      <td className="p-4 border-2 border-slate-900 text-center text-slate-400">{i+1}</td>
                      <td className="p-4 border-2 border-slate-900 leading-snug">{c.label}</td>
-                     <td className="p-4 border-2 border-slate-900 text-center">{isPass ? <span className="text-[#009900]">ĐẠT</span> : <span className="text-red-600">KHÔNG ĐẠT</span>}</td>
+                     <td className="p-4 border-2 border-slate-900 text-center">{isPass ? <span className="text-[#059669]">ĐẠT</span> : <span className="text-red-600">KHÔNG ĐẠT</span>}</td>
                      <td className="p-4 border-2 border-slate-900 italic text-red-500 font-black">{(item as any)[`c${i+1}_ghi_chu`]}</td>
                    </tr>
                  );

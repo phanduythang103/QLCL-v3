@@ -29,7 +29,7 @@ export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }
     }
   }, [data]);
 
-  const filteredData = data.filter(item => 
+  const filteredData = data.filter(item =>
     item.tieu_chi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.tieu_muc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.ma_tieu_muc?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -51,19 +51,19 @@ export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
         <div>
           <h3 className="text-section font-black text-black uppercase tracking-tight flex items-center gap-2">
-            <ListFilter className="text-[#009900]" size={24} />
+            <ListFilter className="text-[#059669]" size={24} />
             Danh mục 83 Tiêu chí bộ y tế
           </h3>
           <p className="text-slate-500 font-bold uppercase text-[10px]">Tra cứu nội dung các tiêu chí và tiêu mục</p>
         </div>
         <div className="relative w-full md:w-96 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#009900] transition-colors" size={18} />
-          <input 
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#059669] transition-colors" size={18} />
+          <input
             type="text"
             placeholder="Tìm mã hoặc nội dung..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border-none rounded-xl pl-12 pr-4 py-3 text-sm focus:ring-2 ring-[#009900] transition-all"
+            className="w-full bg-slate-50 border-none rounded-xl pl-12 pr-4 py-3 text-sm focus:ring-2 ring-[#059669] transition-all"
           />
         </div>
       </div>
@@ -73,7 +73,7 @@ export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#009900] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase text-slate-600 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#059669] active:scale-[0.98]"
           >
             <ArrowLeft size={14} /> Quay lại
           </button>
@@ -85,22 +85,22 @@ export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }
           <div className="bg-white p-20 text-center rounded-2xl border border-slate-200 text-slate-400 font-bold uppercase text-xs">Đang tải dữ liệu...</div>
         ) : Object.keys(grouped).sort().map(phan => (
           <div key={phan} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all mb-4">
-            <button 
+            <button
               onClick={() => setExpandedPhan(expandedPhan === phan ? null : phan)}
               className="w-full text-left bg-slate-50/80 hover:bg-slate-100/80 px-6 py-4 flex items-center gap-3 transition-colors border-b border-slate-100"
             >
-              <div className={expandedPhan === phan ? 'text-[#009900]' : 'text-slate-400'}>
+              <div className={expandedPhan === phan ? 'text-[#059669]' : 'text-slate-400'}>
                 {expandedPhan === phan ? <ChevronDown size={18}/> : <ChevronRight size={18}/>}
               </div>
               <span className="text-sm font-black text-slate-800 uppercase tracking-tight flex-1">{phan}</span>
               <div className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">{Object.keys(grouped[phan].chuongs).length} Chương</div>
             </button>
-            
+
             {expandedPhan === phan && (
               <div className="bg-white divide-y divide-slate-50">
                 {Object.keys(grouped[phan].chuongs).sort().map(chuong => (
                   <div key={chuong} className="ml-4 border-l-2 border-slate-100">
-                    <button 
+                    <button
                       onClick={() => {/* chapter toggle logic */}}
                       className="px-6 py-3 flex items-center gap-3 transition-colors w-full text-left hover:bg-slate-50"
                     >
@@ -109,22 +109,22 @@ export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }
                       </div>
                       <h4 className="text-xs font-black text-slate-600 uppercase italic leading-relaxed flex-1">{chuong}</h4>
                     </button>
-                    
+
                     <div className="divide-y divide-slate-50">
                       {Object.keys(grouped[phan].chuongs[chuong].tieuChis).sort().map(tc => {
                         const isTCOpen = expandedTieuChi === tc;
                         const items = grouped[phan].chuongs[chuong].tieuChis[tc];
-                        
+
                         return (
                           <div key={tc} className="ml-6 mb-2">
-                            <button 
+                            <button
                               onClick={() => setExpandedTieuChi(isTCOpen ? null : tc)}
                               className="w-full text-left p-4 flex items-center gap-3 group hover:bg-slate-50 transition-colors"
                             >
-                              <div className={isTCOpen ? 'text-[#009900]' : 'text-slate-400'}>
+                              <div className={isTCOpen ? 'text-[#059669]' : 'text-slate-400'}>
                                 {isTCOpen ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
                               </div>
-                              <p className={`font-black text-xs uppercase leading-tight flex-1 ${isTCOpen ? 'text-[#009900]' : 'text-slate-700'}`}>
+                              <p className={`font-black text-xs uppercase leading-tight flex-1 ${isTCOpen ? 'text-[#059669]' : 'text-slate-700'}`}>
                                 {tc}
                               </p>
                               <p className="text-[10px] text-slate-400 font-bold italic">{items.length} tiểu mục</p>
@@ -141,7 +141,7 @@ export const Criteria83DataView: React.FC<Criteria83DataViewProps> = ({ onBack }
                                        <div className="min-w-[64px] font-mono font-bold text-[10px] text-slate-400">{item.ma_tieu_muc}</div>
                                        <div className="flex-1">
                                           <p className="text-[13px] font-bold text-slate-700">{item.tieu_muc}</p>
-                                          <p className="mt-1 text-[10px] text-[#009900] font-black uppercase bg-[#009900]/5 px-2 py-0.5 rounded-md inline-block">Mức {item.muc}</p>
+                                          <p className="mt-1 text-[10px] text-[#059669] font-black uppercase bg-[#059669]/5 px-2 py-0.5 rounded-md inline-block">Mức {item.muc}</p>
                                        </div>
                                      </div>
                                    ))}

@@ -35,7 +35,7 @@ export const ZaloBrowserOverlay: React.FC = () => {
     <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center px-6 py-12 font-sans overflow-y-auto">
       <div className="w-full max-w-sm flex flex-col items-center">
         <div className="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center mb-10 shadow-sm border border-emerald-100">
-          <Globe className="text-[#009900]" size={40} />
+          <Globe className="text-[#059669]" size={40} />
         </div>
 
         <h1 className="text-3xl font-black text-slate-800 text-center leading-tight mb-4 tracking-tight uppercase">
@@ -55,7 +55,7 @@ export const ZaloBrowserOverlay: React.FC = () => {
                 {isAndroid ? <MoreVertical size={20} className="text-slate-600" /> : <Share size={18} className="text-slate-600" />}
               </div>
               <p className="text-slate-700 text-sm font-bold leading-snug pt-1">
-                Nhấn dấu <span className="text-[#009900]">{isAndroid ? '3 chấm dọc' : 'chia sẻ'}</span> ở góc trên
+                Nhấn dấu <span className="text-[#059669]">{isAndroid ? '3 chấm dọc' : 'chia sẻ'}</span> ở góc trên
               </p>
             </div>
 
@@ -64,7 +64,7 @@ export const ZaloBrowserOverlay: React.FC = () => {
                 <ExternalLink size={18} className="text-slate-600" />
               </div>
               <p className="text-slate-700 text-sm font-bold leading-snug pt-1">
-                Chọn <span className="text-[#009900]">Mở bằng trình duyệt</span> hoặc copy link sang Chrome
+                Chọn <span className="text-[#059669]">Mở bằng trình duyệt</span> hoặc copy link sang Chrome
               </p>
             </div>
           </div>
@@ -73,14 +73,14 @@ export const ZaloBrowserOverlay: React.FC = () => {
         <div className="w-full space-y-4">
           <button
             onClick={handleOpenBrowser}
-            className="w-full py-5 bg-[#009900] text-white rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl shadow-emerald-100 active:scale-95 transition-all"
+            className="w-full py-5 bg-[#059669] text-white rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl shadow-emerald-100 active:scale-95 transition-all"
           >
             Mở bằng Chrome
           </button>
 
           <button
             onClick={handleCopyLink}
-            className="w-full py-5 border-2 border-[#009900] text-[#009900] rounded-2xl font-black uppercase text-sm tracking-widest active:scale-95 transition-all"
+            className="w-full py-5 border-2 border-[#059669] text-[#059669] rounded-2xl font-black uppercase text-sm tracking-widest active:scale-95 transition-all"
           >
             <span className="inline-flex items-center justify-center gap-2">
               {copied ? <Check size={18} /> : <Copy size={18} />}

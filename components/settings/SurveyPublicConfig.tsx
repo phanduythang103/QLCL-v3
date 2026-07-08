@@ -126,18 +126,18 @@ export const SurveyPublicConfig: React.FC = () => {
           <title>In mã QR - ${config.survey_name}</title>
           <style>
             @page { size: auto; margin: 0mm; }
-            body { 
-              font-family: system-ui, -apple-system, sans-serif; 
-              display: flex; 
-              justify-content: center; 
-              align-items: center; 
-              height: 100vh; 
-              margin: 0; 
+            body {
+              font-family: system-ui, -apple-system, sans-serif;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              margin: 0;
               background: #f8fafc;
             }
             .card {
               background: white;
-              border: 3px solid #009900;
+              border: 3px solid #059669;
               border-radius: 50px;
               padding: 50px;
               width: 350px;
@@ -169,7 +169,7 @@ export const SurveyPublicConfig: React.FC = () => {
               text-transform: uppercase;
               font-size: 14px;
               margin-top: 30px;
-              color: #009900;
+              color: #059669;
               line-height: 1.5;
               letter-spacing: 0.025em;
             }
@@ -205,7 +205,7 @@ export const SurveyPublicConfig: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <Loader2 className="animate-spin text-[#009900]" size={40} />
+        <Loader2 className="animate-spin text-[#059669]" size={40} />
         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Đang tải cấu hình...</p>
       </div>
     );
@@ -215,7 +215,7 @@ export const SurveyPublicConfig: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#009900]">
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#059669]">
             <Globe size={24} />
           </div>
           <div>
@@ -225,7 +225,7 @@ export const SurveyPublicConfig: React.FC = () => {
         </div>
         <button
           onClick={fetchConfigs}
-          className="p-3 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-[#009900]"
+          className="p-3 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-[#059669]"
         >
           <RefreshCw size={20} />
         </button>
@@ -256,7 +256,7 @@ export const SurveyPublicConfig: React.FC = () => {
                 <button
                   onClick={() => handleTogglePublic(config)}
                   disabled={savingId === config.id}
-                  className={`relative inline-flex h-8 w-16 items-center rounded-full transition-all focus:outline-none ${config.is_public ? 'bg-[#009900]' : 'bg-slate-300'
+                  className={`relative inline-flex h-8 w-16 items-center rounded-full transition-all focus:outline-none ${config.is_public ? 'bg-[#059669]' : 'bg-slate-300'
                     }`}
                 >
                   <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${config.is_public ? 'translate-x-9' : 'translate-x-1'
@@ -269,7 +269,7 @@ export const SurveyPublicConfig: React.FC = () => {
                   <Link2 size={12} /> Đường dẫn khảo sát (Slug)
                 </label>
                 <div className="flex gap-2">
-                  <div className="flex-1 flex items-center bg-slate-50 rounded-2xl border border-slate-100 px-4 group focus-within:border-[#009900] transition-all">
+                  <div className="flex-1 flex items-center bg-slate-50 rounded-2xl border border-slate-100 px-4 group focus-within:border-[#059669] transition-all">
                     <span className="text-slate-400 text-xs font-bold font-mono border-r border-slate-200 pr-3 mr-3 whitespace-nowrap">https://qlcl103.pro.vn/khao-sat/</span>
                     <input
                       type="text"
@@ -283,9 +283,9 @@ export const SurveyPublicConfig: React.FC = () => {
                   </div>
                   <button
                     onClick={() => copyToClipboard(config.slug)}
-                    className="p-4 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#009900] hover:border-[#009900] transition-all relative group"
+                    className="p-4 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#059669] hover:border-[#059669] transition-all relative group"
                   >
-                    {copiedSlug === config.slug ? <Check size={20} className="text-[#009900]" /> : <Copy size={20} />}
+                    {copiedSlug === config.slug ? <Check size={20} className="text-[#059669]" /> : <Copy size={20} />}
                     {copiedSlug === config.slug && (
                       <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-800 text-white text-[10px] font-black rounded-lg uppercase tracking-widest animate-in fade-in zoom-in duration-200">Đã chép</span>
                     )}
@@ -294,7 +294,7 @@ export const SurveyPublicConfig: React.FC = () => {
                     href={`${localBaseUrl}/${config.slug}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-4 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#009900] hover:border-[#009900] transition-all"
+                    className="p-4 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#059669] hover:border-[#059669] transition-all"
                   >
                     <ExternalLink size={20} />
                   </a>
@@ -307,7 +307,7 @@ export const SurveyPublicConfig: React.FC = () => {
                   onClick={() => toggleQr(config.id)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showQrIds.has(config.id)
                     ? 'bg-slate-800 text-white shadow-lg'
-                    : 'bg-emerald-50 text-[#009900] hover:bg-emerald-100'
+                    : 'bg-emerald-50 text-[#059669] hover:bg-emerald-100'
                     }`}
                 >
                   <QrCode size={14} />
@@ -321,7 +321,7 @@ export const SurveyPublicConfig: React.FC = () => {
               <div className="p-8 bg-slate-50/50 w-full md:w-72 flex flex-col items-center justify-center gap-6 text-center animate-in slide-in-from-right-4 duration-500">
                 <div className="relative group">
                   {/* Visual Glow */}
-                  <div className="absolute inset-x-0 -inset-y-4 bg-[#009900]/10 rounded-[3rem] blur-2xl group-hover:bg-[#009900]/15 transition-all duration-500" />
+                  <div className="absolute inset-x-0 -inset-y-4 bg-[#059669]/10 rounded-[3rem] blur-2xl group-hover:bg-[#059669]/15 transition-all duration-500" />
 
                   {/* The QR Card */}
                   <div id={`qr-card-${config.id}`} className="relative bg-white p-6 rounded-[2.5rem] border-2 border-slate-200 shadow-2xl transition-all hover:shadow-emerald-100 duration-500 flex flex-col items-center gap-4 w-56">
@@ -340,7 +340,7 @@ export const SurveyPublicConfig: React.FC = () => {
                     </div>
 
                     {/* Survey Name (Bottom) */}
-                    <div className="text-[9px] font-black text-[#009900] uppercase tracking-tight text-center leading-[1.3] px-2 min-h-[32px] flex items-center justify-center">
+                    <div className="text-[9px] font-black text-[#059669] uppercase tracking-tight text-center leading-[1.3] px-2 min-h-[32px] flex items-center justify-center">
                       {config.survey_name}
                     </div>
 
@@ -362,14 +362,14 @@ export const SurveyPublicConfig: React.FC = () => {
                       href={getQrUrl(config.slug)}
                       target="_blank"
                       rel="noreferrer"
-                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${config.is_public ? 'text-[#009900] hover:bg-emerald-50 hover:border-[#009900]' : 'text-slate-300 pointer-events-none'
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${config.is_public ? 'text-[#059669] hover:bg-emerald-50 hover:border-[#059669]' : 'text-slate-300 pointer-events-none'
                         }`}
                     >
                       Mở ảnh QR <ExternalLink size={10} />
                     </a>
                     <button
                       onClick={() => handlePrint(config)}
-                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#009900] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${config.is_public ? '' : 'opacity-50 pointer-events-none'
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#059669] rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95 ${config.is_public ? '' : 'opacity-50 pointer-events-none'
                         }`}
                     >
                       In thẻ QR <Printer size={10} />
@@ -389,7 +389,7 @@ export const SurveyPublicConfig: React.FC = () => {
         <div>
           <h4 className="text-xs font-black text-amber-900 uppercase tracking-tight">Hướng dẫn sử dụng QR Code</h4>
           <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider leading-relaxed pt-1">
-            Sau khi mở trạng thái <span className="font-black text-[#009900]">Public</span>, mã link và QR Code sẽ có hiệu lực. Bạn có thể in mã QR này dán tại khoa/phòng hoặc đặt tại quầy làm thủ tục để người bệnh dễ dàng quét và thực hiện khảo sát.
+            Sau khi mở trạng thái <span className="font-black text-[#059669]">Public</span>, mã link và QR Code sẽ có hiệu lực. Bạn có thể in mã QR này dán tại khoa/phòng hoặc đặt tại quầy làm thủ tục để người bệnh dễ dàng quét và thực hiện khảo sát.
           </p>
         </div>
       </div>

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart2, 
-  ClipboardCheck, 
-  List, 
-  Plus, 
-  Search, 
-  Filter, 
-  Calendar, 
-  User, 
-  MapPin, 
-  AlertTriangle, 
-  CheckCircle2, 
+import {
+  BarChart2,
+  ClipboardCheck,
+  List,
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  User,
+  MapPin,
+  AlertTriangle,
+  CheckCircle2,
   Clock,
   MoreVertical,
   Edit,
@@ -185,10 +185,10 @@ export const SeriousIncidentModule: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-6">
           <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
             <h3 className="text-slate-800 font-black uppercase tracking-wider text-sm flex items-center gap-2">
-              <TrendingUp size={20} className="text-[#009900]" />
+              <TrendingUp size={20} className="text-[#059669]" />
               Diễn biến gần đây
             </h3>
-            <button onClick={() => setActiveTab('REPORTS')} className="text-[#009900] text-xs font-bold hover:underline">Xem chi tiết</button>
+            <button onClick={() => setActiveTab('REPORTS')} className="text-[#059669] text-xs font-bold hover:underline">Xem chi tiết</button>
           </div>
           <div className="p-0">
              {reports.slice(0, 5).map((report, idx) => (
@@ -238,7 +238,7 @@ export const SeriousIncidentModule: React.FC = () => {
             <button className="flex items-center gap-2 px-4 py-2 border border-slate-100 rounded-xl text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors">
               <Filter size={16} /> Lọc nâng cao
             </button>
-            <button onClick={handleAddReport} className="bg-[#009900] text-white px-5 py-2 rounded-xl flex items-center gap-2 text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-green-900/20 transition-all active:scale-95">
+            <button onClick={handleAddReport} className="bg-[#059669] text-white px-5 py-2 rounded-xl flex items-center gap-2 text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-green-900/20 transition-all active:scale-95">
               <Plus size={16} /> Báo cáo mới
             </button>
           </div>
@@ -264,14 +264,14 @@ export const SeriousIncidentModule: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-bold">
-                       <span className="flex items-center gap-1.5"><Calendar size={14} className="text-[#009900]" /> {report.ngay_bao_cao}</span>
-                       <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#009900]" /> {report.don_vi}</span>
-                       <span className="flex items-center gap-1.5"><User size={14} className="text-[#009900]" /> {report.nguoi_bao_cao}</span>
+                       <span className="flex items-center gap-1.5"><Calendar size={14} className="text-[#059669]" /> {report.ngay_bao_cao}</span>
+                       <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#059669]" /> {report.don_vi}</span>
+                       <span className="flex items-center gap-1.5"><User size={14} className="text-[#059669]" /> {report.nguoi_bao_cao}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                   <button onClick={() => handleEditReport(report)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg hover:text-[#009900] transition-colors" title="Chỉnh sửa"><Edit size={18} /></button>
+                   <button onClick={() => handleEditReport(report)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg hover:text-[#059669] transition-colors" title="Chỉnh sửa"><Edit size={18} /></button>
                    <button onClick={() => handleDeleteReport(report.id)} className="p-2 text-slate-400 hover:bg-red-50 rounded-lg hover:text-red-500 transition-colors" title="Xóa"><Trash2 size={18} /></button>
                    <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg hover:text-slate-800 transition-colors"><ChevronRight size={18} /></button>
                 </div>
@@ -295,7 +295,7 @@ export const SeriousIncidentModule: React.FC = () => {
                 </div>
                 <h4 className="text-slate-800 font-black uppercase text-sm">Chưa có bản ghi nào</h4>
                 <p className="text-slate-400 text-xs mt-1">Danh sách sự cố nghiêm trọng hiện đang trống.</p>
-                <button onClick={handleAddReport} className="mt-6 text-[#009900] text-xs font-black uppercase tracking-widest border-b-2 border-green-200 hover:border-green-500 transition-all pb-1 mx-auto block">Gửi báo cáo đầu tiên</button>
+                <button onClick={handleAddReport} className="mt-6 text-[#059669] text-xs font-black uppercase tracking-widest border-b-2 border-green-200 hover:border-green-500 transition-all pb-1 mx-auto block">Gửi báo cáo đầu tiên</button>
              </div>
           )}
         </div>
@@ -328,7 +328,7 @@ export const SeriousIncidentModule: React.FC = () => {
       <div className="flex-1">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 grayscale opacity-50 space-y-4">
-             <div className="w-10 h-10 border-4 border-[#009900]/20 border-t-[#009900] rounded-full animate-spin"></div>
+             <div className="w-10 h-10 border-4 border-[#059669]/20 border-t-[#059669] rounded-full animate-spin"></div>
              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Đang tải dữ liệu...</p>
           </div>
         ) : (
@@ -354,29 +354,29 @@ export const SeriousIncidentModule: React.FC = () => {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Mã Sự cố</label>
-                       <input 
+                       <input
                         list="scyk-suggestions"
-                        value={reportForm.ma_scyk} 
+                        value={reportForm.ma_scyk}
                         onChange={e => {
                           const val = e.target.value;
                           const suggestion = allScykSuggestions.find(s => s.so_bc_ma_scyk === val);
-                          
+
                           let summary = reportForm.tom_tat_noi_dung_su_co;
                           if (suggestion) {
                             summary = `1. Mô tả sự cố: ${suggestion.mo_ta_su_co || 'N/A'}\n2. Xử trí ban đầu: ${suggestion.dieu_tri_xy_ly_ban_dau_da_thuc_hien || 'N/A'}`;
                           }
 
                           setReportForm({
-                            ...reportForm, 
+                            ...reportForm,
                             ma_scyk: val,
                             don_vi: suggestion?.khoa_phong || suggestion?.don_vi_bao_cao || reportForm.don_vi,
                             tom_tat_noi_dung_su_co: summary,
                             ngay_xay_ra: suggestion?.ngay_xay_ra_sc || reportForm.ngay_xay_ra
                           });
-                        }} 
-                        className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/20" 
-                        placeholder="Chọn hoặc nhập mã..." 
-                        required 
+                        }}
+                        className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/20"
+                        placeholder="Chọn hoặc nhập mã..."
+                        required
                        />
                        <datalist id="scyk-suggestions">
                          {allScykSuggestions.map(s => (
@@ -418,7 +418,7 @@ export const SeriousIncidentModule: React.FC = () => {
                  </div>
                  <div className="pt-4 border-t border-slate-50 flex gap-3">
                     <button type="button" onClick={() => setShowReportModal(false)} className="flex-1 py-3 text-slate-500 font-black uppercase text-xs tracking-wider hover:bg-slate-50 rounded-xl transition-colors">Hủy bỏ</button>
-                    <button type="submit" className="flex-[2] py-3 bg-[#009900] text-white font-black uppercase text-xs tracking-wider rounded-xl shadow-lg shadow-green-900/20 hover:scale-[1.02] active:scale-95 transition-all">Lưu thông tin</button>
+                    <button type="submit" className="flex-[2] py-3 bg-[#059669] text-white font-black uppercase text-xs tracking-wider rounded-xl shadow-lg shadow-green-900/20 hover:scale-[1.02] active:scale-95 transition-all">Lưu thông tin</button>
                  </div>
               </form>
            </div>

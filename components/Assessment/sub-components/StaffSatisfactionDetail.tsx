@@ -75,7 +75,7 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
           <span
             key={val}
             className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full border border-slate-300 text-[9px] md:text-[11px] font-bold transition-all
-              ${currentScore === val ? 'bg-[#009900] text-white border-[#009900] ring-2 ring-[#009900]/20 scale-110 md:scale-125' : 'text-slate-400 opacity-60'}`}
+              ${currentScore === val ? 'bg-[#059669] text-white border-[#059669] ring-2 ring-[#059669]/20 scale-110 md:scale-125' : 'text-slate-400 opacity-60'}`}
           >
             {val}
           </span>
@@ -92,7 +92,7 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
         <div className="flex items-center justify-start no-print px-2 md:px-0">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-500 hover:text-[#009900] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
+            className="flex items-center gap-2 text-slate-500 hover:text-[#059669] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all group"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Quay lại
           </button>
@@ -118,7 +118,7 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 md:gap-y-4 gap-x-12 text-xs md:text-sm">
               <div className="flex gap-2">
                 <span className="font-bold whitespace-nowrap">Khối công tác:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#009900] uppercase tracking-wide">
+                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#059669] uppercase tracking-wide">
                   {BLOCK_LABELS[data.block] || data.block || '...........................................'}
                 </span>
               </div>
@@ -150,10 +150,10 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
                     { val: 'leave', label: 'Có kế hoạch thay đổi' }
                   ].map(opt => (
                     <div key={opt.val} className="flex items-center gap-1.5 md:gap-2">
-                      <div className={`w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.stay_intent === opt.val ? 'bg-[#009900] border-[#009900]' : ''}`}>
+                      <div className={`w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.stay_intent === opt.val ? 'bg-[#059669] border-[#059669]' : ''}`}>
                         {data.stay_intent === opt.val && <CheckCircle2 size={10} className="text-white" />}
                       </div>
-                      <span className={data.stay_intent === opt.val ? 'font-bold text-[#009900]' : 'text-slate-600'}>{opt.label}</span>
+                      <span className={data.stay_intent === opt.val ? 'font-bold text-[#059669]' : 'text-slate-600'}>{opt.label}</span>
                     </div>
                   ))}
                 </div>
@@ -219,7 +219,7 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
                       data.pressure.map(p => {
                         const label = p === 'low_income' ? 'Thu nhập thấp' : p === 'too_many_shifts' ? 'Trực nhiều' : p === 'system_slow' ? 'Phần mềm chậm' : p === 'unfair' ? 'Thiếu công bằng' : 'Áp lực khác';
                         return (
-                          <span key={p} className="px-3 py-1 bg-emerald-50 text-[#009900] rounded-lg border border-emerald-100 font-bold text-[10px] uppercase">
+                          <span key={p} className="px-3 py-1 bg-emerald-50 text-[#059669] rounded-lg border border-emerald-100 font-bold text-[10px] uppercase">
                             {label}
                           </span>
                         );
@@ -231,7 +231,7 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
                 <div className="flex flex-col gap-2">
                   <span className="font-bold uppercase tracking-tight">Tỷ lệ hài lòng tính toán:</span>
                   <div className="flex items-center gap-3">
-                    <div className="bg-emerald-50 text-[#009900] px-4 py-2 rounded-xl border border-emerald-100 font-black text-xl tracking-tight">
+                    <div className="bg-emerald-50 text-[#059669] px-4 py-2 rounded-xl border border-emerald-100 font-black text-xl tracking-tight">
                       {(() => {
                         const scores = CATEGORIES.flatMap(c => c.questions.map(q => (data as any)[q.id] || 0));
                         const avg = scores.reduce((a, b) => a + b, 0) / scores.length;

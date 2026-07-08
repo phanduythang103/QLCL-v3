@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2, 
-  Users, CheckCircle2, AlertTriangle, XCircle, FileText, 
+import {
+  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2,
+  Users, CheckCircle2, AlertTriangle, XCircle, FileText,
   X, LayoutDashboard, List, Filter, RotateCcw, Stethoscope,
   CheckSquare, ClipboardCheck, Clock, UserCheck, ShieldCheck, BarChart3,
   TrendingUp, BarChart, Camera, Image as ImageIcon, Upload, Loader2,
   ChevronRight, ArrowRight, Pill, User
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, 
-  CartesianGrid, Tooltip, Legend, Cell 
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, Cell
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { DrugMonitoring } from '../types';
@@ -113,7 +113,7 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
         ]);
 
         const title = "TỔNG HỢP GIÁM SÁT SỬ DỤNG THUỐC";
-        const dateStr = filterConfig.type === 'custom' 
+        const dateStr = filterConfig.type === 'custom'
           ? `Từ ngày ${filterConfig.startDate || '...'} đến ngày ${filterConfig.endDate || '...'}`
           : `Kỳ báo cáo: ${filterConfig.type}`;
 
@@ -123,7 +123,7 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
           [],
           ['Đơn vị', 'Tổng (A)', 'Đạt 100% (B)', 'Tỷ lệ %', 'Lỗi phổ biến']
         ];
-        
+
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         XLSX.utils.sheet_add_aoa(ws, reportRows, { origin: 'A5' });
 
@@ -149,41 +149,41 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex bg-slate-100/50 p-1.5 gap-1 rounded-[28px] border border-slate-200/50 shrink-0">
-            <TabButton 
-              active={activeTab === 'OVERVIEW'} 
-              onClick={() => { setActiveTab('OVERVIEW'); setViewMode('LIST'); }} 
-              icon={LayoutDashboard} 
-              label="Tổng quan" 
+            <TabButton
+              active={activeTab === 'OVERVIEW'}
+              onClick={() => { setActiveTab('OVERVIEW'); setViewMode('LIST'); }}
+              icon={LayoutDashboard}
+              label="Tổng quan"
             />
-            <TabButton 
-              active={activeTab === 'DANH_SACH'} 
-              onClick={() => { setActiveTab('DANH_SACH'); setViewMode('LIST'); }} 
-              icon={List} 
-              label="Danh sách" 
+            <TabButton
+              active={activeTab === 'DANH_SACH'}
+              onClick={() => { setActiveTab('DANH_SACH'); setViewMode('LIST'); }}
+              icon={List}
+              label="Danh sách"
             />
-            <TabButton 
-              active={activeTab === 'REPORT'} 
-              onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }} 
-              icon={BarChart3} 
-              label="Tổng hợp" 
+            <TabButton
+              active={activeTab === 'REPORT'}
+              onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }}
+              icon={BarChart3}
+              label="Tổng hợp"
             />
           </div>
 
           <div className="flex items-center gap-3">
             {activeTab === 'REPORT' && (
-              <button 
+              <button
                 onClick={exportToExcel}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100 active:scale-95"
               >
                 <FileText size={18} /> <span className="hidden md:inline">Xuất Excel</span>
               </button>
             )}
-            {activeTab === 'DANH_SACH' && (
-              <button 
-                onClick={() => { setEditingItem(null); setViewMode('FORM'); }}
-                className="flex items-center gap-2 bg-[#009900] hover:bg-[#0d6e39] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-green-200 active:scale-95"
+            {viewMode === 'LIST' && (
+              <button
+                onClick={() => { setEditingItem(null); setActiveTab('DANH_SACH'); setViewMode('FORM'); }}
+                className="flex items-center gap-2 bg-[#059669] hover:bg-[#0d6e39] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-green-200 active:scale-95"
               >
-                <Plus size={18} /> Thêm
+                <Plus size={18} /> Thêm giám sát mới
               </button>
             )}
           </div>
@@ -198,10 +198,10 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Đơn vị giám sát</label>
-              <select 
+              <select
                 value={filterConfig.department}
                 onChange={e => setFilterConfig({ ...filterConfig, department: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
               >
                 <option value="Tất cả">Tất cả khoa</option>
                 {departmentList.map(dept => (
@@ -209,9 +209,9 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                 ))}
               </select>
             </div>
-            
+
             <div className="flex items-end">
-              <button 
+              <button
                 onClick={() => setFilterConfig({ type: 'thisMonth', startDate: '', endDate: '', department: 'Tất cả' })}
                 className="w-full p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl border border-dashed border-slate-300 transition-all text-[10px] font-black uppercase tracking-widest"
               >
@@ -223,7 +223,7 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
-             <Loader2 className="animate-spin text-[#009900]" size={32} />
+             <Loader2 className="animate-spin text-[#059669]" size={32} />
           </div>
         ) : error ? (
           <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 font-bold">Lỗi: {error}</div>
@@ -233,8 +233,8 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
           <DrugReport data={filteredData} />
         ) : activeTab === 'DANH_SACH' ? (
           viewMode === 'LIST' ? (
-            <DrugList 
-              data={filteredData} 
+            <DrugList
+              data={filteredData}
               onAdd={() => { setEditingItem(null); setViewMode('FORM'); }}
               onView={(item: DrugMonitoring) => { setEditingItem(item); setViewMode('DETAIL'); }}
               onEdit={(item: DrugMonitoring) => { setEditingItem(item); setViewMode('FORM'); }}
@@ -246,8 +246,8 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
               }}
             />
           ) : viewMode === 'DETAIL' && editingItem ? (
-            <DrugDetailView 
-              item={editingItem} 
+            <DrugDetailView
+              item={editingItem}
               currentUser={user}
               onClose={() => setViewMode('LIST')}
               onEdit={() => setViewMode('FORM')}
@@ -260,7 +260,7 @@ export const DrugMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
               }}
             />
           ) : (
-            <DrugFormView 
+            <DrugFormView
               item={editingItem}
               onClose={() => setViewMode('LIST')}
               onSaved={() => { setViewMode('LIST'); loadData(); }}
@@ -278,8 +278,8 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
   <button
     onClick={onClick}
     className={`supervision-tab-button flex items-center gap-2 px-6 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all ${
-      active 
-        ? 'bg-white text-[#009900] shadow-lg shadow-green-100 border border-green-50' 
+      active
+        ? 'bg-white text-[#059669] shadow-lg shadow-green-100 border border-green-50'
         : 'text-slate-400 hover:text-slate-600'
     }`}
   >
@@ -291,7 +291,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
 const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) => {
   const colors: Record<string, string> = {
     slate: 'bg-slate-50 text-slate-600',
-    green: 'bg-green-50 text-[#009900]',
+    green: 'bg-green-50 text-[#059669]',
     indigo: 'bg-indigo-50 text-indigo-600',
     amber: 'bg-amber-50 text-amber-600'
   };
@@ -338,7 +338,7 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
         <StatCard icon={<Pill />} label="Tổng số lượt" value={stats.total} color="slate" />
         <StatCard icon={<CheckCircle2 />} label="Tỷ lệ tuân thủ" value={`${stats.complianceRate.toFixed(1)}%`} color="green" />
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm h-80">
           <h3 className="text-main-title font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -350,13 +350,13 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
               <XAxis dataKey="date" hide />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[0, 100]} />
               <Tooltip />
-              <Line type="monotone" dataKey="rate" stroke="#009900" strokeWidth={3} dot={{ r: 4, fill: '#009900' }} name="Tỷ lệ đạt" />
+              <Line type="monotone" dataKey="rate" stroke="#059669" strokeWidth={3} dot={{ r: 4, fill: '#059669' }} name="Tỷ lệ đạt" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
         <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm h-80">
           <h3 className="text-main-title font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <BarChart size={16} className="text-[#009900]" /> Số lượt giám sát (Ca)
+            <BarChart size={16} className="text-[#059669]" /> Số lượt giám sát (Ca)
           </h3>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData}>
@@ -364,7 +364,7 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
               <XAxis dataKey="date" hide />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
               <Tooltip />
-              <Bar dataKey="count" fill="#009900" radius={[4, 4, 0, 0]} opacity={0.8} name="Số lượt" />
+              <Bar dataKey="count" fill="#059669" radius={[4, 4, 0, 0]} opacity={0.8} name="Số lượt" />
               <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ r: 3, fill: '#6366f1' }} name="Trend" />
             </ComposedChart>
           </ResponsiveContainer>
@@ -376,7 +376,7 @@ const DrugOverview = ({ data }: { data: DrugMonitoring[] }) => {
 
 const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitoring[], onView: (item: DrugMonitoring) => void, onEdit: (item: DrugMonitoring) => void, onDelete: (id: string) => void, onAdd: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const filtered = data.filter((item: DrugMonitoring) => 
+  const filtered = data.filter((item: DrugMonitoring) =>
     item.ho_ten_nb.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.don_vi_duoc_giam_sat.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -386,10 +386,10 @@ const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitor
       <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm kiếm NB, Đơn vị..." 
+          <input
+            placeholder="Tìm kiếm NB, Đơn vị..."
             value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none ring-[#009900]/10 focus:ring-4 transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
           />
         </div>
       </div>
@@ -415,7 +415,7 @@ const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitor
                    <p className="text-sm text-slate-400 font-normal">{item.ma_nb || '---'}</p>
                 </td>
                 <td className="p-6 text-center">
-                   <span className={`text-table font-bold ${item.ty_le_tuan_thu >= 100 ? 'text-[#009900]' : 'text-amber-600'}`}>
+                   <span className={`text-table font-bold ${item.ty_le_tuan_thu >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
                       {Number(item.ty_le_tuan_thu).toFixed(0)}%
                    </span>
                 </td>
@@ -439,7 +439,7 @@ const DrugList = ({ data, onView, onEdit, onDelete, onAdd }: { data: DrugMonitor
                  <h4 className="text-sm font-black text-slate-800 uppercase leading-snug">{item.ho_ten_nb}</h4>
                  <p className="text-[10px] text-slate-500 font-bold uppercase">{item.don_vi_duoc_giam_sat}</p>
                </div>
-               <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${item.ty_le_tuan_thu >= 100 ? 'bg-green-100 text-[#009900]' : 'bg-amber-100 text-amber-600'}`}>
+               <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${item.ty_le_tuan_thu >= 100 ? 'bg-green-100 text-[#059669]' : 'bg-amber-100 text-amber-600'}`}>
                  {Number(item.ty_le_tuan_thu).toFixed(0)}% Đạt
                </div>
              </div>
@@ -495,7 +495,7 @@ const DrugReport = ({ data }: { data: DrugMonitoring[] }) => {
                  <td className="p-6 font-bold text-slate-700">{row.dept}</td>
                  <td className="p-6 text-center text-slate-600">{row.a}</td>
                  <td className="p-6 text-center text-slate-600">{row.b}</td>
-                 <td className="p-6 text-center font-black text-[#009900]">{row.rate.toFixed(1)}%</td>
+                 <td className="p-6 text-center font-black text-[#059669]">{row.rate.toFixed(1)}%</td>
                  <td className="p-6 pr-8">
                    {row.topErrors.length > 0 ? (
                      <div className="space-y-1">
@@ -512,13 +512,13 @@ const DrugReport = ({ data }: { data: DrugMonitoring[] }) => {
            </tbody>
          </table>
        </div>
-       
+
        <div className="md:hidden divide-y divide-slate-100">
          {reportData.map((row: any, idx) => (
            <div key={idx} className="p-4 space-y-2">
              <div className="flex justify-between items-center">
                <h4 className="text-sm font-black text-slate-800 uppercase">{row.dept}</h4>
-               <span className="text-lg font-black text-[#009900]">{row.rate.toFixed(0)}%</span>
+               <span className="text-lg font-black text-[#059669]">{row.rate.toFixed(0)}%</span>
              </div>
              <div className="flex gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 <span>Ca: {row.a}</span>
@@ -587,7 +587,7 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    
+
     // Clean data before sending
     const submitData = {
       ...formData,
@@ -612,7 +612,7 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
     <div className="bg-white rounded-[40px] shadow-2xl w-full border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300">
        <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
           <div className="flex items-center gap-4">
-             <div className="w-12 h-12 bg-[#009900] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-100"><Pill size={24}/></div>
+             <div className="w-12 h-12 bg-[#059669] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-100"><Pill size={24}/></div>
           </div>
           <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl transition-all"><X size={24}/></button>
        </div>
@@ -655,14 +655,14 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
                             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest ml-4">Thực hiện: {c.role}</p>
                          </div>
                          <div className="flex gap-2 shrink-0">
-                            <button type="button" onClick={() => setFormData({...formData, [c.id]: true, [`${c.id}_ghi_chu`]: ''})} className={`flex-1 md:flex-none px-6 py-2 rounded-xl text-[10px] font-black uppercase border transition-all ${formData[c.id] === true ? 'bg-[#009900] text-white border-green-600 shadow-lg shadow-green-100' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>Đạt</button>
+                            <button type="button" onClick={() => setFormData({...formData, [c.id]: true, [`${c.id}_ghi_chu`]: ''})} className={`flex-1 md:flex-none px-6 py-2 rounded-xl text-[10px] font-black uppercase border transition-all ${formData[c.id] === true ? 'bg-[#059669] text-white border-green-600 shadow-lg shadow-green-100' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>Đạt</button>
                             <button type="button" onClick={() => setFormData({...formData, [c.id]: false})} className={`flex-1 md:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase border transition-all ${formData[c.id] === false ? 'bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-100' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>K.Đạt</button>
                          </div>
                       </div>
                       {formData[c.id] === false && (
                          <div className="mx-4 mb-4 mt-1 animate-in slide-in-from-top-2 duration-200">
-                            <input 
-                               value={formData[`${c.id}_ghi_chu`] || ''} 
+                            <input
+                               value={formData[`${c.id}_ghi_chu`] || ''}
                                onChange={e => setFormData({...formData, [`${c.id}_ghi_chu`]: e.target.value})}
                                placeholder="Mô tả lỗi/ghi chú chi tiết cho bước này..."
                                className="w-full p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl text-[11px] font-bold text-rose-700 outline-none focus:ring-2 focus:ring-rose-200 transition-all"
@@ -683,7 +683,7 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
                          <button type="button" onClick={() => setFormData({...formData, hinh_anh: formData.hinh_anh.filter((_: any, idx: number) => idx !== i)})} className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><X size={12}/></button>
                       </div>
                    ))}
-                   <label className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#009900] hover:text-[#009900] transition-all cursor-pointer ${uploading ? 'animate-pulse pointer-events-none' : ''}`}>
+                   <label className={`w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#059669] hover:text-[#059669] transition-all cursor-pointer ${uploading ? 'animate-pulse pointer-events-none' : ''}`}>
                       <input type="file" hidden multiple accept="image/*" onChange={handleFileUpload} />
                       {uploading ? <Loader2 className="animate-spin" size={24}/> : <Camera size={24}/>}
                       <span className="text-[8px] font-black uppercase tracking-widest mt-1">{uploading ? 'Đang tải' : 'Thêm ảnh'}</span>
@@ -696,7 +696,7 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
              <div className="flex gap-8">
                 <div className="text-center md:text-left">
                    <p className="text-label font-bold text-slate-400 uppercase tracking-widest">Tiêu chí Đạt</p>
-                   <p className="text-2xl font-black text-[#009900]">{formData.tong_dat} / 10</p>
+                   <p className="text-2xl font-black text-[#059669]">{formData.tong_dat} / 10</p>
                 </div>
                 <div className="text-center md:text-left">
                    <p className="text-label font-bold text-slate-400 uppercase tracking-widest">Tỷ lệ %</p>
@@ -705,7 +705,7 @@ const DrugFormView = ({ item, onClose, onSaved, currentUser, departmentList }: a
              </div>
              <div className="flex gap-3 w-full md:w-auto">
                 <button type="button" onClick={onClose} className="flex-1 md:flex-none px-8 py-3.5 bg-white border border-slate-200 text-slate-500 rounded-2xl text-[11px] font-black uppercase">Hủy</button>
-                <button type="submit" disabled={saving || uploading} className="flex-1 md:flex-none px-12 py-3.5 bg-[#009900] text-white rounded-2xl text-[11px] font-black uppercase shadow-xl shadow-green-200 disabled:opacity-50">
+                <button type="submit" disabled={saving || uploading} className="flex-1 md:flex-none px-12 py-3.5 bg-[#059669] text-white rounded-2xl text-[11px] font-black uppercase shadow-xl shadow-green-200 disabled:opacity-50">
                    {saving ? 'Đang lưu...' : 'Lưu kết quả'}
                 </button>
              </div>
@@ -791,7 +791,7 @@ const DrugDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) =
                                <td className="p-3 border-2 border-slate-800 text-center font-bold text-slate-600">{idx + 1}</td>
                                <td className="p-3 border-2 border-slate-800 font-bold text-slate-700 leading-snug">{c.label}</td>
                                <td className="p-3 border-2 border-slate-800 text-center">
-                                  {item[c.id] === true && <CheckSquare className="mx-auto text-[#009900]" size={20}/>}
+                                  {item[c.id] === true && <CheckSquare className="mx-auto text-[#059669]" size={20}/>}
                                </td>
                                <td className="p-3 border-2 border-slate-800 text-center">
                                   {item[c.id] === false && <X className="mx-auto text-rose-500" size={20}/>}
@@ -822,7 +822,7 @@ const DrugDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: any) =
 
           {item.hinh_anh && item.hinh_anh.length > 0 && (
              <div className="space-y-4 no-print pt-6 border-t border-dashed border-slate-200">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 px-2"><ImageIcon size={16} className="text-[#009900]"/> Hình ảnh minh chứng</h3>
+                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 px-2"><ImageIcon size={16} className="text-[#059669]"/> Hình ảnh minh chứng</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                    {item.hinh_anh.map((url: string, i: number) => (
                       <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-2xl overflow-hidden shadow-md border-2 border-white hover:scale-105 transition-all">

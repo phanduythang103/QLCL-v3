@@ -142,7 +142,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
     onSave(payload);
   };
 
-  const themeColor = '#009900';
+  const themeColor = '#059669';
 
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen px-4 md:px-8">
@@ -174,8 +174,8 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
       <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-8 pb-12">
         {/* Section 1: Thông tin chung */}
         <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-8 border-l-4 border-[#009900] pl-4">
-            <User className="text-[#009900]" size={24} />
+          <div className="flex items-center gap-3 mb-8 border-l-4 border-[#059669] pl-4">
+            <User className="text-[#059669]" size={24} />
             <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">1. Thông tin chung</h3>
           </div>
 
@@ -188,7 +188,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                 placeholder="Nhập họ và tên..."
                 value={formData.full_name}
                 onChange={e => handleChange('full_name', e.target.value)}
-                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#009900] transition-all"
+                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all"
               />
             </div>
 
@@ -199,7 +199,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                 placeholder="Nhập số điện thoại..."
                 value={formData.phone}
                 onChange={e => handleChange('phone', e.target.value)}
-                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#009900] transition-all"
+                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all"
               />
             </div>
 
@@ -217,7 +217,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                     key={opt.value}
                     type="button"
                     onClick={() => handleChange('area', opt.value)}
-                    className={`px-4 py-3 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.area === opt.value ? 'bg-[#009900] border-[#009900] text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-[#009900]'}`}
+                    className={`px-4 py-3 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.area === opt.value ? 'bg-[#059669] border-[#059669] text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-[#059669]'}`}
                   >
                     {opt.label}
                   </button>
@@ -240,7 +240,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                       key={s}
                       type="button"
                       onClick={() => setShift(s as any)}
-                      className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${shift === s ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500'}`}
+                      className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${shift === s ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-500'}`}
                     >
                       {s}
                     </button>
@@ -260,7 +260,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                     key={opt.value}
                     type="button"
                     onClick={() => handleChange('respondent', opt.value)}
-                    className={`flex-1 px-6 py-4 rounded-xl text-[10px] font-black uppercase transition-all ${formData.respondent === opt.value ? 'bg-white text-[#009900] shadow-sm' : 'text-slate-500'}`}
+                    className={`flex-1 px-6 py-4 rounded-xl text-[10px] font-black uppercase transition-all ${formData.respondent === opt.value ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-500'}`}
                   >
                     {opt.label}
                   </button>
@@ -272,8 +272,8 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
 
         {/* Section 2: Đánh giá dịch vụ */}
         <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-8 border-l-4 border-[#009900] pl-4">
-            <Star className="text-[#009900]" size={24} />
+          <div className="flex items-center gap-3 mb-8 border-l-4 border-[#059669] pl-4">
+            <Star className="text-[#059669]" size={24} />
             <div className="flex flex-col">
               <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">2. Đánh giá quy trình & dịch vụ</h3>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">(1: Rất kém {"->"} 5: Rất tốt; 0: Không sử dụng)</p>
@@ -283,7 +283,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
           <div className="space-y-12">
             {CATEGORIES.map(category => (
               <div key={category.name} className="space-y-6">
-                <h4 className="text-sm font-black text-white uppercase tracking-wider bg-[#009900] px-6 py-2 rounded-full inline-block shadow-md">
+                <h4 className="text-sm font-black text-white uppercase tracking-wider bg-[#059669] px-6 py-2 rounded-full inline-block shadow-md">
                   {category.name}
                 </h4>
 
@@ -304,7 +304,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                             onClick={() => handleRatingChange(q.id, val)}
                             className={`w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center font-black text-xs transition-all border-2
                               ${(formData as any)[`q${q.id}`] === val
-                                ? 'bg-[#009900] border-[#009900] text-white shadow-lg'
+                                ? 'bg-[#059669] border-[#059669] text-white shadow-lg'
                                 : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-300'}`}
                           >
                             {val}
@@ -366,7 +366,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                     key={opt}
                     type="button"
                     onClick={() => togglePriorityImprovement(opt)}
-                    className={`w-full text-left px-6 py-4 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.priority_improvement?.includes(opt) ? 'bg-[#009900] border-[#009900] text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-[#009900]'}`}
+                    className={`w-full text-left px-6 py-4 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.priority_improvement?.includes(opt) ? 'bg-[#059669] border-[#059669] text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-[#059669]'}`}
                   >
                     {opt}
                   </button>
@@ -381,7 +381,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
                 value={formData.feedback}
                 onChange={e => handleChange('feedback', e.target.value)}
                 placeholder="Ví dụ: mô tả nhân viên, vị trí trực nếu không hài lòng..."
-                className="w-full bg-slate-50 p-6 rounded-[2rem] border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#009900] transition-all"
+                className="w-full bg-slate-50 p-6 rounded-[2rem] border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all"
               />
             </div>
           </div>
@@ -392,7 +392,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
           <button
             type="submit"
             disabled={saving}
-            className="group flex items-center gap-4 px-16 py-6 bg-[#009900] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl transition-all disabled:bg-slate-300 active:scale-95"
+            className="group flex items-center gap-4 px-16 py-6 bg-[#059669] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl transition-all disabled:bg-slate-300 active:scale-95"
           >
             {saving ? (
               <span className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />

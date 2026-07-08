@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  Calendar, 
-  Tag, 
-  Info, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Settings,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Calendar,
+  Tag,
+  Info,
+  CheckCircle2,
+  AlertCircle,
   X,
   Target,
   Clock,
@@ -24,11 +24,11 @@ import {
   Trash
 } from 'lucide-react';
 import { IndicatorConfig } from '../types';
-import { 
-  fetchIndicatorConfigs, 
-  addIndicatorConfig, 
-  updateIndicatorConfig, 
-  deleteIndicatorConfig 
+import {
+  fetchIndicatorConfigs,
+  addIndicatorConfig,
+  updateIndicatorConfig,
+  deleteIndicatorConfig
 } from '../readCauHinhCscl';
 
 const IndicatorConfigModule: React.FC = () => {
@@ -68,7 +68,7 @@ const IndicatorConfigModule: React.FC = () => {
 
   useEffect(() => { loadData(); }, []);
 
-  const filteredConfigs = configs.filter(c => 
+  const filteredConfigs = configs.filter(c =>
     c.ten_chi_so.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (c.linh_vuc_ap_dung || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -82,7 +82,7 @@ const IndicatorConfigModule: React.FC = () => {
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -157,9 +157,9 @@ const IndicatorConfigModule: React.FC = () => {
     try {
       if (showBulkModal === 'edit') {
         for (const id of selectedIds) {
-          await updateIndicatorConfig(id, { 
-            tu_ngay: bulkDates.tu_ngay, 
-            den_ngay: bulkDates.den_ngay 
+          await updateIndicatorConfig(id, {
+            tu_ngay: bulkDates.tu_ngay,
+            den_ngay: bulkDates.den_ngay
           });
         }
       } else if (showBulkModal === 'copy') {
@@ -196,7 +196,7 @@ const IndicatorConfigModule: React.FC = () => {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={handleAdd}
           className="bg-indigo-600 text-white px-8 py-3.5 rounded-[24px] flex items-center gap-2 text-[11px] font-black uppercase hover:shadow-lg hover:shadow-indigo-900/20 active:scale-95 transition-all shadow-md group w-full md:w-auto justify-center"
         >
@@ -210,11 +210,11 @@ const IndicatorConfigModule: React.FC = () => {
       <div className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm space-y-6">
         <div className="relative max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm theo tên chỉ số, lĩnh vực..." 
+          <input
+            placeholder="Tìm theo tên chỉ số, lĩnh vực..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono" 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono"
           />
         </div>
 
@@ -227,7 +227,7 @@ const IndicatorConfigModule: React.FC = () => {
         <div className="overflow-x-auto rounded-3xl border border-slate-50 hidden md:block">
           <table className="w-full text-left table-fixed">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#009900] text-white text-[14px] uppercase font-bold">
+              <tr className="bg-[#059669] text-white text-[14px] uppercase font-bold">
                 <th className="px-6 py-4 w-[5%]">
                   <button onClick={toggleSelectAll} className="text-white hover:scale-110 transition-transform">
                     {selectedIds.length === filteredConfigs.length && filteredConfigs.length > 0 ? <CheckSquare size={18} /> : <Square size={18} />}
@@ -306,8 +306,8 @@ const IndicatorConfigModule: React.FC = () => {
 
         <div className="md:hidden grid grid-cols-1 gap-4 overflow-y-auto max-h-[60vh] pr-2 custom-scrollbar relative">
           {filteredConfigs.map(c => (
-            <div 
-              key={c.id} 
+            <div
+              key={c.id}
               onClick={() => toggleSelect(c.id)}
               className={`bg-slate-50 rounded-3xl p-5 border flex flex-col gap-4 active:scale-95 transition-all relative ${selectedIds.includes(c.id) ? 'border-indigo-500 bg-indigo-50/20' : 'border-slate-100'}`}
             >
@@ -326,7 +326,7 @@ const IndicatorConfigModule: React.FC = () => {
                   <button onClick={() => handleDelete(c.id)} className="p-2 bg-white text-red-500 rounded-xl shadow-sm"><Trash2 size={16} /></button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white p-3 rounded-2xl shadow-sm border border-indigo-50">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Mục tiêu</p>
@@ -361,55 +361,55 @@ const IndicatorConfigModule: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Vui lòng điền các mục bắt buộc</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="p-3 text-slate-400 hover:bg-white hover:text-red-500 rounded-2xl transition-all shadow-sm"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSave} className="p-8 space-y-6">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Tag size={12} /> Tên chỉ số</label>
-                <input 
-                  value={form.ten_chi_so} 
-                  onChange={e => setForm({ ...form, ten_chi_so: e.target.value })} 
-                  className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
+                <input
+                  value={form.ten_chi_so}
+                  onChange={e => setForm({ ...form, ten_chi_so: e.target.value })}
+                  className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
                   placeholder="Ví dụ: Tỷ lệ tuân thủ vệ sinh tay"
-                  required 
+                  required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Target size={12} /> Mục tiêu</label>
-                  <input 
+                  <input
                     type="number"
                     step="0.01"
-                    value={form.muc_tieu} 
-                    onChange={e => setForm({ ...form, muc_tieu: e.target.value })} 
-                    className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
+                    value={form.muc_tieu}
+                    onChange={e => setForm({ ...form, muc_tieu: e.target.value })}
+                    className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
                     placeholder="90"
-                    required 
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Layout size={12} /> Đơn vị tính</label>
-                  <input 
-                    value={form.don_vi_tinh} 
-                    onChange={e => setForm({ ...form, don_vi_tinh: e.target.value })} 
-                    className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
+                  <input
+                    value={form.don_vi_tinh}
+                    onChange={e => setForm({ ...form, don_vi_tinh: e.target.value })}
+                    className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
                     placeholder="%, ca, lần, ngày, điểm..."
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Layout size={12} /> Lĩnh vực</label>
-                <input 
-                  value={form.linh_vuc_ap_dung} 
-                  onChange={e => setForm({ ...form, linh_vuc_ap_dung: e.target.value })} 
-                  className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20" 
+                <input
+                  value={form.linh_vuc_ap_dung}
+                  onChange={e => setForm({ ...form, linh_vuc_ap_dung: e.target.value })}
+                  className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
                   placeholder="Chuyên môn, Quản lý..."
                 />
               </div>
@@ -417,53 +417,53 @@ const IndicatorConfigModule: React.FC = () => {
               <div className="grid grid-cols-2 gap-6 p-6 bg-slate-50 rounded-[32px] border border-dashed border-slate-200">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Calendar size={12} /> Từ ngày</label>
-                  <input 
-                    type="date" 
-                    value={form.tu_ngay} 
-                    onChange={e => setForm({ ...form, tu_ngay: e.target.value })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-xl text-xs font-bold shadow-sm" 
+                  <input
+                    type="date"
+                    value={form.tu_ngay}
+                    onChange={e => setForm({ ...form, tu_ngay: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-xl text-xs font-bold shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Calendar size={12} /> Đến ngày</label>
-                  <input 
-                    type="date" 
-                    value={form.den_ngay} 
-                    onChange={e => setForm({ ...form, den_ngay: e.target.value })} 
-                    className="w-full px-4 py-3 bg-white border-none rounded-xl text-xs font-bold shadow-sm" 
+                  <input
+                    type="date"
+                    value={form.den_ngay}
+                    onChange={e => setForm({ ...form, den_ngay: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border-none rounded-xl text-xs font-bold shadow-sm"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><Info size={12} /> Thông tin chi tiết</label>
-                <textarea 
-                  value={form.thong_tin} 
-                  onChange={e => setForm({ ...form, thong_tin: e.target.value })} 
-                  className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[100px]" 
+                <textarea
+                  value={form.thong_tin}
+                  onChange={e => setForm({ ...form, thong_tin: e.target.value })}
+                  className="w-full px-5 py-3.5 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[100px]"
                   placeholder="Ghi chú thêm về chỉ số..."
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2"><CheckCircle2 size={12} /> Đánh giá</label>
-                <textarea 
-                  value={form.danh_gia} 
-                  onChange={e => setForm({ ...form, danh_gia: e.target.value })} 
-                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[60px]" 
+                <textarea
+                  value={form.danh_gia}
+                  onChange={e => setForm({ ...form, danh_gia: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 min-h-[60px]"
                   placeholder="Tiêu chí đánh giá hoặc kết quả đánh giá mốc..."
                 />
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowModal(false)}
                   className="flex-1 px-8 py-4 bg-slate-100 text-slate-600 rounded-[22px] text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
                 >
                   <RotateCcw size={18} /> Hủy bỏ
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="flex-1 px-8 py-4 bg-indigo-600 text-white rounded-[22px] text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-indigo-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
@@ -481,11 +481,11 @@ const IndicatorConfigModule: React.FC = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Đã chọn</span>
             <span className="text-xl font-black text-white">{selectedIds.length} <span className="text-xs text-slate-400 font-bold uppercase tracking-widest ml-1">chỉ số</span></span>
           </div>
-          
+
           <div className="w-px h-10 bg-slate-700"></div>
 
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={() => {
                 setShowBulkModal('edit');
                 setBulkDates({ tu_ngay: '', den_ngay: '' });
@@ -494,7 +494,7 @@ const IndicatorConfigModule: React.FC = () => {
             >
               <Calendar size={16} /> Sửa ngày hàng loạt
             </button>
-            <button 
+            <button
               onClick={() => {
                 setShowBulkModal('copy');
                 setBulkDates({ tu_ngay: '', den_ngay: '' });
@@ -503,7 +503,7 @@ const IndicatorConfigModule: React.FC = () => {
             >
               <Copy size={16} /> Sao chép hàng loạt
             </button>
-            <button 
+            <button
               onClick={() => setSelectedIds([])}
               className="flex items-center gap-2.5 px-6 py-3.5 bg-white/10 text-slate-300 rounded-2xl text-[11px] font-black uppercase tracking-wider hover:bg-white/20 transition-all active:scale-95"
             >
@@ -529,7 +529,7 @@ const IndicatorConfigModule: React.FC = () => {
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2 tracking-widest"><Calendar size={12} className="text-indigo-500" /> Bắt đầu từ</label>
-                  <input 
+                  <input
                     type="date"
                     value={bulkDates.tu_ngay}
                     onChange={e => setBulkDates(prev => ({ ...prev, tu_ngay: e.target.value }))}
@@ -538,7 +538,7 @@ const IndicatorConfigModule: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2 tracking-widest"><Calendar size={12} className="text-indigo-500" /> Đến hết ngày</label>
-                  <input 
+                  <input
                     type="date"
                     value={bulkDates.den_ngay}
                     onChange={e => setBulkDates(prev => ({ ...prev, den_ngay: e.target.value }))}
@@ -548,13 +548,13 @@ const IndicatorConfigModule: React.FC = () => {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button 
+                <button
                   onClick={() => setShowBulkModal(null)}
                   className="flex-1 py-5 bg-slate-100 text-slate-600 rounded-[24px] text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
                 >
                   Hủy thao tác
                 </button>
-                <button 
+                <button
                   onClick={handleBulkAction}
                   disabled={loading}
                   className={`flex-1 py-5 ${showBulkModal === 'edit' ? 'bg-indigo-600' : 'bg-emerald-600'} text-white rounded-[24px] text-xs font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3`}
@@ -574,14 +574,14 @@ const IndicatorConfigModule: React.FC = () => {
           <div className="bg-white rounded-[20px] w-full max-w-4xl max-h-[95vh] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col border border-slate-200">
             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
               <h3 className="font-black uppercase text-sm text-slate-800 tracking-tight">Chi tiết cấu hình chỉ số</h3>
-              <button 
+              <button
                 onClick={() => setViewingConfig(null)}
                 className="p-2.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-12 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div className="space-y-8 text-slate-800 leading-relaxed max-w-2xl mx-auto">
                     <div className="border-b-2 border-slate-100 pb-4 mb-2">

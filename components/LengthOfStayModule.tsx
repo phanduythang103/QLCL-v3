@@ -44,7 +44,7 @@ export const LengthOfStayModule: React.FC = () => {
     const now = new Date();
     const start = new Date(now);
     const end = new Date(now);
-    
+
     switch (preset) {
       case 'HOM_NAY':
         return { from: now.toISOString().split('T')[0], to: now.toISOString().split('T')[0] };
@@ -112,8 +112,8 @@ export const LengthOfStayModule: React.FC = () => {
   const filteredUnits = React.useMemo(() => {
     const term = form.don_vi.toLowerCase();
     if (!term) return units;
-    return units.filter(u => 
-      u.ten_don_vi.toLowerCase().includes(term) || 
+    return units.filter(u =>
+      u.ten_don_vi.toLowerCase().includes(term) ||
       u.ma_don_vi.toLowerCase().includes(term)
     );
   }, [form.don_vi, units]);
@@ -274,7 +274,7 @@ export const LengthOfStayModule: React.FC = () => {
   };
 
   // Stats
-  const avgStay = filteredRecords.length > 0 
+  const avgStay = filteredRecords.length > 0
     ? (filteredRecords.reduce((a, b) => a + b.ngay_tb, 0) / filteredRecords.length).toFixed(2)
     : '0.00';
   const totalDischarges = filteredRecords.reduce((a, b) => a + b.tong_luot_ra_vien, 0);
@@ -302,14 +302,14 @@ export const LengthOfStayModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mt-6">
         <div className="p-6 border-b border-slate-50 flex items-center justify-between">
           <h3 className="font-black uppercase text-sm text-slate-800 flex items-center gap-2">
-            <Activity size={18} className="text-[#009900]" /> 
+            <Activity size={18} className="text-[#059669]" />
             Báo cáo mới nhất
           </h3>
-          <button onClick={() => setActiveTab('DANH_SACH')} className="text-[#009900] text-xs font-black uppercase hover:underline">Xem danh sách</button>
+          <button onClick={() => setActiveTab('DANH_SACH')} className="text-[#059669] text-xs font-black uppercase hover:underline">Xem danh sách</button>
         </div>
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-[#009900] text-white font-bold uppercase text-[14px]">
+            <thead className="bg-[#059669] text-white font-bold uppercase text-[14px]">
               <tr>
                 <th className="px-6 py-4 rounded-tl-xl">Ngày báo cáo</th>
                 <th className="px-6 py-4">Đơn vị</th>
@@ -336,7 +336,7 @@ export const LengthOfStayModule: React.FC = () => {
                           <TrendingUp size={14} /> +{r.chenh_lech}
                         </div>
                       ) : r.chenh_lech < 0 ? (
-                        <div className="flex items-center gap-1 text-[#009900] font-bold">
+                        <div className="flex items-center gap-1 text-[#059669] font-bold">
                           <TrendingDown size={14} /> {r.chenh_lech}
                         </div>
                       ) : (
@@ -385,7 +385,7 @@ export const LengthOfStayModule: React.FC = () => {
                       <TrendingUp size={12} /> +{r.chenh_lech}
                     </div>
                   ) : r.chenh_lech < 0 ? (
-                    <div className="flex items-center gap-1 text-[#009900] font-black text-xs bg-green-50 px-2 py-1 rounded-full">
+                    <div className="flex items-center gap-1 text-[#059669] font-black text-xs bg-green-50 px-2 py-1 rounded-full">
                       <TrendingDown size={12} /> {r.chenh_lech}
                     </div>
                   ) : (
@@ -408,9 +408,9 @@ export const LengthOfStayModule: React.FC = () => {
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm theo đơn vị, người báo cáo..." 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-[#009900]/20" 
+          <input
+            placeholder="Tìm theo đơn vị, người báo cáo..."
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-table font-bold focus:ring-2 focus:ring-[#059669]/20"
           />
         </div>
       </div>
@@ -418,7 +418,7 @@ export const LengthOfStayModule: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-[#009900] text-white font-bold uppercase text-[14px] text-center">
+            <thead className="bg-[#059669] text-white font-bold uppercase text-[14px] text-center">
               <tr>
                 <th className="px-6 py-4 rounded-tl-xl text-left">Ngày</th>
                 <th className="px-6 py-4 text-left">Đơn vị</th>
@@ -446,7 +446,7 @@ export const LengthOfStayModule: React.FC = () => {
                           <TrendingUp size={14} /> +{r.chenh_lech}
                         </div>
                       ) : r.chenh_lech < 0 ? (
-                        <div className="flex items-center gap-1 text-[#009900] font-bold">
+                        <div className="flex items-center gap-1 text-[#059669] font-bold">
                           <TrendingDown size={14} /> {r.chenh_lech}
                         </div>
                       ) : (
@@ -497,7 +497,7 @@ export const LengthOfStayModule: React.FC = () => {
                   {r.chenh_lech > 0 ? (
                     <p className="text-xs font-black text-red-600 flex items-center gap-1"><TrendingUp size={12}/> +{r.chenh_lech}</p>
                   ) : r.chenh_lech < 0 ? (
-                    <p className="text-xs font-black text-[#009900] flex items-center gap-1"><TrendingDown size={12}/> {r.chenh_lech}</p>
+                    <p className="text-xs font-black text-[#059669] flex items-center gap-1"><TrendingDown size={12}/> {r.chenh_lech}</p>
                   ) : <p className="text-xs font-bold text-slate-400">0</p>}
                 </div>
               </div>
@@ -516,9 +516,9 @@ export const LengthOfStayModule: React.FC = () => {
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            placeholder="Tìm theo mã BN, chẩn đoán..." 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#009900]/20" 
+          <input
+            placeholder="Tìm theo mã BN, chẩn đoán..."
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#059669]/20"
           />
         </div>
       </div>
@@ -544,8 +544,8 @@ export const LengthOfStayModule: React.FC = () => {
               </div>
               {a.giai_phap_de_xuat && (
                 <div>
-                  <p className="text-[9px] font-black uppercase text-[#009900]">Giải pháp đề xuất</p>
-                  <p className="text-xs font-bold text-[#009900] leading-relaxed">{a.giai_phap_de_xuat}</p>
+                  <p className="text-[9px] font-black uppercase text-[#059669]">Giải pháp đề xuất</p>
+                  <p className="text-xs font-bold text-[#059669] leading-relaxed">{a.giai_phap_de_xuat}</p>
                 </div>
               )}
             </div>
@@ -589,9 +589,9 @@ export const LengthOfStayModule: React.FC = () => {
             <TabButton active={activeTab === 'PHAN_TICH'} onClick={() => setActiveTab('PHAN_TICH')} icon={Activity} label="Phân tích" />
           </div>
 
-          <button 
+          <button
             onClick={activeTab === 'PHAN_TICH' ? handleAddPt : handleAdd}
-            className="bg-[#009900] text-white px-8 py-3.5 rounded-[24px] flex items-center gap-2 text-[11px] font-black uppercase hover:shadow-lg hover:shadow-green-900/20 active:scale-95 transition-all shadow-md group"
+            className="bg-[#059669] text-white px-8 py-3.5 rounded-[24px] flex items-center gap-2 text-[11px] font-black uppercase hover:shadow-lg hover:shadow-green-900/20 active:scale-95 transition-all shadow-md group"
           >
             <div className="bg-white/20 p-1.5 rounded-lg group-hover:rotate-90 transition-transform duration-300">
               <Plus size={18} />
@@ -616,7 +616,7 @@ export const LengthOfStayModule: React.FC = () => {
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2">
                 <Calendar size={12} /> Thời gian
               </label>
-              <select 
+              <select
                 value={filterConfig.preset}
                 onChange={(e) => setFilterConfig({ ...filterConfig, preset: e.target.value })}
                 className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-[13px] font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
@@ -634,7 +634,7 @@ export const LengthOfStayModule: React.FC = () => {
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-2">
                 <Building2 size={12} /> Đơn vị (Khoa)
               </label>
-              <select 
+              <select
                 value={filterConfig.department}
                 onChange={(e) => setFilterConfig({ ...filterConfig, department: e.target.value })}
                 className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-[13px] font-bold text-slate-700 focus:ring-2 focus:ring-green-500/20 cursor-pointer"
@@ -662,7 +662,7 @@ export const LengthOfStayModule: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="hidden lg:block h-10 w-px bg-slate-100 mx-2" />
               {(filterConfig.preset !== 'THANG_NAY' || filterConfig.department !== 'Tất cả') && (
-                <button 
+                <button
                   onClick={() => setFilterConfig({ preset: 'THANG_NAY', fromDate: '', toDate: '', department: 'Tất cả' })}
                   className="flex-1 bg-red-50 text-red-600 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-2 border border-red-100 shadow-sm"
                 >
@@ -688,7 +688,7 @@ export const LengthOfStayModule: React.FC = () => {
               <p className="text-sm font-black text-red-800 uppercase tracking-tight">Cảnh báo hệ thống</p>
               <p className="text-xs font-bold text-red-600 mt-1">{error}</p>
             </div>
-            <button 
+            <button
               onClick={loadData}
               className="px-6 py-2 bg-red-100 text-red-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-200 transition-colors"
             >
@@ -724,30 +724,30 @@ export const LengthOfStayModule: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Vui lòng nhập đầy đủ thông tin</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="p-3 text-slate-400 hover:bg-white hover:text-red-500 rounded-2xl transition-all shadow-sm"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Calendar size={12} /> Ngày báo cáo</label>
-                  <input 
-                    type="date" 
-                    value={form.ngay_bao_cao} 
-                    onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })} 
-                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500/20" 
-                    required 
+                  <input
+                    type="date"
+                    value={form.ngay_bao_cao}
+                    onChange={e => setForm({ ...form, ngay_bao_cao: e.target.value })}
+                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500/20"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><User size={12} /> Người báo cáo</label>
-                  <input 
-                    value={form.nguoi_bao_cao} 
+                  <input
+                    value={form.nguoi_bao_cao}
                     readOnly
                     className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold opacity-70"
                   />
@@ -757,20 +757,20 @@ export const LengthOfStayModule: React.FC = () => {
               <div className="space-y-1.5 relative" ref={unitDropdownRef}>
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Building2 size={12} /> Đơn vị</label>
                 <div className="relative group">
-                  <input 
+                  <input
                     placeholder="Nhập hoặc chọn đơn vị..."
-                    value={form.don_vi} 
+                    value={form.don_vi}
                     onChange={e => {
                       setForm({ ...form, don_vi: e.target.value });
                       setShowUnitDropdown(true);
-                    }} 
+                    }}
                     onFocus={() => setShowUnitDropdown(true)}
-                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500/20 transition-all" 
-                    required 
+                    className="w-full px-5 py-3 bg-slate-100 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    required
                   />
-                  <ChevronDown 
-                    size={16} 
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-transform duration-300 pointer-events-none ${showUnitDropdown ? 'rotate-180' : ''}`} 
+                  <ChevronDown
+                    size={16}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-transform duration-300 pointer-events-none ${showUnitDropdown ? 'rotate-180' : ''}`}
                   />
                 </div>
 
@@ -795,7 +795,7 @@ export const LengthOfStayModule: React.FC = () => {
                     ))}
                   </div>
                 )}
-                
+
                 {showUnitDropdown && units.length > 0 && filteredUnits.length === 0 && form.don_vi && (
                   <div className="absolute z-50 left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 text-center animate-in fade-in slide-in-from-top-2 duration-200">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Không tìm thấy đơn vị phù hợp với "{form.don_vi}"</p>
@@ -814,22 +814,22 @@ export const LengthOfStayModule: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><User size={12} /> Tổng lượt ra viện</label>
-                  <input 
-                    type="number" 
-                    value={form.tong_luot_ra_vien || ''} 
-                    onChange={e => setForm({ ...form, tong_luot_ra_vien: Number(e.target.value) })} 
-                    className="w-full px-5 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-blue-500/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.tong_luot_ra_vien || ''}
+                    onChange={e => setForm({ ...form, tong_luot_ra_vien: Number(e.target.value) })}
+                    className="w-full px-5 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-blue-500/20 shadow-sm"
+                    required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1.5"><Clock size={12} /> Tổng số ngày điều trị</label>
-                  <input 
-                    type="number" 
-                    value={form.tong_ngay_dieu_tri || ''} 
-                    onChange={e => setForm({ ...form, tong_ngay_dieu_tri: Number(e.target.value) })} 
-                    className="w-full px-5 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-blue-500/20 shadow-sm" 
-                    required 
+                  <input
+                    type="number"
+                    value={form.tong_ngay_dieu_tri || ''}
+                    onChange={e => setForm({ ...form, tong_ngay_dieu_tri: Number(e.target.value) })}
+                    className="w-full px-5 py-3 bg-white border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-blue-500/20 shadow-sm"
+                    required
                   />
                 </div>
               </div>
@@ -837,34 +837,34 @@ export const LengthOfStayModule: React.FC = () => {
               <div className="space-y-1.5 bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-center justify-between">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-blue-600 flex items-center gap-1.5"><Target size={12} /> Mục tiêu (ngày) (Đồng bộ cấu hình)</label>
-                  <input 
-                    type="number" 
-                    step="0.01" 
-                    value={form.muc_tieu || ''} 
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={form.muc_tieu || ''}
                     readOnly
                     className="w-32 px-4 py-2 bg-slate-100 border-none rounded-xl text-sm font-black text-blue-700 opacity-70 cursor-not-allowed shadow-sm focus:outline-none"
-                    required 
+                    required
                   />
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] font-black uppercase text-blue-400 tracking-widest">Trung bình tự tính</p>
                   <p className="text-2xl font-black text-blue-700">
-                    {form.tong_luot_ra_vien > 0 ? (form.tong_ngay_dieu_tri / form.tong_luot_ra_vien).toFixed(2) : '0.00'} 
+                    {form.tong_luot_ra_vien > 0 ? (form.tong_ngay_dieu_tri / form.tong_luot_ra_vien).toFixed(2) : '0.00'}
                     <span className="text-xs ml-1">ngày</span>
                   </p>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex gap-4">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-4 text-slate-400 font-black uppercase text-[11px] tracking-widest hover:bg-slate-50 rounded-2xl transition-all"
                 >
                   Hủy bỏ
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="flex-[2] py-4 bg-blue-600 text-white font-black uppercase text-[11px] tracking-widest rounded-3xl shadow-lg shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={18} /> {editingRecord ? 'Cập nhật' : 'Lưu báo cáo'}
@@ -888,14 +888,14 @@ export const LengthOfStayModule: React.FC = () => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Xác định lý do nằm viện kéo dài</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowPtModal(false)}
                 className="p-3 text-slate-400 hover:bg-white hover:text-red-500 rounded-2xl transition-all shadow-sm"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSavePt} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
@@ -935,7 +935,7 @@ export const LengthOfStayModule: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-[#009900] ml-1 flex items-center gap-1.5"><CheckCircle2 size={12} /> Đề xuất giải pháp</label>
+                <label className="text-[10px] font-black uppercase text-[#059669] ml-1 flex items-center gap-1.5"><CheckCircle2 size={12} /> Đề xuất giải pháp</label>
                 <textarea value={ptForm.giai_phap_de_xuat || ''} onChange={e => setPtForm({ ...ptForm, giai_phap_de_xuat: e.target.value })} className="w-full px-5 py-3 bg-green-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500/20 min-h-[100px]" placeholder="VD: Hội chẩn liên khoa, thay đổi phác đồ..." />
               </div>
 
