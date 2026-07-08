@@ -399,12 +399,15 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
       setCurrentIndex(currentIndex + 1);
     } else {
       setShowFinalTest(true);
-      setTestStartTime(new Date().toISOString());
-      if (userId && selectedCourse?.id) {
-        startTestAttempt({ courseId: selectedCourse.id, userId }).then(data => {
-          if (data) setTestAttemptId(data.id);
-        }).catch(console.error);
-      }
+    }
+  };
+
+  const handleStartTest = () => {
+    setTestStartTime(new Date().toISOString());
+    if (userId && selectedCourse?.id) {
+      startTestAttempt({ courseId: selectedCourse.id, userId }).then(data => {
+        if (data) setTestAttemptId(data.id);
+      }).catch(console.error);
     }
   };
 
@@ -547,28 +550,42 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
         <p className="text-sm text-slate-500 mt-2">Hoàn thành bài kiểm tra để kết thúc khóa học.</p>
         <div className="mt-3 bg-amber-50 px-4 py-3 border border-amber-200 rounded-lg flex items-center gap-3 text-amber-800 text-sm">
           <AlertTriangle size={18} className="shrink-0" />
-          <p><b>Lưu ý:</b> Kết quả kiểm tra đạt <b>80%</b> trở lên mới được tính là Hoàn thành bài kiểm tra.</p>
+          <p><b>Lưu ý:</b> Kết quả kiểm tra đạt <b>80%</b> trở lên mới được tính là Hoàn thành bài kiểm tra. Thời gian tính từ lúc bạn bấm bắt đầu.</p>
         </div>
       </div>
-      <div className="space-y-4">
-        {finalQuestions.map((question, qIndex) => (
-          <div key={question.id} className="rounded-xl border p-5 bg-slate-50">
-            <b className="block mb-3 text-slate-900">Câu {qIndex + 1}. {question.question_text}</b>
-            <div className="space-y-2">
-              {parseOptions(question.options).map((option, optIndex) => (
-                <label key={optIndex} className={`flex gap-3 rounded-xl border p-3 cursor-pointer transition-colors bg-white ${finalAnswers[question.id] === optIndex ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'hover:border-slate-300'}`}>
-                  <input type="radio" className="mt-0.5 accent-emerald-600" checked={finalAnswers[question.id] === optIndex} onChange={() => setFinalAnswers({ ...finalAnswers, [question.id]: optIndex })} />
-                  <span className="text-sm font-medium">{option}</span>
-                </label>
-              ))}
-            </div>
+      
+      {!testStartTime ? (
+        <div className="py-12 text-center rounded-xl border border-dashed border-emerald-200 bg-emerald-50/30">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+            <Clock3 size={32} />
           </div>
-        ))}
-        {!finalQuestions.length && <p className="text-slate-500 py-4">Chưa có câu hỏi.</p>}
-        {finalQuestions.length > 0 && <button disabled={Object.keys(finalAnswers).length !== finalQuestions.length} onClick={submitTest} className="w-full rounded-xl bg-slate-900 py-3.5 font-bold text-white shadow-sm disabled:opacity-50 transition-colors hover:bg-slate-800">
-          Nộp bài kiểm tra
-        </button>}
-      </div>
+          <h4 className="mb-2 text-lg font-bold text-slate-900">Sẵn sàng làm bài?</h4>
+          <p className="mb-6 text-sm text-slate-500">Bài kiểm tra có {finalQuestions.length} câu hỏi. Hãy chắc chắn bạn đã ôn tập kỹ.</p>
+          <button onClick={handleStartTest} className="rounded-xl bg-emerald-600 px-8 py-3.5 font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors">
+            Bắt đầu làm bài
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {finalQuestions.map((question, qIndex) => (
+            <div key={question.id} className="rounded-xl border p-5 bg-slate-50">
+              <b className="block mb-3 text-slate-900">Câu {qIndex + 1}. {question.question_text}</b>
+              <div className="space-y-2">
+                {parseOptions(question.options).map((option, optIndex) => (
+                  <label key={optIndex} className={`flex gap-3 rounded-xl border p-3 cursor-pointer transition-colors bg-white ${finalAnswers[question.id] === optIndex ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'hover:border-slate-300'}`}>
+                    <input type="radio" className="mt-0.5 accent-emerald-600" checked={finalAnswers[question.id] === optIndex} onChange={() => setFinalAnswers({ ...finalAnswers, [question.id]: optIndex })} />
+                    <span className="text-sm font-medium">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          {!finalQuestions.length && <p className="text-slate-500 py-4">Chưa có câu hỏi.</p>}
+          {finalQuestions.length > 0 && <button disabled={Object.keys(finalAnswers).length !== finalQuestions.length} onClick={submitTest} className="w-full rounded-xl bg-slate-900 py-3.5 font-bold text-white shadow-sm disabled:opacity-50 transition-colors hover:bg-slate-800">
+            Nộp bài kiểm tra
+          </button>}
+        </div>
+      )}
     </div>
   );
 

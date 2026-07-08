@@ -472,13 +472,45 @@ export async function startTestAttempt({ courseId, userId }) {
   return data;
 }
 
+export function evaluateCorrectAnswerIndex(question) {
+  if (question.correct_answer_index != null && Number.isInteger(Number(question.correct_answer_index))) {
+    return Number(question.correct_answer_index);
+  }
+
+  const options = [question.option_a, question.option_b, question.option_c, question.option_d].filter(Boolean);
+  const expectedText = String(question.correct_answer || '').trim();
+  
+  if (!expectedText) return 0;
+
+  let expectedIndex = options.findIndex(opt => String(opt).trim() === expectedText);
+  
+  if (expectedIndex < 0) {
+    if (/^\d+$/.test(expectedText)) {
+      expectedIndex = parseInt(expectedText, 10);
+    } else if (expectedText.length === 1 && expectedText.toUpperCase() >= 'A' && expectedText.toUpperCase() <= 'D') {
+      expectedIndex = expectedText.toUpperCase().charCodeAt(0) - 65;
+    } else {
+      expectedIndex = options.findIndex(opt => {
+        const textWithoutPrefix = String(opt).replace(/^[A-D][\.\:\)]\s*/i, '').trim();
+        return textWithoutPrefix === expectedText || textWithoutPrefix.includes(expectedText) || expectedText.includes(textWithoutPrefix);
+      });
+    }
+  }
+  
+  if (expectedIndex >= 0 && expectedIndex < options.length) {
+    return expectedIndex;
+  }
+  
+  return 0;
+}
+
 export async function submitFinalTest({ attemptId, courseId, userId, questions, answers, passingScore = 80, startedAt }) {
   const actualStartedAt = startedAt ? new Date(startedAt) : new Date(Date.now() - 1000);
   const submittedAt = new Date();
   const durationSeconds = Math.max(1, Math.round((submittedAt.getTime() - actualStartedAt.getTime()) / 1000));
   
   const correctCount = questions.reduce((sum, question) => {
-    const expected = Number(question.correct_answer_index != null ? question.correct_answer_index : (question.correct_answer != null ? question.correct_answer : -1));
+    const expected = evaluateCorrectAnswerIndex(question);
     return sum + (Number(answers[question.id]) === expected ? 1 : 0);
   }, 0);
   const totalQuestions = questions.length;
