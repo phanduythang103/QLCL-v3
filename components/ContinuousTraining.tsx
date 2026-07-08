@@ -21,9 +21,11 @@ import {
   uploadTrainingMaterial,
   getLearnerCourseStats,
   startLesson,
-  startTestAttempt
+  startTestAttempt,
+  getTestAttemptDetails
 } from '../services/trainingService';
 import { ContinuousTrainingHistory } from './ContinuousTrainingHistory';
+import { AttemptReview } from './TrainingHistoryDetails';
 
 type AnyRow = Record<string, any>;
 type ViewMode = 'LEARNER' | 'ADMIN';
@@ -345,6 +347,8 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
   const [testStartTime, setTestStartTime] = useState<string | null>(null);
   const [testAttemptId, setTestAttemptId] = useState<string | null>(null);
   const [result, setResult] = useState<AnyRow | null>(null);
+  const [showResultPopup, setShowResultPopup] = useState(false);
+  const [reviewData, setReviewData] = useState<any | null>(null);
   const [courseStats, setCourseStats] = useState<Record<string, any>>({});
   const [tabMode, setTabMode] = useState<'VIDEO' | 'CONTENT'>('VIDEO');
   const [courseFilter, setCourseFilter] = useState<'ALL' | 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED'>('ALL');
@@ -360,7 +364,7 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
     const [lessonData, materialData, progressData, finalData] = await Promise.all([
       getLessonsByCourse(selectedCourse.id), getMaterialsByCourse(selectedCourse.id), userId ? getLearningProgress(selectedCourse.id, userId) : Promise.resolve([]), getFinalTestQuestions(selectedCourse.id),
     ]);
-    setLessons(lessonData || []); setMaterials(materialData || []); setProgress(progressData || []); setFinalQuestions(finalData || []); setCurrentIndex(0); setShowFinalTest(false); setTestStartTime(null); setTestAttemptId(null); setFinalAnswers({}); setResult(null);
+    setLessons(lessonData || []); setMaterials(materialData || []); setProgress(progressData || []); setFinalQuestions(finalData || []); setCurrentIndex(0); setShowFinalTest(false); setTestStartTime(null); setTestAttemptId(null); setFinalAnswers({}); setResult(null); setShowResultPopup(false); setReviewData(null);
   };
 
   useEffect(() => { loadCourse().catch(console.error); }, [selectedCourse?.id, userId]);
@@ -408,6 +412,33 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
     if (!selectedCourse?.id || !userId) return;
     const attempt = await submitFinalTest({ attemptId: testAttemptId, courseId: selectedCourse.id, userId, questions: finalQuestions, answers: finalAnswers, passingScore: selectedCourse.passing_score || 80, startedAt: testStartTime });
     setResult(attempt);
+    setShowFinalTest(false);
+    setShowResultPopup(true);
+    
+    // Refresh course stats so the UI updates
+    const nextStats = await getLearnerCourseStats([selectedCourse.id], userId);
+    setCourseStats(prev => ({ ...prev, ...nextStats }));
+  };
+
+  const handleReview = async () => {
+    if (!result) return;
+    try {
+      const details = await getTestAttemptDetails(result.id);
+      setReviewData({
+        ...result,
+        chi_tiet_bai_lam: details,
+        diem: result.score,
+        dat: result.passed,
+        so_cau_dung: result.correct_count,
+        tong_so_cau: result.total_questions,
+        thoi_gian_giay: result.duration_seconds,
+        ten_bai_kiem_tra: selectedCourse?.title || 'Bài kiểm tra cuối khóa'
+      });
+      setShowResultPopup(false);
+    } catch (err) {
+      console.error(err);
+      alert('Không thể tải chi tiết bài làm.');
+    }
   };
 
   if (!selectedCourse) {
@@ -538,13 +569,6 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
           Nộp bài kiểm tra
         </button>}
       </div>
-      {result && <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900 flex items-start gap-4">
-        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600 shrink-0"><CheckCircle2 size={24} /></div>
-        <div>
-          <b className="text-lg block mb-1">Kết quả: {result.score} điểm</b>
-          <p className="text-sm">Trả lời đúng {result.correct_count}/{result.total_questions} câu. Đánh giá: <b className="font-black">{result.passed ? 'ĐẠT' : 'CHƯA ĐẠT'}</b></p>
-        </div>
-      </div>}
     </div>
   );
 
@@ -631,6 +655,30 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
         )}
       </main>
     </div>
+
+    {showResultPopup && result && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+            <CheckCircle2 size={40} />
+          </div>
+          <h2 className="mb-2 text-2xl font-black text-slate-900">Nộp bài thành công!</h2>
+          <div className="mb-6 rounded-xl bg-slate-50 p-4 text-left border border-slate-200">
+            <p className="flex justify-between py-1.5 text-sm"><span className="text-slate-500 font-medium">Điểm số:</span><b className="text-slate-900">{result.score}</b></p>
+            <p className="flex justify-between py-1.5 text-sm"><span className="text-slate-500 font-medium">Số câu đúng:</span><b className="text-slate-900">{result.correct_count} / {result.total_questions}</b></p>
+            <p className="flex justify-between py-1.5 text-sm mt-2 border-t border-slate-200 pt-3"><span className="text-slate-500 font-medium">Kết quả:</span><b className={result.passed ? 'text-emerald-700 font-black' : 'text-red-700 font-black'}>{result.passed ? 'ĐẠT' : 'CHƯA ĐẠT'}</b></p>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setShowResultPopup(false)} className="flex-1 rounded-xl border border-slate-200 bg-white py-3 font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">Đóng</button>
+            <button onClick={handleReview} className="flex-1 rounded-xl bg-emerald-600 py-3 font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors">Xem lại bài</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {reviewData && (
+      <AttemptReview attempt={reviewData} onClose={() => setReviewData(null)} />
+    )}
   </div>;
 }
 
