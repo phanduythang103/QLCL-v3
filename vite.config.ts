@@ -15,10 +15,10 @@ export default defineConfig(({ mode }) => {
     base: '/',
     plugins: [
       react(),
-      legacy({
-        targets: ['defaults', 'Android >= 5', 'iOS >= 9'],
-        renderLegacyChunks: true,
-      }),
+      // legacy({
+      //   targets: ['defaults', 'Android >= 5', 'iOS >= 9'],
+      //   renderLegacyChunks: true,
+      // }),
     ],
     define: {
       'process.env.API_KEY': JSON.stringify(geminiKey),
