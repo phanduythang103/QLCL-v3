@@ -105,7 +105,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
             />
           </div>
           {activeTab !== 'DANH_SACH' && (
-            <button onClick={() => { setEditingItem(null); setIsReadOnly(false); setActiveTab('DANH_SACH'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-2xl bg-[#059669] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-green-200 transition-all hover:bg-[#0d6e39] active:scale-95">
+            <button onClick={() => { setEditingItem(null); setIsReadOnly(false); setActiveTab('DANH_SACH'); setViewMode('FORM'); }} className="w-full lg:w-auto flex items-center justify-center gap-2 rounded-2xl bg-[#059669] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-green-200 transition-all hover:bg-[#0d6e39] active:scale-95">
               <Plus size={18} /> Thêm giám sát mới
             </button>
           )}

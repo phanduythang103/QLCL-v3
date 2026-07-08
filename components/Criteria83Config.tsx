@@ -1019,7 +1019,7 @@ const Criteria83Config: React.FC = () => {
                         <div className="flex-1 overflow-y-auto px-5 py-5 min-h-0 sm:px-8">
                             <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
                                 <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Chọn đơn vị sẽ thêm vào Phụ trách</h4>
-                                <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3">
+                                <div className="flex flex-wrap lg:flex-nowrap items-center gap-3">
                                     {copyTargetUnits.length > 0 && (
                                         <span className="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">{copyTargetUnits.length} đã chọn</span>
                                     )}

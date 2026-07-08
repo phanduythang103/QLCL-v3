@@ -580,7 +580,7 @@ export const DutyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
            </div>
 
            {viewMode === 'LIST' && (
-             <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-3">
+             <div className="flex flex-wrap lg:flex-nowrap items-center gap-3">
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
                <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-[#059669]">
                  <option value="">Tất cả khoa</option>
@@ -588,7 +588,7 @@ export const DutyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                </select>
 
                {activeTab !== 'LIST' && (
-                 <button onClick={() => { setEditingItem(null); setActiveTab('LIST'); setViewMode('FORM'); }} className="flex items-center justify-center gap-2 rounded-xl bg-[#059669] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[#008800] active:scale-95">
+                 <button onClick={() => { setEditingItem(null); setActiveTab('LIST'); setViewMode('FORM'); }} className="w-full lg:w-auto flex items-center justify-center gap-2 rounded-xl bg-[#059669] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[#008800] active:scale-95">
                    <Plus size={16} /> Thêm giám sát mới
                  </button>
                )}             </div>
