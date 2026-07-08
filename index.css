@@ -2219,3 +2219,17 @@ main form textarea:focus {
     box-shadow: none !important;
   }
 }
+
+/* Prevent header text from wrapping when tabs are on the same line */
+@media (min-width: 1280px) {
+  .flex-col.xl\:flex-row > div:first-child h2,
+  .flex-col.xl\:flex-row > div:first-child p,
+  .ktcm-header > div:first-child h2,
+  .ktcm-header > div:first-child p,
+  .pt-loai2-header > div:first-child h2,
+  .pt-loai2-header > div:first-child p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

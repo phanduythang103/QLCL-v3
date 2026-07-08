@@ -485,7 +485,7 @@ export const BedUsageModule: React.FC = () => {
 
   return (
     <div className="min-h-full flex flex-col gap-6">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm shrink-0 border border-indigo-200">

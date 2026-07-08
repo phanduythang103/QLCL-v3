@@ -540,7 +540,7 @@ export const FacilitySecurityModule: React.FC = () => {
   return (
     <div className="min-h-full flex flex-col gap-6">
       {/* Header & Tabs */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 shadow-sm animate-pulse-slow shrink-0">
              <AlertTriangle size={24} />

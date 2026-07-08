@@ -89,7 +89,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   return (
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
           <div className="indicator-subtab-list indicator-subtab-list-2">
             <TabButton
               active={activeTab === 'OVERVIEW'}

@@ -48,7 +48,7 @@ export const KtcmModule: React.FC = () => {
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       {/* Module Header & Tabs */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="ktcm-header flex flex-col p-4 md:px-6 gap-4">
+        <div className="ktcm-header flex flex-col xl:flex-row xl:items-center xl:justify-between p-4 md:px-6 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
               <Activity size={24} />
