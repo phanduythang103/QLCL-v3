@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Award, BookOpen, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Eye, FileText, FileUp, GraduationCap, Play, Plus, RefreshCw, Rocket, Upload, Video, Clock3 } from 'lucide-react';
+import { Award, BookOpen, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Eye, FileText, FileUp, GraduationCap, Play, Plus, RefreshCw, Rocket, Upload, Video, Clock3, AlertTriangle } from 'lucide-react';
 import { TrainingCenter } from './DocsModule';
 import { useAuth } from '../contexts/AuthContext';
 import {
