@@ -93,30 +93,15 @@ export const SettingsModule: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:h-[calc(100vh-140px)]">
-      {/* Mobile: Horizontal Menu | Desktop: Vertical Sidebar */}
+    <div className="flex flex-col md:flex-row gap-6 md:h-[calc(100vh-140px)]">
+      {/* Mobile & Desktop: Vertical Sidebar (stacked on very small screens) */}
       {!isRestricted && (
-        <div className="w-full lg:w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 overflow-hidden flex flex-col">
-          <div className="hidden lg:block p-4 border-b border-slate-100 bg-slate-50">
+        <div className="w-full md:w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-slate-100 bg-slate-50">
             <h3 className="text-section font-black text-black uppercase tracking-tight">Danh mục cấu hình</h3>
           </div>
 
-          <div className="function-icon-grid p-2 lg:hidden">
-            {menuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id as SettingTab)}
-                className="function-icon-tile"
-              >
-                <span className={`function-icon-box ${item.bgClass} ${item.iconClass}`}>
-                  {React.cloneElement(item.icon, { size: 28 })}
-                </span>
-                <span className="function-icon-label">{item.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="hidden overflow-y-auto p-2 lg:flex lg:flex-col lg:gap-1 scrollbar-none">
+          <div className="overflow-y-auto p-2 flex flex-col gap-1 custom-scrollbar">
             {menuItems.map((item) => (
               <button
                 key={item.id}
@@ -132,7 +117,7 @@ export const SettingsModule: React.FC = () => {
                   </span>
                   <span className="truncate">{item.label}</span>
                 </div>
-                <div className="hidden lg:block">
+                <div className="hidden md:block">
                   {activeTab === item.id && <ChevronRight size={16} />}
                 </div>
               </button>
