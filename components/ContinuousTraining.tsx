@@ -377,13 +377,17 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
 
   const completedIds = new Set(progress.filter(item => item.is_completed).map(item => item.lesson_id));
   const completion = lessons.length ? Math.round((completedIds.size / lessons.length) * 100) : 0;
-  const originalMaterial = materials[0];
+  const originalMaterial = materials.find(m => !(String(m.file_type || '').toLowerCase().includes('json') || String(m.file_name || '').toLowerCase().endsWith('.json') || String(m.title || '').toLowerCase().includes('json')));
+  const isOriginalOffice = originalMaterial ? ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(String(originalMaterial.file_type || '').toLowerCase()) : false;
+  const originalViewUrl = originalMaterial && isOriginalOffice && originalMaterial.file_url ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(originalMaterial.file_url)}` : originalMaterial?.file_url;
   const quickQuestion = quickQuestions[0];
   const quickOptions = parseOptions(quickQuestion?.options);
 
   const completeSection = async () => {
     if (!currentLesson || !userId) return;
-    const expected = Number(quickQuestion?.correct_answer_index ?? quickQuestion?.correct_answer ?? -1);
+    const expectedIndex = quickQuestion?.correct_answer_index;
+    const expectedText = quickQuestion?.correct_answer;
+    const expected = Number(expectedIndex != null ? expectedIndex : (expectedText != null ? expectedText : -1));
     await markLessonComplete({ courseId: selectedCourse?.id, lessonId: currentLesson.id, userId, quickAnswer: quickAnswer == null ? null : String(quickAnswer), quickCorrect: quickAnswer == null || expected < 0 ? null : quickAnswer === expected });
     const nextProgress = await getLearningProgress(selectedCourse?.id, userId);
     setProgress(nextProgress || []);
@@ -561,7 +565,7 @@ function LearnerTraining({ courses, selectedCourse, onSelect, userId }: { course
             <span className="font-medium text-emerald-700">{completion}%</span>
           </div>
         </div>
-        {originalMaterial?.file_url && <a href={originalMaterial.file_url} target="_blank" rel="noreferrer" className="shrink-0 flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-slate-800"><FileText size={16} /> Xem quy trình gốc</a>}
+        {originalViewUrl && <a href={originalViewUrl} target="_blank" rel="noreferrer" className="shrink-0 flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-slate-800"><FileText size={16} /> Xem quy trình gốc</a>}
       </div>
     </section>
 
