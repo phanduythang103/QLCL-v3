@@ -562,7 +562,7 @@ const IndicatorOverviewModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* ── Mobile Navigation Grid ── */}
-      <div className="bg-white p-4 rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-50 mb-8">
+      <div className="lg:hidden bg-white p-4 rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-50 mb-8">
         <div className="function-icon-grid">
           {indicatorMenuItems.map((item) => (
             <button
