@@ -217,7 +217,7 @@ const IndicatorsNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
 
   const handleSubNavClick = (cat: IndicatorCategory) => {
     onSelectModule();
-    setCategory(null);
+    setCategory(cat);
   }
 
   const { canView } = usePermissions();
