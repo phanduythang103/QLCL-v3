@@ -23,6 +23,13 @@ interface ScykFormTT43Props {
   editingItem?: any;
 }
 
+const toDateTimeLocal = (value?: string) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(0, 16);
+  const offsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+};
 const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingItem }) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +49,9 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
     // Thông tin người bệnh
     ho_ten_nb: editingItem?.ho_ten_nb || '',
+    ma_bn: editingItem?.ma_bn || '',
     so_benh_an: editingItem?.so_benh_an || '',
+    thoi_gian_vao_vien: toDateTimeLocal(editingItem?.thoi_gian_vao_vien),
     ngay_sinh: editingItem?.ngay_sinh || '',
     gioi: editingItem?.gioi || 'Nam',
 
@@ -352,6 +361,17 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mã BN</label>
+                <input
+                  type="text"
+                  name="ma_bn"
+                  value={formData.ma_bn || ''}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
+                  placeholder="Mã người bệnh"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Số bệnh án</label>
                 <input
                   type="text"
@@ -382,6 +402,16 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
                   type="date"
                   name="ngay_sinh"
                   value={formData.ngay_sinh}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Vào viện</label>
+                <input
+                  type="datetime-local"
+                  name="thoi_gian_vao_vien"
+                  value={formData.thoi_gian_vao_vien || ''}
                   onChange={handleChange}
                   className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
                 />

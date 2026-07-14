@@ -1,1681 +1,497 @@
-import React, { useState, useEffect } from 'react';
-import {
-    Plus, Search, Edit2, Trash2, Eye, ArrowLeft, Save, X,
-    BrainCircuit, FileText, User, ClipboardList, CheckCircle2,
-    Calendar, Clock, LayoutGrid, ChevronRight, AlertCircle, Loader2,
-    CheckCircle, ShieldCheck, AlertTriangle, Printer, Download
-} from 'lucide-react';
-import {
-    fetchTimHieuPhanTichScyk,
-    addTimHieuPhanTichScyk,
-    updateTimHieuPhanTichScyk,
-    deleteTimHieuPhanTichScyk
-} from '../readTimHieuPhanTichScyk';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, ClipboardList, Download, Edit2, Eye, FileText, Loader2, Plus, Save, Search, Trash2, X } from 'lucide-react';
 import { fetchBaoCaoScyk } from '../readBaoCaoScyk';
-import { fetchBcScnyknt } from '../readBcScnyknt';
+import type { BaoCaoScyk } from '../readBaoCaoScyk';
+import { fetchDmDonVi, type DmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
-import { analyzeWithAi } from '../aiClient';
-import { fetchBienBanXacMinhByScykId, BienBanXacMinh } from '../readBienBanXacMinh';
-import { LinkedIncident, incidentMatchesUserDepartment, mergeLinkedIncidents } from '../utils/incidentLinks';
+import { incidentMatchesUserDepartment } from '../utils/incidentLinks';
+import {
+  addRcaAnalysis, deleteRcaAnalysis, fetchRcaAnalyses, fetchRcaPrefillSuggestion,
+  fetchRcaTimeline, fetchRcaWithTimeline, replaceRcaTimeline, updateRcaAnalysis,
+  type RcaAnalysisRecord, type RcaAnalysisWithTimeline, type RcaTimelineRow,
+} from '../readRcaPhanTichScyk';
 
-export interface AnalysisRecord {
-    id?: string;
-    scyk_id?: string;
-    a_danh_cho_nv_chuyen_trach?: string;
-    i_mo_ta_chi_tiet?: string;
-    ii_phan_loai_theo_nhom?: string;
-    iii_dieu_tri_da_thuc_hien?: string;
-    iiii_phan_loai_theo_nhom_nguyen_nhan?: string;
-    iiiii_han_dong_khac_phuc?: string;
-    iiiiii_de_xuat_khuyen_cao?: string;
-    b_danh_cho_cap_quan_ly?: string;
-    chuc_danh?: string;
-    ngay?: string;
-    gio?: string;
-    created_at?: string;
-}
+const statuses = [
+  { value: 'DRAFT', label: 'Bản nháp' },
+  { value: 'IN_REVIEW', label: 'Đang rà soát' },
+  { value: 'APPROVED', label: 'Đã duyệt' },
+  { value: 'CLOSED', label: 'Đã đóng' },
+] as const;
 
-// Data constants for selections based on template images
-const INCIDENT_TYPES = [
-    {
-        id: 1, label: 'Thực hiện quy trình kỹ thuật, thủ thuật chuyên môn',
-        options: ['Không có sự đồng ý của NB/Người nhà', 'Không thực hiện khi có chỉ định', 'Thực hiện sai người bệnh', 'Thực hiện sai thủ thuật/quy trình', 'Thực hiện sai vị trí phẫu thuật', 'Bỏ sót dụng cụ, vật tư tiêu hao', 'Tử vong thai kỳ', 'Tử vong khi sinh', 'Tử vong sơ sinh']
-    },
-    {
-        id: 2, label: 'Nhiễm khuẩn bệnh viện',
-        options: ['Nhiễm khuẩn huyết', 'Viêm phổi', 'Nhiễm khuẩn vết mổ', 'Nhiễm khuẩn tiết niệu', 'Các loại nhiễm khuẩn khác']
-    },
-    {
-        id: 3, label: 'Thuốc và dịch truyền',
-        options: ['Cấp phát sai thuốc/dịch truyền', 'Thiếu thuốc', 'Sai liều/hàm lượng', 'Sai thời gian', 'Sai y lệnh', 'Bỏ sót thuốc/liều thuốc', 'Sai thuốc', 'Sai người bệnh', 'Sai đường dùng']
-    },
-    {
-        id: 4, label: 'Máu và các chế phẩm máu',
-        options: ['Phản ứng phụ/tai biến khi truyền máu', 'Truyền nhầm máu, chế phẩm máu', 'Truyền sai liều, sai thời điểm']
-    },
-    {
-        id: 5, label: 'Thiết bị y tế',
-        options: ['Thiếu thông tin hướng dẫn sử dụng', 'Lỗi thiết bị', 'Thiết bị thiếu hoặc không phù hợp']
-    },
-    {
-        id: 6, label: 'Hành vi',
-        options: ['Khuynh hướng tự gây hại/tự tử', 'Trốn viện', 'Quấy rối tình dục', 'Xâm hại cơ thể', 'Có hành động tự tử']
-    },
-    { id: 7, label: 'Tai nạn đối với người bệnh', options: ['Té ngã'] },
-    { id: 8, label: 'Hạ tầng cơ sở', options: ['Bị hư hỏng, bị lỗi', 'Thiếu hoặc không phù hợp'] },
-    {
-        id: 9, label: 'Quản lý nguồn lực, tổ chức',
-        options: ['Tính phù hợp, đầy đủ của dịch vụ', 'Tính phù hợp, đầy đủ của nguồn lực', 'Tính phù hợp, đầy đủ của chính sách, quy định']
-    },
-    {
-        id: 10, label: 'Hồ sơ, tài liệu, thủ tục hành chính',
-        options: ['Tài liệu mất hoặc thiếu', 'Tài liệu không rõ ràng', 'Thời gian chờ đợi kéo dài', 'Cung cấp hồ sơ/tài liệu chậm', 'Nhầm hồ sơ tài liệu', 'Thủ tục hành chính phức tạp']
-    },
-    { id: 11, label: 'Khác', options: ['Các sự cố không đề cập trong các mục từ 1 đến 10'] }
+const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100';
+const textareaClass = `${inputClass} min-h-[92px] resize-y leading-relaxed`;
+
+const emptyTimeline = (thuTu: number): RcaTimelineRow => ({ thu_tu: thuTu, thoi_diem: '', vi_tri: '', lam_sang: '', can_lam_sang_xu_tri: '', la_thoi_diem_su_co: false });
+const today = () => new Date().toISOString().slice(0, 10);
+const statusLabel = (value?: string) => statuses.find(s => s.value === value)?.label || 'Bản nháp';
+const fmt = (value?: string) => value ? new Date(value).toLocaleDateString('vi-VN') : '';
+const toDateTimeLocal = (value?: string) => {
+  if (!value) return '';
+  const raw = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(raw)) return raw.slice(0, 16);
+  const localMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{1,2}):(\d{2})/);
+  if (localMatch) {
+    const [, year, month, day, hour, minute] = localMatch;
+    return `${year}-${month}-${day}T${hour.padStart(2, '0')}:${minute}`;
+  }
+  const viMatch = raw.match(/^(\d{1,2})[:hH](\d{2})(?:,|\s+ngày)?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (viMatch) {
+    const [, hour, minute, day, month, year] = viMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}`;
+  }
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return '';
+  const offsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+};
+const formatVietnamDateTime = (value?: string) => {
+  if (!value) return '';
+  const raw = String(value).trim();
+  const localMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{1,2}):(\d{2})/);
+  if (localMatch) {
+    const [, year, month, day, hour, minute] = localMatch;
+    return `${hour.padStart(2, '0')}:${minute}, ${day}/${month}/${year}`;
+  }
+  const viMatch = raw.match(/^(\d{1,2})[:hH](\d{2})(?:,|\s+ngày)?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (viMatch) {
+    const [, hour, minute, day, month, year] = viMatch;
+    return `${hour.padStart(2, '0')}:${minute}, ${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+  const timeIsoDateMatch = raw.match(/^(\d{1,2})[:hH](\d{2})(?:,|\s+ngày)?\s*(\d{4})-(\d{2})-(\d{2})/);
+  if (timeIsoDateMatch) {
+    const [, hour, minute, year, month, day] = timeIsoDateMatch;
+    return `${hour.padStart(2, '0')}:${minute}, ${day}/${month}/${year}`;
+  }
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  const parts = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour12: false,
+  }).formatToParts(date).reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== 'literal') acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return `${parts.hour}:${parts.minute}, ${parts.day}/${parts.month}/${parts.year}`;
+};
+const incidentDateTimeLocal = (source?: Pick<BaoCaoScyk, 'ngay_xay_ra_sc' | 'thoi_gian'> | Record<string, any>) => {
+  const rawDate = String(source?.ngay_xay_ra_sc || source?.ngay_xay_ra || source?.ngay || '').trim();
+  const rawTime = String(source?.thoi_gian || source?.gio_xay_ra || source?.gio || '').trim();
+  if (!rawDate || !rawTime) return '';
+  const dateMatch = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})/) || rawDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  const timeMatch = rawTime.match(/(\d{1,2})\s*[:hH]\s*(\d{2})/);
+  if (!dateMatch || !timeMatch) return '';
+  const datePart = dateMatch[3]?.length === 4
+    ? `${dateMatch[3]}-${dateMatch[2].padStart(2, '0')}-${dateMatch[1].padStart(2, '0')}`
+    : `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+  const hour = timeMatch[1].padStart(2, '0');
+  const minute = timeMatch[2].padStart(2, '0');
+  return `${datePart}T${hour}:${minute}`;
+};
+
+const incidentPatientLabel = (incident?: BaoCaoScyk, suggestion?: RcaAnalysisRecord) => {
+  const patientCode = incident?.ma_bn?.trim() || String(suggestion?.ma_nguoi_benh || '').split(' - ')[0].trim();
+  return patientCode;
+};
+const ageFromDob = (value?: string) => {
+  if (!value) return null;
+  const dob = new Date(value);
+  if (Number.isNaN(dob.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  if (now.getMonth() < dob.getMonth() || (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) age -= 1;
+  return age >= 0 ? age : null;
+};
+
+const initialForm: RcaAnalysisRecord = {
+  scyk_id: '', trang_thai: 'DRAFT', ngay_phan_tich: today(), nguoi_phan_tich: '', nhom_phan_tich: [],
+  ma_scyk: '', so_benh_an: '', ma_nguoi_benh: '', gioi: '', tuoi: null, thoi_gian_vao_vien: '',
+  khoa_xay_ra_su_co: '', vao_khoa_luc: '', khoa_tiep_nhan_sau: '', khoa_tiep_nhan_luc: '', thoi_diem_su_co: '', tinh_bao_cao: '',
+  tien_su_benh_su: '', chan_doan_ban_dau: '', dien_bien_su_co: '', xu_tri_su_co: '', dien_tien_sau_su_co: '',
+  loai_su_co: '', muc_do_ton_hai: '', phan_loai_nguy_co: '', kha_nang_phong_ngua: '',
+  phan_tich_chan_doan_tiep_nhan: '', phan_tich_theo_doi_truoc_su_co: '', phan_tich_cap_cuu_khi_su_co: '', phan_tich_hoi_suc_sau_su_co: '', ket_luan_phu_hop_xu_tri: '',
+  yeu_to_nguoi_benh: '', yeu_to_nhan_vien: '', yeu_to_moi_truong_thiet_bi: '', yeu_to_quy_trinh_nhiem_vu: '', yeu_to_to_chuc_quan_ly: '', nguyen_nhan_goc_re: '', van_de_phat_hien_them: '',
+  bai_hoc_kinh_nghiem: [], khuyen_nghi_he_thong: '', khuyen_nghi_cong_cu_quy_trinh: '', khuyen_nghi_phan_mem_cntt: '', khuyen_nghi_kiem_tra_giam_sat: '', xem_xet_trach_nhiem_hanh_chinh_hs: '', xem_xet_trach_nhiem_chuyen_mon_theo_doi: '',
+};
+
+const headerFields: Array<[keyof RcaAnalysisRecord, string, string?]> = [
+  ['ma_scyk', 'Mã sự cố'], ['ma_nguoi_benh', 'Người bệnh / mã NB'], ['so_benh_an', 'Số bệnh án'], ['gioi', 'Giới'], ['tuoi', 'Tuổi', 'number'], ['thoi_gian_vao_vien', 'Vào viện'],
+  ['khoa_xay_ra_su_co', 'Khoa xảy ra sự cố'], ['vao_khoa_luc', 'Vào khoa lúc'], ['khoa_tiep_nhan_sau', 'Khoa tiếp nhận sau'], ['khoa_tiep_nhan_luc', 'Khoa tiếp nhận lúc'], ['thoi_diem_su_co', 'Thời điểm sự cố'], ['tinh_bao_cao', 'Tính báo cáo'],
 ];
-
-const ROOT_CAUSE_GROUPS = [
-    {
-        label: '1. Nhân viên',
-        options: ['Nhận thức (kiến thức, hiểu biết, quan niệm)', 'Thực hành (kỹ năng không đúng quy định)', 'Thái độ, hành vi, cảm xúc', 'Giao tiếp', 'Tâm sinh lý, thể chất, bệnh lý', 'Các yếu tố xã hội']
-    },
-    {
-        label: '2. Người bệnh',
-        options: ['Nhận thức', 'Thực hành', 'Thái độ, hành vi', 'Giao tiếp', 'Tâm sinh lý, bệnh lý', 'Các yếu tố xã hội']
-    },
-    { label: '3. Môi trường làm việc', options: ['Cơ sở vật chất, hạ tầng', 'Khoảng cách quá xa', 'Độ an toàn, rủi ro môi trường', 'Nội quy, quy định đặc tính kỹ thuật'] },
-    { label: '4. Tổ chức/dịch vụ', options: ['Chính sách, quy trình', 'Tuân thủ quy trình chuẩn', 'Văn hoá tổ chức', 'Làm việc nhóm'] },
-    { label: '5. Yếu tố bên ngoài', options: ['Môi trường tự nhiên', 'Sản phẩm, công nghệ', 'Quy trình, hệ thống dịch vụ'] },
-    { label: '6. Khác', options: ['Các yếu tố không đề cập từ 1 đến 5'] }
-];
-
-const SEVERITY_PATIENT = [
-    { cat: '1. Chưa xảy ra (NC0)', levels: ['A'] },
-    { cat: '2. Tổn thương nhẹ (NC1)', levels: ['B', 'C', 'D'] },
-    { cat: '3. Tổn thương trung bình (NC2)', levels: ['E', 'F'] },
-    { cat: '4. Tổn thương nặng (NC3)', levels: ['G', 'H', 'I'] }
-];
-
-const SEVERITY_ORG = ['Tổn hại tài sản', 'Tăng nguồn lực phục vụ', 'Quan tâm của truyền thông', 'Khiếu nại của người bệnh', 'Tổn hại danh tiếng', 'Can thiệp của pháp luật', 'Khác'];
-
-const IncidentAnalysis: React.FC = () => {
-    const { user } = useAuth();
-    const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
-    const uDept = user?.department?.trim().toLowerCase() || '';
-    const [items, setItems] = useState<AnalysisRecord[]>([]);
-    const [incidents, setIncidents] = useState<LinkedIncident[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'VIEW'>('LIST');
-    const [editingItem, setEditingItem] = useState<AnalysisRecord | null>(null);
-    const [viewingItem, setViewingItem] = useState<AnalysisRecord | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [aiResult, setAiResult] = useState<string | null>(null);
-    const [showAiModal, setShowAiModal] = useState(false);
-    const [aiRole, setAiRole] = useState<'SPECIALIST' | 'MANAGEMENT' | null>(null);
-    const [currentVerification, setCurrentVerification] = useState<BienBanXacMinh | null>(null);
-
-    // Specialist Dashboard states
-    const [showSpecialistDashboard, setShowSpecialistDashboard] = useState(false);
-    const [activeAnalysisTab, setActiveAnalysisTab] = useState<'ishikawa' | 'whys'>('ishikawa');
-    const [structuredData, setStructuredData] = useState<any>(null);
-
-    // Management AI states
-    const [showMgmtDashboard, setShowMgmtDashboard] = useState(false);
-    const [mgmtStructuredData, setMgmtStructuredData] = useState<any>(null);
-
-    const initialForm: AnalysisRecord = {
-        scyk_id: '',
-        a_danh_cho_nv_chuyen_trach: '',
-        i_mo_ta_chi_tiet: '',
-        ii_phan_loai_theo_nhom: '',
-        iii_dieu_tri_da_thuc_hien: '',
-        iiii_phan_loai_theo_nhom_nguyen_nhan: '',
-        iiiii_han_dong_khac_phuc: '',
-        iiiiii_de_xuat_khuyen_cao: '',
-        b_danh_cho_cap_quan_ly: '',
-        chuc_danh: '',
-        ngay: new Date().toISOString().split('T')[0],
-        gio: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-    };
-
-    const [formData, setFormData] = useState<AnalysisRecord>(initialForm);
-
-    // Parsing management data from text for Section B
-    const [mgmtData, setMgmtData] = useState({
-        findings: '',
-        discussed: '',
-        consistent: '',
-        consistentDetails: '',
-        severityPatient: '',
-        severityOrg: [] as string[],
-        severityOrgOther: ''
-    });
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const [analysisData, incidentData, nonMedicalIncidentData] = await Promise.all([
-                fetchTimHieuPhanTichScyk(),
-                fetchBaoCaoScyk(),
-                fetchBcScnyknt()
-            ]);
-            setItems(analysisData || []);
-            setIncidents(mergeLinkedIncidents(incidentData || [], nonMedicalIncidentData || []));
-        } catch (error) {
-            console.error('Error loading data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSave = async () => {
-        if (!formData.scyk_id) {
-            alert('Vui lòng chọn sự cố y khoa liên kết');
-            return;
-        }
-        setIsSaving(true);
-
-        // Process mgmtData into b_danh_cho_cap_quan_ly string
-        const sevOrg = [...mgmtData.severityOrg];
-        if (mgmtData.severityOrgOther) sevOrg.push(`Khác: ${mgmtData.severityOrgOther}`);
-
-        const b_text = `Kết quả: ${mgmtData.findings}\nThảo luận khuyến cáo: ${mgmtData.discussed}\nPhù hợp khuyến cáo: ${mgmtData.consistent} (${mgmtData.consistentDetails})\nMức độ (NB): ${mgmtData.severityPatient}\nMức độ (Tổ chức): ${sevOrg.join(', ')}`;
-        const finalData = { ...formData, b_danh_cho_cap_quan_ly: b_text };
-
-        try {
-            if (editingItem?.id) {
-                await updateTimHieuPhanTichScyk(editingItem.id, finalData);
-            } else {
-                await addTimHieuPhanTichScyk(finalData);
-            }
-            loadData();
-            setViewMode('LIST');
-        } catch (error: any) {
-            alert('Lỗi lưu dữ liệu: ' + error.message);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Bạn có chắc muốn xóa bản phân tích này?')) {
-            try {
-                await deleteTimHieuPhanTichScyk(id);
-                loadData();
-            } catch (error: any) {
-                alert('Lỗi khi xóa: ' + error.message);
-            }
-        }
-    };
-
-    const filteredItems = items.filter(item => {
-        const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
-        const searchStr = (linkedInc?.so_bc_ma_scyk || '') + (item.a_danh_cho_nv_chuyen_trach || '');
-        const matchesSearch = searchStr.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        if (!linkedInc) return isAdmin && matchesSearch;
-        const matchesUnit = isAdmin || incidentMatchesUserDepartment(linkedInc, uDept);
-        return matchesSearch && matchesUnit;
-    });
-
-    const analyzedIncidentIds = new Set(items.map(item => item.scyk_id).filter(Boolean));
-    const selectableIncidents = incidents.filter(inc => {
-        const isCurrentEditingIncident = editingItem?.scyk_id === inc.id;
-        const isNotAnalyzed = !analyzedIncidentIds.has(inc.id);
-        const matchesDepartment = isAdmin || incidentMatchesUserDepartment(inc, uDept);
-        return matchesDepartment && (isNotAnalyzed || isCurrentEditingIncident);
-    });
-
-    const handleIncidentSelect = async (scyk_id: string) => {
-        setFormData(prev => ({ ...prev, scyk_id }));
-        if (!scyk_id) {
-            setCurrentVerification(null);
-            return;
-        }
-
-        const incident = incidents.find(inc => inc.id === scyk_id);
-        setLoading(true);
-        try {
-            const verification = await fetchBienBanXacMinhByScykId(scyk_id);
-            setCurrentVerification(verification);
-
-            // Populate initial fields from report and verification
-            let description = `1. Báo cáo ban đầu: ${incident?.mo_ta_su_co || 'N/A'}`;
-            if (verification) {
-                description += `\n\n2. Kết quả xác minh: ${verification.ket_qua_xac_minh || 'N/A'}`;
-            }
-
-            setFormData(prev => ({
-                ...prev,
-                i_mo_ta_chi_tiet: description,
-                iii_dieu_tri_da_thuc_hien: incident?.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '',
-                a_danh_cho_nv_chuyen_trach: incident?.ho_ten_nguoi_bc || user?.full_name || ''
-            }));
-        } catch (err) {
-            console.error('Error fetching verification:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const toggleSelection = (field: keyof AnalysisRecord, value: string) => {
-        const current = formData[field] || '';
-        const items = current.split('\n').filter(i => i.trim() !== '');
-        if (items.includes(value)) {
-            setFormData({ ...formData, [field]: items.filter(i => i !== value).join('\n') });
-        } else {
-            setFormData({ ...formData, [field]: [...items, value].join('\n') });
-        }
-    };
-
-    const handleAiAnalysis = async (role: 'SPECIALIST' | 'MANAGEMENT') => {
-        if (!formData.scyk_id) {
-            alert('Vui lòng chọn sự cố y khoa để phân tích');
-            return;
-        }
-
-        const incident = incidents.find(inc => inc.id === formData.scyk_id);
-        if (!incident) return;
-
-        setIsAnalyzing(true);
-        setAiRole(role);
-        try {
-            const prompt = role === 'SPECIALIST' 
-                ? `LỆNH: Phân tích RCA (5-Whys và Ishikawa) cho sự cố: [${incident.so_bc_ma_scyk}].
-DỮ LIỆU: ${incident.mo_ta_su_co}. ${currentVerification?.ket_qua_xac_minh || ''}.
-
-QUY TẮC PHÂN TÍCH 5-WHYS (BẮT BUỘC):
-1. Mỗi WHY phải gồm cặp { question, answer }.
-2. Câu hỏi của W(n) phải kế thừa trực tiếp từ nội dung câu trả lời của W(n-1).
-3. KHÔNG đổ lỗi cá nhân đơn thuần (như "do cẩu thả"). Phải tìm ra lỗ hổng hệ thống.
-
-QUY TẮC KẾT LUẬN & GIẢI PHÁP (BẮT BUỘC):
-1. Root Causes (Nguyên nhân gốc): Chia làm 3 nhóm: individual (Cá nhân), process (Quy trình), system (Hệ thống).
-2. Solutions (Giải pháp): Chia làm 3 giai đoạn: shortTerm (Ngắn hạn), mediumTerm (Trung hạn), longTerm (Dài hạn).
-
-YÊU CẦU TRẢ VỀ JSON:
-{
-  "man": "...", "method": "...", "machine": "...", "management": "...", "environment": "...",
-  "whys": [ {"question": "...", "answer": "..."} ],
-  "root": { "individual": "...", "process": "...", "system": "..." },
-  "solution": { "shortTerm": "...", "mediumTerm": "...", "longTerm": "..." },
-  "incidentTypes": ["..."],
-  "causeGroups": ["..."]
-}`
-                : `LỆNH: Đánh giá quản lý cho sự cố y khoa: [${incident.so_bc_ma_scyk}].
-DỮ LIỆU: ${incident.mo_ta_su_co}. ${currentVerification?.ket_qua_xac_minh || ''}.
-
-YÊU CẦU CẤP QUẢN LÝ (BẮT BUỘC):
-1. KHÔNG lặp lại mô tả sự cố đã có. 
-2. PHÂN TÍCH: Tập trung vào các lỗ hổng quản lý, sai sót hệ thống dẫn đến sự cố.
-3. ĐÁNH GIÁ MỨC ĐỘ TỔN THƯƠNG: 
-   - Trên người bệnh: Gợi ý mã (A, B, C, D, E, F, G, H, I) theo tiêu chuẩn TT43/2018/TT-BYT.
-   - Trên tổ chức: Gợi ý các hạng mục (Tổn hại tài sản, Quan tâm truyền thông, Khiếu nại, Danh tiếng, Pháp luật...).
-
-YÊU CẦU TRẢ VỀ JSON:
-{
-  "managementFindings": "Mô tả kết quả phát hiện cấp quản lý (sai lệch quy trình, lỗ hổng giám sát...)",
-  "severityPatient": "Mã chữ cái (VD: D)",
-  "severityOrg": ["Hạng mục 1", "Hạng mục 2"],
-  "recommendations": "Khuyến cáo hướng xử lý cho đơn vị",
-  "isConsistent": "Có/Không"
-}`;
-
-            const result = await analyzeWithAi(prompt, { 
-                moduleKey: role === 'SPECIALIST' ? 'RCA_SPECIALIST' : 'RCA_MANAGEMENT' 
-            });
-            
-            console.log('AI Result Raw:', result);
-            setAiResult(result);
-            
-            let data: any = null;
-            
-            // Helper to ensure we don't pass objects to React children
-            const ensureString = (val: any): string => {
-                if (!val) return '';
-                if (typeof val === 'string') return val;
-                if (typeof val === 'object') {
-                    // Try to find a logical string property
-                    return val.description || val.content || val.text || JSON.stringify(val);
-                }
-                return String(val);
-            };
-
-            let parsedJson: any = null;
-            // Attempt JSON parsing
-            try {
-                const cleanJson = result.replace(/```json/g, '').replace(/```/g, '').trim();
-                parsedJson = JSON.parse(cleanJson);
-                data = {
-                    ishikawa: {
-                        man: ensureString(parsedJson.man),
-                        method: ensureString(parsedJson.method),
-                        machine: ensureString(parsedJson.machine),
-                        management: ensureString(parsedJson.management),
-                        environment: ensureString(parsedJson.environment),
-                    },
-                    whys: Array.isArray(parsedJson.whys) ? parsedJson.whys.map((w: any) => ({
-                        question: ensureString(w.question || w.q),
-                        answer: ensureString(w.answer || w.a)
-                    })) : [],
-                    rootCause: {
-                        individual: ensureString(parsedJson.root?.individual || parsedJson.root_individual),
-                        process: ensureString(parsedJson.root?.process || parsedJson.root_process),
-                        system: ensureString(parsedJson.root?.system || parsedJson.root_system)
-                    },
-                    solution: {
-                        shortTerm: ensureString(parsedJson.solution?.shortTerm || parsedJson.sol_short),
-                        mediumTerm: ensureString(parsedJson.solution?.mediumTerm || parsedJson.sol_medium),
-                        longTerm: ensureString(parsedJson.solution?.longTerm || parsedJson.sol_long)
-                    },
-                    incidentTypes: Array.isArray(parsedJson.incidentTypes) ? parsedJson.incidentTypes.map((t: any) => ensureString(t)).join(', ') : ensureString(parsedJson.incidentTypes),
-                    causeGroups: Array.isArray(parsedJson.causeGroups) ? parsedJson.causeGroups.map((c: any) => ensureString(c)).join(', ') : ensureString(parsedJson.causeGroups)
-                };
-            } catch (jsonErr) {
-                console.warn('JSON Parse failed, falling back to Regex:', jsonErr);
-                const parse = (tag: string) => {
-                    const regex = new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, 'i');
-                    const match = result.match(regex);
-                    if (match && match[1].trim()) return match[1].trim();
-
-                    const fallbackRegex = new RegExp(`<${tag}>:?\\s*([\\s\\S]*?)(?=<|$)`, 'i');
-                    const fallbackMatch = result.match(fallbackRegex);
-                    return (fallbackMatch?.[1] || '').trim();
-                };
-
-                data = {
-                    ishikawa: {
-                        man: parse('MAN'),
-                        method: parse('METHOD'),
-                        machine: parse('MACHINE'),
-                        management: parse('MANAGEMENT'),
-                        environment: parse('ENVIRONMENT'),
-                    },
-                    whys: parse('WHYS').split(/W\d:/i).filter(l => l.trim() !== '').map(l => ({
-                        question: "Tại sao?",
-                        answer: l.trim()
-                    })),
-                    rootCause: {
-                        individual: parse('ROOT_INDIVIDUAL') || parse('ROOT'),
-                        process: parse('ROOT_PROCESS'),
-                        system: parse('ROOT_SYSTEM')
-                    },
-                    solution: {
-                        shortTerm: parse('SOL_SHORT') || parse('SOLUTION'),
-                        mediumTerm: parse('SOL_MEDIUM'),
-                        longTerm: parse('SOL_LONG')
-                    },
-                    incidentTypes: parse('TYPES'),
-                    causeGroups: parse('CAUSES')
-                };
-            }
-
-            if (role === 'SPECIALIST') {
-                setStructuredData(data);
-                setShowSpecialistDashboard(true);
-            } else {
-                setMgmtStructuredData(parsedJson || data); // Store parsed JSON for mgmt
-                setShowMgmtDashboard(true);
-            }
-
-            // Scroll to dashboard
-            setTimeout(() => {
-                const el = document.getElementById(role === 'SPECIALIST' ? 'ai-dashboard' : 'mgmt-ai-dashboard');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-
-        } catch (error: any) {
-            alert('Lỗi khi phân tích AI: ' + error.message);
-        } finally {
-            setIsAnalyzing(false);
-        }
-    };
-
-    const applyDashboardToForm = () => {
-        if (aiRole === 'SPECIALIST') {
-            if (!structuredData) return;
-            // Map checkboxes for Incident Type
-            const incidentTypeStr = structuredData.incidentTypes || '';
-            const aiTypes = incidentTypeStr.split(/,|\n/).map((s: string) => s.trim().toLowerCase());
-            const selectedTypes: string[] = [];
-            INCIDENT_TYPES.forEach(cat => {
-                cat.options.forEach(opt => {
-                    if (aiTypes.includes(opt.toLowerCase())) {
-                        selectedTypes.push(opt);
-                    }
-                });
-            });
-
-            // Map checkboxes for Root Causes
-            const rootCauseStr = structuredData.causeGroups || '';
-            const aiCauses = rootCauseStr.split(/,|\n/).map((s: string) => s.trim().toLowerCase());
-            const selectedCauses: string[] = [];
-            ROOT_CAUSE_GROUPS.forEach(cat => {
-                cat.options.forEach(opt => {
-                    if (aiCauses.includes(opt.toLowerCase())) {
-                        selectedCauses.push(`${cat.label}: ${opt}`);
-                    }
-                });
-            });
-
-            const rootTextArr = [];
-            if (structuredData.rootCause.individual) rootTextArr.push(`1. 👤 Cá nhân: ${structuredData.rootCause.individual}`);
-            if (structuredData.rootCause.process) rootTextArr.push(`2. ⚙️ Quy trình: ${structuredData.rootCause.process}`);
-            if (structuredData.rootCause.system) rootTextArr.push(`3. 🏥 Hệ thống: ${structuredData.rootCause.system}`);
-            const rootTextFull = `⚠️ KẾT LUẬN (NGUYÊN NHÂN GỐC):\n${rootTextArr.join('\n')}`;
-
-            const solTextArr = [];
-            if (structuredData.solution.shortTerm) solTextArr.push(`🔹 Ngắn hạn: ${structuredData.solution.shortTerm}`);
-            if (structuredData.solution.mediumTerm) solTextArr.push(`🔹 Trung hạn: ${structuredData.solution.mediumTerm}`);
-            if (structuredData.solution.longTerm) solTextArr.push(`🔹 Dài hạn: ${structuredData.solution.longTerm}`);
-            const solTextFull = `🛠️ ĐỀ XUẤT BIỆN PHÁP KHẮC PHỤC:\n${solTextArr.join('\n')}`;
-
-            const whysText = structuredData.whys.map((w: any, idx: number) => `❓ WHY ${idx + 1}:\nQuestion: ${w.question}\n➡️ Answer: ${w.answer}`).join('\n\n');
-
-            const ishikawaText = `🐟 BIỂU ĐỒ XƯƠNG CÁ:\n- Con người (Đào tạo): ${structuredData.ishikawa.man}\n- Quy trình (Method): ${structuredData.ishikawa.method}\n- Thiết bị (Machine): ${structuredData.ishikawa.machine}\n- Môi trường: ${structuredData.ishikawa.environment}\n- Quản lý (Management): ${structuredData.ishikawa.management}`;
-
-            setFormData(prev => ({
-                ...prev,
-                i_mo_ta_chi_tiet: `${prev.i_mo_ta_chi_tiet}\n\n${ishikawaText}`,
-                ii_phan_loai_theo_nhom: selectedTypes.join('\n'),
-                iiii_phan_loai_theo_nhom_nguyen_nhan: `${rootTextFull}\n\n5 WHYS (Câu hỏi -> Trả lời):\n${whysText}\n\n${selectedCauses.join('\n')}`,
-                iiiii_han_dong_khac_phuc: solTextFull,
-                iiiiii_de_xuat_khuyen_cao: "Khuyến nghị quản lý hệ thống:\n" + solTextFull
-            }));
-            setShowSpecialistDashboard(false);
-        } else {
-            if (!mgmtStructuredData) return;
-            // Section B Mapping
-            setMgmtData(prev => ({
-                ...prev,
-                findings: mgmtStructuredData.managementFindings || '',
-                discussed: 'Có',
-                consistent: mgmtStructuredData.isConsistent || 'Có',
-                consistentDetails: mgmtStructuredData.recommendations || '',
-                severityPatient: mgmtStructuredData.severityPatient || 'C',
-                severityOrg: Array.isArray(mgmtStructuredData.severityOrg) ? mgmtStructuredData.severityOrg : [],
-            }));
-            setShowMgmtDashboard(false);
-        }
-    };
-
-    if (viewMode === 'FORM') {
-        return (
-            <div className="card enterprise-form overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="bg-slate-50 border-b border-slate-200 px-4 md:px-6 py-4 flex justify-between items-center sticky top-0 z-20">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary-200">
-                            <BrainCircuit size={20} />
-                        </div>
-                        <div>
-                            <h2 className="font-bold text-slate-800 text-sm md:text-base">{editingItem ? 'Cập nhật phân tích RCA' : 'Lập bản phân tích SCYK (RCA)'}</h2>
-                            <p className="text-[10px] md:text-xs text-slate-500">Dựa trên mẫu báo cáo chuẩn sự cố y khoa</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={() => setViewMode('LIST')} className="px-3 py-1.5 md:px-4 md:py-2 hover:bg-slate-200 rounded-lg text-slate-600 text-xs md:text-sm font-medium transition-colors">Hủy</button>
-                        <button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className="btn-primary"
-                        >
-                            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                            Lưu bản phân tích
-                        </button>
-                    </div>
-                </div>
-
-                <div className="p-4 md:p-8 space-y-10 max-h-[calc(100vh-140px)] overflow-y-auto">
-                    {/* Linked Incident Selection */}
-                    <div className="card flex flex-col md:flex-row md:items-center gap-4">
-                        <div className="shrink-0 w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600">
-                            <ClipboardList size={24} />
-                        </div>
-                        <div className="flex-1">
-                            <label className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-1.5 block">Chọn Sự cố Y khoa cần phân tích *</label>
-                            <div className="form-grid">
-                                <select
-                                    value={formData.scyk_id}
-                                    onChange={e => handleIncidentSelect(e.target.value)}
-                                    className="input-base"
-                                >
-                                    <option value="">-- Chọn trong danh sách sự cố chưa RCA --</option>
-                                    {selectableIncidents.map(inc => (
-                                        <option key={inc.id} value={inc.id}>
-                                            [{inc.nhom_bao_cao}] {inc.so_bc_ma_scyk} - {inc.ho_ten_nb || inc.doi_tuong_xay_ra_sc || 'N/A'} - {inc.khoa_phong || inc.don_vi_bao_cao}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Specialist AI Result Dashboard */}
-                    {showSpecialistDashboard && structuredData && (
-                        <div id="ai-dashboard" className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-top-4 duration-500 max-w-5xl mx-auto border border-slate-700">
-                            <div className="p-6 bg-gradient-to-r from-slate-900 to-indigo-950 border-b border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/30">
-                                        <BrainCircuit size={28} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-black text-white tracking-tight uppercase">Phân tích Nguyên nhân Gốc rễ (AI RCA)</h3>
-                                        <p className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest">Sử dụng trí tuệ nhân tạo để phân tích biểu đồ xương cá & 5 Whys</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setShowSpecialistDashboard(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400"><X size={20} /></button>
-                            </div>
-
-                            {/* Tabs Header */}
-                            <div className="flex border-b border-slate-800 bg-slate-900/50">
-                                <button
-                                    onClick={() => setActiveAnalysisTab('ishikawa')}
-                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeAnalysisTab === 'ishikawa' ? 'text-white border-b-2 border-indigo-500 bg-indigo-500/10' : 'text-slate-500 hover:text-slate-300'}`}
-                                >
-                                    Biểu đồ xương cá (Ishikawa)
-                                </button>
-                                <button
-                                    onClick={() => setActiveAnalysisTab('whys')}
-                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeAnalysisTab === 'whys' ? 'text-white border-b-2 border-indigo-500 bg-indigo-500/10' : 'text-slate-500 hover:text-slate-300'}`}
-                                >
-                                    Phân tích 5 Whys
-                                </button>
-                            </div>
-
-                            <div className="p-8 space-y-8">
-                                {/* Error/Raw Result Alert if all fields are empty */}
-                                {(!structuredData.rootCause && !structuredData.ishikawa.man && aiResult) && (
-                                    <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl flex items-start gap-3">
-                                        <AlertTriangle className="text-rose-500 shrink-0" size={20} />
-                                        <div className="space-y-1">
-                                            <p className="text-rose-400 text-xs font-black uppercase">Phân tích gặp lỗi định dạng hoặc lỗi API</p>
-                                            <p className="text-slate-300 text-sm">{aiResult}</p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {activeAnalysisTab === 'ishikawa' ? (
-                                    /* Ishikawa Fishbone Boxes */
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {[
-                                            { label: 'CON NGƯỜI (MAN)', icon: <User size={16} />, color: 'blue', content: structuredData.ishikawa.man },
-                                            { label: 'QUY TRÌNH (METHOD)', icon: <ClipboardList size={16} />, color: 'emerald', content: structuredData.ishikawa.method },
-                                            { label: 'THIẾT BỊ (MACHINE)', icon: <Printer size={16} />, color: 'amber', content: structuredData.ishikawa.machine },
-                                            { label: 'QUẢN LÝ (MANAGEMENT)', icon: <ShieldCheck size={16} />, color: 'purple', content: structuredData.ishikawa.management },
-                                            { label: 'MÔI TRƯỜNG (ENVIRONMENT)', icon: <LayoutGrid size={16} />, color: 'rose', content: structuredData.ishikawa.environment },
-                                        ].map((box) => (
-                                            <div key={box.label} className={`p-5 rounded-2xl bg-${box.color}-500/5 border border-${box.color}-500/20 space-y-3`}>
-                                                <div className={`flex items-center gap-2 text-${box.color}-400 font-black text-[10px] uppercase tracking-wider`}>
-                                                    {box.icon} {box.label}
-                                                </div>
-                                                <div className="text-slate-300 text-sm font-medium leading-relaxed">
-                                                    {box.content || 'Không có dữ liệu'}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    /* 5 Whys Chain */
-                                    <div className="space-y-6">
-                                        {structuredData.whys.map((w: any, i: number) => (
-                                            <div key={i} className="flex gap-4 group">
-                                                <div className="flex flex-col items-center">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-xs">
-                                                        {i + 1}
-                                                    </div>
-                                                    {i < structuredData.whys.length - 1 && <div className="w-0.5 h-full bg-slate-800" />}
-                                                </div>
-                                                <div className="pb-4 flex-1">
-                                                   <div className="mb-4">
-                                                       <p className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-[0.2em]">❓ WHY {i + 1} (QUESTION)</p>
-                                                       <p className="text-indigo-400 text-lg font-bold leading-snug uppercase">{w.question}</p>
-                                                   </div>
-                                                   <div className="pl-4 border-l-2 border-slate-800">
-                                                       <p className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-[0.2em]">➡️ ANSWER</p>
-                                                       <p className="text-white text-base font-medium leading-relaxed italic">"{w.answer}"</p>
-                                                   </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div className="h-px bg-slate-800 mx-auto" />
-
-                                {/* Summary Section */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-widest">
-                                            <AlertCircle size={18} /> Kết luận & Đề xuất
-                                        </div>
-                                        <div className="bg-rose-500/5 border border-rose-500/20 p-6 rounded-2xl space-y-4">
-                                            <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest">⚠️ NGUYÊN NHÂN GỐC (ROOT CAUSES)</p>
-                                            <div className="space-y-4">
-                                                {structuredData.rootCause.individual && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-rose-500 shrink-0 mt-1">👤</span>
-                                                        <div>
-                                                            <p className="text-rose-300 text-[9px] font-black uppercase">Cá nhân</p>
-                                                            <p className="text-white text-xs font-medium">{structuredData.rootCause.individual}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {structuredData.rootCause.process && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-rose-500 shrink-0 mt-1">⚙️</span>
-                                                        <div>
-                                                            <p className="text-rose-300 text-[9px] font-black uppercase">Quy trình</p>
-                                                            <p className="text-white text-xs font-medium">{structuredData.rootCause.process}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {structuredData.rootCause.system && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-rose-500 shrink-0 mt-1">🏥</span>
-                                                        <div>
-                                                            <p className="text-rose-300 text-[9px] font-black uppercase">Hệ thống</p>
-                                                            <p className="text-white text-xs font-medium">{structuredData.rootCause.system}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div className="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-2xl space-y-4">
-                                            <p className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">🛠️ BIỆN PHÁP KHẮC PHỤC (SOLUTIONS)</p>
-                                            <div className="space-y-4">
-                                                {structuredData.solution.shortTerm && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-emerald-500 shrink-0">🔹</span>
-                                                        <div>
-                                                            <p className="text-emerald-300 text-[9px] font-black uppercase">Ngắn hạn</p>
-                                                            <p className="text-white text-xs font-medium">{structuredData.solution.shortTerm}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {structuredData.solution.mediumTerm && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-emerald-500 shrink-0">🔹</span>
-                                                        <div>
-                                                            <p className="text-emerald-300 text-[9px] font-black uppercase">Trung hạn</p>
-                                                            <p className="text-white text-xs font-medium">{structuredData.solution.mediumTerm}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {structuredData.solution.longTerm && (
-                                                    <div className="flex gap-2">
-                                                        <span className="text-emerald-500 shrink-0">🔹</span>
-                                                        <div>
-                                                            <p className="text-emerald-300 text-[9px] font-black uppercase">Dài hạn</p>
-                                                            <p className="text-white text-xs font-medium">{structuredData.solution.longTerm}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <button 
-                                            onClick={applyDashboardToForm}
-                                            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-3"
-                                        >
-                                            <CheckCircle2 size={20} /> Xác nhận hoàn thành & Kết luận
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="space-y-12">
-                        {/* SECTION A */}
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-3">
-                                <div className="h-0.5 flex-1 bg-slate-100"></div>
-                                <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] px-4">A. Dành cho nhân viên chuyên trách</h2>
-                                <div className="h-0.5 flex-1 bg-slate-100"></div>
-                            </div>
-
-                            {/* I. Description */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">I</div>
-                                    <h3 className="font-bold text-slate-800 text-sm md:text-base uppercase tracking-tight">Mô tả chi tiết sự cố</h3>
-                                </div>
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                    <p className="text-[11px] text-slate-500 italic mb-3 leading-relaxed">
-                                        (Mô tả cả xử lý tức thời và hậu quả. Đối với loét tỳ đè, chỉ ra cụ thể vị trí, bên, phạm vi và tình trạng lúc nhập viện. Đối với sai sót về thuốc, liệt kê rõ tất cả thuốc)
-                                    </p>
-                                    <textarea
-                                        rows={5}
-                                        value={formData.i_mo_ta_chi_tiet}
-                                        onChange={e => setFormData({ ...formData, i_mo_ta_chi_tiet: e.target.value })}
-                                        placeholder="Nhập nội dung mô tả..."
-                                        className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[14pt] focus:ring-2 focus:ring-primary-500 outline-none shadow-sm resize-none font-medium"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* II. Classification */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">II</div>
-                                    <h3 className="font-bold text-slate-800 text-sm md:text-base uppercase tracking-tight">Phân loại sự cố theo nhóm sự cố (Incident type)</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {INCIDENT_TYPES.map(cat => (
-                                        <div key={cat.id} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-primary-400 transition-colors shadow-sm flex flex-col h-full">
-                                            <h4 className="font-bold text-xs text-primary-700 mb-3 border-b border-primary-50 pb-2">{cat.id}. {cat.label}</h4>
-                                            <div className="space-y-2 flex-1 overflow-y-auto max-h-48 scrollbar-thin">
-                                                {cat.options.map(opt => (
-                                                    <label key={opt} className="flex items-start gap-2 cursor-pointer group">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={(formData.ii_phan_loai_theo_nhom || '').split('\n').includes(opt)}
-                                                            onChange={() => toggleSelection('ii_phan_loai_theo_nhom', opt)}
-                                                            className="mt-1 accent-primary-600 shrink-0"
-                                                        />
-                                                        <span className="text-[11px] text-slate-600 group-hover:text-primary-600 leading-tight">{opt}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* III. Treatment */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">III</div>
-                                    <h3 className="font-bold text-slate-800 text-sm md:text-base uppercase tracking-tight">Điều trị / y lệnh đã được thực hiện</h3>
-                                </div>
-                                <textarea
-                                    rows={4}
-                                    value={formData.iii_dieu_tri_da_thuc_hien}
-                                    onChange={e => setFormData({ ...formData, iii_dieu_tri_da_thuc_hien: e.target.value })}
-                                    placeholder="Ghi nhận các can thiệp y tế đã thực hiện ngay sau sự cố..."
-                                    className="w-full border border-slate-200 rounded-xl p-4 text-[14pt] focus:ring-2 focus:ring-primary-500 outline-none shadow-sm font-medium"
-                                />
-                            </div>
-
-                            {/* IV. Root Causes */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">IV</div>
-                                    <h3 className="font-bold text-slate-800 text-sm md:text-base uppercase tracking-tight">Phân loại nhóm nguyên nhân gây ra sự cố</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {ROOT_CAUSE_GROUPS.map(cat => (
-                                        <div key={cat.label} className="bg-slate-50 border border-slate-200 rounded-xl p-4 hover:border-amber-400 transition-colors flex flex-col">
-                                            <h4 className="font-bold text-xs text-amber-700 mb-3">{cat.label}</h4>
-                                            <div className="space-y-2">
-                                                {cat.options.map(opt => (
-                                                    <label key={opt} className="flex items-start gap-2 cursor-pointer group">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={(formData.iiii_phan_loai_theo_nhom_nguyen_nhan || '').split('\n').includes(`${cat.label}: ${opt}`)}
-                                                            onChange={() => toggleSelection('iiii_phan_loai_theo_nhom_nguyen_nhan', `${cat.label}: ${opt}`)}
-                                                            className="mt-1 accent-amber-600 shrink-0"
-                                                        />
-                                                        <span className="text-[11px] text-slate-600 group-hover:text-amber-600 leading-tight">{opt}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* V & VI Actions & Recs */}
-                            <div className="form-grid">
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">V</div>
-                                        <h3 className="font-bold text-slate-700 text-xs md:text-sm uppercase tracking-tight">Hành động khắc phục sự cố</h3>
-                                    </div>
-                                    <textarea
-                                        rows={4}
-                                        value={formData.iiiii_han_dong_khac_phuc}
-                                        onChange={e => setFormData({ ...formData, iiiii_han_dong_khac_phuc: e.target.value })}
-                                        placeholder="Mô tả hành động xử lý..."
-                                        className="w-full border border-slate-200 rounded-xl p-4 text-[14pt] focus:ring-2 focus:ring-primary-500 outline-none shadow-sm font-medium"
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded flex items-center justify-center text-xs font-bold">VI</div>
-                                        <h3 className="font-bold text-slate-700 text-xs md:text-sm uppercase tracking-tight">Đề xuất khuyến cáo phòng ngừa</h3>
-                                    </div>
-                                    <textarea
-                                        rows={4}
-                                        value={formData.iiiiii_de_xuat_khuyen_cao}
-                                        onChange={e => setFormData({ ...formData, iiiiii_de_xuat_khuyen_cao: e.target.value })}
-                                        placeholder="Ghi đề xuất giải pháp lâu dài..."
-                                        className="w-full border border-slate-200 rounded-xl p-4 text-[14pt] focus:ring-2 focus:ring-primary-500 outline-none shadow-sm font-medium"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Analyst Info */}
-                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-6">
-                                <div className="flex-1 space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1">Người tìm hiểu, phân tích</label>
-                                    <div className="relative">
-                                        <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                        <input
-                                            type="text"
-                                            value={formData.a_danh_cho_nv_chuyen_trach}
-                                            onChange={e => setFormData({ ...formData, a_danh_cho_nv_chuyen_trach: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-[14pt] font-bold outline-none focus:ring-2 focus:ring-primary-500"
-                                            placeholder="Nhập tên nhân viên..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* SECTION B */}
-                        <div className="space-y-8 pb-10">
-                            <div className="flex items-center gap-3">
-                                <div className="h-0.5 flex-1 bg-amber-100"></div>
-                                <h2 className="text-sm font-black text-amber-500 uppercase tracking-[0.2em] px-4">B. Dành cho cấp quản lý</h2>
-                                <div className="h-0.5 flex-1 bg-amber-100"></div>
-                            </div>
-
-                            {/* I. Specialist Evaluation */}
-                            <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 space-y-6">
-                                <h3 className="font-black text-amber-800 text-xs md:text-sm uppercase tracking-tight flex items-center gap-2"><ShieldCheck size={18} /> I. Đánh giá của trưởng nhóm chuyên gia</h3>
-                                
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-amber-900 block ml-1 uppercase opacity-60">Mô tả kết quả phát hiện được (không lặp lại các mô tả sự cố)</label>
-                                    <textarea
-                                        rows={3}
-                                        value={mgmtData.findings}
-                                        onChange={e => setMgmtData({ ...mgmtData, findings: e.target.value })}
-                                        className="w-full bg-white border border-amber-200 rounded-xl p-4 text-[14pt] focus:ring-2 focus:ring-amber-500 outline-none shadow-sm font-medium"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
-                                        <p className="text-xs font-bold text-amber-900 mb-3 opacity-80">Đã thảo luận đưa khuyến cáo/hướng xử lý với người báo cáo</p>
-                                        <div className="flex gap-4">
-                                            {['Có', 'Không', 'Không ghi nhận'].map(v => (
-                                                <label key={v} className="flex items-center gap-1.5 cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name="discussed"
-                                                        checked={mgmtData.discussed === v}
-                                                        onChange={() => setMgmtData({ ...mgmtData, discussed: v })}
-                                                        className="accent-amber-600"
-                                                    />
-                                                    <span className="text-[11px] font-medium text-slate-700">{v}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
-                                        <p className="text-xs font-bold text-amber-900 mb-3 opacity-80">Phù hợp với các khuyến cáo chính thức được ban hành</p>
-                                        <div className="flex gap-4 mb-3">
-                                            {['Có', 'Không', 'Không ghi nhận'].map(v => (
-                                                <label key={v} className="flex items-center gap-1.5 cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name="consistent"
-                                                        checked={mgmtData.consistent === v}
-                                                        onChange={() => setMgmtData({ ...mgmtData, consistent: v })}
-                                                        className="accent-amber-600"
-                                                    />
-                                                    <span className="text-[11px] font-medium text-slate-700">{v}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={mgmtData.consistentDetails}
-                                            onChange={e => setMgmtData({ ...mgmtData, consistentDetails: e.target.value })}
-                                            placeholder="Nhập thông tin chi tiết..."
-                                            className="w-full bg-slate-50 border border-amber-100 rounded-lg p-2 text-[11px] focus:ring-1 focus:ring-amber-500 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* II. Severity Assessment */}
-                            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl space-y-6">
-                                <h3 className="font-black text-slate-800 text-xs md:text-sm uppercase tracking-tight flex items-center gap-2"><AlertTriangle size={18} className="text-amber-500" /> II. Đánh giá mức độ tổn thương</h3>
-
-                                <div className="form-grid">
-                                    {/* On Patient */}
-                                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 border-b pb-2">Trên người bệnh</h4>
-                                        <div className="space-y-4">
-                                            {SEVERITY_PATIENT.map(row => (
-                                                <div key={row.cat} className="space-y-2">
-                                                    <p className="text-[11px] font-bold text-slate-600">{row.cat}</p>
-                                                    <div className="flex gap-2">
-                                                        {row.levels.map(lv => (
-                                                            <button
-                                                                key={lv}
-                                                                onClick={() => setMgmtData({ ...mgmtData, severityPatient: lv })}
-                                                                className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black transition-all ${mgmtData.severityPatient === lv ? 'bg-primary-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                                            >
-                                                                {lv}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* On Organization */}
-                                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 border-b pb-2">Trên tổ chức</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {SEVERITY_ORG.map(opt => (
-                                                <label key={opt} className="flex items-center gap-2 cursor-pointer group hover:bg-slate-50 p-2 rounded-lg transition-colors border border-transparent hover:border-slate-100">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={mgmtData.severityOrg.includes(opt)}
-                                                        onChange={() => {
-                                                            const newItems = mgmtData.severityOrg.includes(opt)
-                                                                ? mgmtData.severityOrg.filter(i => i !== opt)
-                                                                : [...mgmtData.severityOrg, opt];
-                                                            setMgmtData({ ...mgmtData, severityOrg: newItems });
-                                                        }}
-                                                        className="accent-slate-700"
-                                                    />
-                                                    <span className="text-[11px] font-medium text-slate-600 group-hover:text-slate-900 transition-colors">{opt}</span>
-                                                </label>
-                                            ))}
-                                            <div className="col-span-1 sm:col-span-2 pt-2">
-                                                <input
-                                                    type="text"
-                                                    value={mgmtData.severityOrgOther}
-                                                    onChange={e => setMgmtData({ ...mgmtData, severityOrgOther: e.target.value })}
-                                                    placeholder="Nhập nội dung khác..."
-                                                    className="w-full bg-slate-50 border border-slate-100 rounded-lg p-2 text-[11px] focus:ring-1 focus:ring-slate-400 outline-none"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Mgmt Sign Info */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1 mb-2">Chức danh ký</label>
-                                    <input
-                                        type="text"
-                                        value={formData.chuc_danh}
-                                        onChange={e => setFormData({ ...formData, chuc_danh: e.target.value })}
-                                        className="w-full border border-slate-200 rounded-xl p-3 text-[14pt] font-bold shadow-sm outline-none bg-slate-50/50"
-                                        placeholder="VD: Trưởng khoa..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1 mb-2">Ngày ký</label>
-                                    <div className="relative">
-                                        <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                        <input
-                                            type="date"
-                                            value={formData.ngay}
-                                            onChange={e => setFormData({ ...formData, ngay: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-[14pt] font-bold shadow-sm outline-none bg-slate-50/50"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block ml-1 mb-2">Giờ ký</label>
-                                    <div className="relative">
-                                        <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                        <input
-                                            type="text"
-                                            value={formData.gio}
-                                            onChange={e => setFormData({ ...formData, gio: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-[14pt] font-bold shadow-sm outline-none bg-slate-50/50"
-                                            placeholder="HH:mm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Severity Notes at the bottom */}
-                            <div className="pt-10 border-t border-slate-100">
-                                <p className="text-xs text-slate-400 italic">
-                                    [1] NC1: Tự hồi phục / không cần điều trị <br />
-                                    [2] NC2: Yêu cầu can thiệp kéo dài <br />
-                                    [3] NC3: Cấp cứu / tổn thương vĩnh viễn
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+const descriptionFields: Array<[keyof RcaAnalysisRecord, string]> = [['tien_su_benh_su', '1. Tiền sử / bệnh sử'], ['chan_doan_ban_dau', '2. Chẩn đoán ban đầu'], ['dien_bien_su_co', '3. Diễn biến sự cố'], ['xu_tri_su_co', '4. Xử trí sự cố'], ['dien_tien_sau_su_co', '5. Diễn tiến sau sự cố']];
+const classificationFields: Array<[keyof RcaAnalysisRecord, string]> = [['loai_su_co', 'Loại sự cố'], ['muc_do_ton_hai', 'Mức độ tổn hại'], ['phan_loai_nguy_co', 'Phân loại nguy cơ'], ['kha_nang_phong_ngua', 'Khả năng phòng ngừa']];
+const clinicalFields: Array<[keyof RcaAnalysisRecord, string]> = [['phan_tich_chan_doan_tiep_nhan', '1. Giai đoạn chẩn đoán và tiếp nhận'], ['phan_tich_theo_doi_truoc_su_co', '2. Theo dõi trước sự cố'], ['phan_tich_cap_cuu_khi_su_co', '3. Cấp cứu khi xảy ra sự cố'], ['phan_tich_hoi_suc_sau_su_co', '4. Hồi sức sau sự cố'], ['ket_luan_phu_hop_xu_tri', '5. Kết luận tính phù hợp của xử trí']];
+const causeFields: Array<[keyof RcaAnalysisRecord, string]> = [['yeu_to_nguoi_benh', 'Người bệnh'], ['yeu_to_nhan_vien', 'Nhân viên'], ['yeu_to_moi_truong_thiet_bi', 'Môi trường / thiết bị'], ['yeu_to_quy_trinh_nhiem_vu', 'Quy trình / nhiệm vụ'], ['yeu_to_to_chuc_quan_ly', 'Tổ chức / quản lý'], ['nguyen_nhan_goc_re', 'Nguyên nhân gốc rễ xác định'], ['van_de_phat_hien_them', 'Vấn đề phát hiện thêm']];
+const recommendationFields: Array<[keyof RcaAnalysisRecord, string]> = [['khuyen_nghi_he_thong', '1. Giải pháp hệ thống'], ['xem_xet_trach_nhiem_hanh_chinh_hs', '2. Xem xét trách nhiệm cá nhân']];
+
+type SectionProps = { title: string; children: React.ReactNode };
+const Section = ({ title, children }: SectionProps) => <section className="border-t border-slate-200 pt-5"><h3 className="mb-4 text-sm font-black uppercase tracking-wide text-slate-800">{title}</h3>{children}</section>;
+
+type FieldProps = { label: string; value: any; onChange: (value: any) => void; type?: string };
+const Field = ({ label, value, onChange, type = 'text' }: FieldProps) => <label className="block space-y-1.5"><span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</span><input type={type} value={value ?? ''} onChange={e => onChange(type === 'number' ? (e.target.value ? Number(e.target.value) : null) : e.target.value)} className={inputClass} /></label>;
+const TextArea = ({ label, value, onChange }: FieldProps) => <label className="block space-y-1.5"><span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</span><textarea rows={4} value={value ?? ''} onChange={e => onChange(e.target.value)} className={textareaClass} /></label>;
+
+export const IncidentAnalysis: React.FC = () => {
+  const { user } = useAuth();
+  const actor = user?.full_name || user?.username || '';
+  const isAdmin = user?.role?.toLowerCase().includes('quản trị') || user?.role?.toLowerCase().includes('admin');
+  const userDepartment = user?.department?.trim().toLowerCase() || '';
+
+  const [items, setItems] = useState<RcaAnalysisRecord[]>([]);
+  const [incidents, setIncidents] = useState<BaoCaoScyk[]>([]);
+  const [units, setUnits] = useState<DmDonVi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [prefilling, setPrefilling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'VIEW'>('LIST');
+  const [editingItem, setEditingItem] = useState<RcaAnalysisRecord | null>(null);
+  const [viewingItem, setViewingItem] = useState<RcaAnalysisWithTimeline | null>(null);
+  const [formData, setFormData] = useState<RcaAnalysisRecord>({ ...initialForm, nguoi_phan_tich: actor });
+  const [timelineRows, setTimelineRows] = useState<RcaTimelineRow[]>([emptyTimeline(1), emptyTimeline(2), emptyTimeline(3), emptyTimeline(4)]);
+  const [lessonsText, setLessonsText] = useState('');
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [rcaData, incidentData, unitData] = await Promise.all([fetchRcaAnalyses(), fetchBaoCaoScyk(), fetchDmDonVi()]);
+      setItems(rcaData || []);
+      setIncidents(incidentData || []);
+      setUnits(unitData || []);
+    } catch (err: any) {
+      setError(`Không tải được dữ liệu RCA: ${err.message}. Cần chạy supabase-sql/rca.sql trước nếu chưa tạo bảng.`);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (viewMode === 'VIEW' && viewingItem) {
-        const linkedInc = incidents.find(inc => inc.id === viewingItem.scyk_id);
+  useEffect(() => { loadData(); }, []);
 
-        const handleExportWord = () => {
-            if (!viewingItem) return;
+  const accessibleIncidents = useMemo(() => incidents.filter(incident => isAdmin || incidentMatchesUserDepartment(incident, userDepartment)), [incidents, isAdmin, userDepartment]);
+  const analyzedIncidentIds = useMemo(() => new Set(items.map(item => item.scyk_id).filter(Boolean)), [items]);
+  const selectableIncidents = useMemo(() => accessibleIncidents.filter(incident => editingItem?.scyk_id === incident.id || !analyzedIncidentIds.has(incident.id)), [accessibleIncidents, analyzedIncidentIds, editingItem?.scyk_id]);
+  const filteredItems = useMemo(() => items.filter(item => {
+    const incident = incidents.find(inc => inc.id === item.scyk_id);
+    if (incident && !isAdmin && !incidentMatchesUserDepartment(incident, userDepartment)) return false;
+    return [item.ma_scyk, item.ma_nguoi_benh, item.so_benh_an, item.khoa_xay_ra_su_co, item.nguyen_nhan_goc_re, incident?.so_bc_ma_scyk].filter(Boolean).join(' ').toLowerCase().includes(searchTerm.toLowerCase());
+  }), [items, incidents, isAdmin, userDepartment, searchTerm]);
 
-            const selectedIncidentTypes = (viewingItem.ii_phan_loai_theo_nhom || '').split('\n').map(s => s.trim());
-            const selectedCauseGroups = (viewingItem.iiii_phan_loai_theo_nhom_nguyen_nhan || '').split('\n').map(s => s.trim());
-            const bLabels = viewingItem.b_danh_cho_cap_quan_ly || '';
+  const updateField = <K extends keyof RcaAnalysisRecord>(field: K, value: RcaAnalysisRecord[K]) => setFormData(prev => ({ ...prev, [field]: value }));
+  const renderFields = (fields: Array<[keyof RcaAnalysisRecord, string, string?]>) => fields.map(([key, label, type]) => <Field key={String(key)} label={label} type={type} value={formData[key] as any} onChange={value => updateField(key, value as any)} />);
+  const renderTextAreas = (fields: Array<[keyof RcaAnalysisRecord, string]>) => fields.map(([key, label]) => <TextArea key={String(key)} label={label} value={formData[key] as any} onChange={value => updateField(key, value as any)} />);
+  const DateTimeField = ({ label, field, readOnly = false }: { label: string; field: keyof RcaAnalysisRecord; readOnly?: boolean }) => (
+    <label className="block space-y-1.5">
+      <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</span>
+      <input
+        type="datetime-local"
+        value={(formData[field] as string) || ''}
+        onChange={e => updateField(field, e.target.value as any)}
+        readOnly={readOnly}
+        className={`${inputClass} ${readOnly ? 'bg-slate-50 text-slate-500' : ''}`}
+      />
+    </label>
+  );
+  const HeaderInfoFields = () => (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <Field label="Mã sự cố" value={formData.ma_scyk} onChange={value => updateField('ma_scyk', value)} />
+      <Field label="Người bệnh / mã NB" value={formData.ma_nguoi_benh} onChange={value => updateField('ma_nguoi_benh', value)} />
+      <Field label="Số bệnh án" value={formData.so_benh_an} onChange={value => updateField('so_benh_an', value)} />
+      <Field label="Giới" value={formData.gioi} onChange={value => updateField('gioi', value)} />
+      <Field label="Tuổi" type="number" value={formData.tuoi} onChange={value => updateField('tuoi', value)} />
+      <DateTimeField label="Vào viện" field="thoi_gian_vao_vien" readOnly />
+      <Field label="Khoa xảy ra sự cố" value={formData.khoa_xay_ra_su_co} onChange={value => updateField('khoa_xay_ra_su_co', value)} />
+      <DateTimeField label="Vào khoa lúc" field="vao_khoa_luc" />
+      <label className="block space-y-1.5">
+        <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Khoa tiếp nhận sau</span>
+        <select value={formData.khoa_tiep_nhan_sau || ''} onChange={e => updateField('khoa_tiep_nhan_sau', e.target.value)} className={inputClass}>
+          <option value="">Chọn khoa tiếp nhận...</option>
+          {units.map(unit => <option key={unit.id} value={`${unit.ma_don_vi} - ${unit.ten_don_vi}`}>{unit.ma_don_vi} - {unit.ten_don_vi}</option>)}
+        </select>
+      </label>
+      <DateTimeField label="Khoa tiếp nhận lúc" field="khoa_tiep_nhan_luc" />
+      <DateTimeField label="Thời điểm xảy ra sự cố" field="thoi_diem_su_co" />
+      <Field label="Tính báo cáo" value={formData.tinh_bao_cao} onChange={value => updateField('tinh_bao_cao', value)} />
+    </div>
+  );
 
-            const renderCheckboxes = (options: string[], selected: string[], cols = 2) => {
-                let rows = '';
-                for (let i = 0; i < options.length; i += cols) {
-                    const chunk = options.slice(i, i + cols);
-                    rows += `<tr>${chunk.map(opt => `
-                        <td style="width: ${100 / cols}%; padding: 2pt 0; border: none;">
-                            <span style="font-family: 'DejaVu Sans', 'Arial Unicode MS'; font-size: 14pt;">${selected.includes(opt) ? '☑' : '☐'}</span>
-                            <span style="font-size: 14pt;">${opt}</span>
-                        </td>`).join('')}</tr>`;
-                }
-                return `<table style="width: 100%; border: none; border-collapse: collapse;">${rows}</table>`;
-            };
+  const resetForm = () => {
+    setEditingItem(null);
+    setFormData({ ...initialForm, ngay_phan_tich: today(), nguoi_phan_tich: actor, created_by: actor, updated_by: actor });
+    setTimelineRows([emptyTimeline(1), emptyTimeline(2), emptyTimeline(3), emptyTimeline(4)]);
+    setLessonsText('');
+    setViewMode('FORM');
+  };
 
-            const htmlContent = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset="utf-8">
-                    <style>
-                        @page {
-                            size: 21cm 29.7cm;
-                            margin: 2cm 2cm 2cm 2.5cm;
-                            mso-page-orientation: portrait;
-                        }
-                        body {
-                            font-family: "Times New Roman", Times, serif;
-                            font-size: 14pt;
-                            color: #000;
-                            line-height: 1.2;
-                        }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 0px; margin-top: 0px; }
-                        td { vertical-align: top; padding: 4pt; border: 0.5pt solid black; }
-                        .no-border td { border: none; }
-                        .text-center { text-align: center; }
-                        .font-bold { font-weight: bold; }
-                        .underline { text-decoration: underline; }
-                        .header-title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 10pt; text-transform: uppercase; }
-                        .item-title { font-size: 14pt; font-weight: bold; background-color: #f2f2f2; padding: 4pt; border: none; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header-title">A. DÀNH CHO NHÂN VIÊN CHUYÊN TRÁCH</div>
-                    
-                    <table><tr><td class="item-title">I. Mô tả chi tiết sự cố</td></tr></table>
-                    <table style="border-top: none;">
-                        <tr>
-                            <td>
-                                <div style="font-size: 11pt; font-style: italic; margin-bottom: 5pt;">(Mô tả cả xử lý tức thời và hậu quả. Đối với loét tỳ đè, chỉ ra cụ thể vị trí, bên, phạm vi và tình trạng lúc nhập viện. Đối với sai sót về thuốc, liệt kê rõ tất cả thuốc (đính kèm thêm 1 tờ liệt kê nếu cần):</div>
-                                <div style="min-height: 100pt;">${viewingItem.i_mo_ta_chi_tiet || ''}</div>
-                                ${Array(5).fill('<div style="border-bottom: 1pt dotted #ccc; margin-top: 15pt;"></div>').join('')}
-                            </td>
-                        </tr>
-                    </table>
-
-                    <table style="margin-top: 10pt;"><tr><td class="item-title">II. Phân loại sự cố theo nhóm sự cố (Incident type)</td></tr></table>
-                    <table style="border-top: none;">
-                        ${INCIDENT_TYPES.map(cat => `
-                            <tr>
-                                <td style="width: 40%; font-weight: bold;">${cat.id}. ${cat.label}</td>
-                                <td style="width: 60%;">${renderCheckboxes(cat.options, selectedIncidentTypes, 1)}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-
-                    <table style="margin-top: 10pt;"><tr><td class="item-title">III. Điều trị/y lệnh đã được thực hiện</td></tr></table>
-                    <table style="border-top: none;">
-                        <tr>
-                            <td>
-                                <div style="min-height: 60pt;">${viewingItem.iii_dieu_tri_da_thuc_hien || ''}</div>
-                                ${Array(3).fill('<div style="border-bottom: 1pt dotted #ccc; margin-top: 15pt;"></div>').join('')}
-                            </td>
-                        </tr>
-                    </table>
-
-                    <table style="border-top: none;">
-                        ${ROOT_CAUSE_GROUPS.map((cat, idx) => `
-                            <tr>
-                                <td style="width: 40%; font-weight: bold;">${idx + 1}. ${cat.label}</td>
-                                <td style="width: 60%;">${renderCheckboxes(cat.options, selectedCauseGroups.filter(s => s.startsWith(cat.label)).map(s => s.replace(`${cat.label}: `, '')), 1)}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-
-                    <table style="margin-top: 10pt;">
-                        <tr style="background-color: #f2f2f2; font-weight: bold;">
-                            <td style="width: 50%;">V. Hành động khắc phục sự cố</td>
-                            <td style="width: 50%;">VI. Đề xuất khuyến cáo phòng ngừa sự cố</td>
-                        </tr>
-                        <tr>
-                            <td style="height: 120pt;">
-                                <div style="font-weight: bold; font-size: 11pt;">Mô tả hành động xử lý sự cố</div>
-                                <div>${viewingItem.iiiii_han_dong_khac_phuc || ''}</div>
-                                ${Array(4).fill('<div style="border-bottom: 1pt dotted #ccc; margin-top: 15pt;"></div>').join('')}
-                            </td>
-                            <td style="height: 120pt;">
-                                <div style="font-weight: bold; font-size: 11pt;">Ghi đề xuất khuyến cáo phòng ngừa</div>
-                                <div>${viewingItem.iiiiii_de_xuat_khuyen_cao || ''}</div>
-                                ${Array(4).fill('<div style="border-bottom: 1pt dotted #ccc; margin-top: 15pt;"></div>').join('')}
-                            </td>
-                        </tr>
-                    </table>
-
-                    <div class="header-title" style="margin-top: 20pt;">B. DÀNH CHO CẤP QUẢN LÝ</div>
-                    
-                    <table><tr><td class="item-title">I. Đánh giá của Trưởng nhóm chuyên gia</td></tr></table>
-                    <table style="border-top: none;">
-                        <tr>
-                            <td>
-                                <div style="margin-bottom: 5pt;">Mô tả kết quả phát hiện được (không lặp lại các mô tả sự cố)</div>
-                                <div style="font-style: italic; min-height: 50pt;">${bLabels.split('\n')[0]?.replace('Kết quả: ', '') || ''}</div>
-                                <div style="border-bottom: 1pt dotted #ccc; margin-top: 15pt;"></div>
-                            </td>
-                        </tr>
-                    </table>
-                    
-                    <table style="border-top: none;">
-                        <tr>
-                            <td style="width: 65%;">Đã thảo luận đưa khuyến cáo/hướng xử lý với người báo cáo</td>
-                            <td style="width: 35%;">
-                                ${['Có', 'Không', 'Không ghi nhận'].map(v => `
-                                    <div style="display: inline-block; white-space: nowrap;">
-                                        <span style="font-family: 'DejaVu Sans', 'Arial Unicode MS';">${bLabels.includes(`Thảo luận khuyến cáo: ${v}`) ? '☑' : '☐'}</span> ${v} &nbsp;
-                                    </div>
-                                `).join('')}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width: 65%;">Phù hợp với các khuyến cáo chính thức được ban hành<br/>Ghi cụ thể khuyến cáo: ${bLabels.match(/Phù hợp khuyến cáo: .* \((.*)\)/)?.[1] || '....................'}</td>
-                            <td style="width: 35%;">
-                                ${['Có', 'Không', 'Không ghi nhận'].map(v => `
-                                    <div style="display: inline-block; white-space: nowrap;">
-                                        <span style="font-family: 'DejaVu Sans', 'Arial Unicode MS';">${bLabels.includes(`Phù hợp khuyến cáo: ${v}`) ? '☑' : '☐'}</span> ${v} &nbsp;
-                                    </div>
-                                `).join('')}
-                            </td>
-                        </tr>
-                    </table>
-
-                    <table style="margin-top: 10pt;"><tr><td class="item-title">II. Đánh giá mức độ tổn thương</td></tr></table>
-                    <table style="border-top: none;">
-                        <tr style="font-weight: bold;">
-                            <td style="width: 50%;">Trên người bệnh</td>
-                            <td style="width: 50%;">Trên tổ chức</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 0;">
-                                <table style="border: none;">
-                                    ${SEVERITY_PATIENT.map(row => `
-                                        <tr>
-                                            <td style="border: none; border-bottom: 0.1pt solid #ccc; width: 65%; font-size: 12pt; padding: 2pt 4pt;">${row.cat}</td>
-                                            <td style="border: none; border-bottom: 0.1pt solid #ccc; padding: 2pt 4pt; text-align: right;">
-                                                <div style="white-space: nowrap;">
-                                                ${row.levels.map(l => `
-                                                    <span style="font-family: 'DejaVu Sans', 'Arial Unicode MS';">${bLabels.includes(`Mức độ (NB): ${l}`) ? '☑' : '☐'}</span> ${l} &nbsp;
-                                                `).join('')}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </table>
-                            </td>
-                            <td style="padding: 0;">
-                                <table style="border: none;">
-                                    ${SEVERITY_ORG.map(opt => `
-                                        <tr>
-                                            <td style="border: none; border-bottom: 0.1pt solid #ccc; padding: 2pt 4pt; font-size: 12pt;">
-                                                <span style="font-family: 'DejaVu Sans', 'Arial Unicode MS';">${bLabels.includes(opt) ? '☑' : '☐'}</span> ${opt}
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${Array(Math.max(0, 4 - SEVERITY_ORG.length)).fill('<tr><td style="border: none; padding: 2pt 4pt;">&nbsp;</td></tr>').join('')}
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <table style="margin-top: 20pt;" class="no-border">
-                        <tr>
-                            <td style="width: 50%;">
-                                <div style="font-weight: bold;">Tên: <span style="font-weight: normal;">${viewingItem.a_danh_cho_nv_chuyen_trach || '................'}</span></div>
-                                <div style="font-weight: bold; margin-top: 10pt;">Chức danh: <span style="font-weight: normal;">${viewingItem.chuc_danh || '................'}</span></div>
-                            </td>
-                            <td style="width: 50%;">
-                                <div style="font-weight: bold;">Ký tên: ..........................</div>
-                                <div style="font-weight: bold; margin-top: 10pt;">Ngày: ${viewingItem.ngay || '/   /'} &nbsp;&nbsp;&nbsp; Giờ: ${viewingItem.gio || ' : '}</div>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <div style="font-size: 11pt; margin-top: 25pt; line-height: 1.5; font-style: italic;">
-                        [1] Tổn thương nhẹ là tổn thương tự hồi phục hoặc không cần can thiệp điều trị<br/>
-                        [2] Tổn thương trung bình là tổn thương đòi hỏi can thiệp điều trị, kéo dài thời gian nằm viện, ảnh hưởng đến chức năng lâu dài.<br/>
-                        [3] Tổn thương nặng là tổn thương đòi hỏi phải cấp cứu hoặc can thiệp điều trị lớn, gây mất chức năng vĩnh viễn hoặc gây tử vong.
-                    </div>
-                </body>
-                </html>
-            `;
-
-            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Phan_tich_RCA_${linkedInc?.so_bc_ma_scyk || 'export'}.doc`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
-        // Helper for checkbox display
-        const CheckboxList = ({ title, options, selectedValue, cols = 1 }: { title: string, options: string[], selectedValue: string, cols?: number }) => {
-            const selectedItems = (selectedValue || '').split('\n').map(s => s.trim());
-            return (
-                <div className="mb-4">
-                    <h4 className="font-bold mb-2 underline">{title}</h4>
-                    <div className={`grid grid-cols-${cols} gap-y-1`}>
-                        {options.map((opt, idx) => (
-                            <div key={idx} className="flex items-start gap-2">
-                                <span className="text-lg leading-none">{selectedItems.includes(opt) ? '☑' : '☐'}</span>
-                                <span>{opt}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        };
-
-        return (
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in duration-300">
-                <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center print:hidden">
-                    <button onClick={() => setViewMode('LIST')} className="flex items-center gap-2 text-slate-600 hover:text-primary-600 font-medium text-sm transition-colors">
-                        <ArrowLeft size={18} /> Quay lại danh sách
-                    </button>
-                    <div className="flex gap-2">
-                        <button onClick={handleExportWord} className="btn-primary">
-                            <Download size={16} /> Xuất Word
-                        </button>
-                        <button onClick={() => { setEditingItem(viewingItem); setFormData(viewingItem); setViewMode('FORM'); }} className="btn-primary">
-                            <Edit2 size={16} /> Chỉnh sửa
-                        </button>
-                    </div>
-                </div>
-
-                {/* Print/Document Area */}
-                <div className="p-[2cm] max-w-5xl mx-auto shadow-sm" style={{ fontSize: '14pt', fontFamily: 'Times New Roman, serif', color: '#000' }}>
-                    <div className="text-center mb-8">
-                        <h2 className="text-xl font-bold uppercase mb-1">A. DÀNH CHO NHÂN VIÊN CHUYÊN TRÁCH</h2>
-                    </div>
-
-                    {/* Section I */}
-                    <div className="p-2 mb-4">
-                        <h3 className="font-bold underline mb-1">I. Mô tả chi tiết sự cố</h3>
-                        <p className="italic mb-2 text-[12pt]">(Mô tả cả xử lý tức thời và hậu quả. Đối với loét tỳ đè, chỉ ra cụ thể vị trí, bên, phạm vi và tình trạng lúc nhập viện. Đối với sai sót về thuốc, liệt kê rõ tất cả thuốc):</p>
-                        <div className="min-h-[100px] px-2 pb-2 leading-relaxed">
-                            {viewingItem.i_mo_ta_chi_tiet || '................................................................................................................................................'}
-                        </div>
-                    </div>
-
-                    {/* Section II */}
-                    <div className="mb-4">
-                        <h3 className="font-bold underline p-2">II. Phân loại sự cố theo nhóm sự cố (Incident type)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 p-2">
-                            {INCIDENT_TYPES.map(cat => (
-                                <div key={cat.id} className="mb-4 break-inside-avoid">
-                                    <div className="flex gap-2 mb-1">
-                                        <span className="font-bold shrink-0">{cat.id}.</span>
-                                        <span className="font-bold leading-tight">{cat.label}</span>
-                                    </div>
-                                    <div className="pl-6 space-y-0.5">
-                                        {cat.options.map((opt, idx) => (
-                                            <div key={idx} className="flex items-start gap-2">
-                                                <span className="text-lg -mt-0.5">{(viewingItem.ii_phan_loai_theo_nhom || '').includes(opt) ? '☑' : '☐'}</span>
-                                                <span className="leading-tight">{opt}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Section III */}
-                    <div className="p-2 mb-4">
-                        <h3 className="font-bold underline mb-1">III. Điều trị/y lệnh đã được thực hiện</h3>
-                        <div className="min-h-[80px] px-2 pb-2 leading-relaxed">
-                            {viewingItem.iii_dieu_tri_da_thuc_hien || '................................................................................................................................................'}
-                        </div>
-                    </div>
-
-                    {/* Section IV */}
-                    <div className="mb-4">
-                        <h3 className="font-bold underline p-2">IV. Phân loại sự cố theo nhóm nguyên nhân gây ra sự cố</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 p-2">
-                            {ROOT_CAUSE_GROUPS.map((cat, idx) => (
-                                <div key={idx} className="mb-4 break-inside-avoid">
-                                    <h4 className="font-bold mb-1">{cat.label}</h4>
-                                    <div className="pl-6 space-y-0.5">
-                                        {cat.options.map((opt, oIdx) => (
-                                            <div key={oIdx} className="flex items-start gap-2">
-                                                <span className="text-lg -mt-0.5">{(viewingItem.iiii_phan_loai_theo_nhom_nguyen_nhan || '').includes(opt) ? '☑' : '☐'}</span>
-                                                <span className="leading-tight">{opt}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Section V & VI */}
-                    <div className="grid grid-cols-2 mb-4 gap-8">
-                        <div className="p-2">
-                            <h3 className="font-bold underline mb-2">V. Hành động khắc phục sự cố</h3>
-                            <div className="min-h-[100px] leading-relaxed border-l-2 border-slate-100 pl-4">
-                                <p className="font-bold mb-1 text-[10pt] uppercase text-slate-400 tracking-wider">Mô tả hành động xử lý sự cố</p>
-                                {viewingItem.iiiii_han_dong_khac_phuc || '.........................................................'}
-                            </div>
-                        </div>
-                        <div className="p-2">
-                            <h3 className="font-bold underline mb-2">VI. Đề xuất khuyến cáo phòng ngừa sự cố</h3>
-                            <div className="min-h-[100px] leading-relaxed border-l-2 border-slate-100 pl-4">
-                                <p className="font-bold mb-1 text-[10pt] uppercase text-slate-400 tracking-wider">Ghi đề xuất khuyến cáo phòng ngừa</p>
-                                {viewingItem.iiiiii_de_xuat_khuyen_cao || '.........................................................'}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section B */}
-                    <div className="mt-8 border-t-2 border-slate-200 pt-8">
-                        <h2 className="text-2xl font-black uppercase text-center mb-10 tracking-widest text-slate-900">B. DÀNH CHO CẤP QUẢN LÝ</h2>
-                        <div className="">
-                            <h3 className="font-bold p-2 text-lg">I. Đánh giá của Trưởng nhóm chuyên gia</h3>
-                            <div className="p-2">
-                                <p className="mb-2 text-slate-700">Mô tả kết quả phát hiện được (không lặp lại các mô tả sự cố):</p>
-                                <div className="min-h-[60px] italic text-slate-800 leading-relaxed pl-4 border-l-2 border-primary-100">
-                                    {viewingItem.b_danh_cho_cap_quan_ly?.split('\n')[0]?.replace('Kết quả: ', '') || '.........................................................'}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 p-2 space-y-4 my-4">
-                                <div className="flex justify-between items-center pb-2">
-                                    <span className="font-medium text-slate-700">Đã thảo luận đưa khuyến cáo/hướng xử lý với người báo cáo:</span>
-                                    <div className="flex gap-6">
-                                        {['Có', 'Không', 'Không ghi nhận'].map(v => (
-                                            <span key={v} className="flex items-center gap-2">
-                                                <span className="text-xl">{viewingItem.b_danh_cho_cap_quan_ly?.includes(`Thảo luận khuyến cáo: ${v}`) ? '☑' : '☐'}</span> {v}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="pb-2">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="font-medium text-slate-700">Phù hợp với các khuyến cáo chính thức được ban hành:</span>
-                                        <div className="flex gap-6">
-                                            {['Có', 'Không', 'Không ghi nhận'].map(v => (
-                                                <span key={v} className="flex items-center gap-2">
-                                                    <span className="text-xl">{viewingItem.b_danh_cho_cap_quan_ly?.includes(`Phù hợp khuyến cáo: ${v}`) ? '☑' : '☐'}</span> {v}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <p className="text-sm italic text-slate-500 pl-4 border-l-2 border-slate-100">Ghi cụ thể khuyến cáo: {viewingItem.b_danh_cho_cap_quan_ly?.match(/Phù hợp khuyến cáo: .* \((.*)\)/)?.[1] || '....................'}</p>
-                                </div>
-                            </div>
-
-                            <h3 className="font-bold p-2 border-y border-black">II. Đánh giá mức độ tổn thương</h3>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="p-2">
-                                    <h4 className="font-bold underline mb-2">Trên người bệnh</h4>
-                                    <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
-                                        {SEVERITY_PATIENT.map(cat => (
-                                            <React.Fragment key={cat.cat}>
-                                                <span className="text-sm">{cat.cat}</span>
-                                                <div className="flex gap-2">
-                                                    {cat.levels.map(l => (
-                                                        <span key={l} className="flex items-center gap-1">
-                                                            <span>{viewingItem.b_danh_cho_cap_quan_ly?.includes(`Mức độ (NB): ${l}`) ? '☑' : '☐'}</span> {l}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </React.Fragment>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="p-2">
-                                    <h4 className="font-bold underline mb-2">Trên tổ chức</h4>
-                                    <div className="space-y-1">
-                                        {SEVERITY_ORG.map(opt => (
-                                            <div key={opt} className="flex items-center gap-2">
-                                                <span>{viewingItem.b_danh_cho_cap_quan_ly?.includes(opt) ? '☑' : '☐'}</span>
-                                                <span className="text-sm">{opt}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 pt-8 mt-10">
-                                <div className="p-2 space-y-2">
-                                    <p className="font-bold text-slate-900 italic underline">Nhân viên chuyên trách</p>
-                                    <p className="text-slate-800">Tên: <span className="font-bold">{viewingItem.a_danh_cho_nv_chuyen_trach || '................'}</span></p>
-                                    <p className="text-slate-800">Chức danh: <span className="font-bold">{viewingItem.chuc_danh || '................'}</span></p>
-                                </div>
-                                <div className="p-2 text-right space-y-2">
-                                    <p className="font-bold text-slate-900 italic underline">Xác nhận của Quản lý</p>
-                                    <p className="text-slate-800">Ký tên: ..........................</p>
-                                    <div className="flex gap-4 justify-end text-slate-800">
-                                        <span>Ngày: {viewingItem.ngay || '../../....'}</span>
-                                        <span>Giờ: {viewingItem.gio || '....:....'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Severity Definitions */}
-                        <div className="mt-6 text-[12pt] space-y-2 pl-4">
-                            <p>[1] Tổn thương nhẹ là tổn thương tự hồi phục hoặc không cần can thiệp điều trị</p>
-                            <p>[2] Tổn thương trung bình là tổn thương đòi hỏi can thiệp điều trị, kéo dài thời gian nằm viện, ảnh hưởng đến chức năng lâu dài.</p>
-                            <p>[3] Tổn thương nặng là tổn thương đòi hỏi phải cấp cứu hoặc can thiệp điều trị lớn, gây mất chức năng vĩnh viễn hoặc gây tử vong.</p>
-                        </div>
-                    </div>
-
-                    {/* Meta for Linked Incident - Discreet */}
-                    <div className="mt-12 pt-4 border-t border-slate-100 text-[10pt] text-slate-400 italic text-right print:hidden">
-                        Sự cố liên kết: {linkedInc?.so_bc_ma_scyk || 'N/A'} - {linkedInc?.ho_ten_nb || 'N/A'}
-                    </div>
-                </div>
-            </div>
-        );
+  const handleIncidentSelect = async (scykId: string) => {
+    const incident = incidents.find(item => item.id === scykId);
+    updateField('scyk_id', scykId);
+    if (!scykId) return;
+    setPrefilling(true);
+    try {
+      const suggestion = await fetchRcaPrefillSuggestion(scykId);
+      const thoiDiem = incidentDateTimeLocal(incident) || incidentDateTimeLocal((suggestion?.nguon_bao_cao as Record<string, any>) || {});
+      setFormData(prev => ({
+        ...prev, scyk_id: scykId, bien_ban_xac_minh_id: suggestion?.bien_ban_xac_minh_id ?? null,
+        ma_scyk: suggestion?.ma_scyk || incident?.so_bc_ma_scyk || '', so_benh_an: suggestion?.so_benh_an || incident?.so_benh_an || '',
+        ma_nguoi_benh: incidentPatientLabel(incident, suggestion) || '', gioi: suggestion?.gioi || incident?.gioi || '', tuoi: suggestion?.tuoi ?? ageFromDob(incident?.ngay_sinh),
+        thoi_gian_vao_vien: toDateTimeLocal(incident?.thoi_gian_vao_vien) || toDateTimeLocal(suggestion?.thoi_gian_vao_vien),
+        khoa_xay_ra_su_co: suggestion?.khoa_xay_ra_su_co || incident?.khoa_phong || incident?.don_vi_bao_cao || '', thoi_diem_su_co: thoiDiem,
+        tinh_bao_cao: suggestion?.tinh_bao_cao || incident?.hinh_thuc_bao_cao || '', loai_su_co: suggestion?.loai_su_co || incident?.phan_loai_sc || incident?.doi_tuong_xay_ra_sc || '',
+        muc_do_ton_hai: suggestion?.muc_do_ton_hai || incident?.phan_loai_ban_dau || incident?.muc_do_anh_huong || '', dien_bien_su_co: suggestion?.dien_bien_su_co || incident?.mo_ta_su_co || '',
+        xu_tri_su_co: suggestion?.xu_tri_su_co || incident?.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '', dien_tien_sau_su_co: suggestion?.dien_tien_sau_su_co || '',
+        khuyen_nghi_he_thong: suggestion?.khuyen_nghi_he_thong || incident?.de_xuat_giai_phap_ban_dau || '', nguon_bao_cao: suggestion?.nguon_bao_cao || {}, nguon_bien_ban_xac_minh: suggestion?.nguon_bien_ban_xac_minh || {},
+      }));
+      setTimelineRows([{ ...emptyTimeline(1), thoi_diem: thoiDiem, vi_tri: suggestion?.khoa_xay_ra_su_co || incident?.khoa_phong || incident?.noi_xay_ra_sc || '', lam_sang: suggestion?.dien_bien_su_co || incident?.mo_ta_su_co || '', can_lam_sang_xu_tri: suggestion?.xu_tri_su_co || incident?.dieu_tri_xy_ly_ban_dau_da_thuc_hien || '', la_thoi_diem_su_co: true }, emptyTimeline(2), emptyTimeline(3), emptyTimeline(4)]);
+    } catch (err: any) {
+      alert(`Không tự điền được từ báo cáo/biên bản xác minh: ${err.message}`);
+    } finally {
+      setPrefilling(false);
     }
+  };
 
-    return (
-        <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="card flex flex-col md:flex-row justify-between items-center gap-3">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" size={18} />
-                    <input
-                        className="input-base pl-10"
-                        placeholder="Tìm theo mã sự cố, nội dung..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <button
-                    onClick={() => { setEditingItem(null); setFormData(initialForm); setViewMode('FORM'); }}
-                    className="btn-primary w-full md:w-auto"
-                >
-                    <Plus size={18} /> Lập bản phân tích mới
-                </button>
-            </div>
+  const editItem = async (item: RcaAnalysisRecord) => {
+    setLoading(true);
+    try {
+      const timeline = item.id ? await fetchRcaTimeline(item.id) : [];
+      setEditingItem(item);
+      setFormData({ ...initialForm, ...item, thoi_gian_vao_vien: toDateTimeLocal(item.thoi_gian_vao_vien), vao_khoa_luc: toDateTimeLocal(item.vao_khoa_luc), khoa_tiep_nhan_luc: toDateTimeLocal(item.khoa_tiep_nhan_luc), thoi_diem_su_co: toDateTimeLocal(item.thoi_diem_su_co) || item.thoi_diem_su_co || '', updated_by: actor || item.updated_by || '' });
+      setTimelineRows(timeline.length ? timeline : [emptyTimeline(1), emptyTimeline(2), emptyTimeline(3), emptyTimeline(4)]);
+      setLessonsText((item.bai_hoc_kinh_nghiem || []).join('\n'));
+      setViewMode('FORM');
+    } catch (err: any) { alert(`Không mở được bản RCA: ${err.message}`); }
+    finally { setLoading(false); }
+  };
 
-            {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                    <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>
-                    <p className="text-slate-500 font-medium">Đang đồng bộ dữ liệu phân tích...</p>
-                </div>
-            ) : filteredItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border border-dashed border-slate-200 shadow-inner">
-                    <div className="relative mb-8">
-                        <div className="w-24 h-24 bg-primary-50 rounded-full flex items-center justify-center text-primary-200">
-                            <BrainCircuit size={48} />
-                        </div>
-                        <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white border-4 border-white shadow-lg rounded-2xl flex items-center justify-center text-amber-500 animate-bounce">
-                            <AlertCircle size={20} />
-                        </div>
-                    </div>
-                    <h3 className="text-2xl font-black text-slate-800 mb-2">Chậm lại một chút!</h3>
-                    <p className="text-slate-500 mb-10 px-6 text-center max-w-sm text-sm leading-relaxed">Hệ thống chưa tìm thấy bản phân tích RCA nào. Hãy bắt đầu bằng cách nhấn nút dưới đây để tìm hiểu nguyên nhân gốc rễ.</p>
-                    <button
-                        onClick={() => { setEditingItem(null); setFormData(initialForm); setViewMode('FORM'); }}
-                        className="btn-primary"
-                    >
-                        <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
-                        Tạo bản phân tích ngay
-                    </button>
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    {/* Desktop View: Table */}
-                    <div className="hidden md:block overflow-hidden">
-                        <table className="table-base text-left">
-                            <thead className="table-header">
-                                <tr>
-                                    <th className="px-6 py-4">Đơn vị / Mã SCYK</th>
-                                    <th className="px-6 py-4">Phân loại / Nội dung</th>
-                                    <th className="px-6 py-4">Chuyên trách</th>
-                                    <th className="px-6 py-4 text-center">Ngày lập</th>
-                                    <th className="px-6 py-4 text-right">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filteredItems.map(item => {
-                                    const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
-                                    const isOwnUnit = isAdmin || (linkedInc ? incidentMatchesUserDepartment(linkedInc, uDept) : false);
-                                    return (
-                                        <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-700">{linkedInc?.khoa_phong || linkedInc?.don_vi_bao_cao || '---'}</span>
-                                                    <span className="text-[10px] text-slate-400 uppercase font-black font-mono tracking-tighter opacity-70">{linkedInc?.so_bc_ma_scyk}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 cursor-pointer" onClick={() => { setViewingItem(item); setViewMode('VIEW'); }}>
-                                                <div className="max-w-md">
-                                                    <p className="font-bold text-slate-800 line-clamp-1 group-hover:text-primary-700 transition-colors">
-                                                        {(item.ii_phan_loai_theo_nhom || '').split('\n')[0] || 'N/A'}
-                                                    </p>
-                                                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                                                        {item.i_mo_ta_chi_tiet || 'Không có mô tả...'}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-[10px] font-bold">
-                                                        {item.a_danh_cho_nv_chuyen_trach?.[0]?.toUpperCase() || 'A'}
-                                                    </div>
-                                                    <span className="text-sm font-medium text-slate-700">{item.a_danh_cho_nv_chuyen_trach || '---'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-                                                    <Calendar size={14} />
-                                                    {item.ngay || '---'}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-right w-44">
-                                                <div className="grid grid-cols-2 gap-1.5">
-                                                    <button onClick={() => { setViewingItem(item); setViewMode('VIEW'); }} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all border border-green-200 shadow-sm">
-                                                        <Eye size={12} /> Xem
-                                                    </button>
-                                                    {isOwnUnit && (
-                                                        <>
-                                                            <button onClick={() => { setEditingItem(item); setFormData(item); setViewMode('FORM'); }} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all border border-blue-200 shadow-sm">
-                                                                <Edit2 size={12} /> Sửa
-                                                            </button>
-                                                            <button onClick={() => item.id && handleDelete(item.id)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-200 shadow-sm col-span-2">
-                                                                <Trash2 size={12} /> Xóa phân tích
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+  const viewItem = async (item: RcaAnalysisRecord) => {
+    if (!item.id) return;
+    setLoading(true);
+    try { setViewingItem(await fetchRcaWithTimeline(item.id)); setViewMode('VIEW'); }
+    catch (err: any) { alert(`Không mở được bản RCA: ${err.message}`); }
+    finally { setLoading(false); }
+  };
 
-                    {/* Mobile View: Cards */}
-                    <div className="md:hidden space-y-4">
-                        {filteredItems.map(item => {
-                            const linkedInc = incidents.find(inc => inc.id === item.scyk_id);
-                            const isOwnUnit = isAdmin || (linkedInc ? incidentMatchesUserDepartment(linkedInc, uDept) : false);
+  const save = async () => {
+    if (!formData.scyk_id) { alert('Vui lòng chọn sự cố y khoa cần phân tích RCA'); return; }
+    setSaving(true);
+    try {
+      const payload: RcaAnalysisRecord = { ...formData, nguoi_phan_tich: formData.nguoi_phan_tich || actor, bai_hoc_kinh_nghiem: lessonsText.split('\n').map(x => x.trim()).filter(Boolean), updated_by: actor || formData.updated_by || '' };
+      delete (payload as any).id; delete (payload as any).created_at; delete (payload as any).updated_at;
+      const saved = editingItem?.id ? await updateRcaAnalysis(editingItem.id, payload) : await addRcaAnalysis({ ...payload, created_by: actor || payload.created_by || '' });
+      if (saved.id) await replaceRcaTimeline(saved.id, timelineRows);
+      await loadData(); setEditingItem(null); setViewMode('LIST');
+    } catch (err: any) { alert(`Lỗi lưu phân tích RCA: ${err.message}`); }
+    finally { setSaving(false); }
+  };
 
-                            return (
-                                <div key={item.id} className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm flex flex-col gap-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black font-mono">
-                                            {linkedInc?.so_bc_ma_scyk || 'N/A'}
-                                        </span>
-                                        <div className="flex gap-2">
-                                            <button onClick={() => { setViewingItem(item); setViewMode('VIEW'); }} className="w-8 h-8 flex items-center justify-center bg-primary-50 text-primary-600 rounded-lg"><Eye size={14} /></button>
-                                            {isOwnUnit && (
-                                                <>
-                                                    <button onClick={() => { setEditingItem(item); setFormData(item); setViewMode('FORM'); }} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg"><Edit2 size={14} /></button>
-                                                    <button onClick={() => item.id && handleDelete(item.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 rounded-lg"><Trash2 size={14} /></button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div onClick={() => { setViewingItem(item); setViewMode('VIEW'); }}>
-                                        <h4 className="font-bold text-slate-800 line-clamp-2 leading-tight text-lg">
-                                            {linkedInc?.khoa_phong || linkedInc?.don_vi_bao_cao || 'N/A'}
-                                        </h4>
-                                        <div className="mt-2 space-y-1">
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase">Phân loại: {(item.ii_phan_loai_theo_nhom || '').split('\n')[0] || 'N/A'}</p>
-                                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed italic">
-                                                {item.i_mo_ta_chi_tiet}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="pt-3 border-t border-slate-50 flex items-center justify-between mt-auto">
-                                        <span className="text-xs font-bold text-slate-700 flex items-center gap-2">
-                                            <span className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px]">{item.a_danh_cho_nv_chuyen_trach?.[0]?.toUpperCase() || 'A'}</span>
-                                            {item.a_danh_cho_nv_chuyen_trach}
-                                        </span>
-                                        <span className="text-[10px] font-bold text-slate-400">{item.ngay}</span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+  const remove = async (item: RcaAnalysisRecord) => {
+    if (!item.id || !window.confirm(`Xóa bản phân tích RCA ${item.ma_scyk || ''}?`)) return;
+    try { await deleteRcaAnalysis(item.id); await loadData(); }
+    catch (err: any) { alert(`Lỗi xóa RCA: ${err.message}`); }
+  };
+
+  const updateTimeline = (index: number, patch: Partial<RcaTimelineRow>) => setTimelineRows(prev => prev.map((row, idx) => idx === index ? { ...row, ...patch } : row));
+  const addTimeline = () => setTimelineRows(prev => [...prev, emptyTimeline(prev.length + 1)]);
+  const removeTimeline = (index: number) => setTimelineRows(prev => prev.filter((_, idx) => idx !== index).map((row, idx) => ({ ...row, thu_tu: idx + 1 })));
+
+  const timelineTable = (editable: boolean, rows: RcaTimelineRow[]) => (
+    <div className="overflow-x-auto rounded-xl border border-slate-200">
+      <table className="min-w-[980px] w-full table-fixed text-sm">
+        <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wide text-slate-500">
+          <tr><th className="w-10 px-3 py-2">#</th><th className="w-36 px-3 py-2">Thời điểm</th><th className="w-36 px-3 py-2">Vị trí</th><th className="w-[31%] px-3 py-2">Lâm sàng</th><th className="w-[31%] px-3 py-2">Cận lâm sàng / xử trí</th>{editable && <th className="w-12 px-3 py-2" />}</tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {rows.map((row, index) => <tr key={row.id || index} className="align-top">
+            <td className="px-3 py-2 font-bold text-slate-500">{index + 1}</td>
+            {editable ? <>
+              <td className="px-3 py-2"><input value={row.thoi_diem || ''} onChange={e => updateTimeline(index, { thoi_diem: e.target.value })} placeholder="VD: 11:45, 29/06/2026" className={inputClass} /></td>
+              <td className="px-3 py-2"><input value={row.vi_tri || ''} onChange={e => updateTimeline(index, { vi_tri: e.target.value })} className={inputClass} /></td>
+              <td className="px-3 py-2"><textarea rows={3} value={row.lam_sang || ''} onChange={e => updateTimeline(index, { lam_sang: e.target.value })} className={textareaClass} /></td>
+              <td className="px-3 py-2"><textarea rows={3} value={row.can_lam_sang_xu_tri || ''} onChange={e => updateTimeline(index, { can_lam_sang_xu_tri: e.target.value })} className={textareaClass} /></td>
+              <td className="px-3 py-2"><button type="button" onClick={() => removeTimeline(index)} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><X size={16} /></button></td>
+            </> : <>
+              <td className="px-3 py-2">{formatVietnamDateTime(row.thoi_diem) || row.thoi_diem}</td><td className="px-3 py-2">{row.vi_tri}</td><td className="px-3 py-2 whitespace-pre-wrap">{row.lam_sang}</td><td className="px-3 py-2 whitespace-pre-wrap">{row.can_lam_sang_xu_tri}</td>
+            </>}
+          </tr>)}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const form = () => <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+      <div className="flex items-center gap-3"><button onClick={() => setViewMode('LIST')} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><ArrowLeft size={18} /></button><div><h2 className="text-base font-black text-slate-900">{editingItem ? 'Cập nhật phân tích RCA' : 'Báo cáo phân tích sự cố y khoa RCA'}</h2><p className="text-xs text-slate-500">Theo mẫu RCA.md, tự điền từ báo cáo và biên bản xác minh.</p></div></div>
+      <button onClick={save} disabled={saving || prefilling} className="btn-primary">{saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}{saving ? 'Đang lưu...' : 'Lưu RCA'}</button>
+    </div>
+    <div className="space-y-7 p-4 md:p-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <label className="block space-y-1.5 md:col-span-2"><span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Sự cố y khoa</span><select value={formData.scyk_id || ''} onChange={e => handleIncidentSelect(e.target.value)} disabled={Boolean(editingItem)} className={inputClass}><option value="">Chọn báo cáo sự cố...</option>{selectableIncidents.map(incident => <option key={incident.id} value={incident.id}>{incident.so_bc_ma_scyk || incident.id} - {incident.khoa_phong || incident.don_vi_bao_cao || 'Chưa rõ khoa'}</option>)}</select></label>
+        <Field label="Ngày phân tích" type="date" value={formData.ngay_phan_tich} onChange={value => updateField('ngay_phan_tich', value)} />
+        <label className="block space-y-1.5"><span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Người báo cáo RCA</span><input value={formData.nguoi_phan_tich || actor || ''} readOnly className={`${inputClass} bg-slate-50 text-slate-600`} /></label>
+        <label className="block space-y-1.5"><span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Trạng thái</span><select value={formData.trang_thai || 'DRAFT'} onChange={e => updateField('trang_thai', e.target.value as any)} className={inputClass}>{statuses.map(status => <option key={status.value} value={status.value}>{status.label}</option>)}</select></label>
+      </div>
+      {prefilling && <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700">Đang tự điền thông tin từ báo cáo và biên bản xác minh...</div>}
+      <Section title="Thông tin chung"><HeaderInfoFields /></Section>
+      <Section title="I. Mô tả sự cố"><div className="grid grid-cols-1 gap-4 md:grid-cols-2">{renderTextAreas(descriptionFields)}</div></Section>
+      <Section title="II. Phân loại sự cố"><div className="grid grid-cols-1 gap-4 md:grid-cols-2">{renderFields(classificationFields)}</div></Section>
+      <Section title="III. Diễn biến theo dấu chân người bệnh">{timelineTable(true, timelineRows)}<button type="button" onClick={addTimeline} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"><Plus size={16} />Thêm mốc diễn biến</button></Section>
+      <Section title="IV. Phân tích lâm sàng - cận lâm sàng và tính phù hợp của xử trí"><div className="grid grid-cols-1 gap-4 md:grid-cols-2">{renderTextAreas(clinicalFields)}</div></Section>
+      <Section title="V. Phân tích nguyên nhân gốc rễ"><div className="grid grid-cols-1 gap-4 md:grid-cols-2">{renderTextAreas(causeFields)}</div></Section>
+      <Section title="VI. Bài học kinh nghiệm"><TextArea label="Mỗi dòng là một bài học" value={lessonsText} onChange={setLessonsText} /></Section>
+      <Section title="VII. Khuyến nghị"><div className="grid grid-cols-1 gap-4 md:grid-cols-2">{renderTextAreas(recommendationFields)}</div></Section>
+    </div>
+  </div>;
+
+  const emptyValue = <span className="italic text-slate-400">Chưa có</span>;
+  const normalizedUnit = (value?: string) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const explicit = raw.match(/^([^\s-]+)\s+-\s+(.+)$/);
+    if (explicit) return `${explicit[2]} (${explicit[1]})`;
+    const lower = raw.toLowerCase();
+    const unit = units.find(u => u.ten_don_vi.toLowerCase() === lower || u.ma_don_vi.toLowerCase() === lower || raw.includes(u.ten_don_vi) || raw.includes(u.ma_don_vi));
+    if (!unit) return raw;
+    return `${unit.ten_don_vi} (${unit.ma_don_vi})`;
+  };
+  const patientSummary = (record: RcaAnalysisRecord) => {
+    const patientCode = String(record.ma_nguoi_benh || '').split(' - ')[0].trim();
+    const demographics = [record.gioi, record.tuoi ? `${record.tuoi} tuổi` : ''].filter(Boolean).join(', ');
+    return [patientCode, demographics].filter(Boolean).join(' - ');
+  };
+  const timeWithUnit = (time?: string, unit?: string) => [formatVietnamDateTime(time) || time || '', normalizedUnit(unit)].filter(Boolean);
+  const generalInfoRows = (record: RcaAnalysisRecord) => [
+    ['Mã sự cố', record.ma_scyk || '', 'Ngày phân tích', fmt(record.ngay_phan_tich)],
+    ['Người bệnh (mã)', patientSummary(record), 'Vào viện', formatVietnamDateTime(record.thoi_gian_vao_vien) || record.thoi_gian_vao_vien || ''],
+    ['Vào khoa\nKhoa xảy ra sự cố', timeWithUnit(record.vao_khoa_luc, record.khoa_xay_ra_su_co), 'Khoa tiếp nhận\nsau', timeWithUnit(record.khoa_tiep_nhan_luc, record.khoa_tiep_nhan_sau)],
+    ['Thời điểm sự cố', formatVietnamDateTime(record.thoi_diem_su_co) || record.thoi_diem_su_co || '', 'Phân loại', record.tinh_bao_cao || ''],
+    ['Người báo cáo RCA', record.nguoi_phan_tich || record.created_by || '', '', ''],
+  ] as Array<[string, any, string, any]>;
+  const CellValue = ({ value }: { value: any }) => Array.isArray(value)
+    ? <div className="space-y-0.5">{value.map((line, idx) => <div key={idx}>{line || emptyValue}</div>)}</div>
+    : <>{value || emptyValue}</>;
+  const GeneralInfoTable = ({ record }: { record: RcaAnalysisRecord }) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-[760px] w-full border-collapse text-[13px] leading-snug text-slate-900">
+        <tbody>{generalInfoRows(record).map(([label1, value1, label2, value2]) => (
+          <tr key={`${label1}-${label2}`}>
+            <th className="w-[21%] whitespace-pre-line border border-slate-400 px-2 py-1.5 text-left align-middle font-black">{label1}</th>
+            <td className="w-[33%] border border-slate-400 px-2 py-1.5 align-middle"><CellValue value={value1} /></td>
+            <th className="w-[18%] whitespace-pre-line border border-slate-400 px-2 py-1.5 text-left align-middle font-black">{label2}</th>
+            <td className="w-[28%] border border-slate-400 px-2 py-1.5 align-middle"><CellValue value={value2} /></td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+  const InlineDetail = ({ label, value }: { label: string; value: any }) => <p className="text-sm leading-relaxed text-slate-800"><strong>{label}:</strong> <span className="whitespace-pre-wrap">{value || emptyValue}</span></p>;
+  const BlockDetail = ({ label, value }: { label: string; value: any }) => <div><p className="text-sm font-black text-slate-950">{label}</p><p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{value || emptyValue}</p></div>;
+  const oneColumnDetails = (record: RcaAnalysisRecord, fields: Array<[keyof RcaAnalysisRecord, string, string?]>) => <div className="space-y-4">{fields.map(([key, label]) => <BlockDetail key={String(key)} label={label} value={record[key]} />)}</div>;
+  const joinedText = (...values: any[]) => values.map(value => String(value || '').trim()).filter(Boolean).join('\n');
+  const recommendationSections = (record: RcaAnalysisRecord): Array<[string, string]> => [
+    ['1. Giải pháp hệ thống', joinedText(record.khuyen_nghi_he_thong, record.khuyen_nghi_cong_cu_quy_trinh, record.khuyen_nghi_phan_mem_cntt, record.khuyen_nghi_kiem_tra_giam_sat)],
+    ['2. Xem xét trách nhiệm cá nhân', joinedText(record.xem_xet_trach_nhiem_hanh_chinh_hs, record.xem_xet_trach_nhiem_chuyen_mon_theo_doi)],
+  ];
+  const recommendationDetails = (record: RcaAnalysisRecord) => <div className="space-y-4">{recommendationSections(record).map(([label, value]) => <BlockDetail key={label} label={label} value={value} />)}</div>;
+  const resultTable = (rows: Array<[string, any]>) => <div className="overflow-x-auto rounded-xl border border-slate-300"><table className="min-w-[720px] w-full border-collapse text-sm"><thead><tr className="bg-slate-50"><th className="w-48 whitespace-nowrap border border-slate-300 px-4 py-3 text-center text-base font-black text-slate-900">Tiêu chí</th><th className="border border-slate-300 px-4 py-3 text-center text-base font-black text-slate-900">Kết quả</th></tr></thead><tbody>{rows.map(([label, value]) => <tr key={label}><td className="w-48 whitespace-nowrap border border-slate-300 px-4 py-3 align-top text-sm font-black text-slate-900">{label}</td><td className="border border-slate-300 px-4 py-3 align-top whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{value || emptyValue}</td></tr>)}</tbody></table></div>;
+  const causeTable = (record: RcaAnalysisRecord) => resultTable([
+    ['1. Người bệnh', record.yeu_to_nguoi_benh],
+    ['2. Nhân viên', record.yeu_to_nhan_vien],
+    ['3. Môi trường/Thiết bị', record.yeu_to_moi_truong_thiet_bi],
+    ['4. Quy trình/Nhiệm vụ', record.yeu_to_quy_trinh_nhiem_vu],
+    ['5. Tổ chức/Quản lý', record.yeu_to_to_chuc_quan_ly],
+  ]);
+
+  const esc = (value: any) => String(value ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
+  const nl = (value: any) => esc(value || '.........................................................').replace(/\n/g, '<br>');
+  const exportRcaReport = (record: RcaAnalysisWithTimeline) => {
+    const classificationRows = [
+      ['Loại sự cố', record.loai_su_co],
+      ['Mức độ tổn hại', record.muc_do_ton_hai],
+      ['Phân loại Nguy cơ', record.phan_loai_nguy_co],
+      ['Khả năng phòng ngừa', record.kha_nang_phong_ngua],
+      ['Tính báo cáo', record.tinh_bao_cao],
+    ];
+    const causeRows = [
+      ['1. Người bệnh', record.yeu_to_nguoi_benh],
+      ['2. Nhân viên', record.yeu_to_nhan_vien],
+      ['3. Môi trường/Thiết bị', record.yeu_to_moi_truong_thiet_bi],
+      ['4. Quy trình/Nhiệm vụ', record.yeu_to_quy_trinh_nhiem_vu],
+      ['5. Tổ chức/Quản lý', record.yeu_to_to_chuc_quan_ly],
+    ];
+    const tableRows = (rows: Array<[string, any]>) => rows.map(([label, value]) => `<tr><td class="label">${esc(label)}</td><td>${nl(value)}</td></tr>`).join('');
+    const timeline = (record.timeline || []).map(row => `<tr><td>${esc(formatVietnamDateTime(row.thoi_diem) || row.thoi_diem)}</td><td>${esc(row.vi_tri)}</td><td>${nl(row.lam_sang)}</td><td>${nl(row.can_lam_sang_xu_tri)}</td></tr>`).join('');
+    const lessons = (record.bai_hoc_kinh_nghiem || []).map(item => `<li>${esc(item)}</li>`).join('') || '<li>.........................................................</li>';
+    const recommendationHtml = recommendationSections(record).map(([label, value]) => `<div class="block"><div class="block-title">${esc(label)}</div><div>${nl(value)}</div></div>`).join('');
+    const htmlValue = (value: any) => Array.isArray(value)
+      ? `<div class="stack">${value.map(line => `<div>${esc(line || '')}</div>`).join('')}</div>`
+      : esc(value || '');
+    const generalInfoHtml = generalInfoRows(record).filter(([label1]) => label1 !== 'Người báo cáo RCA').map(([label1, value1, label2, value2]) => `<tr><th>${esc(label1).replace(/\\n/g, '<br>')}</th><td>${htmlValue(value1)}</td><th>${esc(label2).replace(/\\n/g, '<br>')}</th><td>${htmlValue(value2)}</td></tr>`).join('');
+const pdfFileName = `RCA-${String(record.ma_scyk || 'bao-cao').replace(/[\/:*?"<>|]+/g, '-')}.pdf`;
+    const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>RCA ${esc(record.ma_scyk || '')}</title><style>
+      @page{size:A4;margin:20mm 16mm 20mm 20mm} *,*::before,*::after{box-sizing:border-box;font-family:'Times New Roman',Times,serif!important} body{font-family:'Times New Roman',Times,serif!important;color:#111;line-height:1.45;max-width:980px;margin:0 auto;font-size:14pt!important;text-align:justify} .doc-head{display:grid;grid-template-columns:0.9fr 1.8fr;gap:28px;align-items:start;margin-bottom:60px;text-align:center}.org,.nation{font-size:13pt!important;font-weight:700;line-height:1.2;text-transform:uppercase;white-space:nowrap}.org .under,.nation .under{display:inline-block;border-bottom:2px solid #111;padding-bottom:1px}.nation .motto{font-size:13pt!important;text-transform:none;white-space:nowrap} h1{text-align:center;margin:0;font-size:18pt;font-weight:800;text-transform:uppercase} h2{text-align:center;margin:4px 0 24px;font-size:14pt;font-style:italic;font-weight:400} h3{margin:18px 0 8px;font-size:14pt;font-weight:800;text-transform:uppercase;text-align:left} table{width:100%;border-collapse:collapse;margin:10px 0 16px;text-align:justify;font-size:14pt!important;line-height:1.25} th,td{border:1px solid #222;padding:6px 8px;vertical-align:middle;text-align:left} th{font-weight:800;background:#f3f4f6} thead th{text-align:center}.info-table{table-layout:fixed}.info-table th{width:20%;white-space:normal}.info-table td{width:30%}.stack div{white-space:normal}.label{width:190px;white-space:nowrap;font-weight:800}.inline-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin:14px 0}.line{margin:0}.line strong{font-weight:800}.block{margin:8px 0 12px;text-align:justify}.block-title{font-weight:800;text-align:left}.root{font-weight:800}.muted{color:#666}.signature{display:grid;grid-template-columns:1fr 1fr;margin-top:34px;text-align:center;page-break-inside:avoid}.signature .box{min-height:110px}.signature .role{font-weight:800}.signature .name{margin-top:70px;font-weight:800}.actions{position:sticky;top:0;z-index:10;margin:0 0 18px;padding:10px 0;background:#fff;text-align:right}.actions button{border:1px solid #0f766e;background:#0f766e;color:#fff;border-radius:6px;padding:7px 12px;font-size:13px!important;font-weight:700;cursor:pointer}body.pdf-export{width:658px!important;max-width:658px!important;margin:0!important}.pdf-export .actions{display:none!important}@media print{.actions{display:none} body{max-width:none}}
+      </style></head><body><div class="actions"><button onclick="downloadReportPdf(this)">Tải báo cáo PDF</button></div><div class="doc-head"><div class="org"><div>BỆNH VIỆN QUÂN Y 103</div><div class="under">BAN QUẢN LÝ CHẤT LƯỢNG</div></div><div class="nation"><div>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div><div class="under motto">Độc lập - Tự do - Hạnh phúc</div></div></div><h1>Báo cáo phân tích sự cố y khoa</h1><h2>(Phân tích nguyên nhân gốc rễ - RCA)</h2>
+      <table class="info-table"><tbody>${generalInfoHtml}</tbody></table>
+      <h3>I. Mô tả sự cố</h3><div class="block"><div class="block-title">1. Tiền sử / bệnh sử</div><div>${nl(record.tien_su_benh_su)}</div></div><div class="block"><div class="block-title">2. Chẩn đoán ban đầu</div><div>${nl(record.chan_doan_ban_dau)}</div></div><div class="block"><div class="block-title">3. Diễn biến sự cố</div><div>${nl(record.dien_bien_su_co)}</div></div><div class="block"><div class="block-title">4. Xử trí sự cố</div><div>${nl(record.xu_tri_su_co)}</div></div><div class="block"><div class="block-title">5. Diễn tiến sau sự cố</div><div>${nl(record.dien_tien_sau_su_co)}</div></div>
+      <h3>II. Phân loại sự cố</h3><table><thead><tr><th>Tiêu chí</th><th>Kết quả</th></tr></thead><tbody>${tableRows(classificationRows)}</tbody></table>
+      <h3>III. Diễn biến theo dấu chân người bệnh</h3><table><thead><tr><th>Thời điểm</th><th>Vị trí</th><th>Lâm sàng</th><th>Cận lâm sàng / Xử trí</th></tr></thead><tbody>${timeline || '<tr><td></td><td></td><td></td><td></td></tr>'}</tbody></table>
+      <h3>IV. Phân tích lâm sàng - cận lâm sàng & tính phù hợp của xử trí</h3><div class="block"><div class="block-title">1. Giai đoạn chẩn đoán và tiếp nhận</div><div>${nl(record.phan_tich_chan_doan_tiep_nhan)}</div></div><div class="block"><div class="block-title">2. Theo dõi trước sự cố</div><div>${nl(record.phan_tich_theo_doi_truoc_su_co)}</div></div><div class="block"><div class="block-title">3. Cấp cứu khi xảy ra sự cố</div><div>${nl(record.phan_tich_cap_cuu_khi_su_co)}</div></div><div class="block"><div class="block-title">4. Hồi sức sau sự cố</div><div>${nl(record.phan_tich_hoi_suc_sau_su_co)}</div></div><div class="block"><div class="block-title">5. Kết luận</div><div>${nl(record.ket_luan_phu_hop_xu_tri)}</div></div>
+      <h3>V. Phân tích nguyên nhân gốc rễ (5 nhóm yếu tố)</h3><table><thead><tr><th>Nhóm yếu tố</th><th>Yếu tố đóng góp được nhận diện</th></tr></thead><tbody>${tableRows(causeRows)}</tbody></table><p class="root">Nguyên nhân gốc rễ xác định: ${nl(record.nguyen_nhan_goc_re)}</p><p><strong>Các vấn đề phát hiện thêm:</strong> ${nl(record.van_de_phat_hien_them)}</p>
+      <h3>VI. Bài học kinh nghiệm</h3><ul>${lessons}</ul>
+      <h3>VII. Khuyến nghị</h3>${recommendationHtml}
+      <div class="signature"><div></div><div class="box"><div class="role">Người báo cáo RCA</div><div class="muted">(Ký, ghi rõ họ tên)</div><div class="name">${esc(record.nguoi_phan_tich || record.created_by || '')}</div></div></div>
+      <script>
+function loadPdfScript(src,key){return new Promise(function(resolve,reject){if(window[key]){resolve();return;}var existing=document.querySelector('script[src="'+src+'"]');if(existing){existing.addEventListener('load',resolve);existing.addEventListener('error',reject);return;}var script=document.createElement('script');script.src=src;script.async=true;script.onload=resolve;script.onerror=function(){reject(new Error('Không tải được thư viện PDF'));};document.head.appendChild(script);});}
+async function downloadReportPdf(button){var oldText=button.textContent;button.disabled=true;button.textContent='Đang tạo PDF...';try{await loadPdfScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','jspdf');await loadPdfScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','html2canvas');var body=document.body;var pdfHtmlWidth=658;body.classList.add('pdf-export');var canvas=await window.html2canvas(body,{scale:2,useCORS:true,backgroundColor:'#ffffff',width:pdfHtmlWidth,windowWidth:pdfHtmlWidth,scrollX:0,scrollY:0,ignoreElements:function(el){return el.classList&&el.classList.contains('actions');}});var pdf=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});var pageW=210,pageH=297,marginTop=20,marginBottom=20,marginLeft=20,marginRight=16,contentW=pageW-marginLeft-marginRight,contentH=pageH-marginTop-marginBottom;var imgW=contentW;var pxPerMm=canvas.width/imgW;var pagePxH=Math.floor(contentH*pxPerMm);var canvasCtx=canvas.getContext('2d');var domScale=2;var bodyRect=body.getBoundingClientRect();var tableHeaders=Array.prototype.slice.call(document.querySelectorAll('table')).map(function(table){var thead=table.querySelector('thead');if(!thead)return null;var tableRect=table.getBoundingClientRect();var headRect=thead.getBoundingClientRect();return{top:Math.round((tableRect.top-bodyRect.top)*domScale),bottom:Math.round((tableRect.bottom-bodyRect.top)*domScale),headTop:Math.round((headRect.top-bodyRect.top)*domScale),headHeight:Math.max(1,Math.round(headRect.height*domScale))};}).filter(Boolean);function repeatedHeader(startY){for(var i=0;i<tableHeaders.length;i++){var t=tableHeaders[i];if(startY>t.top+t.headHeight+2&&startY<t.bottom-2)return t;}return null;}function isBlankRow(rowY){var data=canvasCtx.getImageData(0,rowY,canvas.width,1).data;var dark=0;for(var i=0;i<data.length;i+=32){if(data[i]<245||data[i+1]<245||data[i+2]<245){dark++;if(dark>canvas.width/160)return false;}}return true;}function findCut(startY,targetH){var maxY=Math.min(canvas.height,startY+targetH);if(maxY>=canvas.height)return canvas.height;var minCut=startY+Math.floor(targetH*0.62);var search=Math.min(180,Math.floor(targetH*0.18));for(var y=maxY;y>=Math.max(minCut,maxY-search);y--){if(isBlankRow(y)&&isBlankRow(Math.max(0,y-2))&&isBlankRow(Math.min(canvas.height-1,y+2)))return y;}for(var y=maxY+1;y<=Math.min(canvas.height-1,maxY+60);y++){if(isBlankRow(y)&&isBlankRow(Math.max(0,y-2))&&isBlankRow(Math.min(canvas.height-1,y+2)))return y;}return maxY;}var y=0,page=0;while(y<canvas.height){if(page>0)pdf.addPage();var head=repeatedHeader(y);var headH=head?Math.min(head.headHeight,Math.floor(pagePxH*0.18)):0;var availableH=Math.max(1,pagePxH-headH);var cutY=findCut(y,availableH);var sliceH=Math.max(1,cutY-y);var tmp=document.createElement('canvas');tmp.width=canvas.width;tmp.height=pagePxH;var ctx=tmp.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,tmp.width,tmp.height);if(headH>0){ctx.drawImage(canvas,0,head.headTop,canvas.width,head.headHeight,0,0,canvas.width,headH);}ctx.drawImage(canvas,0,y,canvas.width,sliceH,0,headH,canvas.width,sliceH);pdf.addImage(tmp.toDataURL('image/jpeg',0.95),'JPEG',marginLeft,marginTop,contentW,contentH);y=cutY;page++;}pdf.save('${esc(pdfFileName)}');}catch(error){alert((error&&error.message)||'Không tạo được PDF');}finally{document.body.classList.remove('pdf-export');button.disabled=false;button.textContent=oldText;}}
+</script></body></html>`;
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); return; }
+    alert('Không mở được cửa sổ báo cáo. Vui lòng cho phép popup để tải PDF.');
+  };
+  const view = () => {
+    if (!viewingItem) return null;
+    return <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+        <div className="flex items-center gap-3"><button onClick={() => setViewMode('LIST')} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><ArrowLeft size={18} /></button><div><h2 className="text-base font-black text-slate-900">Báo cáo phân tích RCA</h2><p className="text-xs text-slate-500">{viewingItem.ma_scyk || 'Chưa có mã'} - {statusLabel(viewingItem.trang_thai)}</p></div></div>
+        <div className="flex items-center gap-2"><button onClick={() => exportRcaReport(viewingItem)} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-bold text-white hover:bg-primary-700"><Download size={16} />Xuất báo cáo</button><button onClick={() => editItem(viewingItem)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"><Edit2 size={16} />Sửa</button></div>
+      </div>
+      <div className="space-y-7 p-4 md:p-6">
+        <Section title="Thông tin chung"><GeneralInfoTable record={viewingItem} /></Section>
+        <Section title="I. Mô tả sự cố">{oneColumnDetails(viewingItem, descriptionFields)}</Section>
+        <Section title="II. Phân loại sự cố">{resultTable([['Loại sự cố', viewingItem.loai_su_co], ['Mức độ tổn hại', viewingItem.muc_do_ton_hai], ['Phân loại Nguy cơ', viewingItem.phan_loai_nguy_co], ['Khả năng phòng ngừa', viewingItem.kha_nang_phong_ngua], ['Tính báo cáo', viewingItem.tinh_bao_cao]])}</Section>
+        <Section title="III. Diễn biến theo dấu chân người bệnh">{timelineTable(false, viewingItem.timeline || [])}</Section>
+        <Section title="IV. Phân tích lâm sàng - cận lâm sàng và tính phù hợp của xử trí">{oneColumnDetails(viewingItem, clinicalFields)}</Section>
+        <Section title="V. Phân tích nguyên nhân gốc rễ">{causeTable(viewingItem)}<div className="mt-4 space-y-4"><BlockDetail label="Nguyên nhân gốc rễ xác định" value={viewingItem.nguyen_nhan_goc_re} /><BlockDetail label="Vấn đề phát hiện thêm" value={viewingItem.van_de_phat_hien_them} /></div></Section>
+        <Section title="VI. Bài học kinh nghiệm"><BlockDetail label="Bài học" value={(viewingItem.bai_hoc_kinh_nghiem || []).join('\n')} /></Section>
+        <Section title="VII. Khuyến nghị">{recommendationDetails(viewingItem)}</Section>
+      </div>
+    </div>;
+  };
+  if (viewMode === 'FORM') return form();
+  if (viewMode === 'VIEW') return view();
+
+  return <div className="space-y-4">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600"><ClipboardList size={22} /></div><div><h2 className="text-lg font-black text-slate-900">Phân tích RCA sự cố y khoa</h2><p className="text-sm text-slate-500">Lập báo cáo phân tích nguyên nhân gốc rễ theo mẫu RCA.md.</p></div></div>
+      <button onClick={resetForm} className="btn-primary"><Plus size={16} />Tạo RCA</button>
+    </div>
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+        <div className="relative max-w-md flex-1"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm mã sự cố, khoa, nguyên nhân..." className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" /></div>
+        <span className="text-sm font-bold text-slate-500">{filteredItems.length} bản RCA</span>
+      </div>
+      {loading && <div className="p-8 text-center text-slate-500"><Loader2 className="mx-auto mb-2 animate-spin" />Đang tải...</div>}
+      {error && <div className="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+      {!loading && !error && filteredItems.length === 0 && <div className="p-8 text-center text-slate-500">Chưa có bản phân tích RCA phù hợp.</div>}
+      {!loading && !error && filteredItems.length > 0 && <div className="overflow-x-auto"><table className="min-w-[980px] w-full table-fixed text-sm"><thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Mã sự cố</th><th className="px-4 py-3">Ngày phân tích</th><th className="px-4 py-3">Khoa</th><th className="px-4 py-3">Mức độ</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-slate-100">
+        {filteredItems.map(item => <tr key={item.id} className="hover:bg-slate-50/70"><td className="px-4 py-3 font-bold text-slate-900"><FileText size={16} className="mr-2 inline text-primary-600" />{item.ma_scyk || 'Chưa có mã'}</td><td className="px-4 py-3 text-slate-600">{fmt(item.ngay_phan_tich)}</td><td className="px-4 py-3 text-slate-600">{item.khoa_xay_ra_su_co || '-'}</td><td className="px-4 py-3 text-slate-600">{item.muc_do_ton_hai || '-'}</td><td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{statusLabel(item.trang_thai)}</span></td><td className="px-4 py-3 text-right"><div className="inline-flex items-center gap-1"><button onClick={() => viewItem(item)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-primary-600"><Eye size={16} /></button><button onClick={() => editItem(item)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-amber-600"><Edit2 size={16} /></button><button onClick={() => remove(item)} className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600"><Trash2 size={16} /></button></div></td></tr>)}
+      </tbody></table></div>}
+    </div>
+  </div>;
 };
 
 export default IncidentAnalysis;
-
-// Add generic icons for View mode
-const Activity = ({ size, className }: { size?: number, className?: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-    </svg>
-);

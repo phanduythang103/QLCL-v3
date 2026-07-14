@@ -68,6 +68,25 @@ const getStatusWidth = (status: string) => {
   }
 };
 
+const formatDateTime = (value?: string) => {
+  if (!value) return '---';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const parts = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour12: false,
+  }).formatToParts(date).reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== 'literal') acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return `${parts.hour}:${parts.minute}, ${parts.day}/${parts.month}/${parts.year}`;
+};
+
 export const Incidents: React.FC = () => {
   const { canView, canCreate, canUpdate, canDelete } = usePermissions();
 
@@ -535,6 +554,8 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
     // 1. Text Search
     const matchesSearch = (inc.so_bc_ma_scyk || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (inc.khoa_phong || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (inc.ma_bn || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (inc.so_benh_an || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (inc.mo_ta_su_co || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     // 2. Status Filter
@@ -648,8 +669,10 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
                     <td className="px-6 py-8 border border-slate-200">
                       <div className="flex flex-col gap-2">
                         <div className="text-black text-[13px] font-black uppercase tracking-tight leading-tight group-hover:text-[#059669] transition-colors">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                            <div className="text-[10px] text-slate-600 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/50 italic capitalize">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</div>
+                           <div className="text-[10px] text-slate-600 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/50">Mã BN: {inc.ma_bn || '---'}</div>
+                           <div className="text-[10px] text-slate-600 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/50">Vào viện: {formatDateTime(inc.thoi_gian_vao_vien)}</div>
                         </div>
                         <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1 font-bold italic opacity-60">
                           <Clock size={12} strokeWidth={3} /> Xảy ra: {inc.ngay_xay_ra_sc ? new Date(inc.ngay_xay_ra_sc).toLocaleDateString('vi-VN') : '---'}
@@ -766,6 +789,10 @@ const IncidentList = ({ data, onCreate, onEdit, onDelete, onView, onStatusUpdate
 
                   <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-100">
                     <div className="font-bold text-slate-800 text-[11px] mb-1 leading-tight">{inc.khoa_phong || inc.don_vi_bao_cao || '---'}</div>
+                    <div className="mb-2 grid grid-cols-1 gap-1 text-[10px] font-bold text-slate-600">
+                      <span>Mã BN: {inc.ma_bn || '---'}</span>
+                      <span>Vào viện: {formatDateTime(inc.thoi_gian_vao_vien)}</span>
+                    </div>
                     <div className="flex items-center justify-between text-[10px]">
                       <span className="text-slate-500 font-medium">Đối tượng: {inc.doi_tuong_xay_ra_sc || '---'}</span>
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${inc.hinh_thuc_bao_cao === 'Bắt buộc' ? 'bg-red-50 text-red-600' : 'bg-indigo-50 text-indigo-600'}`}>
@@ -1218,6 +1245,8 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                 <div className="grid grid-cols-2 gap-2">
                   <MobileInfoField label="Họ tên" value={item.ho_ten_nb} wide />
                   <MobileInfoField label="Số BA" value={item.so_benh_an} />
+                  <MobileInfoField label="Mã BN" value={item.ma_bn} />
+                  <MobileInfoField label="Vào viện" value={formatDateTime(item.thoi_gian_vao_vien)} />
                   <MobileInfoField label="Giới tính" value={item.gioi} />
                   <MobileInfoField label="Ngày sinh" value={formatDate(item.ngay_sinh)} />
                   <MobileInfoField label="Đối tượng" value={item.doi_tuong_xay_ra_sc} />
@@ -1309,6 +1338,8 @@ const IncidentDetailView: React.FC<IncidentDetailViewProps> = ({ item, onBack, o
                   <p className="font-bold uppercase bg-[#059669] text-white -mx-6 -mt-6 p-2 px-6 border-b-[1.5px] border-black text-[10pt]">1. Thông tin người bệnh</p>
                   <p className="pt-3"><strong>Họ và tên:</strong> {item.ho_ten_nb || '..........................................................'}</p>
                   <p><strong>Số bệnh án:</strong> {item.so_benh_an || '................................'}</p>
+                  <p><strong>Mã BN:</strong> {item.ma_bn || '................................'}</p>
+                  <p><strong>Vào viện:</strong> {item.thoi_gian_vao_vien ? formatDateTime(item.thoi_gian_vao_vien) : '....../....../........ ...:...'}</p>
                   <div className="flex flex-wrap gap-8">
                     <p><strong>Ngày sinh:</strong> {item.ngay_sinh ? new Date(item.ngay_sinh).toLocaleDateString('vi-VN') : '..../..../.......'}</p>
                     <p><strong>Giới tính:</strong> {item.gioi || '........'}</p>

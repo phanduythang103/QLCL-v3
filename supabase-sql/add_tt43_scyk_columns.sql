@@ -1,6 +1,8 @@
 -- Migration to add columns required for TT 43/2018/TT-BYT SCYK form
 ALTER TABLE bao_cao_scyk 
+ADD COLUMN IF NOT EXISTS ma_bn TEXT,
 ADD COLUMN IF NOT EXISTS so_benh_an TEXT,
+ADD COLUMN IF NOT EXISTS thoi_gian_vao_vien TIMESTAMP WITH TIME ZONE,
 ADD COLUMN IF NOT EXISTS ngay_sinh DATE,
 ADD COLUMN IF NOT EXISTS gioi TEXT,
 ADD COLUMN IF NOT EXISTS vi_tri_cu_the TEXT,

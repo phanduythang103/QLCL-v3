@@ -111,13 +111,12 @@ function buildHTML(data: BienBanPdfData): string {
 <html>
 <head>
 <meta charset="UTF-8"/>
-<style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+<style>  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;font-family:'Times New Roman',Times,serif!important;font-size:13pt!important;}
   html,body{
     width:${HTML_W}px;
-    font-family:'Times New Roman',Times,serif;
-    font-size:19px;         /* 14pt @ 96dpi: 14×96/72 ≈ 18.67px → 19px */
-    line-height:1.55;
+    font-family:'Times New Roman',Times,serif!important;
+    font-size:13pt!important;
+    line-height:1.45;
     color:#000;
     background:#fff;
     margin:0;padding:0;

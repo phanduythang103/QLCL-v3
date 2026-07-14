@@ -5,8 +5,10 @@ CREATE TABLE bao_cao_scyk (
   so_bc_ma_scyk text NOT NULL,               -- Số BC/Mã SCYK
   ngay_bao_cao date NOT NULL,                -- Ngày báo cáo (date)
   don_vi_bao_cao text NOT NULL,              -- Đơn vị báo cáo
-  ho_ten_nb text NOT NULL,                   -- Họ tên người báo cáo
+  ho_ten_nb text NOT NULL,                   -- Họ tên người bệnh
+  ma_bn text,                                -- Mã người bệnh
   so_benh_an text,                           -- Số bệnh án
+  thoi_gian_vao_vien timestamp with time zone, -- Thời gian vào viện
   ngay_sinh date,                            -- Ngày sinh
   gioi text,                                 -- Giới (Nam/Nữ)
   khoa_phong text,                           -- Khoa/phòng

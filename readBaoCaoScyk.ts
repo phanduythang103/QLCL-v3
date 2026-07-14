@@ -7,7 +7,9 @@ export interface BaoCaoScyk {
   ngay_bao_cao?: string;
   don_vi_bao_cao?: string;
   ho_ten_nb?: string;
+  ma_bn?: string;
   so_benh_an?: string;
+  thoi_gian_vao_vien?: string;
   ngay_sinh?: string;
   gioi?: string;
   mo_ta_su_co?: string;
