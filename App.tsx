@@ -6,7 +6,7 @@ import { Dashboard } from './components/Dashboard';
 import { Incidents } from './components/Incidents';
 import { Supervision } from './components/Supervision';
 import { HRModule } from './components/HRModule';
-import { DocsModule } from './components/DocsModule';
+import { DocsModule, KnowledgeSharing } from './components/DocsModule';
 import { AssessmentModule } from './components/Assessment';
 import { ImprovementModule } from './components/ImprovementModule';
 import { IndicatorsModule } from './components/IndicatorsModule';
@@ -662,7 +662,7 @@ const AppContent: React.FC = () => {
       case ModuleType.HR: return <HRModule />;
       case ModuleType.DOCS: return <DocsModule />;
       case ModuleType.TRAINING: return <ContinuousTraining />;
-      case ModuleType.SHARING: return <DocsModule />;
+      case ModuleType.SHARING: return <KnowledgeSharing />;
       case ModuleType.INCIDENTS: return <Incidents />;
       case ModuleType.ASSESSMENT: return <AssessmentModule />;
       case ModuleType.SUPERVISION: return <Supervision />;

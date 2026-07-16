@@ -39,14 +39,19 @@ export interface RcaAnalysisRecord {
   xu_tri_su_co?: string;
   dien_tien_sau_su_co?: string;
   loai_su_co?: string;
+  phan_loai_nhom_su_co?: string[];
+  phan_loai_nhom_su_co_khac?: string;
   muc_do_ton_hai?: string;
   phan_loai_nguy_co?: string;
   kha_nang_phong_ngua?: string;
+  phan_loai_nhom_nguyen_nhan?: string[];
+  phan_loai_nhom_nguyen_nhan_khac?: string;
   phan_tich_chan_doan_tiep_nhan?: string;
   phan_tich_theo_doi_truoc_su_co?: string;
   phan_tich_cap_cuu_khi_su_co?: string;
   phan_tich_hoi_suc_sau_su_co?: string;
   ket_luan_phu_hop_xu_tri?: string;
+  mo_ta_hanh_dong_xu_ly_su_co?: string;
   yeu_to_nguoi_benh?: string;
   yeu_to_nhan_vien?: string;
   yeu_to_moi_truong_thiet_bi?: string;
@@ -61,6 +66,13 @@ export interface RcaAnalysisRecord {
   khuyen_nghi_kiem_tra_giam_sat?: string;
   xem_xet_trach_nhiem_hanh_chinh_hs?: string;
   xem_xet_trach_nhiem_chuyen_mon_theo_doi?: string;
+  mo_ta_ket_qua_phat_hien?: string;
+  da_thao_luan_khuyen_cao?: string;
+  phu_hop_khuyen_cao_chinh_thuc?: string;
+  khuyen_cao_ap_dung?: string;
+  muc_do_ton_thuong_nguoi_benh?: string;
+  ton_thuong_to_chuc?: string[];
+  ton_thuong_to_chuc_khac?: string;
   nguon_bao_cao?: Record<string, any>;
   nguon_bien_ban_xac_minh?: Record<string, any>;
   created_by?: string;
@@ -84,13 +96,17 @@ const RCA_COLUMNS = [
   'ma_scyk', 'so_benh_an', 'ma_nguoi_benh', 'gioi', 'tuoi', 'thoi_gian_vao_vien', 'khoa_xay_ra_su_co',
   'vao_khoa_luc', 'khoa_tiep_nhan_sau', 'khoa_tiep_nhan_luc', 'thoi_diem_su_co', 'tinh_bao_cao',
   'tien_su_benh_su', 'chan_doan_ban_dau', 'dien_bien_su_co', 'xu_tri_su_co', 'dien_tien_sau_su_co',
-  'loai_su_co', 'muc_do_ton_hai', 'phan_loai_nguy_co', 'kha_nang_phong_ngua',
+  'loai_su_co', 'phan_loai_nhom_su_co', 'phan_loai_nhom_su_co_khac', 'muc_do_ton_hai', 'phan_loai_nguy_co', 'kha_nang_phong_ngua',
+  'phan_loai_nhom_nguyen_nhan', 'phan_loai_nhom_nguyen_nhan_khac',
   'phan_tich_chan_doan_tiep_nhan', 'phan_tich_theo_doi_truoc_su_co', 'phan_tich_cap_cuu_khi_su_co',
-  'phan_tich_hoi_suc_sau_su_co', 'ket_luan_phu_hop_xu_tri', 'yeu_to_nguoi_benh', 'yeu_to_nhan_vien',
+  'phan_tich_hoi_suc_sau_su_co', 'ket_luan_phu_hop_xu_tri', 'mo_ta_hanh_dong_xu_ly_su_co', 'yeu_to_nguoi_benh', 'yeu_to_nhan_vien',
   'yeu_to_moi_truong_thiet_bi', 'yeu_to_quy_trinh_nhiem_vu', 'yeu_to_to_chuc_quan_ly', 'nguyen_nhan_goc_re',
   'van_de_phat_hien_them', 'bai_hoc_kinh_nghiem', 'khuyen_nghi_he_thong', 'khuyen_nghi_cong_cu_quy_trinh',
   'khuyen_nghi_phan_mem_cntt', 'khuyen_nghi_kiem_tra_giam_sat', 'xem_xet_trach_nhiem_hanh_chinh_hs',
-  'xem_xet_trach_nhiem_chuyen_mon_theo_doi', 'nguon_bao_cao', 'nguon_bien_ban_xac_minh', 'created_by', 'updated_by'
+  'xem_xet_trach_nhiem_chuyen_mon_theo_doi',
+  'mo_ta_ket_qua_phat_hien', 'da_thao_luan_khuyen_cao', 'phu_hop_khuyen_cao_chinh_thuc', 'khuyen_cao_ap_dung',
+  'muc_do_ton_thuong_nguoi_benh', 'ton_thuong_to_chuc', 'ton_thuong_to_chuc_khac',
+  'nguon_bao_cao', 'nguon_bien_ban_xac_minh', 'created_by', 'updated_by'
 ] as const;
 
 function sanitizeRcaRecord(record: Partial<RcaAnalysisRecord>): Partial<RcaAnalysisRecord> {

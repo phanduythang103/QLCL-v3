@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS giam_sat_chung (
     ngay_giam_sat TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('utc'::text, now()),
     nguoi_gs TEXT NOT NULL,
     khoa_gs TEXT NOT NULL,
+    doi_tuong_gs TEXT,
 
     -- Dynamic Monitoring Content (JSONB)
     -- Format: Array of objects [{ id: string, label: string, is_pass: boolean, note: string }]

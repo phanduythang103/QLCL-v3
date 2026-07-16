@@ -39,6 +39,26 @@ const pickValidFields = (record: any) => {
   return result;
 };
 
+const omitField = (record: any, field: string) => {
+  const next = { ...record };
+  delete next[field];
+  return next;
+};
+
+const isMissingColumnError = (error: any, column: string) => {
+  const message = [error?.code, error?.message, error?.details, error?.hint]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return message.includes(column.toLowerCase()) && (
+    message.includes('column') ||
+    message.includes('schema cache') ||
+    message.includes('pgrst204') ||
+    message.includes('42703')
+  );
+};
+
 export async function fetchGsChung(): Promise<GiamSatChung[]> {
   const { data, error } = await supabase
     .from('giam_sat_chung')
@@ -54,11 +74,19 @@ export async function fetchGsChung(): Promise<GiamSatChung[]> {
 
 export async function addGsChung(record: GiamSatChung): Promise<GiamSatChung> {
   const cleanData = pickValidFields(record);
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('giam_sat_chung')
     .insert([cleanData])
     .select()
     .single();
+
+  if (error && isMissingColumnError(error, 'doi_tuong_gs')) {
+    ({ data, error } = await supabase
+      .from('giam_sat_chung')
+      .insert([omitField(cleanData, 'doi_tuong_gs')])
+      .select()
+      .single());
+  }
 
   if (error) {
     console.error('Error adding gs_chung:', error);
@@ -69,12 +97,21 @@ export async function addGsChung(record: GiamSatChung): Promise<GiamSatChung> {
 
 export async function updateGsChung(id: string, record: Partial<GiamSatChung>): Promise<GiamSatChung> {
   const cleanData = pickValidFields(record);
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('giam_sat_chung')
     .update(cleanData)
     .eq('id', id)
     .select()
     .single();
+
+  if (error && isMissingColumnError(error, 'doi_tuong_gs')) {
+    ({ data, error } = await supabase
+      .from('giam_sat_chung')
+      .update(omitField(cleanData, 'doi_tuong_gs'))
+      .eq('id', id)
+      .select()
+      .single());
+  }
 
   if (error) {
     console.error('Error updating gs_chung:', error);

@@ -45,20 +45,27 @@ CREATE TABLE IF NOT EXISTS public.rca_phan_tich_scyk (
   xu_tri_su_co text,
   dien_tien_sau_su_co text,
 
-  -- II. Phan loai su co
+  -- II. Phan loai su co theo nhom su co
   loai_su_co text,
+  phan_loai_nhom_su_co jsonb NOT NULL DEFAULT '[]'::jsonb,
+  phan_loai_nhom_su_co_khac text,
   muc_do_ton_hai text,
   phan_loai_nguy_co text,
   kha_nang_phong_ngua text,
 
-  -- IV. Phan tich lam sang - can lam sang va tinh phu hop xu tri
+  -- III. Phan loai su co theo nhom nguyen nhan gay ra su co
+  phan_loai_nhom_nguyen_nhan jsonb NOT NULL DEFAULT '[]'::jsonb,
+  phan_loai_nhom_nguyen_nhan_khac text,
+
+  -- V. Phan tich lam sang - can lam sang - y lenh thuc hien va tinh phu hop xu tri
   phan_tich_chan_doan_tiep_nhan text,
   phan_tich_theo_doi_truoc_su_co text,
   phan_tich_cap_cuu_khi_su_co text,
   phan_tich_hoi_suc_sau_su_co text,
   ket_luan_phu_hop_xu_tri text,
+  mo_ta_hanh_dong_xu_ly_su_co text,
 
-  -- V. Phan tich nguyen nhan goc re theo 5 nhom yeu to
+  -- VI. Phan tich nguyen nhan goc re theo 5 nhom yeu to
   yeu_to_nguoi_benh text,
   yeu_to_nhan_vien text,
   yeu_to_moi_truong_thiet_bi text,
@@ -67,16 +74,27 @@ CREATE TABLE IF NOT EXISTS public.rca_phan_tich_scyk (
   nguyen_nhan_goc_re text,
   van_de_phat_hien_them text,
 
-  -- VI. Bai hoc kinh nghiem
+  -- VII. Bai hoc kinh nghiem
   bai_hoc_kinh_nghiem jsonb NOT NULL DEFAULT '[]'::jsonb,
 
-  -- VII. Khuyen nghi
+  -- VIII. Khuyen nghi
   khuyen_nghi_he_thong text,
   khuyen_nghi_cong_cu_quy_trinh text,
   khuyen_nghi_phan_mem_cntt text,
   khuyen_nghi_kiem_tra_giam_sat text,
   xem_xet_trach_nhiem_hanh_chinh_hs text,
   xem_xet_trach_nhiem_chuyen_mon_theo_doi text,
+
+  -- B. Danh cho cap quan ly / I. Danh gia cua truong nhom chuyen gia
+  mo_ta_ket_qua_phat_hien text,
+  da_thao_luan_khuyen_cao text,
+  phu_hop_khuyen_cao_chinh_thuc text,
+  khuyen_cao_ap_dung text,
+
+  -- B. Danh cho cap quan ly / II. Danh gia muc do ton thuong
+  muc_do_ton_thuong_nguoi_benh text,
+  ton_thuong_to_chuc jsonb NOT NULL DEFAULT '[]'::jsonb,
+  ton_thuong_to_chuc_khac text,
 
   -- Source snapshots used for auto-fill and audit
   nguon_bao_cao jsonb NOT NULL DEFAULT '{}'::jsonb,
