@@ -152,6 +152,7 @@ const PermissionManager = () => {
 
   const moduleLabels: Record<string, string> = {
     DASHBOARD: 'Trang chủ / Tổng quan',
+    JCI: 'Tiêu chuẩn JCI',
     HR: 'Quản lý Nhân sự',
     DOCS: 'Văn bản & Đào tạo',
     ASSESSMENT: 'Đánh giá Chất lượng',
