@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell } from 'lucide-react';
+import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell, TrendingDown, Users, Award } from 'lucide-react';
 import { JCIFallIncidentsModule } from './JCIFallIncidentsModule';
 import { JCICriticalResultsModule } from './JCICriticalResultsModule';
 import { JCIHandoverIncidentsModule } from './JCIHandoverIncidentsModule';
 import { NdnbMonitoringModule } from './NdnbMonitoringModule';
 import { SurgerySafetyModule } from './SurgerySafetyModule';
 import { HandHygieneModule } from './HandHygieneModule';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 export const JCIModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'INDICATORS'>('INDICATORS');
   const [category, setCategory] = useState<string | null>(null);
+  const { canView } = usePermissions();
 
   const jciIndicators = [
     { id: 'FALL_RATE', label: 'Tỷ suất NB ngã', icon: TrendingDown, desc: 'Giám sát tỷ suất người bệnh ngã', bgClass: 'bg-red-300', iconClass: 'text-red-500' },
@@ -18,7 +20,7 @@ export const JCIModule: React.FC = () => {
     { id: 'HANDOVER_INCIDENTS', label: 'KQ sự cố liên quan đến bàn giao', icon: AlertCircle, desc: 'Sự cố y khoa liên quan đến bàn giao người bệnh', bgClass: 'bg-purple-300', iconClass: 'text-purple-500' },
     { id: 'SURGERY_SAFETY', label: 'Tuân thủ ATPT', icon: ShieldCheck, desc: 'Tỷ lệ tuân thủ An toàn phẫu thuật', bgClass: 'bg-emerald-300', iconClass: 'text-emerald-500' },
     { id: 'HAND_HYGIENE', label: 'Tuân thủ 5 thời điểm VST', icon: HandMetal, desc: 'Tỷ lệ tuân thủ 5 thời điểm vệ sinh tay', bgClass: 'bg-cyan-300', iconClass: 'text-cyan-500' },
-  ];
+  ].filter(item => canView('JCI', item.id));
 
   if (category) {
     switch (category) {

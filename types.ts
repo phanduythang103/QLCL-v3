@@ -23,7 +23,7 @@ export enum ModuleType {
 
 export type QARoleType = 'COUNCIL' | 'BOARD' | 'NETWORK';
 
-export type SupervisionCategory = 'SURGERY' | 'HAND_HYGIENE' | '5S' | 'RECORDS' | 'DRUGS' | 'PROFESSIONAL' | 'GENERAL' | 'NDNB' | 'PROF_DUTY' | 'PROF_EMERGENCY' | 'PROF_ADMISSION' | null;
+export type SupervisionCategory = 'SURGERY' | 'HAND_HYGIENE' | '5S' | 'RECORDS' | 'DRUGS' | 'PROFESSIONAL' | 'GENERAL' | 'NDNB' | 'PROF_DUTY' | 'PROF_EMERGENCY' | 'PROF_ADMISSION' | 'ENDOSCOPY' | 'STOMACH_ENDOSCOPY' | 'EPIDURAL_INJECTION' | 'BRONCHOSCOPY' | null;
 
 export type IndicatorCategory =
   | null
