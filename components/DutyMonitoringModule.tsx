@@ -236,10 +236,10 @@ const CdTrucErrorSummary = ({ data }: { data: GiamSatCdTruc[] }) => {
           <tbody className="font-bold text-slate-700">
             {summary.length > 0 ? summary.map((s, i) => (
               <tr key={i} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 border-2 border-slate-900 text-blue-700 leading-snug">{s.label}</td>
-                <td className="p-4 border-2 border-slate-900 text-center text-lg font-black">{s.count}</td>
-                <td className="p-4 border-2 border-slate-900 text-center text-lg font-black text-red-600">{s.rate}%</td>
-                <td className="p-4 border-2 border-slate-900">
+                <td data-label="Nội dung giám sát (Tiêu chí vi phạm)" className="p-4 border-2 border-slate-900 text-blue-700 leading-snug">{s.label}</td>
+                <td data-label="Số kíp vi phạm" className="p-4 border-2 border-slate-900 text-center text-lg font-black">{s.count}</td>
+                <td data-label="Tỷ lệ (%)" className="p-4 border-2 border-slate-900 text-center text-lg font-black text-red-600">{s.rate}%</td>
+                <td data-label="Lỗi cụ thể & Đơn vị liên quan" className="p-4 border-2 border-slate-900">
                   <p className="text-slate-900 italic mb-2">Lỗi: {s.notes}</p>
                   <div className="flex items-center gap-1.5 text-[12pt] text-slate-900 font-black uppercase tracking-tight"><Building2 size={16} className="text-blue-700"/> {s.depts || 'N/A'}</div>
                 </td>

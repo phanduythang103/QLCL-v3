@@ -168,12 +168,12 @@ const FiveSList = ({ data, onView, onEdit, onDelete, onAdd }: any) => {
               const pl = getPhanLoai(d.tong_diem || 0);
               return (
                 <tr key={d.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-5 text-sm font-bold text-slate-700">{new Date(d.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
-                  <td className="p-5 text-sm text-slate-600 font-bold">{d.don_vi_duoc_giam_sat}</td>
-                  <td className="p-5 text-xs text-slate-400">{d.khu_vuc_giam_sat || '---'}</td>
-                  <td className="p-5 text-center text-lg font-black text-slate-800">{d.tong_diem}<span className="text-xs text-slate-400">/100</span></td>
-                  <td className="p-5 text-center"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${pl.bg} ${pl.color} border ${pl.border}`}>{pl.label}</span></td>
-                  <td className="p-5 flex justify-end gap-2">
+                  <td data-label="Ngày" className="p-5 text-sm font-bold text-slate-700">{new Date(d.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
+                  <td data-label="Đơn vị" className="p-5 text-sm text-slate-600 font-bold">{d.don_vi_duoc_giam_sat}</td>
+                  <td data-label="Khu vực" className="p-5 text-xs text-slate-400">{d.khu_vuc_giam_sat || '---'}</td>
+                  <td data-label="Điểm" className="p-5 text-center text-lg font-black text-slate-800">{d.tong_diem}<span className="text-xs text-slate-400">/100</span></td>
+                  <td data-label="Phân loại" className="p-5 text-center"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${pl.bg} ${pl.color} border ${pl.border}`}>{pl.label}</span></td>
+                  <td data-label="Thao tác" className="p-5 flex justify-end gap-2">
                     <button onClick={() => onView(d)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl"><Eye size={16} /></button>
                     <button onClick={() => onEdit(d)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"><Edit2 size={16} /></button>
                     <button onClick={() => onDelete(d.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl"><Trash2 size={16} /></button>

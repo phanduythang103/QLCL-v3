@@ -25,7 +25,7 @@
     })();
   </script>
 
-  <title>Bệnh viện Quân y 103 - Khảo sát hài lòng</title>
+  <title>Quản lý chất lượng Bệnh viện Quân y 103</title>
 
   <!-- Preload styles for faster loading -->
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
@@ -179,7 +179,7 @@
      * FAIL-SAFE MOUNT CHECK
      * If the app doesn't mount within 25 seconds, something is wrong.
      */
-    setTimeout(function() {
+    setTimeout(function () {
       var root = document.getElementById('root');
       if (root && root.innerHTML.indexOf('Đang tải') !== -1) {
         console.error('❌ FAIL-SAFE: App failed to mount within timeout.');
@@ -200,7 +200,7 @@
     }, 25000);
 
     // Global error listener for debugging
-    window.onerror = function(msg, url, line, col, error) {
+    window.onerror = function (msg, url, line, col, error) {
       console.error('❌ GLOBAL ERROR:', msg, 'at', url, ':', line, ':', col);
       return false;
     };

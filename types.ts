@@ -298,3 +298,22 @@ export interface PromptConfig {
   prompt_text: string;
   is_active: boolean;
 }
+
+export interface GiamSatNdnb {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  ngay_giam_sat: string;
+  nguoi_giam_sat: string;
+  khoa_duoc_giam_sat: string;
+  doi_tuong_giam_sat: string;
+  ho_ten_nguoi_benh?: string;
+  thoi_diem_dinh_danh?: string;
+  checklist_data: any;
+  tong_dat: number;
+  tong_co_hoi: number;
+  ty_le_tuan_thu: number;
+  danh_gia_chung?: string;
+  loi_sai_khac_phuc?: string;
+  ghi_chu?: string;
+}

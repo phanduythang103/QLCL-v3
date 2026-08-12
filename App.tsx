@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, ChevronRight, Settings, X, LogOut, Activity, Home, ArrowLeft, Calendar, Lightbulb, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, BarChart2, CheckSquare, FileText, Menu, Bell, Search, ChevronDown, ChevronRight, Settings, X, LogOut, Activity, Home, ArrowLeft, Calendar, Lightbulb, GraduationCap, Award } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { ModuleType, UserRole, SupervisionCategory } from './types';
 import { Dashboard } from './components/Dashboard';
@@ -13,6 +13,7 @@ import { IndicatorsModule } from './components/IndicatorsModule';
 import { ReportsModule } from './components/ReportsModule';
 import { SettingsModule } from './components/SettingsModule';
 import { ContinuousTraining } from './components/ContinuousTraining';
+import { JCIModule } from './components/JCIModule';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
 import { AssessmentProvider, useAssessmentContext } from './components/AssessmentContext';
 import { HeaderUserMenu } from './components/HeaderUserMenu';
@@ -73,6 +74,10 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
       ]
     },
     { label: "Giám sát chung", cat: 'GENERAL' as SupervisionCategory, subId: 'GENERAL' },
+    { label: "Nội soi đại trực tràng", cat: 'ENDOSCOPY' as SupervisionCategory, subId: 'ENDOSCOPY' },
+    { label: "Nội soi TQDD có gây mê", cat: 'STOMACH_ENDOSCOPY' as SupervisionCategory, subId: 'STOMACH_ENDOSCOPY' },
+    { label: "Tiêm ngoài màng cứng", cat: 'EPIDURAL_INJECTION' as SupervisionCategory, subId: 'EPIDURAL_INJECTION' },
+    { label: "Nội soi phế quản sinh thiết", cat: 'BRONCHOSCOPY' as SupervisionCategory, subId: 'BRONCHOSCOPY' },
   ]).filter(item => item.subId === 'OVERVIEW' || canView('SUPERVISION', item.subId));
 
 
@@ -299,6 +304,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
       </div>
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
         {canView(ModuleType.DASHBOARD) && <NavItem icon={<LayoutDashboard size={20} />} label="Trang chủ" active={currentModule === ModuleType.DASHBOARD} onClick={() => handleModuleChange(ModuleType.DASHBOARD)} collapsed={collapsed} />}
+        {canView(ModuleType.JCI) && <NavItem icon={<Award size={20} />} label="Tiêu chuẩn JCI" active={currentModule === ModuleType.JCI} onClick={() => handleModuleChange(ModuleType.JCI)} collapsed={collapsed} />}
         {canView(ModuleType.HR) && <NavItem icon={<Users size={20} />} label="Quản lý Nhân sự" active={currentModule === ModuleType.HR} onClick={() => handleModuleChange(ModuleType.HR)} collapsed={collapsed} />}
         {canView(ModuleType.DOCS, 'LIBRARY') && <NavItem icon={<BookOpen size={20} />} label="Văn bản & Tài liệu" active={currentModule === ModuleType.DOCS} onClick={() => handleModuleChange(ModuleType.DOCS)} collapsed={collapsed} />}
         {canView(ModuleType.ASSESSMENT) && <AssessmentNav collapsed={collapsed} active={currentModule === ModuleType.ASSESSMENT} onSelectModule={() => handleModuleChange(ModuleType.ASSESSMENT)} />}
@@ -571,7 +577,9 @@ const AppContent: React.FC = () => {
       ? new MutationObserver(() => window.requestAnimationFrame(annotateMobileTables))
       : null;
 
-    observer?.observe(root, { childList: true, subtree: true });
+    if (root) {
+      observer?.observe(root, { childList: true, subtree: true });
+    }
 
     return () => {
       window.cancelAnimationFrame(frameId);
@@ -623,10 +631,7 @@ const AppContent: React.FC = () => {
     navigateLogic(module);
   };
 
-  const hasMobileBackTarget =
-    currentModule !== ModuleType.DASHBOARD ||
-    (currentModule === ModuleType.SUPERVISION && !!supervisionCategory) ||
-    (currentModule === ModuleType.INDICATORS && !!indicatorCategory);
+  const hasMobileBackTarget = currentModule !== ModuleType.DASHBOARD;
 
   const handleMobileBack = () => {
     const event = new CustomEvent('app-mobile-back', { cancelable: true });
@@ -659,6 +664,7 @@ const AppContent: React.FC = () => {
   const renderContent = () => {
     switch (currentModule) {
       case ModuleType.DASHBOARD: return <Dashboard />;
+      case ModuleType.JCI: return <JCIModule />;
       case ModuleType.HR: return <HRModule />;
       case ModuleType.DOCS: return <DocsModule />;
       case ModuleType.TRAINING: return <ContinuousTraining />;
@@ -678,6 +684,7 @@ const AppContent: React.FC = () => {
   const getModuleTitle = () => {
     switch (currentModule) {
       case ModuleType.DASHBOARD: return 'Tổng quan';
+      case ModuleType.JCI: return 'Tiêu chuẩn JCI';
       case ModuleType.HR: return 'Quản lý Nhân sự';
       case ModuleType.DOCS: return 'Văn bản & Tài liệu';
       case ModuleType.TRAINING: return 'Đào tạo liên tục';
@@ -705,6 +712,7 @@ const AppContent: React.FC = () => {
     { label: 'KIỂM TRA\nGIÁM SÁT', module: ModuleType.SUPERVISION, icon: CheckSquare, iconClass: 'text-teal-500', bgClass: 'bg-teal-300', permission: ModuleType.SUPERVISION },
     { label: 'BÁO CÁO', module: ModuleType.REPORTS, icon: FileText, iconClass: 'text-blue-500', bgClass: 'bg-blue-300', permission: ModuleType.REPORTS },
     { label: 'CÀI ĐẶT', module: ModuleType.SETTINGS, icon: Settings, iconClass: 'text-slate-500', bgClass: 'bg-slate-300', permission: ModuleType.SETTINGS, requiresSettingsAccess: true },
+    { label: 'TIÊU CHUẨN\nJCI', module: ModuleType.JCI, icon: Award, iconClass: 'text-teal-500', bgClass: 'bg-teal-300', permission: ModuleType.JCI },
   ];
 
   const filteredMobileModules = mobileModuleItems.filter(item => {

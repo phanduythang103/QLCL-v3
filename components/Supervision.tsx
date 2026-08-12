@@ -12,16 +12,18 @@ import { fetchUsers } from '../userApi';
 import { useSupervision } from './SupervisionContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabaseClient';
-import { HandHygieneModule } from './HandHygieneModule';
-import { SurgerySafetyModule } from './SurgerySafetyModule';
 import { DrugMonitoringModule } from './DrugMonitoringModule';
 import { FiveSMonitoringModule } from './FiveSMonitoringModule';
-import { NdnbMonitoringModule } from './NdnbMonitoringModule';
 import { HsbaMonitoringModule } from './HsbaMonitoringModule';
 import { DutyMonitoringModule } from './DutyMonitoringModule';
 import { EmergencyMonitoringModule } from './EmergencyMonitoringModule';
 import { AdmissionDischargeModule } from './AdmissionDischargeModule';
 import { GeneralMonitoringModule } from './GeneralMonitoringModule';
+import { EndoscopyMonitoringModule } from './EndoscopyMonitoringModule';
+import { StomachEndoscopyMonitoringModule } from './StomachEndoscopyMonitoringModule';
+import { EpiduralInjectionMonitoringModule } from './EpiduralInjectionMonitoringModule';
+import { BronchoscopyMonitoringModule } from './BronchoscopyMonitoringModule';
+import { PleuralAspirationMonitoringModule } from './PleuralAspirationMonitoringModule';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 
 // Hàm tính trạng thái tự động dựa trên ngày
@@ -151,16 +153,18 @@ export const Supervision: React.FC = () => {
 
   if (category) {
     switch (category) {
-      case 'HAND_HYGIENE': return <HandHygieneModule onBack={() => setCategory(null)} />;
-      case 'SURGERY': return <SurgerySafetyModule onBack={() => setCategory(null)} />;
       case 'DRUGS': return <DrugMonitoringModule onBack={() => setCategory(null)} />;
       case '5S': return <FiveSMonitoringModule onBack={() => setCategory(null)} />;
-      case 'NDNB': return <NdnbMonitoringModule onBack={() => setCategory(null)} />;
       case 'RECORDS': return <HsbaMonitoringModule onBack={() => setCategory(null)} />;
       case 'PROF_DUTY': return <DutyMonitoringModule onBack={() => setCategory(null)} />;
       case 'PROF_EMERGENCY': return <EmergencyMonitoringModule onBack={() => setCategory(null)} />;
       case 'PROF_ADMISSION': return <AdmissionDischargeModule onBack={() => setCategory(null)} />;
       case 'GENERAL': return <GeneralMonitoringModule onBack={() => setCategory(null)} />;
+      case 'ENDOSCOPY': return <EndoscopyMonitoringModule onBack={() => setCategory(null)} />;
+      case 'STOMACH_ENDOSCOPY': return <StomachEndoscopyMonitoringModule onBack={() => setCategory(null)} />;
+      case 'EPIDURAL_INJECTION': return <EpiduralInjectionMonitoringModule onBack={() => setCategory(null)} />;
+      case 'BRONCHOSCOPY': return <BronchoscopyMonitoringModule onBack={() => setCategory(null)} />;
+      case 'PLEURAL_ASPIRATION': return <PleuralAspirationMonitoringModule onBack={() => setCategory(null)} />;
       default: break;
     }
   }
@@ -201,16 +205,18 @@ export const Supervision: React.FC = () => {
             </div>
             <div className="function-icon-grid function-icon-grid-desktop-2 p-4 lg:gap-4 lg:p-8">
               {[
-                { id: 'HAND_HYGIENE', label: 'Vệ sinh tay', icon: HandMetal, desc: 'Giám sát tuân thủ 5 thời điểm vệ sinh tay', bgClass: 'bg-teal-300', iconClass: 'text-teal-500' },
-                { id: 'SURGERY', label: 'An toàn phẫu thuật', icon: ShieldCheck, desc: 'Checklist an toàn phẫu thuật WHO', bgClass: 'bg-orange-300', iconClass: 'text-orange-500' },
                 { id: 'DRUGS', label: 'Công khai thuốc', icon: Pill, desc: 'Giám sát thực hành công khai thuốc tại khoa', bgClass: 'bg-blue-300', iconClass: 'text-blue-500' },
                 { id: '5S', label: 'Quản lý 5S', icon: LayoutList, desc: 'Đánh giá duy trì 5S tại các khoa phòng', bgClass: 'bg-green-300', iconClass: 'text-green-500' },
-                { id: 'NDNB', label: 'Nhận diện NB', icon: Users, desc: 'Giám sát nhận diện người bệnh tại các điểm', bgClass: 'bg-purple-300', iconClass: 'text-purple-500' },
                 { id: 'RECORDS', label: 'Hồ sơ bệnh án', icon: FileText, desc: 'Kiểm tra tính hoàn thiện của HSBA nội trú', bgClass: 'bg-indigo-300', iconClass: 'text-indigo-500' },
                 { id: 'PROF_DUTY', label: 'Trực chuyên môn', icon: Stethoscope, desc: 'Giám sát chế độ trực và thường trực', bgClass: 'bg-rose-300', iconClass: 'text-rose-500' },
                 { id: 'PROF_EMERGENCY', label: 'Cấp cứu', icon: Activity, desc: 'Giám sát chế độ cấp cứu và xe tiêm cấp cứu', bgClass: 'bg-cyan-300', iconClass: 'text-cyan-500' },
                 { id: 'PROF_ADMISSION', label: 'Ra,vào viện/CK, CV', icon: DoorOpen, desc: 'Giám sát chế độ vào viện, chuyển khoa, ra viện', bgClass: 'bg-indigo-300', iconClass: 'text-indigo-500' },
                 { id: 'GENERAL', label: 'Giám sát chung', icon: ClipboardCheck, desc: 'Giám sát các nội dung chuyên môn khác', bgClass: 'bg-emerald-300', iconClass: 'text-emerald-500' },
+                { id: 'ENDOSCOPY', label: 'Nội soi ĐTT', icon: Activity, desc: 'Bảng kiểm nội soi đại trực tràng', bgClass: 'bg-pink-300', iconClass: 'text-pink-500' },
+                { id: 'STOMACH_ENDOSCOPY', label: 'Nội soi TQDD', icon: Activity, desc: 'Bảng kiểm nội soi thực quản dạ dày', bgClass: 'bg-fuchsia-300', iconClass: 'text-fuchsia-500' },
+                { id: 'EPIDURAL_INJECTION', label: 'Tiêm NMC', icon: Activity, desc: 'Tiêm ngoài màng cứng', bgClass: 'bg-purple-300', iconClass: 'text-purple-500' },
+                { id: 'BRONCHOSCOPY', label: 'Nội soi PQ', icon: Activity, desc: 'Nội soi phế quản sinh thiết', bgClass: 'bg-orange-300', iconClass: 'text-orange-500' },
+                { id: 'PLEURAL_ASPIRATION', label: 'Chọc dịch DMP', icon: Activity, desc: 'Chọc dịch màng phổi', bgClass: 'bg-teal-300', iconClass: 'text-teal-500' },
               ].map((item) => (
                 <button
                   key={item.id}

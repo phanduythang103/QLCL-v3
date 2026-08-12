@@ -11,7 +11,7 @@ async function checkDatMuc() {
         return;
     }
 
-    const uniqueValues = [...new Set(data.map(d => d.dat_muc))];
+    const uniqueValues = [...new Set(data.map((d: any) => d.dat_muc))];
     console.log('Unique dat_muc values:', uniqueValues);
 }
 

@@ -236,10 +236,10 @@ const CapCuuErrorSummary = ({ data }: { data: GiamSatCapCuu[] }) => {
           <tbody className="font-bold text-slate-700">
             {summary.length > 0 ? summary.map((s, i) => (
               <tr key={i} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 border-2 border-slate-900 text-blue-700 leading-snug">{s.label}</td>
-                <td className="p-4 border-2 border-slate-900 text-center text-lg font-black">{s.count}</td>
-                <td className="p-4 border-2 border-slate-900 text-center text-lg font-black text-red-600">{s.rate}%</td>
-                <td className="p-4 border-2 border-slate-900">
+                <td data-label="Nội dung giám sát (Tiêu chí)" className="p-4 border-2 border-slate-900 text-blue-700 leading-snug">{s.label}</td>
+                <td data-label="Số kíp vi phạm" className="p-4 border-2 border-slate-900 text-center text-lg font-black">{s.count}</td>
+                <td data-label="Tỷ lệ (%)" className="p-4 border-2 border-slate-900 text-center text-lg font-black text-red-600">{s.rate}%</td>
+                <td data-label="Ghi chú & Đơn vị" className="p-4 border-2 border-slate-900">
                   <p className="text-slate-900 italic mb-2">Lỗi: {s.notes}</p>
                   <p className="text-[12pt] text-slate-900 font-black uppercase tracking-tight flex items-center gap-2"><Building2 size={16} className="text-[#059669]"/> {s.depts || 'N/A'}</p>
                 </td>

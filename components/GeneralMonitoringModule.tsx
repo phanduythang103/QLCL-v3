@@ -178,10 +178,10 @@ const GsChungErrorSummary = ({ data }: { data: GiamSatChung[] }) => {
           <tbody className="font-medium text-slate-700">
             {summary.length > 0 ? summary.map((s, i) => (
               <tr key={i} className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
-                <td className="p-4 text-xs text-slate-500">{formatDateTime(s.ngay)}</td>
-                <td className="p-4 uppercase font-bold text-rose-600">{s.khoa}</td>
-                <td className="p-4 font-bold uppercase text-[12px]">{s.label}</td>
-                <td className="p-4 italic text-slate-500 font-medium">{s.note || '---'}</td>
+                <td data-label="Ngày GS" className="p-4 text-xs text-slate-500">{formatDateTime(s.ngay)}</td>
+                <td data-label="Đơn vị vi phạm" className="p-4 uppercase font-bold text-rose-600">{s.khoa}</td>
+                <td data-label="Nội dung giám sát" className="p-4 font-bold uppercase text-[12px]">{s.label}</td>
+                <td data-label="Chi tiết lỗi ghi nhận" className="p-4 italic text-slate-500 font-medium">{s.note || '---'}</td>
               </tr>
             )) : (
               <tr><td colSpan={4} className="p-16 text-center text-slate-400 italic text-lg font-medium">Hiện tại chưa ghi nhận lỗi vi phạm nào.</td></tr>

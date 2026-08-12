@@ -15,6 +15,7 @@ export interface Permission {
 
 export enum ModuleType {
     DASHBOARD = 'DASHBOARD',
+    JCI = 'JCI',
     HR = 'HR',
     DOCS = 'DOCS',
     ASSESSMENT = 'ASSESSMENT',

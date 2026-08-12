@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { DrugMonitoring } from './types';
+import { compressFile } from './utils/compression';
 
 export const fetchGsDrug = async () => {
   const { data, error } = await supabase
@@ -11,7 +12,7 @@ export const fetchGsDrug = async () => {
   return data as DrugMonitoring[];
 };
 
-export const addGsDrug = async (item: DrugMonitoring) => {
+export const addGsDrug = async (item: Omit<DrugMonitoring, 'id' | 'created_at' | 'updated_at'>) => {
   const { data, error } = await supabase
     .from('giam_sat_drug')
     .insert([item])
@@ -24,7 +25,7 @@ export const addGsDrug = async (item: DrugMonitoring) => {
 export const updateGsDrug = async (id: string, item: Partial<DrugMonitoring>) => {
   const { data, error } = await supabase
     .from('giam_sat_drug')
-    .update(item)
+    .update({ ...item, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select();
 
@@ -41,23 +42,21 @@ export const deleteGsDrug = async (id: string) => {
   if (error) throw error;
 };
 
-import { compressFile } from './utils/compression';
-
-export const uploadDrugImage = async (file: File) => {
+export async function uploadDrugImage(file: File): Promise<string> {
   const compressedFile = await compressFile(file);
-  const fileExt = compressedFile.name.split('.').pop();
-  const fileName = `${Math.random()}.${fileExt}`;
+  const ext = compressedFile.name.split('.').pop();
+  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const filePath = `drug_monitoring/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from('giam_sat')
-    .upload(filePath, compressedFile, { cacheControl: '31536000' });
+    .upload(filePath, compressedFile, { cacheControl: '31536000', upsert: false });
 
-  if (uploadError) throw uploadError;
+  if (uploadError) {
+    console.error('Error uploading drug image:', uploadError);
+    throw uploadError;
+  }
 
-  const { data } = supabase.storage
-    .from('giam_sat')
-    .getPublicUrl(filePath);
-
+  const { data } = supabase.storage.from('giam_sat').getPublicUrl(filePath);
   return data.publicUrl;
-};
+}
