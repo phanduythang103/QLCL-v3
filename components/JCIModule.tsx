@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell, TrendingDown, Users, Award } from 'lucide-react';
 import { JCIFallIncidentsModule } from './JCIFallIncidentsModule';
 import { JCICriticalResultsModule } from './JCICriticalResultsModule';
@@ -7,11 +7,23 @@ import { NdnbMonitoringModule } from './NdnbMonitoringModule';
 import { SurgerySafetyModule } from './SurgerySafetyModule';
 import { HandHygieneModule } from './HandHygieneModule';
 import { usePermissions } from '../contexts/PermissionsContext';
+import { fetchJciIndicatorCounts, JciIndicatorCounts } from '../readJciCounts';
 
 export const JCIModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'INDICATORS'>('INDICATORS');
   const [category, setCategory] = useState<string | null>(null);
+  const [counts, setCounts] = useState<JciIndicatorCounts | null>(null);
   const { canView } = usePermissions();
+
+  // Số phiếu đã thu thập của từng chỉ số, nạp lại mỗi khi quay về lưới danh mục
+  useEffect(() => {
+    if (category) return;
+    let cancelled = false;
+    fetchJciIndicatorCounts()
+      .then(result => { if (!cancelled) setCounts(result); })
+      .catch(err => console.error('Error loading JCI counts:', err));
+    return () => { cancelled = true; };
+  }, [category]);
 
   const jciIndicators = [
     { id: 'FALL_RATE', label: 'Tỷ suất NB ngã', icon: TrendingDown, desc: 'Giám sát tỷ suất người bệnh ngã', bgClass: 'bg-red-300', iconClass: 'text-red-500' },
@@ -85,14 +97,27 @@ export const JCIModule: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setCategory(item.id)}
-                className="function-icon-tile group lg:min-h-0 lg:flex-row lg:items-start lg:justify-start lg:gap-4 lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-teal-500/30 lg:hover:shadow-xl lg:hover:shadow-teal-500/5"
+                className="function-icon-tile jci-indicator-tile group lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-teal-500/30 lg:hover:shadow-xl lg:hover:shadow-teal-500/5"
               >
-                <div className={`function-icon-box ${item.bgClass} lg:shadow-sm`}>
+                <div className={`function-icon-box ${item.bgClass} relative lg:shadow-sm`}>
                   <item.icon size={28} className={item.iconClass} />
+                  {/* Mobile/tablet: số phiếu hiển thị dạng huy hiệu trên icon */}
+                  {counts && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-teal-600 px-1 text-[10px] font-black leading-none text-white shadow-sm lg:hidden">
+                      {counts[item.id as keyof JciIndicatorCounts] > 99 ? '99+' : counts[item.id as keyof JciIndicatorCounts]}
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0 lg:flex-1">
                   <h4 className="function-icon-label uppercase transition-colors group-hover:text-teal-600 lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
                   <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
+                </div>
+                {/* Desktop: số phiếu nằm cùng hàng với icon và text */}
+                <div className="hidden shrink-0 flex-col items-end lg:flex">
+                  <span className="text-xl font-black leading-none text-teal-600">
+                    {counts ? counts[item.id as keyof JciIndicatorCounts] : '—'}
+                  </span>
+                  <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">phiếu</span>
                 </div>
               </button>
             ))}

@@ -112,6 +112,21 @@ body {
   }
 }
 
+/* Thẻ chỉ số JCI: desktop xếp ngang icon - nội dung - số phiếu.
+   Cần rule tường minh vì .function-icon-tile đặt flex-direction: column
+   cùng độ ưu tiên với lg:flex-row của Tailwind. */
+@media (min-width: 1024px) {
+  .jci-indicator-tile {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 20px;
+    text-align: left;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
