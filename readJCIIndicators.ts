@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { JCIFallIncident, JCICriticalResult, JCIHandoverIncident } from './types';
+import { JCIFallIncident, JCIFallPatientDays, JCICriticalResult, JCIHandoverIncident, JCIHandoverVisits } from './types';
 
 // ==========================================
 // 1. FALL INCIDENTS (AOP.02.00)
@@ -175,4 +175,82 @@ export const deleteHandoverIncident = async (id: string): Promise<boolean> => {
     throw error;
   }
   return true;
+};
+
+// ==========================================
+// 1b. MẪU SỐ AOP.02.00 - TỔNG SỐ NGÀY NẰM VIỆN THEO THÁNG
+// ==========================================
+export const fetchFallPatientDays = async (nam: number): Promise<JCIFallPatientDays[]> => {
+  const { data, error } = await supabase
+    .from('jci_fall_patient_days')
+    .select('*')
+    .eq('nam', nam)
+    .order('thang', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching fall patient days:', error);
+    return [];
+  }
+  return data || [];
+};
+
+/** Ghi đè số ngày nằm viện của 1 tháng (khoá duy nhất theo nam + thang) */
+export const upsertFallPatientDays = async (
+  nam: number,
+  thang: number,
+  so_ngay_nam_vien: number
+): Promise<JCIFallPatientDays | null> => {
+  const { data, error } = await supabase
+    .from('jci_fall_patient_days')
+    .upsert(
+      { nam, thang, so_ngay_nam_vien, updated_at: new Date().toISOString() },
+      { onConflict: 'nam,thang' }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error saving fall patient days:', error);
+    throw error;
+  }
+  return data;
+};
+
+// ==========================================
+// 3b. MẪU SỐ IPSG.02.01 - TỔNG LƯỢT KHÁM, ĐIỀU TRỊ THEO THÁNG
+// ==========================================
+export const fetchHandoverVisits = async (nam: number): Promise<JCIHandoverVisits[]> => {
+  const { data, error } = await supabase
+    .from('jci_handover_visits')
+    .select('*')
+    .eq('nam', nam)
+    .order('thang', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching handover visits:', error);
+    return [];
+  }
+  return data || [];
+};
+
+/** Ghi đè tổng lượt khám của 1 tháng (khoá duy nhất theo nam + thang) */
+export const upsertHandoverVisits = async (
+  nam: number,
+  thang: number,
+  so_luot_kham: number
+): Promise<JCIHandoverVisits | null> => {
+  const { data, error } = await supabase
+    .from('jci_handover_visits')
+    .upsert(
+      { nam, thang, so_luot_kham, updated_at: new Date().toISOString() },
+      { onConflict: 'nam,thang' }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error saving handover visits:', error);
+    throw error;
+  }
+  return data;
 };

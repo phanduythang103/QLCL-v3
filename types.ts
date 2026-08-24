@@ -238,6 +238,17 @@ export interface SurgerySafety {
   tong_dat: number;
   ty_le_tuan_thu: number;
   ghi_chu_chung?: string;
+  // --- Bảng kiểm 23 tiêu chí theo Phụ lục II, BVQY103.QLCL.QĐ.04.V3 ---
+  /** { "SI1": "Có" | "Không" | "Không áp dụng", ... } */
+  checklist_23?: Record<string, string>;
+  /** Nhóm phẫu thuật/thủ thuật xâm lấn (Mục 2.1 Quy định) */
+  loai_pt_tt?: string;
+  pid_nguoi_benh?: string;
+  nguoi_thu_thap?: string;
+  /** Tổng tiêu chí áp dụng (loại trừ "Không áp dụng") - tự động */
+  tong_ap_dung?: number;
+  /** Đạt / Không đạt - tự động */
+  ket_qua?: string;
 }
 
 export interface DrugMonitoring {
@@ -315,5 +326,99 @@ export interface GiamSatNdnb {
   ty_le_tuan_thu: number;
   danh_gia_chung?: string;
   loi_sai_khac_phuc?: string;
+  ghi_chu?: string;
+}
+
+// =====================================================================
+// CHỈ SỐ JCI
+// =====================================================================
+
+/** AOP.02.00 - Tỷ suất người bệnh ngã */
+export interface JCIFallIncident {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  ma_bao_cao?: string;
+  thoi_gian_nga: string;
+  khoa_dieu_tri: string;
+  ho_ten_nb: string;
+  nam_sinh?: string;
+  /** Thang điểm áp dụng tại lần đánh giá nguy cơ ngã gần nhất (MFS/HDFS/OFRAS-M/EPFRAT) */
+  thang_diem_ap_dung?: string;
+  /** Mức độ nguy cơ ngã tại lần đánh giá gần nhất (Thấp/Trung bình/Cao) */
+  muc_nguy_co?: string;
+  /** Địa điểm / hoàn cảnh xảy ra ngã */
+  hoan_canh?: string;
+  /** Mức độ tổn thương theo Thông tư 43/2018/TT-BYT (NC0..NC3) */
+  muc_do_ton_thuong?: string;
+  /** Can thiệp đang áp dụng trước khi ngã (Đầy đủ / Không đầy đủ) */
+  can_thiep_truoc_nga?: string;
+  /** Đã tái đánh giá + điều chỉnh can thiệp sau ngã */
+  da_tai_danh_gia?: boolean;
+  /** Đã đánh giá môi trường tại chỗ sau ngã */
+  da_danh_gia_mt?: boolean;
+  nguoi_tong_hop?: string;
+  ghi_chu?: string;
+}
+
+/** Mẫu số của AOP.02.00: tổng số ngày nằm viện (nội trú) theo từng tháng */
+export interface JCIFallPatientDays {
+  id?: string;
+  nam: number;
+  thang: number;
+  so_ngay_nam_vien: number;
+  updated_at?: string;
+}
+
+/** IPSG.02.00 - Thông báo kết quả báo động cận lâm sàng */
+export interface JCICriticalResult {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  thoi_gian_co_kq: string;
+  thoi_gian_thong_bao?: string;
+  khoa_thong_bao: string;
+  ho_ten_nb: string;
+  nam_sinh?: string;
+  pid?: string;
+  khoa_dieu_tri: string;
+  ten_kq_bao_dong: string;
+  gia_tri_kq: string;
+  nguoi_thong_bao?: string;
+  nguoi_nhan_thong_bao?: string;
+  xac_nhan_read_back?: string;
+  dat_khung_tg?: boolean;
+  ghi_chu?: string;
+}
+
+/** Mẫu số của IPSG.02.01: tổng lượt khám, điều trị theo từng tháng */
+export interface JCIHandoverVisits {
+  id?: string;
+  nam: number;
+  thang: number;
+  so_luot_kham: number;
+  updated_at?: string;
+}
+
+/** IPSG.02.01 / QPS.03.04 - Sự cố liên quan đến bàn giao thông tin người bệnh */
+export interface JCIHandoverIncident {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+  ma_bao_cao?: string;
+  thoi_gian_su_co: string;
+  thoi_gian_bao_cao: string;
+  /** Chuỗi hiển thị "Khoa bàn giao -> Khoa tiếp nhận" */
+  khoa_lien_quan: string;
+  khoa_ban_giao?: string;
+  khoa_tiep_nhan?: string;
+  loai_hinh_ban_giao: string;
+  ho_ten_pid: string;
+  /** Đến NB / Near-miss */
+  phan_loai_su_co: string;
+  muc_do_nghiem_trong?: string;
+  da_phan_tich_rca?: boolean;
+  hanh_dong_khac_phuc?: string;
+  nguoi_tong_hop?: string;
   ghi_chu?: string;
 }

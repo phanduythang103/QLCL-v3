@@ -2,9 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Search, Edit2, Trash2, Eye, Calendar, Building2,
   Users, CheckCircle2, AlertTriangle, XCircle, FileText, Image,
-  Upload, X, Camera, LayoutDashboard, List, Filter, RotateCcw,
-  ClipboardCheck, AlertCircle, Save, User, ArrowLeft
+  Upload, X, Camera, List, RotateCcw,
+  ClipboardCheck, AlertCircle, Save, User, ArrowLeft,
+  BarChart3, FileSpreadsheet, Loader2
 } from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ReferenceLine,
+  Tooltip as RechartsTooltip, ResponsiveContainer
+} from 'recharts';
+import {
+  exportVstReportExcel, VST_MIN_OPPORTUNITIES, VST_TARGET, VST_TARGET_HIGH_RISK, VST_SAMPLE_NOTE
+} from '../utils/vstReportExcel';
 import DateRangeFilter from './DateRangeFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,7 +38,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [editingItem, setEditingItem] = useState<GsVst | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DANH_SACH'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'DANH_SACH' | 'BAO_CAO'>('DANH_SACH');
   const [filterConfig, setFilterConfig] = useState({
     type: 'thisMonth',
     startDate: '',
@@ -89,28 +97,33 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   return (
     <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-          <div className="indicator-subtab-list indicator-subtab-list-2">
-            <TabButton
-              active={activeTab === 'OVERVIEW'}
-              onClick={() => setActiveTab('OVERVIEW')}
-              icon={LayoutDashboard}
-              label="Tổng quan"
-            />
-            <TabButton
-              active={activeTab === 'DANH_SACH'}
-              onClick={() => setActiveTab('DANH_SACH')}
-              icon={List}
-              label="Danh sách"
-            />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <button onClick={onBack} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <h2 className="text-xl font-bold text-slate-800">Tuân thủ vệ sinh tay 5 thời điểm WHO (IPSG.05.00)</h2>
           </div>
-          {activeTab !== 'DANH_SACH' && (
-            <button onClick={() => { setEditingItem(null); setIsReadOnly(false); setActiveTab('DANH_SACH'); setViewMode('FORM'); }} className="w-full lg:w-auto flex items-center justify-center gap-2 rounded-2xl bg-[#059669] px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-green-200 transition-all hover:bg-[#0d6e39] active:scale-95">
-              <Plus size={18} /> Thêm giám sát mới
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:items-center sm:w-auto">
+            <button onClick={() => setActiveTab('DANH_SACH')} className={`px-4 py-2 flex items-center justify-center sm:justify-start gap-2 rounded-xl border transition-all text-sm ${activeTab === 'DANH_SACH' ? 'bg-teal-50 border-teal-200 text-teal-700 font-medium' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+              <List size={18} className="shrink-0" />
+              <span className="sm:hidden">DS thu thập</span>
+              <span className="hidden sm:inline">Danh sách thu thập</span>
             </button>
-          )}
+            <button onClick={() => setActiveTab('BAO_CAO')} className={`px-4 py-2 flex items-center justify-center sm:justify-start gap-2 rounded-xl border transition-all text-sm ${activeTab === 'BAO_CAO' ? 'bg-teal-50 border-teal-200 text-teal-700 font-medium' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+              <BarChart3 size={18} className="shrink-0" />
+              <span>Báo cáo quy trình</span>
+            </button>
+            <button onClick={() => { setEditingItem(null); setIsReadOnly(false); setActiveTab('DANH_SACH'); setViewMode('FORM'); }} className="col-span-2 sm:col-span-1 px-4 py-2 flex items-center justify-center sm:justify-start gap-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-sm text-sm">
+              <Plus size={18} className="shrink-0" />
+              <span>Thêm mới</span>
+            </button>
+          </div>
         </div>
 
+        {activeTab === 'DANH_SACH' && (
         <div className="p-4 lg:p-4 pt-0 lg:pt-0 border-t lg:border-t-0 border-slate-100">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div className="space-y-1">
@@ -143,6 +156,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
             </div>
           </div>
         </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -150,8 +164,8 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
           </div>
         ) : error ? (
           <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 font-bold tracking-tight">Lỗi: {error}</div>
-        ) : activeTab === 'OVERVIEW' ? (
-          <VstOverview data={filteredData} />
+        ) : activeTab === 'BAO_CAO' ? (
+          <VstProcessReport data={data} departmentList={departmentList} />
         ) : (
           <VstList
             data={filteredData}
@@ -171,134 +185,395 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   );
 };
 
-const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
-  <button
-    onClick={onClick}
-    className={`indicator-subtab-button ${
-      active ? 'indicator-subtab-button-active' : ''
-    }`}
-  >
-    <Icon size={18} />
-    <span>{label}</span>
-  </button>
+// ---------------------------------------------------------------------------
+// BÁO CÁO QUY TRÌNH (IPSG.05.00)
+// Chỉ số chính tính theo TỪNG CƠ HỘI vệ sinh tay:
+//   - Không áp dụng = thời điểm không phát sinh cơ hội (co_hoi = false)
+//   - Đạt           = co_hoi && compliance
+//   - Không đạt     = co_hoi && !compliance
+// ---------------------------------------------------------------------------
+
+const VST_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+const VST_QUARTERS = [1, 2, 3, 4];
+
+const MOMENT_LABELS = [
+  'Thời điểm 1: Trước khi tiếp xúc người bệnh',
+  'Thời điểm 2: Trước khi làm thủ thuật sạch/vô khuẩn',
+  'Thời điểm 3: Sau khi có nguy cơ phơi nhiễm dịch cơ thể',
+  'Thời điểm 4: Sau khi tiếp xúc người bệnh',
+  'Thời điểm 5: Sau khi tiếp xúc bề mặt/môi trường xung quanh NB'
+];
+
+const vstYearOf = (iso: string) => (iso || '').slice(0, 4);
+const vstMonthOf = (iso: string) => Number((iso || '').slice(5, 7));
+const vstPct = (rate: number) => `${rate.toFixed(1)}%`;
+const vstRate = (dat: number, coHoi: number) => (coHoi > 0 ? (dat / coHoi) * 100 : 0);
+
+/** Số cơ hội và số cơ hội đạt của 1 lượt quan sát */
+const opportunitiesOf = (item: GsVst) => {
+  const moments = item.checklist_data?.moments || [];
+  const coHoi = moments.filter(m => m.co_hoi).length;
+  const dat = moments.filter(m => m.co_hoi && m.compliance).length;
+  return { coHoi, dat };
+};
+
+/** Chỉ số phụ: lượt đạt khi mọi cơ hội áp dụng trong lượt đó đều đạt */
+const luotDat = (item: GsVst) => {
+  const { coHoi, dat } = opportunitiesOf(item);
+  return coHoi > 0 && dat === coHoi;
+};
+
+const VstReportTable: React.FC<{
+  index: string;
+  title: string;
+  note?: string;
+  headers: string[];
+  children: React.ReactNode;
+}> = ({ index, title, note, headers, children }) => (
+  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-[#2E75B6] px-4 py-3">
+      <h4 className="font-bold text-white text-sm uppercase tracking-wide">{index}. {title}</h4>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm text-left jci-report-table">
+        <thead className="bg-[#1F4E79] text-white font-bold">
+          <tr>
+            {headers.map((h, i) => (
+              <th key={h} className={`p-3 align-middle ${i === 0 ? 'text-left' : 'text-center'}`}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">{children}</tbody>
+      </table>
+    </div>
+    {note && <p className="px-4 py-3 text-xs italic text-slate-500 leading-relaxed border-t border-slate-100">{note}</p>}
+  </div>
 );
 
-const VstOverview = ({ data }: { data: GsVst[] }) => {
-  const stats = useMemo(() => {
-    const totalMonitors = data.length;
-    let totalOpp = 0;
-    let totalComp = 0;
-    let totalTech = 0;
+const VstProcessReport: React.FC<{ data: GsVst[]; departmentList: string[] }> = ({ data, departmentList }) => {
+  const currentYear = new Date().getFullYear();
+  const [reportFilter, setReportFilter] = useState({ year: String(currentYear), department: '' });
+  const [exporting, setExporting] = useState(false);
 
-    data.forEach(item => {
-      totalOpp += item.tong_co_hoi || 0;
-      totalComp += item.so_lan_tuan_thu || 0;
-      totalTech += item.so_lan_dung_ky_thuat || 0;
+  const yearOptions = useMemo(() => {
+    const years = new Set<string>([String(currentYear)]);
+    data.forEach(d => {
+      const y = vstYearOf(d.ngay_giam_sat);
+      if (y) years.add(y);
     });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [data, currentYear]);
 
-    return {
-      totalMonitors,
-      complianceRate: totalOpp > 0 ? (totalComp / totalOpp) * 100 : 0,
-      techniqueRate: totalComp > 0 ? (totalTech / totalComp) * 100 : 0,
-      totalOpp,
-      totalComp,
-      totalTech
-    };
-  }, [data]);
+  const scoped = useMemo(() => {
+    const keyword = reportFilter.department.trim().toLowerCase();
+    return data.filter(item => {
+      const matchYear = vstYearOf(item.ngay_giam_sat) === reportFilter.year;
+      const matchDept = !keyword || (item.khoa_duoc_giam_sat || '').toLowerCase().includes(keyword);
+      return matchYear && matchDept;
+    });
+  }, [data, reportFilter]);
+
+  const sumOpportunities = (rows: GsVst[]) =>
+    rows.reduce(
+      (acc, item) => {
+        const { coHoi, dat } = opportunitiesOf(item);
+        return { coHoi: acc.coHoi + coHoi, dat: acc.dat + dat };
+      },
+      { coHoi: 0, dat: 0 }
+    );
+
+  const byMonth = useMemo(
+    () => VST_MONTHS.map(m => ({
+      thang: m,
+      label: `Tháng ${m}`,
+      ...sumOpportunities(scoped.filter(i => vstMonthOf(i.ngay_giam_sat) === m))
+    })),
+    [scoped]
+  );
+
+  const byQuarter = useMemo(
+    () => VST_QUARTERS.map(q => {
+      const months = byMonth.filter(m => Math.ceil(m.thang / 3) === q);
+      return {
+        quy: q,
+        label: `Quý ${q}`,
+        coHoi: months.reduce((s, m) => s + m.coHoi, 0),
+        dat: months.reduce((s, m) => s + m.dat, 0)
+      };
+    }),
+    [byMonth]
+  );
+
+  const groupBy = (getKey: (i: GsVst) => string) => {
+    const groups = new Map<string, GsVst[]>();
+    scoped.forEach(i => {
+      const key = (getKey(i) || '').trim() || 'Chưa xác định';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(i);
+    });
+    return Array.from(groups.entries())
+      .map(([label, rows]) => ({ label, ...sumOpportunities(rows) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'vi'));
+  };
+
+  const byKhoa = useMemo(() => groupBy(i => i.khoa_duoc_giam_sat), [scoped]);
+  const byDoiTuong = useMemo(() => groupBy(i => i.doi_tuong), [scoped]);
+
+  const byMoment = useMemo(
+    () => MOMENT_LABELS.map((label, idx) => {
+      const id = idx + 1;
+      const all = scoped.flatMap(i => (i.checklist_data?.moments || []).filter(m => m.id === id));
+      return {
+        label,
+        dat: all.filter(m => m.co_hoi && m.compliance).length,
+        khongDat: all.filter(m => m.co_hoi && !m.compliance).length,
+        khongApDung: all.filter(m => !m.co_hoi).length
+      };
+    }),
+    [scoped]
+  );
+
+  const luot = useMemo(
+    () => ({
+      dat: scoped.filter(luotDat).length,
+      khongDat: scoped.filter(i => !luotDat(i)).length
+    }),
+    [scoped]
+  );
+
+  const totals = useMemo(() => sumOpportunities(scoped), [scoped]);
+  const tyLeChung = vstRate(totals.dat, totals.coHoi);
+  const tongLuot = luot.dat + luot.khongDat;
+
+  const chartData = useMemo(
+    () => byMonth.map(m => ({ ten: m.label, tyLe: Number(vstRate(m.dat, m.coHoi).toFixed(1)), coHoi: m.coHoi })),
+    [byMonth]
+  );
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportVstReportExcel({
+        year: reportFilter.year,
+        department: reportFilter.department.trim(),
+        byMonth: byMonth.map(m => ({ label: m.label, coHoi: m.coHoi, dat: m.dat })),
+        byQuarter: byQuarter.map(q => ({ label: q.label, coHoi: q.coHoi, dat: q.dat })),
+        byKhoa, byDoiTuong, byMoment, luot, totals
+      });
+    } catch (err) {
+      console.error('Lỗi xuất Excel:', err);
+      alert('Có lỗi xảy ra khi xuất file Excel.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const OpportunityTable: React.FC<{ index: string; title: string; firstHeader: string; rows: { label: string; coHoi: number; dat: number }[]; note?: string }> = ({ index, title, firstHeader, rows, note }) => {
+    const coHoi = rows.reduce((s, r) => s + r.coHoi, 0);
+    const dat = rows.reduce((s, r) => s + r.dat, 0);
+    return (
+      <VstReportTable index={index} title={title} note={note} headers={[firstHeader, 'Tổng số cơ hội', 'Số cơ hội đạt', 'Tỷ lệ tuân thủ %']}>
+        {rows.length === 0 ? (
+          <tr><td colSpan={4} className="p-6 text-center text-slate-500">Chưa có dữ liệu trong kỳ báo cáo</td></tr>
+        ) : (
+          rows.map(r => (
+            <tr key={r.label} className="hover:bg-slate-50">
+              <td className="p-3 text-slate-700">{r.label}</td>
+              <td className="p-3 text-center">{r.coHoi}</td>
+              <td className="p-3 text-center">{r.dat}</td>
+              <td className="p-3 text-center">{vstPct(vstRate(r.dat, r.coHoi))}</td>
+            </tr>
+          ))
+        )}
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng</td>
+          <td className="p-3 text-center">{coHoi}</td>
+          <td className="p-3 text-center">{dat}</td>
+          <td className="p-3 text-center">{vstPct(vstRate(dat, coHoi))}</td>
+        </tr>
+      </VstReportTable>
+    );
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Stats Cards */}
-      <div className="indicator-quick-stats grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
-        <div className="indicator-quick-stat-card bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="indicator-quick-stat-icon w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-            <Users size={20} />
+    <div className="space-y-6">
+      {/* Bộ lọc + xuất Excel */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Năm</label>
+            <select value={reportFilter.year} onChange={e => setReportFilter({ ...reportFilter, year: e.target.value })} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+              {yearOptions.map(y => <option key={y} value={y}>Năm {y}</option>)}
+            </select>
           </div>
-          <div className="indicator-quick-stat-body">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tổng lượt giám sát</p>
-            <h3 className="indicator-quick-stat-value text-sm font-black text-slate-800 tracking-tight">{stats.totalMonitors}</h3>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Đơn vị</label>
+            <input
+              type="text"
+              list="vst-report-department-options"
+              value={reportFilter.department}
+              onChange={e => setReportFilter({ ...reportFilter, department: e.target.value })}
+              placeholder="Gõ từ khóa để tìm đơn vị... (bỏ trống = tất cả)"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+            />
+            <datalist id="vst-report-department-options">
+              {departmentList.map(n => <option key={n} value={n} />)}
+            </datalist>
           </div>
+
+          <button onClick={handleExport} disabled={exporting} className="w-full px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70">
+            {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
+            {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
+          </button>
         </div>
-        <div className="indicator-quick-stat-card bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="indicator-quick-stat-icon w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
-            <CheckCircle2 size={20} />
-          </div>
-          <div className="indicator-quick-stat-body">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tỷ lệ tuân thủ</p>
-            <h3 className="indicator-quick-stat-value text-sm font-black text-emerald-600 tracking-tight">{stats.complianceRate.toFixed(1)}%</h3>
-          </div>
-        </div>
-        <div className="indicator-quick-stat-card bg-white p-3 sm:p-4 rounded-[24px] border border-slate-200 shadow-sm flex items-center gap-3">
-          <div className="indicator-quick-stat-icon w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
-            <Camera size={20} />
-          </div>
-          <div className="indicator-quick-stat-body">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Đúng kỹ thuật</p>
-            <h3 className="indicator-quick-stat-value text-sm font-black text-blue-600 tracking-tight">{stats.techniqueRate.toFixed(1)}%</h3>
-          </div>
+        <p className="text-xs text-slate-500 mt-3">
+          Dữ liệu lấy từ bảng DS thu thập · Năm {reportFilter.year}
+          {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : ' · Tất cả đơn vị'}
+          {` · ${totals.coHoi} cơ hội VST / ${tongLuot} lượt quan sát`}
+        </p>
+      </div>
+
+      {/* Biểu đồ xu hướng */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h4 className="font-bold text-slate-800 text-center text-base sm:text-lg mb-4">
+          Xu hướng tỷ lệ tuân thủ vệ sinh tay theo tháng
+        </h4>
+        <div className="h-72 sm:h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 40 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <XAxis dataKey="ten" angle={-45} textAnchor="end" interval={0} height={64} tick={{ fontSize: 11, fill: '#475569' }} />
+              <YAxis domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={(v: number) => `${v}%`} tick={{ fontSize: 11, fill: '#475569' }} width={60} label={{ value: 'Tỷ lệ tuân thủ %', angle: -90, position: 'insideLeft', style: { fontSize: 11, fontWeight: 700, fill: '#334155' } }} />
+              <RechartsTooltip formatter={(value: any, _n: any, entry: any) => [`${value}% (${entry?.payload?.coHoi || 0} cơ hội)`, 'Tỷ lệ tuân thủ']} />
+              <Legend verticalAlign="bottom" height={24} />
+              <ReferenceLine y={VST_TARGET} stroke="#059669" strokeDasharray="6 4" label={{ value: `Mục tiêu ${VST_TARGET}%`, position: 'right', style: { fontSize: 10, fill: '#059669' } }} />
+              <Line type="linear" dataKey="tyLe" name="Tỷ lệ tuân thủ %" stroke="#4472C4" strokeWidth={2.5} dot={{ r: 3, fill: '#4472C4' }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Additional Overview Content (Moment breakdown) */}
-      <div className="vst-detail-stats bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
-        <h3 className="vst-detail-title text-sm font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <FileText className="text-indigo-500" size={20} />
-                Thống kê chi tiết theo 5 thời điểm
-            </div>
-            <div className="flex gap-4">
-                <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                    <span className="text-[9px] font-bold text-slate-400">Tuân thủ</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span className="text-[9px] font-bold text-slate-400">Đúng kỹ thuật</span>
-                </div>
-            </div>
-        </h3>
-        <div className="space-y-8">
-            {MOMENTS.map((moment, idx) => {
-                const momentId = idx + 1;
-                const momentData = data.flatMap(d => d.checklist_data.moments || []).filter(m => m.id === momentId);
-                const totalCount = momentData.length;
-                const compCount = momentData.filter(m => m.compliance).length;
-                const techCount = momentData.filter(m => m.compliance && m.correct_technique).length;
+      {/* 1. Theo tháng */}
+      <VstReportTable
+        index="1"
+        title="Tổng hợp theo tháng (tính theo từng cơ hội vệ sinh tay)"
+        headers={['Tháng', 'Tổng số cơ hội (Mẫu số)', 'Số cơ hội đạt (Tử số)', 'Tỷ lệ tuân thủ %', `Đạt cỡ mẫu tối thiểu? (≥${VST_MIN_OPPORTUNITIES} cơ hội/tháng)`]}
+      >
+        {byMonth.map(m => (
+          <tr key={m.thang} className="hover:bg-slate-50">
+            <td className="p-3 text-slate-700">{m.label}</td>
+            <td className="p-3 text-center">{m.coHoi}</td>
+            <td className="p-3 text-center">{m.dat}</td>
+            <td className="p-3 text-center">{vstPct(vstRate(m.dat, m.coHoi))}</td>
+            <td className="p-3 text-center">
+              <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${m.coHoi >= VST_MIN_OPPORTUNITIES ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                {m.coHoi >= VST_MIN_OPPORTUNITIES ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+                {m.coHoi >= VST_MIN_OPPORTUNITIES ? 'Đạt' : `Chưa đạt (thiếu ${VST_MIN_OPPORTUNITIES - m.coHoi})`}
+              </span>
+            </td>
+          </tr>
+        ))}
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng năm</td>
+          <td className="p-3 text-center">{totals.coHoi}</td>
+          <td className="p-3 text-center">{totals.dat}</td>
+          <td className="p-3 text-center">{vstPct(tyLeChung)}</td>
+          <td className="p-3" />
+        </tr>
+      </VstReportTable>
 
-                const compRate = totalCount > 0 ? (compCount / totalCount) * 100 : 0;
-                const techRate = compCount > 0 ? (techCount / compCount) * 100 : 0;
+      {/* 2. Theo quý */}
+      <VstReportTable index="2" title="Tổng hợp theo quý" headers={['Quý', 'Tổng số cơ hội', 'Số cơ hội đạt', 'Tỷ lệ tuân thủ %']}>
+        {byQuarter.map(q => (
+          <tr key={q.quy} className="hover:bg-slate-50">
+            <td className="p-3 text-slate-700">{q.label}</td>
+            <td className="p-3 text-center">{q.coHoi}</td>
+            <td className="p-3 text-center">{q.dat}</td>
+            <td className="p-3 text-center">{vstPct(vstRate(q.dat, q.coHoi))}</td>
+          </tr>
+        ))}
+      </VstReportTable>
 
-                return (
-                    <div key={idx} className="vst-moment-stat group">
-                        <div className="vst-moment-stat-header flex justify-between items-center mb-3">
-                            <div className="vst-moment-stat-content flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-100">{momentId}</span>
-                                <span className="text-xs font-bold text-slate-700 uppercase tracking-tight">{moment}</span>
-                            </div>
-                            <div className="vst-moment-stat-metrics flex gap-4">
-                                <div className="vst-moment-stat-metric text-right">
-                                    <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Tuân thủ</p>
-                                    <p className="text-xs font-black text-indigo-600 tracking-tight">{compRate.toFixed(1)}%</p>
-                                </div>
-                                <div className="vst-moment-stat-metric text-right">
-                                    <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Kỹ thuật</p>
-                                    <p className="text-xs font-black text-emerald-600 tracking-tight">{techRate.toFixed(1)}%</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-1.5">
-                            <div className="w-full bg-slate-50 h-1.5 rounded-full overflow-hidden">
-                                <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:bg-indigo-600" style={{ width: `${compRate}%` }} />
-                            </div>
-                            <div className="w-full bg-slate-50 h-1.5 rounded-full overflow-hidden">
-                                <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000 group-hover:bg-emerald-600" style={{ width: `${techRate}%` }} />
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-      </div>
+      {/* 3. Theo khoa/phòng */}
+      <OpportunityTable index="3" title="Phân tổ theo khoa/phòng (tính theo cơ hội)" firstHeader="Khoa/Phòng" rows={byKhoa} note={VST_SAMPLE_NOTE} />
+
+      {/* 4. Theo đối tượng được giám sát */}
+      <OpportunityTable index="4" title="Phân tổ theo đối tượng được giám sát" firstHeader="Đối tượng" rows={byDoiTuong} />
+
+      {/* 5. Theo từng thời điểm WHO */}
+      <VstReportTable
+        index="5"
+        title="Phân tổ theo từng thời điểm vệ sinh tay (5 thời điểm WHO)"
+        note="Giúp xác định thời điểm nào hay bị bỏ sót nhất. Thời điểm không phát sinh cơ hội được tính là Không áp dụng và loại khỏi mẫu số."
+        headers={['Thời điểm', 'Đạt', 'Không đạt', 'Không áp dụng', 'Tổng áp dụng', 'Tỷ lệ % Đạt']}
+      >
+        {byMoment.map(m => {
+          const apDung = m.dat + m.khongDat;
+          return (
+            <tr key={m.label} className="hover:bg-slate-50">
+              <td className="p-3 text-slate-700">{m.label}</td>
+              <td className="p-3 text-center text-green-700 font-medium">{m.dat}</td>
+              <td className="p-3 text-center text-red-700 font-medium">{m.khongDat}</td>
+              <td className="p-3 text-center text-slate-500">{m.khongApDung}</td>
+              <td className="p-3 text-center">{apDung}</td>
+              <td className="p-3 text-center">{vstPct(vstRate(m.dat, apDung))}</td>
+            </tr>
+          );
+        })}
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng (5 thời điểm)</td>
+          <td className="p-3 text-center">{byMoment.reduce((s, m) => s + m.dat, 0)}</td>
+          <td className="p-3 text-center">{byMoment.reduce((s, m) => s + m.khongDat, 0)}</td>
+          <td className="p-3 text-center">{byMoment.reduce((s, m) => s + m.khongApDung, 0)}</td>
+          <td className="p-3 text-center">{totals.coHoi}</td>
+          <td className="p-3 text-center">{vstPct(tyLeChung)}</td>
+        </tr>
+      </VstReportTable>
+
+      {/* 6. Chỉ số phụ */}
+      <VstReportTable
+        index="6"
+        title="Tỷ lệ lượt giám sát đạt toàn bộ (chỉ số phụ)"
+        note="Mục này đo tỷ lệ LƯỢT quan sát (1 NVYT tại 1 thời điểm giám sát) đạt TẤT CẢ cơ hội áp dụng trong lượt đó — khác với chỉ số chính (mục 1–5) vốn tính theo từng cơ hội đơn lẻ."
+        headers={['Kết quả', 'Số lượt', 'Tỷ lệ %']}
+      >
+        <tr className="hover:bg-slate-50">
+          <td className="p-3"><span className="inline-flex items-center gap-1.5 text-green-700 font-medium"><CheckCircle2 size={16} /> Đạt</span></td>
+          <td className="p-3 text-center">{luot.dat}</td>
+          <td className="p-3 text-center">{vstPct(vstRate(luot.dat, tongLuot))}</td>
+        </tr>
+        <tr className="hover:bg-slate-50">
+          <td className="p-3"><span className="inline-flex items-center gap-1.5 text-red-700 font-medium"><XCircle size={16} /> Không đạt</span></td>
+          <td className="p-3 text-center">{luot.khongDat}</td>
+          <td className="p-3 text-center">{vstPct(vstRate(luot.khongDat, tongLuot))}</td>
+        </tr>
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng</td>
+          <td className="p-3 text-center">{tongLuot}</td>
+          <td className="p-3 text-center">{tongLuot > 0 ? '100.0%' : '0.0%'}</td>
+        </tr>
+      </VstReportTable>
+
+      {/* 7. Kết quả chung và so sánh mục tiêu */}
+      <VstReportTable
+        index="7"
+        title="Kết quả chung và so sánh mục tiêu"
+        note={`Mục tiêu riêng ≥${VST_TARGET_HIGH_RISK}% áp dụng cho các khoa/khu vực nguy cơ cao (theo danh sách bệnh viện tự xác định và rà soát định kỳ) — đối chiếu với bảng phân tổ theo Khoa/Phòng ở mục 3.`}
+        headers={['Nội dung', 'Giá trị', 'Mục tiêu', 'Đánh giá']}
+      >
+        <tr className="hover:bg-slate-50">
+          <td className="p-3 text-slate-700">Tỷ lệ tuân thủ chung toàn viện (năm báo cáo)</td>
+          <td className="p-3 text-center font-bold">{vstPct(tyLeChung)}</td>
+          <td className="p-3 text-center">≥ {VST_TARGET}%</td>
+          <td className="p-3 text-center">
+            <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${tyLeChung >= VST_TARGET ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {tyLeChung >= VST_TARGET ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+              {tyLeChung >= VST_TARGET ? 'Đạt mục tiêu' : 'Chưa đạt mục tiêu'}
+            </span>
+          </td>
+        </tr>
+      </VstReportTable>
     </div>
   );
 };
@@ -692,9 +967,9 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold tracking-widest">
                     <tr>
                       <th className="p-4 border-b w-[280px]">Thời điểm</th>
-                      <th className="p-4 border-b text-center w-20">Cơ hội</th>
-                      <th className={`p-4 border-b text-center w-20 ${isReadOnly ? 'text-black' : ''}`}>Tuân thủ</th>
-                      <th className={`p-4 border-b text-center w-20 ${isReadOnly ? 'text-black' : ''}`}>Đúng KT</th>
+                      <th className="p-4 border-b text-center w-24">Đạt</th>
+                      <th className="p-4 border-b text-center w-24">Không đạt</th>
+                      <th className="p-4 border-b text-center w-32">Không áp dụng</th>
                       <th className="p-4 border-b">Ghi chú chi tiết</th>
                     </tr>
                   </thead>
@@ -702,7 +977,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                     {formData.checklist_data.moments.map((m: any) => (
                       <tr
                         key={m.id}
-                        className={`transition-all border-b last:border-0 ${m.co_hoi ? 'bg-emerald-50/40' : 'hover:bg-slate-50/50'}`}
+                        className={`transition-all border-b last:border-0 hover:bg-slate-50/50`}
                       >
                         <td className="p-4 border-r border-slate-100">
                           <span className="font-bold text-slate-700 block text-[11px] leading-tight uppercase">
@@ -711,29 +986,50 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                         </td>
                         <td className="p-4 border-r border-slate-100 text-center">
                           <input
-                            type="checkbox"
+                            type="radio"
+                            name={`moment_${m.id}`}
                             disabled={isReadOnly}
-                            className="w-5 h-5 rounded cursor-pointer accent-blue-600"
-                            checked={m.co_hoi}
-                            onChange={() => handleToggle(m.id, 'co_hoi')}
+                            className="w-5 h-5 cursor-pointer accent-emerald-600"
+                            checked={m.co_hoi && m.compliance}
+                            onChange={() => {
+                              if (isReadOnly) return;
+                              const newMoments = formData.checklist_data.moments.map((item: any) => 
+                                item.id === m.id ? { ...item, co_hoi: true, compliance: true, correct_technique: true } : item
+                              );
+                              setFormData({ ...formData, checklist_data: { moments: newMoments } });
+                            }}
                           />
                         </td>
                         <td className="p-4 border-r border-slate-100 text-center">
                           <input
-                            type="checkbox"
-                            disabled={isReadOnly || !m.co_hoi}
-                            className="w-5 h-5 rounded cursor-pointer accent-emerald-600 disabled:opacity-30"
-                            checked={m.compliance}
-                            onChange={() => handleToggle(m.id, 'compliance')}
+                            type="radio"
+                            name={`moment_${m.id}`}
+                            disabled={isReadOnly}
+                            className="w-5 h-5 cursor-pointer accent-rose-600"
+                            checked={m.co_hoi && !m.compliance}
+                            onChange={() => {
+                              if (isReadOnly) return;
+                              const newMoments = formData.checklist_data.moments.map((item: any) => 
+                                item.id === m.id ? { ...item, co_hoi: true, compliance: false, correct_technique: false } : item
+                              );
+                              setFormData({ ...formData, checklist_data: { moments: newMoments } });
+                            }}
                           />
                         </td>
                         <td className="p-4 border-r border-slate-100 text-center">
                           <input
-                            type="checkbox"
-                            disabled={isReadOnly || !m.compliance}
-                            className="w-5 h-5 rounded cursor-pointer accent-orange-500 disabled:opacity-30"
-                            checked={m.correct_technique}
-                            onChange={() => handleToggle(m.id, 'correct_technique')}
+                            type="radio"
+                            name={`moment_${m.id}`}
+                            disabled={isReadOnly}
+                            className="w-5 h-5 cursor-pointer accent-slate-400"
+                            checked={!m.co_hoi}
+                            onChange={() => {
+                              if (isReadOnly) return;
+                              const newMoments = formData.checklist_data.moments.map((item: any) => 
+                                item.id === m.id ? { ...item, co_hoi: false, compliance: false, correct_technique: false } : item
+                              );
+                              setFormData({ ...formData, checklist_data: { moments: newMoments } });
+                            }}
                           />
                         </td>
                         <td className="p-3">
@@ -761,20 +1057,15 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
               </div>
             </div>
 
-              {/* Results Summary Bar */}
               <div className="bg-indigo-50/50 border border-indigo-100 rounded-[28px] p-4 md:p-6 shadow-xl shadow-indigo-900/5">
-                <div className="grid grid-cols-3 gap-2 md:gap-4 divide-x divide-indigo-100">
+                <div className="grid grid-cols-2 gap-2 md:gap-4 divide-x divide-indigo-100">
                   <div className="flex flex-col items-center">
                     <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cơ hội</span>
                     <span className="text-lg md:text-2xl font-black text-slate-800">{formData.tong_co_hoi}</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Tuân thủ</span>
+                    <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Đạt</span>
                     <span className="text-lg md:text-2xl font-black text-emerald-600">{formData.so_lan_tuan_thu}</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 ${isReadOnly ? 'text-black' : 'text-slate-400'}`}>Đúng KT</span>
-                    <span className="text-lg md:text-2xl font-black text-indigo-600">{formData.so_lan_dung_ky_thuat}</span>
                   </div>
                 </div>
               </div>

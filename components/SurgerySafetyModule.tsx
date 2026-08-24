@@ -1,68 +1,96 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Plus, Search, Edit2, Trash2, Eye, Calendar, Building2,
-  Users, CheckCircle2, AlertTriangle, XCircle, FileText,
-  X, LayoutDashboard, List, Filter, RotateCcw, Stethoscope,
-  ClipboardCheck, Clock, UserCheck, ShieldCheck, BarChart3,
-  TrendingUp, BarChart, ArrowLeft, Activity, LogOut, Save, Percent, Check
+  Plus, Edit2, Trash2, ArrowLeft, Save, X, Loader2, Search, Eye,
+  List, BarChart3, FileSpreadsheet, Calendar, Building2, User, ClipboardList,
+  AlertTriangle, CheckCircle2, XCircle, MinusCircle, FileText, ShieldCheck
 } from 'lucide-react';
 import {
-  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, Cell
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
-import { useAuth } from '../contexts/AuthContext';
 import { SurgerySafety } from '../types';
 import { fetchSurgerySafety, addSurgerySafety, updateSurgerySafety, deleteSurgerySafety } from '../readSurgerySafety';
-import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { fetchDmDonVi } from '../readDmDonVi';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  ATPT_CRITERIA, ATPT_GROUPS, ATPT_ANSWERS, ATPT_KHU_VUC_OPTIONS, ATPT_NHOM_PTTT_OPTIONS,
+  scoreAtpt, jciMinSample, JCI_SAMPLE_NOTE, AtptAnswer
+} from '../utils/atptCriteria';
+import { exportAtptReportExcel } from '../utils/atptReportExcel';
 
-const CRITERIA = [
-  { id: 'tc1_xac_nhan_danh_tinh', section: 'I', stage: 'SIGN IN', label: 'Xác nhận danh tính người bệnh: Họ tên, ngày sinh, mã số người bệnh.', role: 'BS gây mê, ĐD, Người bệnh' },
-  { id: 'tc2_xac_nhan_vi_tri', section: 'I', stage: 'SIGN IN', label: 'Xác nhận vị trí phẫu thuật: Đã được đánh dấu bằng mũi tên hướng vào vùng mổ (không dùng dấu X).', role: 'Phẫu thuật viên chính' },
-  { id: 'tc3_cam_ket_phau_thuat', section: 'I', stage: 'SIGN IN', label: 'Cam kết phẫu thuật: Đã ký đủ chữ ký của phẫu thuật viên, BS gây mê và người bệnh/người đại diện.', role: 'Điều dưỡng dụng cụ' },
-  { id: 'tc4_kiem_tra_thiet_bi', section: 'I', stage: 'SIGN IN', label: 'Kiểm tra thiết bị & thuốc: Máy mê, máy theo dõi, nguồn oxy dự phòng, thuốc cấp cứu.', role: 'Bác sĩ gây mê' },
-  { id: 'tc5_danh_gia_nguy_co', section: 'I', stage: 'SIGN IN', label: 'Đánh giá nguy cơ: Kiểm soát đường thở, nguy cơ mất máu (>500ml), tiền sử dị ứng thuốc.', role: 'Bác sĩ gây mê' },
-  { id: 'tc6_gioi_thieu_nhan_su', section: 'II', stage: 'TIME OUT', label: 'Giới thiệu nhân sự: Từng thành viên trong ê-kíp giới thiệu tên và vai trò.', role: 'Cả kíp phẫu thuật' },
-  { id: 'tc7_xac_nhan_lan_cuoi', section: 'II', stage: 'TIME OUT', label: 'Xác nhận lại lần cuối: Đúng người bệnh, đúng vị trí và đúng phương pháp phẫu thuật', role: 'Phẫu thuật viên chính' },
-  { id: 'tc8_du_phong_nhiem_khuan', section: 'II', stage: 'TIME OUT', label: 'Dự phòng nhiễm khuẩn: Đã tiêm kháng sinh dự phòng trong vòng 60 phút trước đó (nếu có chỉ định).', role: 'Bác sĩ gây mê' },
-  { id: 'tc9_cac_van_de_phat_sinh', section: 'II', stage: 'TIME OUT', label: 'Các vấn đề phát sinh: Phẫu thuật viên, bác sĩ gây mê và điều dưỡng trao đổi về các nguy cơ đột biến có thể xảy ra.', role: 'Cả kíp phẫu thuật' },
-  { id: 'tc10_kiem_dem_dung_cu', section: 'III', stage: 'SIGN OUT', label: 'Kiểm đếm dụng cụ: Xác nhận đã kiểm đếm đủ gạc, dụng cụ phẫu thuật, vật tư tiêu hao.', role: 'Điều dưỡng dụng cụ' },
-  { id: 'tc11_mau_benh_pham', section: 'III', stage: 'SIGN OUT', label: 'Mẫu bệnh phẩm: Đã dán nhãn chính xác thông tin người bệnh và loại bệnh phẩm.', role: 'Phẫu thuật viên' },
-  { id: 'tc12_ghi_chep_ho_so', section: 'III', stage: 'SIGN OUT', label: 'Ghi chép hồ sơ: Hoàn thiện biên bản phẫu thuật, các tai biến phát sinh (nếu có).', role: 'Phẫu thuật viên' },
-  { id: 'tc13_ban_giao_hoi_tinh', section: 'III', stage: 'SIGN OUT', label: 'Bàn giao hồi tỉnh: Các lưu ý đặc biệt về chăm sóc và theo dõi sau mổ.', role: 'Bác sĩ gây mê' },
-];
+const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+const QUARTERS = [1, 2, 3, 4];
+
+const emptyForm = (nguoiGiamSat = ''): SurgerySafety => {
+  const checklist: Record<string, string> = {};
+  ATPT_CRITERIA.forEach(c => { checklist[c.id] = 'Có'; });
+  return {
+    ngay_giam_sat: new Date().toISOString().split('T')[0],
+    nguoi_giam_sat: nguoiGiamSat,
+    ban_mo_so: '',
+    khoa_phau_thuat: '',
+    ho_ten_nguoi_benh: '',
+    kip_phau_thuat: '',
+    tc1_xac_nhan_danh_tinh: null, tc2_xac_nhan_vi_tri: null, tc3_cam_ket_phau_thuat: null,
+    tc4_kiem_tra_thiet_bi: null, tc5_danh_gia_nguy_co: null, tc6_gioi_thieu_nhan_su: null,
+    tc7_xac_nhan_lan_cuoi: null, tc8_du_phong_nhiem_khuan: null, tc9_cac_van_de_phat_sinh: null,
+    tc10_kiem_dem_dung_cu: null, tc11_mau_benh_pham: null, tc12_ghi_chep_ho_so: null,
+    tc13_ban_giao_hoi_tinh: null,
+    checklist_23: checklist,
+    loai_pt_tt: '',
+    pid_nguoi_benh: '',
+    nguoi_thu_thap: nguoiGiamSat,
+    tong_dat: 0,
+    tong_ap_dung: 0,
+    ty_le_tuan_thu: 0,
+    ket_qua: 'Đạt',
+    ghi_chu_chung: ''
+  };
+};
+
+const yearOf = (iso: string) => (iso || '').slice(0, 4);
+const monthOf = (iso: string) => Number((iso || '').slice(5, 7));
+const fmtPct = (rate: number) => `${rate.toFixed(1)}%`;
+
+/**
+ * Kết quả của 1 ca. Bản ghi cũ (13 tiêu chí, chưa có checklist_23) được suy ra
+ * từ ty_le_tuan_thu đã lưu để không mất số liệu trong các bảng tổng hợp.
+ */
+const verdictOf = (item: SurgerySafety): 'Đạt' | 'Không đạt' => {
+  if (item.checklist_23 && Object.keys(item.checklist_23).length > 0) {
+    return scoreAtpt(item.checklist_23).ketQua;
+  }
+  if (item.ket_qua === 'Đạt' || item.ket_qua === 'Không đạt') return item.ket_qua;
+  return (item.ty_le_tuan_thu || 0) >= 100 ? 'Đạt' : 'Không đạt';
+};
 
 export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [data, setData] = useState<SurgerySafety[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [departments, setDepartments] = useState<DmDonVi[]>([]);
   const { user } = useAuth();
 
-  const [editingItem, setEditingItem] = useState<SurgerySafety | null>(null);
-  const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DANH_SACH' | 'REPORT'>('OVERVIEW');
+  const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
+  const [activeTab, setActiveTab] = useState<'DANH_SACH' | 'BAO_CAO'>('DANH_SACH');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailItem, setDetailItem] = useState<SurgerySafety | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filterConfig, setFilterConfig] = useState({
-    timeRange: 'Tháng này',
-    fromDate: '',
-    toDate: '',
-    department: 'Tất cả',
-    orTable: 'Tất cả'
-  });
+  const [formData, setFormData] = useState<SurgerySafety>(emptyForm());
+  const [filterConfig, setFilterConfig] = useState({ year: '', department: '' });
+
+  const currentUserName = useMemo(
+    () => (user?.full_name || user?.username || '').trim(),
+    [user]
+  );
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const [atptData, dmData] = await Promise.all([
-        fetchSurgerySafety(),
-        fetchDmDonVi()
-      ]);
-      setData(atptData);
-      setDepartments(dmData);
-    } catch (err: any) {
-      setError(err.message);
+      const [rows, depts] = await Promise.all([fetchSurgerySafety(), fetchDmDonVi()]);
+      setData(rows as SurgerySafety[]);
+      setDepartments(depts);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -72,1201 +100,905 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
     loadData();
   }, []);
 
-  const departmentList = useMemo(() => departments.map(d => d.ten_don_vi).filter(Boolean), [departments]);
-  const orTableList = useMemo(() => {
-    const list = data.map(item => item.ban_mo_so).filter(Boolean);
-    return Array.from(new Set(list)).sort();
+  const collectorOptions = useMemo(() => {
+    const names = [currentUserName, ...data.map(d => d.nguoi_thu_thap || d.nguoi_giam_sat || '')]
+      .map(n => n.trim())
+      .filter(Boolean);
+    return Array.from(new Set(names));
+  }, [data, currentUserName]);
+
+  const areaOptions = useMemo(() => {
+    const names = new Set<string>(ATPT_KHU_VUC_OPTIONS);
+    departments.forEach(d => {
+      const n = (d.ten_don_vi || '').trim();
+      if (n) names.add(n);
+    });
+    return Array.from(names);
+  }, [departments]);
+
+  const yearOptions = useMemo(() => {
+    const years = new Set<string>([String(new Date().getFullYear())]);
+    data.forEach(d => {
+      const y = yearOf(d.ngay_giam_sat);
+      if (y) years.add(y);
+    });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [data]);
 
   const filteredData = useMemo(() => {
+    const keyword = filterConfig.department.trim().toLowerCase();
     return data.filter(item => {
-      const matchDept = filterConfig.department === 'Tất cả' || item.khoa_phau_thuat === filterConfig.department;
-      const matchOR = filterConfig.orTable === 'Tất cả' || item.ban_mo_so === filterConfig.orTable;
-
-      let matchTime = true;
-      const itemDate = new Date(item.ngay_giam_sat);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (filterConfig.timeRange === 'Hôm nay') {
-        matchTime = itemDate >= today;
-      } else if (filterConfig.timeRange === 'Tuần này') {
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        matchTime = itemDate >= startOfWeek;
-      } else if (filterConfig.timeRange === 'Tháng này') {
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        matchTime = itemDate >= startOfMonth;
-      } else if (filterConfig.timeRange === 'Quý này') {
-        const quarter = Math.floor(today.getMonth() / 3);
-        const startOfQuarter = new Date(today.getFullYear(), quarter * 3, 1);
-        matchTime = itemDate >= startOfQuarter;
-      } else if (filterConfig.timeRange === 'Năm này') {
-        const startOfYear = new Date(today.getFullYear(), 0, 1);
-        matchTime = itemDate >= startOfYear;
-      } else if (filterConfig.timeRange === 'Tùy chọn') {
-        const matchFromDate = !filterConfig.fromDate || item.ngay_giam_sat >= filterConfig.fromDate;
-        const matchToDate = !filterConfig.toDate || item.ngay_giam_sat <= filterConfig.toDate;
-        matchTime = matchFromDate && matchToDate;
-      }
-
-      return matchDept && matchOR && matchTime;
+      const matchYear = !filterConfig.year || yearOf(item.ngay_giam_sat) === filterConfig.year;
+      const matchDept = !keyword || (item.khoa_phau_thuat || '').toLowerCase().includes(keyword);
+      return matchYear && matchDept;
     });
   }, [data, filterConfig]);
 
-  const exportToExcel = () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const score = scoreAtpt(formData.checklist_23);
+    const payload: SurgerySafety = {
+      ...formData,
+      tong_dat: score.dat,
+      tong_ap_dung: score.apDung,
+      ty_le_tuan_thu: Number(score.tyLe.toFixed(2)),
+      ket_qua: score.ketQua
+    };
     try {
-      if (activeTab === 'REPORT') {
-        const groups: Record<string, any> = {};
-        filteredData.forEach(item => {
-          const dept = item.khoa_phau_thuat || 'Chưa xác định';
-          if (!groups[dept]) groups[dept] = { dept, total: 0, pass100: 0, errors: {} };
-          groups[dept].total++;
-          if (Number(item.ty_le_tuan_thu) >= 100) groups[dept].pass100++;
-          else {
-            CRITERIA.forEach(c => {
-              if (!item[c.id as keyof SurgerySafety]) {
-                groups[dept].errors[c.label] = (groups[dept].errors[c.label] || 0) + 1;
-              }
-            });
-          }
-        });
-
-        const reportRows = Object.values(groups).map((g: any) => [
-          g.dept,
-          g.total,
-          g.pass100,
-          ((g.pass100 / g.total) * 100).toFixed(1) + '%',
-          Object.entries(g.errors)
-            .sort((a: any, b: any) => b[1] - a[1])
-            .map(([err, count]) => `- ${err} (x${count})`)
-            .join('\n')
-        ]);
-
-        const title = "TỔNG HỢP GIÁM SÁT AN TOÀN PHẪU THUẬT";
-        const dateStr = filterConfig.timeRange === 'Tùy chọn'
-          ? `Từ ngày ${filterConfig.fromDate || '...'} đến ngày ${filterConfig.toDate || '...'}`
-          : `Kỳ báo cáo: ${filterConfig.timeRange}`;
-
-        const wsData = [
-          [title],
-          [dateStr],
-          [],
-          ['Khoa lâm sàng', 'Số ca giám sát (A)', 'Số ca đạt 100% (B)', 'Tỷ lệ % (B/A)', 'Lỗi thường gặp nhất']
-        ];
-
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        XLSX.utils.sheet_add_aoa(ws, reportRows, { origin: 'A5' });
-
-        ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 60 }];
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "TongHop");
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-        saveAs(dataBlob, `GiamSatATPT_TongHop_${new Date().toISOString().split('T')[0]}.xlsx`);
+      if (editingId) {
+        await updateSurgerySafety(editingId, payload);
+      } else {
+        await addSurgerySafety(payload);
       }
+      setViewMode('LIST');
+      setEditingId(null);
+      await loadData();
     } catch (err) {
-      console.error("Export failed:", err);
-      alert("Xuất file thất bại.");
+      console.error('Error saving:', err);
+      alert('Có lỗi xảy ra khi lưu bản ghi.');
     }
   };
 
-  return (
-    <div className="bg-slate-50 min-h-[calc(100vh-8rem)]">
-      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex bg-slate-100/50 p-1.5 gap-1 rounded-[28px] border border-slate-200/50 shrink-0">
-            <TabButton
-              active={activeTab === 'OVERVIEW'}
-              onClick={() => { setActiveTab('OVERVIEW'); setViewMode('LIST'); }}
-              icon={LayoutDashboard}
-              label="Tổng quan"
-            />
-            <TabButton
-              active={activeTab === 'DANH_SACH'}
-              onClick={() => { setActiveTab('DANH_SACH'); setViewMode('LIST'); }}
-              icon={List}
-              label="Danh sách"
-            />
-            <TabButton
-              active={activeTab === 'REPORT'}
-              onClick={() => { setActiveTab('REPORT'); setViewMode('LIST'); }}
-              icon={BarChart3}
-              label="Tổng hợp"
-            />
-          </div>
+  const handleEdit = (item: SurgerySafety) => {
+    const checklist: Record<string, string> = {};
+    ATPT_CRITERIA.forEach(c => { checklist[c.id] = item.checklist_23?.[c.id] || 'Có'; });
+    setFormData({ ...item, checklist_23: checklist });
+    setEditingId(item.id || null);
+    setViewMode('FORM');
+  };
 
-          <div className="flex items-center gap-3">
-            {activeTab === 'REPORT' && (
-              <button
-                onClick={exportToExcel}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100 active:scale-95"
-              >
-                <FileText size={18} /> <span className="hidden md:inline">Xuất Excel</span>
-              </button>
-            )}
-            {viewMode === 'LIST' && (
-              <button
-                onClick={() => { setEditingItem(null); setActiveTab('DANH_SACH'); setViewMode('FORM'); }}
-                className="flex items-center gap-2 bg-[#059669] hover:bg-[#0d6e39] text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-green-200 active:scale-95"
-              >
-                <Plus size={18} /> Thêm giám sát mới
-              </button>
-            )}
-          </div>
-        </div>
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa bản ghi này?')) {
+      try {
+        await deleteSurgerySafety(id);
+        await loadData();
+      } catch (err) {
+        console.error('Error deleting:', err);
+        alert('Có lỗi xảy ra khi xóa.');
+      }
+    }
+  };
 
-        <div className="p-4 lg:p-4 pt-0 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Thời gian</label>
-              <select
-                value={filterConfig.timeRange}
-                onChange={e => setFilterConfig({ ...filterConfig, timeRange: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
-              >
-                {['Hôm nay', 'Tuần này', 'Tháng này', 'Quý này', 'Năm này', 'Tùy chọn'].map(time => (
-                  <option key={time} value={time}>{time}</option>
-                ))}
-              </select>
-            </div>
-
-            {filterConfig.timeRange === 'Tùy chọn' && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Từ ngày</label>
-                  <input
-                    type="date"
-                    value={filterConfig.fromDate}
-                    onChange={e => setFilterConfig({ ...filterConfig, fromDate: e.target.value })}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Đến ngày</label>
-                  <input
-                    type="date"
-                    value={filterConfig.toDate}
-                    onChange={e => setFilterConfig({ ...filterConfig, toDate: e.target.value })}
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Khoa</label>
-              <select
-                value={filterConfig.department}
-                onChange={e => setFilterConfig({ ...filterConfig, department: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
-              >
-                <option value="Tất cả">Tất cả khoa</option>
-                {departmentList.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Phòng mổ</label>
-              <select
-                value={filterConfig.orTable}
-                onChange={e => setFilterConfig({ ...filterConfig, orTable: e.target.value })}
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-[#059669]/10 focus:ring-4 transition-all"
-              >
-                <option value="Tất cả">Tất cả phòng</option>
-                {orTableList.map(or => (
-                  <option key={or} value={or}>Bàn mổ {or}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin w-8 h-8 border-4 border-[#059669] border-t-transparent rounded-full"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 font-bold">Lỗi: {error}</div>
-        ) : activeTab === 'OVERVIEW' ? (
-          <SurgeryOverview data={filteredData} />
-        ) : activeTab === 'REPORT' ? (
-          <SurgeryReport data={filteredData} />
-        ) : viewMode === 'LIST' ? (
-          <SurgeryList
-            data={filteredData}
-            onView={(item: SurgerySafety) => { setEditingItem(item); setViewMode('DETAIL'); }}
-            onEdit={(item: SurgerySafety) => { setEditingItem(item); setViewMode('FORM'); }}
-            onDelete={async (id: string) => {
-              if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
-                await deleteSurgerySafety(id);
-                loadData();
-              }
-            }}
-          />
-        ) : viewMode === 'DETAIL' && editingItem ? (
-          <SurgerySafetyDetailView
-            item={editingItem}
-            currentUser={user}
-            onClose={() => setViewMode('LIST')}
-            onEdit={() => setViewMode('FORM')}
-            onDelete={async () => {
-              if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
-                await deleteSurgerySafety(editingItem.id!);
-                setViewMode('LIST');
-                loadData();
-              }
-            }}
-          />
-        ) : (
-          <SurgerySafetyFormView
-            item={editingItem}
-            onClose={() => setViewMode('LIST')}
-            onSaved={() => { setViewMode('LIST'); loadData(); }}
-            currentUser={user}
-            departmentList={departmentList}
-          />
-        )}
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-teal-600 animate-spin mb-4" />
+        <p className="text-slate-600">Đang tải dữ liệu...</p>
       </div>
-    </div>
-  );
-};
+    );
+  }
 
-const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
-  <button
-    onClick={onClick}
-    className={`supervision-tab-button flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active
-      ? 'bg-white text-[#059669] shadow-lg shadow-green-100 border border-green-50'
-      : 'text-slate-400 hover:text-slate-600'
-      }`}
-  >
-    <Icon size={16} />
-    {label}
-  </button>
-);
-
-const SurgeryOverview = ({ data }: { data: SurgerySafety[] }) => {
-  const stats = useMemo(() => {
-    const total = data.length;
-    if (total === 0) return { total: 0, complianceRate: 0, signInRate: 0, timeOutRate: 0, signOutRate: 0 };
-
-    let totalSignInPass = 0;
-    let totalTimeOutPass = 0;
-    let totalSignOutPass = 0;
-
-    data.forEach(d => {
-      // Stage 1: tc1 - tc5 (5 items)
-      if (d.tc1_xac_nhan_danh_tinh) totalSignInPass++;
-      if (d.tc2_xac_nhan_vi_tri) totalSignInPass++;
-      if (d.tc3_cam_ket_phau_thuat) totalSignInPass++;
-      if (d.tc4_kiem_tra_thiet_bi) totalSignInPass++;
-      if (d.tc5_danh_gia_nguy_co) totalSignInPass++;
-
-      // Stage 2: tc6 - tc9 (4 items)
-      if (d.tc6_gioi_thieu_nhan_su) totalTimeOutPass++;
-      if (d.tc7_xac_nhan_lan_cuoi) totalTimeOutPass++;
-      if (d.tc8_du_phong_nhiem_khuan) totalTimeOutPass++;
-      if (d.tc9_cac_van_de_phat_sinh) totalTimeOutPass++;
-
-      // Stage 3: tc10 - tc13 (4 items)
-      if (d.tc10_kiem_dem_dung_cu) totalSignOutPass++;
-      if (d.tc11_mau_benh_pham) totalSignOutPass++;
-      if (d.tc12_ghi_chep_ho_so) totalSignOutPass++;
-      if (d.tc13_ban_giao_hoi_tinh) totalSignOutPass++;
-    });
-
-    const avgCompliance = data.reduce((acc, curr) => acc + (Number(curr.ty_le_tuan_thu) || 0), 0) / total;
-
-    return {
-      total,
-      complianceRate: avgCompliance,
-      signInRate: (totalSignInPass / (5 * total)) * 100,
-      timeOutRate: (totalTimeOutPass / (4 * total)) * 100,
-      signOutRate: (totalSignOutPass / (4 * total)) * 100,
-    };
-  }, [data]);
-
-  const chartData = useMemo(() => {
-    if (data.length === 0) return [];
-
-    // Group by Date for trend
-    const dayMap: Record<string, { date: string, count: number, pass: number }> = {};
-
-    // Determine date range for aggregation
-    data.forEach(item => {
-      const d = new Date(item.ngay_giam_sat);
-      const key = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-      if (!dayMap[key]) {
-        dayMap[key] = { date: key, count: 0, pass: 0 };
-      }
-      dayMap[key].count++;
-      if (Number(item.ty_le_tuan_thu) >= 100) {
-        dayMap[key].pass++;
-      }
-    });
-
-    return Object.values(dayMap).sort((a, b) => {
-      const [d1, m1] = a.date.split('/');
-      const [d2, m2] = b.date.split('/');
-      return new Date(2026, Number(m1) - 1, Number(d1)).getTime() - new Date(2026, Number(m2) - 1, Number(d2)).getTime();
-    }).map(d => ({
-      ...d,
-      rate: Number(((d.pass / d.count) * 100).toFixed(1))
-    }));
-  }, [data]);
+  if (viewMode === 'FORM') {
+    return (
+      <AtptForm
+        formData={formData}
+        setFormData={setFormData}
+        isEditing={!!editingId}
+        areaOptions={areaOptions}
+        collectorOptions={collectorOptions}
+        currentUserName={currentUserName}
+        onSubmit={handleSave}
+        onCancel={() => { setViewMode('LIST'); setEditingId(null); }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-6 lg:grid-cols-5 gap-1.5 sm:gap-3 max-w-5xl">
-        <div className="col-span-3 lg:col-span-1">
-          <StatCard icon={<Stethoscope size={24} />} label="Tổng số ca" value={stats.total} color="slate" />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <button onClick={onBack} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+              <ArrowLeft size={20} />
+            </button>
+          )}
+          <h2 className="text-xl font-bold text-slate-800">An toàn phẫu thuật/thủ thuật (IPSG.04.00/04.01)</h2>
         </div>
-        <div className="col-span-3 lg:col-span-1">
-          <StatCard icon={<CheckCircle2 size={24} />} label="Tỷ lệ tuân thủ" value={`${stats.complianceRate.toFixed(1)}%`} color="green" />
-        </div>
-        <div className="col-span-2 lg:col-span-1">
-          <StatCard icon={<Clock size={20} />} label="Sign In đạt" value={`${stats.signInRate.toFixed(1)}%`} color="indigo" />
-        </div>
-        <div className="col-span-2 lg:col-span-1">
-          <StatCard icon={<Clock size={20} />} label="Time Out đạt" value={`${stats.timeOutRate.toFixed(1)}%`} color="amber" />
-        </div>
-        <div className="col-span-2 lg:col-span-1">
-          <StatCard icon={<ClipboardCheck size={20} />} label="Sign Out đạt" value={`${stats.signOutRate.toFixed(1)}%`} color="blue" />
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:items-center sm:w-auto">
+          <button onClick={() => setShowFilters(!showFilters)} className={`px-4 py-2 flex items-center justify-center sm:justify-start gap-2 rounded-xl border transition-all text-sm ${showFilters ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+            <Search size={18} className="shrink-0" />
+            <span>Bộ lọc</span>
+          </button>
+          <button onClick={() => setActiveTab('DANH_SACH')} className={`px-4 py-2 flex items-center justify-center sm:justify-start gap-2 rounded-xl border transition-all text-sm ${activeTab === 'DANH_SACH' ? 'bg-teal-50 border-teal-200 text-teal-700 font-medium' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+            <List size={18} className="shrink-0" />
+            <span className="sm:hidden">DS thu thập</span>
+            <span className="hidden sm:inline">Danh sách thu thập</span>
+          </button>
+          <button onClick={() => setActiveTab('BAO_CAO')} className={`px-4 py-2 flex items-center justify-center sm:justify-start gap-2 rounded-xl border transition-all text-sm ${activeTab === 'BAO_CAO' ? 'bg-teal-50 border-teal-200 text-teal-700 font-medium' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+            <BarChart3 size={18} className="shrink-0" />
+            <span>Báo cáo quy trình</span>
+          </button>
+          <button onClick={() => { setFormData(emptyForm(currentUserName)); setEditingId(null); setViewMode('FORM'); }} className="px-4 py-2 flex items-center justify-center sm:justify-start gap-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-sm text-sm">
+            <Plus size={18} className="shrink-0" />
+            <span>Thêm mới</span>
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Compliance Trend Chart */}
-        <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-              <TrendingUp size={18} className="text-indigo-600" />
-              Xu hướng tỷ lệ tuân thủ (%)
-            </h3>
-          </div>
-          <div className="h-64 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                  dy={10}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                  domain={[0, 100]}
-                />
-                <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 800 }}
-                  labelStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: '4px' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="rate"
-                  stroke="#059669"
-                  strokeWidth={4}
-                  dot={{ r: 4, fill: '#059669', strokeWidth: 2, stroke: '#fff' }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                  name="Tỷ lệ đạt (%)"
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
+      {showFilters && (
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Năm</label>
+              <select value={filterConfig.year} onChange={e => setFilterConfig({ ...filterConfig, year: e.target.value })} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                <option value="">Tất cả các năm</option>
+                {yearOptions.map(y => <option key={y} value={y}>Năm {y}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Khoa/Khu vực thực hiện</label>
+              <input
+                type="text"
+                list="atpt-area-options"
+                value={filterConfig.department}
+                onChange={e => setFilterConfig({ ...filterConfig, department: e.target.value })}
+                placeholder="Gõ từ khóa để tìm khu vực..."
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+              <datalist id="atpt-area-options">
+                {areaOptions.map(n => <option key={n} value={n} />)}
+              </datalist>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Case Volume Chart */}
-        <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-              <BarChart size={18} className="text-[#059669]" />
-              Số ca giám sát (Ca)
-            </h3>
+      <div className="grid grid-cols-2 gap-3 sm:gap-6">
+        <div className="bg-white p-3 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
-          <div className="h-64 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                  dy={10}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                />
-                <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 800 }}
-                  labelStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: '4px' }}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="#059669"
-                  radius={[6, 6, 0, 0]}
-                  name="Số ca giám sát"
-                  opacity={0.8}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.rate === 100 ? '#059669' : '#4ade80'} />
-                  ))}
-                </Bar>
-                <Line
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: '#6366f1' }}
-                  name="Xu hướng"
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-slate-500 truncate">Tổng số ca giám sát</p>
+            <p className="text-xl sm:text-2xl font-bold text-slate-800">{filteredData.length}</p>
+          </div>
+        </div>
+        <div className="bg-white p-3 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-slate-500 truncate">Tỷ lệ tuân thủ</p>
+            <p className="text-xl sm:text-2xl font-bold text-slate-800">
+              {fmtPct(filteredData.length > 0 ? (filteredData.filter(i => verdictOf(i) === 'Đạt').length / filteredData.length) * 100 : 0)}
+            </p>
           </div>
         </div>
       </div>
+
+      {activeTab === 'DANH_SACH' ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left jci-list-table">
+              <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
+                <tr>
+                  <th className="p-3 md:p-4">Ngày đánh giá</th>
+                  <th className="p-3 md:p-4">Khoa/Khu vực</th>
+                  <th className="p-4 hidden md:table-cell jci-col-hide">Nhóm PT/TT</th>
+                  <th className="p-4 hidden md:table-cell jci-col-hide">Người bệnh</th>
+                  <th className="p-4 hidden md:table-cell jci-col-hide">Tỷ lệ đạt</th>
+                  <th className="p-3 md:p-4">Kết quả</th>
+                  <th className="p-4 hidden md:table-cell jci-col-hide">Người thu thập</th>
+                  <th className="p-3 md:p-4 md:w-32">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredData.length === 0 ? (
+                  <tr><td colSpan={8} className="p-8 text-center text-slate-500">Chưa có dữ liệu giám sát ATPT</td></tr>
+                ) : (
+                  filteredData.map(item => {
+                    const verdict = verdictOf(item);
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 md:p-4 font-medium text-slate-700 whitespace-nowrap">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
+                        <td className="p-3 md:p-4">{item.khoa_phau_thuat}</td>
+                        <td className="p-4 hidden md:table-cell jci-col-hide">{item.loai_pt_tt}</td>
+                        <td className="p-4 hidden md:table-cell jci-col-hide">{item.ho_ten_nguoi_benh}</td>
+                        <td className="p-4 hidden md:table-cell jci-col-hide">{fmtPct(item.ty_le_tuan_thu || 0)}</td>
+                        <td className="p-3 md:p-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${verdict === 'Đạt' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {verdict === 'Đạt' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}{verdict}
+                          </span>
+                        </td>
+                        <td className="p-4 hidden md:table-cell jci-col-hide">{item.nguoi_thu_thap || item.nguoi_giam_sat}</td>
+                        <td className="p-3 md:p-4 jci-actions-cell">
+                          <div className="grid grid-cols-3 gap-2 md:flex md:items-center md:gap-2">
+                            <button onClick={() => setDetailItem(item)} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-teal-50" title="Xem chi tiết">
+                              <Eye size={16} className="shrink-0" />
+                              <span className="md:hidden">Xem</span>
+                            </button>
+                            <button onClick={() => handleEdit(item)} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-blue-50" title="Sửa">
+                              <Edit2 size={16} className="shrink-0" />
+                              <span className="md:hidden">Sửa</span>
+                            </button>
+                            <button onClick={() => handleDelete(item.id!)} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-red-50" title="Xóa">
+                              <Trash2 size={16} className="shrink-0" />
+                              <span className="md:hidden">Xóa</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <AtptProcessReport data={data} areaOptions={areaOptions} />
+      )}
+
+      {detailItem && <AtptDetailModal item={detailItem} onClose={() => setDetailItem(null)} />}
     </div>
   );
 };
 
-const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) => {
-  const colors: Record<string, string> = {
-    slate: 'bg-slate-50 text-slate-600',
-    green: 'bg-green-50 text-[#059669]',
-    amber: 'bg-amber-50 text-amber-600',
-    blue: 'bg-blue-50 text-blue-600',
-    indigo: 'bg-indigo-50 text-indigo-600'
-  };
-  return (
-    <div className="bg-white p-2 sm:p-3 rounded-[20px] border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center sm:items-start lg:items-center text-center sm:text-left gap-1 sm:gap-2 h-full min-w-0">
-      <div className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${colors[color]}`}>
-        {React.cloneElement(icon as React.ReactElement<any>, { size: 16, className: "sm:w-5 sm:h-5" })}
-      </div>
-      <div className="min-w-0 w-full overflow-hidden">
-        <p className="text-[7px] sm:text-[8px] font-black text-slate-400 uppercase tracking-tight sm:tracking-widest leading-tight truncate sm:whitespace-normal">{label}</p>
-        <h3 className="text-[10px] sm:text-sm font-black text-slate-800 tracking-tight truncate">{value}</h3>
-      </div>
-    </div>
-  );
+// ---------------------------------------------------------------------------
+// FORM NHẬP - BẢNG KIỂM 23 TIÊU CHÍ
+// ---------------------------------------------------------------------------
+
+const answerStyle = (answer: AtptAnswer, active: boolean) => {
+  if (!active) return 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50';
+  if (answer === 'Có') return 'bg-teal-50 border-teal-200 text-teal-700 shadow-sm';
+  if (answer === 'Không') return 'bg-red-50 border-red-200 text-red-700 shadow-sm';
+  return 'bg-slate-100 border-slate-300 text-slate-600 shadow-sm';
 };
 
-const SurgeryReport = ({ data }: { data: SurgerySafety[] }) => {
-  const reportData = useMemo(() => {
-    const groups: Record<string, { a: number, b: number, errors: Record<string, number> }> = {};
+interface AtptFormProps {
+  formData: SurgerySafety;
+  setFormData: React.Dispatch<React.SetStateAction<SurgerySafety>>;
+  isEditing: boolean;
+  areaOptions: string[];
+  collectorOptions: string[];
+  currentUserName: string;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+}
 
-    data.forEach(item => {
-      const dept = item.khoa_phau_thuat || 'Chưa xác định';
-      if (!groups[dept]) groups[dept] = { a: 0, b: 0, errors: {} };
+const AtptForm: React.FC<AtptFormProps> = ({
+  formData, setFormData, isEditing, areaOptions, collectorOptions, currentUserName, onSubmit, onCancel
+}) => {
+  const score = scoreAtpt(formData.checklist_23);
 
-      groups[dept].a++;
-      if (Number(item.ty_le_tuan_thu) >= 100) {
-        groups[dept].b++;
-      } else {
-        // Find failed criteria
-        CRITERIA.forEach(c => {
-          if (!item[c.id as keyof SurgerySafety]) {
-            groups[dept].errors[c.label] = (groups[dept].errors[c.label] || 0) + 1;
-          }
-        });
-      }
+  const setAnswer = (id: string, value: AtptAnswer) =>
+    setFormData(prev => ({ ...prev, checklist_23: { ...prev.checklist_23, [id]: value } }));
+
+  const setAllInGroup = (group: keyof typeof ATPT_GROUPS, value: AtptAnswer) =>
+    setFormData(prev => {
+      const next = { ...prev.checklist_23 };
+      ATPT_CRITERIA.filter(c => c.group === group).forEach(c => { next[c.id] = value; });
+      return { ...prev, checklist_23: next };
     });
 
-    return Object.entries(groups).map(([dept, stats]) => {
-      // Find all errors, sorted by frequency
-      const allErrors = Object.entries(stats.errors)
-        .sort((a, b) => b[1] - a[1])
-        .map(([label, count]) => ({ label, count }));
+  return (
+    <form onSubmit={onSubmit} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 bg-slate-50">
+        <h3 className="text-lg font-bold text-slate-800">
+          {isEditing ? 'Cập nhật' : 'Thêm mới'} Phiếu giám sát Bảng kiểm An toàn PT/TT
+        </h3>
+        <button type="button" onClick={onCancel} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors">
+          <X size={20} />
+        </button>
+      </div>
 
-      return {
-        department: dept,
-        a: stats.a,
-        b: stats.b,
-        rate: stats.a > 0 ? (stats.b / stats.a) * 100 : 0,
-        errors: allErrors
-      };
-    }).sort((a, b) => a.department.localeCompare(b.department));
-  }, [data]);
+      <div className="p-4 sm:p-6 space-y-8">
+        <p className="text-xs text-slate-500 italic">
+          Phụ lục II, BVQY103.QLCL.QĐ.04.V3. Mỗi phiếu = 1 ca phẫu thuật/thủ thuật xâm lấn được giám sát.
+          Tiêu chí "Không áp dụng" được loại khỏi mẫu số khi tính tỷ lệ đạt.
+        </p>
 
-  const totals = useMemo(() => {
-    const a = reportData.reduce((acc, curr) => acc + curr.a, 0);
-    const b = reportData.reduce((acc, curr) => acc + curr.b, 0);
-    return {
-      a,
-      b,
-      rate: a > 0 ? (b / a) * 100 : 0
-    };
-  }, [reportData]);
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Ngày đánh giá <span className="text-red-500">*</span></label>
+            <input type="date" required value={formData.ngay_giam_sat} onChange={e => setFormData({ ...formData, ngay_giam_sat: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Khoa/Khu vực thực hiện <span className="text-red-500">*</span></label>
+            <input type="text" required list="atpt-form-area-options" value={formData.khoa_phau_thuat} onChange={e => setFormData({ ...formData, khoa_phau_thuat: e.target.value })} placeholder="Gõ từ khóa để tìm khu vực..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+            <datalist id="atpt-form-area-options">
+              {areaOptions.map(n => <option key={n} value={n} />)}
+            </datalist>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Loại PT/TT (nhóm) <span className="text-red-500">*</span></label>
+            <select required value={formData.loai_pt_tt} onChange={e => setFormData({ ...formData, loai_pt_tt: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors">
+              <option value="">Chọn nhóm PT/TT...</option>
+              {ATPT_NHOM_PTTT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Họ tên người bệnh <span className="text-red-500">*</span></label>
+            <input type="text" required value={formData.ho_ten_nguoi_benh} onChange={e => setFormData({ ...formData, ho_ten_nguoi_benh: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" placeholder="Nguyễn Văn A" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Mã số bệnh án (PID)</label>
+            <input type="text" value={formData.pid_nguoi_benh} onChange={e => setFormData({ ...formData, pid_nguoi_benh: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" placeholder="00998xxx" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Bàn mổ số</label>
+            <input type="text" value={formData.ban_mo_so} onChange={e => setFormData({ ...formData, ban_mo_so: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Kíp phẫu thuật</label>
+            <input type="text" value={formData.kip_phau_thuat} onChange={e => setFormData({ ...formData, kip_phau_thuat: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Người thu thập</label>
+            <input
+              type="text"
+              list="atpt-collector-options"
+              value={formData.nguoi_thu_thap}
+              onChange={e => setFormData({ ...formData, nguoi_thu_thap: e.target.value, nguoi_giam_sat: e.target.value })}
+              placeholder={currentUserName ? `Gợi ý: ${currentUserName}` : 'Nhập tên người thu thập...'}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+            />
+            <datalist id="atpt-collector-options">
+              {collectorOptions.map(n => <option key={n} value={n} />)}
+            </datalist>
+            {currentUserName && formData.nguoi_thu_thap !== currentUserName && (
+              <button type="button" onClick={() => setFormData({ ...formData, nguoi_thu_thap: currentUserName, nguoi_giam_sat: currentUserName })} className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-700">
+                <User size={14} /> Dùng tên của tôi ({currentUserName})
+              </button>
+            )}
+          </div>
+
+          {/* Ô tự động tính */}
+          <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="px-4 py-3 rounded-xl border border-green-200 bg-green-50">
+              <p className="text-xs font-medium text-green-700">Số tiêu chí đạt "Có"</p>
+              <p className="text-lg font-bold text-green-800">{score.dat}</p>
+            </div>
+            <div className="px-4 py-3 rounded-xl border border-green-200 bg-green-50">
+              <p className="text-xs font-medium text-green-700">Tổng tiêu chí áp dụng</p>
+              <p className="text-lg font-bold text-green-800">{score.apDung} / {ATPT_CRITERIA.length}</p>
+            </div>
+            <div className={`px-4 py-3 rounded-xl border ${score.ketQua === 'Đạt' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <p className={`text-xs font-medium ${score.ketQua === 'Đạt' ? 'text-green-700' : 'text-red-700'}`}>Kết quả (tự động) · {score.tyLe.toFixed(1)}%</p>
+              <p className={`text-lg font-bold flex items-center gap-1.5 ${score.ketQua === 'Đạt' ? 'text-green-800' : 'text-red-800'}`}>
+                {score.ketQua === 'Đạt' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}{score.ketQua}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bảng kiểm 23 tiêu chí */}
+        {(Object.keys(ATPT_GROUPS) as (keyof typeof ATPT_GROUPS)[]).map(group => (
+          <div key={group} className="border border-slate-200 rounded-2xl overflow-hidden">
+            <div className="bg-slate-50 p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h4 className="font-bold text-slate-800">{ATPT_GROUPS[group]}</h4>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">Chọn nhanh:</span>
+                {ATPT_ANSWERS.map(a => (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => setAllInGroup(group, a)}
+                    className="px-2 py-1 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {ATPT_CRITERIA.filter(c => c.group === group).map(c => (
+                <div key={c.id} className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+                  <p className="text-sm text-slate-700 leading-relaxed flex-1">{c.label}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {ATPT_ANSWERS.map(a => {
+                      const active = formData.checklist_23?.[c.id] === a;
+                      return (
+                        <label key={a} className={`flex items-center justify-center px-3 py-2 rounded-xl cursor-pointer transition-all border text-xs font-medium whitespace-nowrap ${answerStyle(a, active)}`}>
+                          <input type="radio" name={c.id} className="sr-only" checked={active} onChange={() => setAnswer(c.id, a)} />
+                          {a}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-slate-700">Ghi chú</label>
+          <textarea rows={2} value={formData.ghi_chu_chung} onChange={e => setFormData({ ...formData, ghi_chu_chung: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" placeholder="VD: Thiếu bước 5 Sign-out (trao đổi điểm cải tiến với ê-kíp)" />
+        </div>
+      </div>
+
+      <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+        <button type="button" onClick={onCancel} className="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-200 rounded-xl transition-colors">Hủy bỏ</button>
+        <button type="submit" className="flex items-center gap-2 px-6 py-2.5 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 transition-colors shadow-sm">
+          <Save size={18} /> Lưu kết quả
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// MODAL CHI TIẾT
+// ---------------------------------------------------------------------------
+
+const InfoRow: React.FC<{ icon: any; label: string; value?: React.ReactNode }> = ({ icon: Icon, label, value }) => (
+  <div className="flex items-start gap-3">
+    <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+      <Icon size={18} />
+    </div>
+    <div className="min-w-0">
+      <p className="text-xs font-medium text-slate-500">{label}</p>
+      <p className="text-sm font-semibold text-slate-800 break-words">{value || '—'}</p>
+    </div>
+  </div>
+);
+
+const AtptDetailModal: React.FC<{ item: SurgerySafety; onClose: () => void }> = ({ item, onClose }) => {
+  const score = scoreAtpt(item.checklist_23);
+  const verdict = verdictOf(item);
+  const hasChecklist = !!item.checklist_23 && Object.keys(item.checklist_23).length > 0;
 
   return (
-    <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="p-6 border-b border-slate-100 bg-slate-50/30">
-        <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-          <FileText className="text-[#059669]" size={18} />
-          Phiếu tổng hợp chỉ số giám sát
-        </h2>
-      </div>
-      <div className="hidden md:block overflow-x-auto">
-        <table className="table-standardized">
-          <thead>
-            <tr>
-              <th className="p-6">Khoa lâm sàng</th>
-              <th className="p-6 text-center">Số ca giám sát (A)</th>
-              <th className="p-6 text-center">Số ca đạt 100% (B)</th>
-              <th className="p-6 text-center">Tỷ lệ % (B/A)</th>
-              <th className="p-6">Lỗi thường gặp nhất</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {reportData.map((row, idx) => (
-              <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                <td className="p-6 text-table font-normal text-slate-700">{row.department}</td>
-                <td className="p-6 text-center text-table font-normal text-slate-600">{row.a}</td>
-                <td className="p-6 text-center text-table font-normal text-slate-600">{row.b}</td>
-                <td className="p-6 text-center">
-                  <span className={`text-table font-normal ${row.rate >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
-                    {row.rate.toFixed(1)}%
-                  </span>
-                </td>
-                <td className="p-6 text-[12pt] text-slate-900 border-l border-slate-100">
-                  {row.errors.length > 0 ? (
-                    <ul className="space-y-1">
-                      {row.errors.map((err, i) => (
-                        <li key={i} className="text-[12pt] text-slate-900 font-bold italic leading-tight flex items-start gap-1">
-                          <span className="shrink-0 mt-1.5 w-1 h-1 rounded-full bg-slate-900" />
-                          {err.label} {err.count > 1 && <span className="text-[11pt] bg-slate-100 px-1 rounded not-italic font-black">x{err.count}</span>}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <span className="text-slate-400 italic">---</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {reportData.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-12 text-center text-slate-400 font-bold italic text-sm">Không có dữ liệu tổng hợp</td>
-              </tr>
-            )}
-          </tbody>
-          <tfoot className="bg-[#059669] text-white font-black">
-            <tr>
-              <td className="p-6 text-table uppercase tracking-widest">Toàn viện</td>
-              <td className="p-6 text-center text-table">{totals.a}</td>
-              <td className="p-6 text-center text-table">{totals.b}</td>
-              <td className="p-6 text-center text-table text-[#00ff00]">{totals.rate.toFixed(1)}%</td>
-              <td className="p-6"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={onClose}>
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl border border-slate-200" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">Chi tiết phiếu giám sát ATPT</h3>
+              <p className="text-xs text-slate-500">An toàn phẫu thuật/thủ thuật (IPSG.04.00/04.01)</p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors">
+            <X size={20} />
+          </button>
+        </div>
 
-      {/* Mobile Card Layout */}
-      <div className="md:hidden divide-y divide-slate-100">
-        {reportData.map((row, idx) => (
-          <div key={idx} className="p-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-800 uppercase">{row.department}</h3>
-              <div className="text-right">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Tỷ lệ đạt</p>
-                <span className={`text-lg font-black ${row.rate >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
-                  {row.rate.toFixed(1)}%
+        <div className="p-4 sm:p-6 space-y-6">
+          <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-slate-50">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${verdict === 'Đạt' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              {verdict === 'Đạt' ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-500">Kết quả (tự động)</p>
+              <div className="flex items-baseline gap-2">
+                <span className={`px-2 py-1 rounded text-lg font-bold ${verdict === 'Đạt' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{verdict}</span>
+                <span className="text-sm text-slate-500">
+                  {hasChecklist ? `${score.dat}/${score.apDung} tiêu chí áp dụng · ${score.tyLe.toFixed(1)}%` : `${fmtPct(item.ty_le_tuan_thu || 0)} (bảng kiểm 13 tiêu chí cũ)`}
                 </span>
               </div>
             </div>
-            <div className="flex items-center justify-between gap-4 pt-1">
-              <div className="flex gap-4">
-                <div className="text-center">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Tổng ca (A)</p>
-                  <p className="text-xs font-black text-slate-600">{row.a}</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <InfoRow icon={Calendar} label="Ngày đánh giá" value={new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')} />
+            <InfoRow icon={Building2} label="Khoa/Khu vực thực hiện" value={item.khoa_phau_thuat} />
+            <InfoRow icon={ClipboardList} label="Loại PT/TT (nhóm)" value={item.loai_pt_tt} />
+            <InfoRow icon={User} label="Người bệnh" value={`${item.ho_ten_nguoi_benh}${item.pid_nguoi_benh ? ` / ${item.pid_nguoi_benh}` : ''}`} />
+            <InfoRow icon={FileText} label="Bàn mổ số" value={item.ban_mo_so} />
+            <InfoRow icon={User} label="Kíp phẫu thuật" value={item.kip_phau_thuat} />
+            <InfoRow icon={User} label="Người thu thập" value={item.nguoi_thu_thap || item.nguoi_giam_sat} />
+          </div>
+
+          {hasChecklist ? (
+            (Object.keys(ATPT_GROUPS) as (keyof typeof ATPT_GROUPS)[]).map(group => (
+              <div key={group} className="border border-slate-200 rounded-2xl overflow-hidden">
+                <div className="bg-slate-50 p-3 border-b border-slate-200 flex items-center gap-2">
+                  <ClipboardList size={18} className="text-slate-500" />
+                  <h4 className="font-bold text-slate-800 text-sm">{ATPT_GROUPS[group]}</h4>
                 </div>
-                <div className="text-center">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Đạt (B)</p>
-                  <p className="text-xs font-black text-slate-600">{row.b}</p>
+                <div className="divide-y divide-slate-100">
+                  {ATPT_CRITERIA.filter(c => c.group === group).map(c => {
+                    const v = item.checklist_23?.[c.id];
+                    const Icon = v === 'Có' ? CheckCircle2 : v === 'Không' ? XCircle : MinusCircle;
+                    const tone = v === 'Có' ? 'text-green-600' : v === 'Không' ? 'text-red-600' : 'text-slate-400';
+                    return (
+                      <div key={c.id} className="p-3 flex items-start justify-between gap-4">
+                        <p className="text-sm text-slate-700 leading-relaxed">{c.label}</p>
+                        <div className={`flex items-center gap-1.5 shrink-0 ${tone}`}>
+                          <Icon size={16} />
+                          <span className="text-xs font-medium whitespace-nowrap">{v || 'Chưa đánh giá'}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50 text-amber-700 text-sm flex items-start gap-2">
+              <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+              <p>Bản ghi này được nhập theo bảng kiểm 13 tiêu chí cũ nên không có chi tiết 23 tiêu chí. Bấm Sửa và lưu lại để chuyển sang bảng kiểm mới.</p>
             </div>
-          </div>
-        ))}
-        {/* Mobile Total Row */}
-        <div className="p-4 bg-[#059669] text-white space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] font-black uppercase tracking-widest">Toàn viện</span>
-            <span className="text-lg font-black">{totals.rate.toFixed(1)}%</span>
-          </div>
-          <div className="flex gap-6 text-[10px] font-bold opacity-90 uppercase tracking-widest">
-            <span>Tổng (A): {totals.a}</span>
-            <span>Đạt (B): {totals.b}</span>
-          </div>
+          )}
+
+          {item.ghi_chu_chung && <InfoRow icon={FileText} label="Ghi chú" value={item.ghi_chu_chung} />}
+        </div>
+
+        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 flex justify-end sticky bottom-0">
+          <button type="button" onClick={onClose} className="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-200 rounded-xl transition-colors">Đóng</button>
         </div>
       </div>
     </div>
   );
 };
 
-const SurgeryList = ({ data, onView, onEdit, onDelete }: {
-  data: SurgerySafety[],
-  onView: (item: SurgerySafety) => void,
-  onEdit: (item: SurgerySafety) => void,
-  onDelete: (id: string) => void
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const { user } = useAuth();
+// ---------------------------------------------------------------------------
+// BÁO CÁO QUY TRÌNH (IPSG.04.00/04.01)
+// ---------------------------------------------------------------------------
 
-  const isAdmin = user?.role === 'ADMIN';
-
-  const filtered = data.filter((item: SurgerySafety) =>
-    item.ho_ten_nguoi_benh.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.khoa_phau_thuat.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            type="text"
-            placeholder="Tìm NB, khoa..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10 transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="table-standardized">
-          <thead>
-            <tr>
-              <th className="p-6">Ngày</th>
-              <th className="p-6">Khoa</th>
-              <th className="p-6">Bệnh nhân</th>
-              <th className="p-6">Phòng mổ</th>
-              <th className="p-6 text-center">Tỷ lệ</th>
-              <th className="p-6 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {filtered.map((item: SurgerySafety) => (
-              <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-6 text-table font-normal text-slate-700">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</td>
-                <td className="p-6 text-table font-normal text-slate-600">{item.khoa_phau_thuat}</td>
-                <td className="p-6 text-table font-normal text-slate-800 uppercase">{item.ho_ten_nguoi_benh}</td>
-                <td className="p-6 text-table font-normal text-slate-600">Bàn {item.ban_mo_so}</td>
-                <td className="p-6 text-center">
-                  <span className={`text-table font-normal ${Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#059669]' : 'text-amber-600'}`}>
-                    {Number(item.ty_le_tuan_thu).toFixed(0)}%
-                  </span>
-                </td>
-                <td className="p-6">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => onView(item)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-1 text-[10px] font-bold px-3 uppercase"><Eye size={14} /> Chi tiết</button>
-                    {(isAdmin || item.nguoi_giam_sat === user?.full_name) && (
-                      <button onClick={() => onEdit(item)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl border border-emerald-100"><Edit2 size={16} /></button>
-                    )}
-                    {isAdmin && (
-                      <button onClick={() => onDelete(item.id!)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"><Trash2 size={16} /></button>
-                    )}
-                  </div>
-                </td>
-              </tr>
+const ReportTable: React.FC<{
+  index: string;
+  title: string;
+  note?: string;
+  headers: string[];
+  children: React.ReactNode;
+}> = ({ index, title, note, headers, children }) => (
+  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-[#2E75B6] px-4 py-3">
+      <h4 className="font-bold text-white text-sm uppercase tracking-wide">{index}. {title}</h4>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm text-left jci-report-table">
+        <thead className="bg-[#1F4E79] text-white font-bold">
+          <tr>
+            {headers.map((h, i) => (
+              <th key={h} className={`p-3 align-middle ${i === 0 ? 'text-left' : 'text-center'}`}>{h}</th>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Card Layout */}
-      <div className="md:hidden grid grid-cols-1 divide-y divide-slate-100">
-        {filtered.map((item: SurgerySafety) => (
-          <div key={item.id} className="p-4 space-y-4 hover:bg-slate-50 transition-colors">
-            <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</p>
-                <p className="text-sm font-black text-slate-800 uppercase leading-snug">{item.ho_ten_nguoi_benh}</p>
-                <p className="text-xs font-bold text-slate-500">{item.khoa_phau_thuat}</p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Bàn mổ {item.ban_mo_so}</p>
-                <div className="pt-2">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${Number(item.ty_le_tuan_thu) >= 100 ? 'bg-green-100 text-[#059669]' : 'bg-amber-100 text-amber-600'}`}>
-                    {Number(item.ty_le_tuan_thu).toFixed(0)}% Đạt
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between gap-2 pt-2">
-              <button
-                onClick={() => onView(item)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 text-[10px] font-black uppercase tracking-widest"
-              >
-                <Eye size={14} /> Xem
-              </button>
-              {(isAdmin || item.nguoi_giam_sat === user?.full_name) && (
-                <button
-                  onClick={() => onEdit(item)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest"
-                >
-                  <Edit2 size={14} /> Sửa
-                </button>
-              )}
-              {isAdmin && (
-                <button
-                  onClick={() => onDelete(item.id!)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 text-[10px] font-black uppercase tracking-widest"
-                >
-                  <Trash2 size={14} /> Xóa
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">{children}</tbody>
+      </table>
     </div>
-  );
-};
+    {note && <p className="px-4 py-3 text-xs italic text-slate-500 leading-relaxed border-t border-slate-100">{note}</p>}
+  </div>
+);
 
-const SurgerySafetyFormView = ({ item, onClose, onSaved, currentUser, departmentList }: {
-  item: SurgerySafety | null,
-  onClose: () => void,
-  onSaved: () => void,
-  currentUser: any,
-  departmentList: string[]
-}) => {
-  const [formData, setFormData] = useState<SurgerySafety>({
-    ngay_giam_sat: item?.ngay_giam_sat || new Date().toISOString().split('T')[0],
-    nguoi_giam_sat: item?.nguoi_giam_sat || currentUser?.full_name || '',
-    ban_mo_so: item?.ban_mo_so || '',
-    khoa_phau_thuat: item?.khoa_phau_thuat || '',
-    ho_ten_nguoi_benh: item?.ho_ten_nguoi_benh || '',
-    kip_phau_thuat: item?.kip_phau_thuat || '',
-    ghi_chu_chung: item?.ghi_chu_chung || '',
-    tc1_xac_nhan_danh_tinh: item?.tc1_xac_nhan_danh_tinh ?? null,
-    tc2_xac_nhan_vi_tri: item?.tc2_xac_nhan_vi_tri ?? null,
-    tc3_cam_ket_phau_thuat: item?.tc3_cam_ket_phau_thuat ?? null,
-    tc4_kiem_tra_thiet_bi: item?.tc4_kiem_tra_thiet_bi ?? null,
-    tc5_danh_gia_nguy_co: item?.tc5_danh_gia_nguy_co ?? null,
-    tc6_gioi_thieu_nhan_su: item?.tc6_gioi_thieu_nhan_su ?? null,
-    tc7_xac_nhan_lan_cuoi: item?.tc7_xac_nhan_lan_cuoi ?? null,
-    tc8_du_phong_nhiem_khuan: item?.tc8_du_phong_nhiem_khuan ?? null,
-    tc9_cac_van_de_phat_sinh: item?.tc9_cac_van_de_phat_sinh ?? null,
-    tc10_kiem_dem_dung_cu: item?.tc10_kiem_dem_dung_cu ?? null,
-    tc11_mau_benh_pham: item?.tc11_mau_benh_pham ?? null,
-    tc12_ghi_chep_ho_so: item?.tc12_ghi_chep_ho_so ?? null,
-    tc13_ban_giao_hoi_tinh: item?.tc13_ban_giao_hoi_tinh ?? null,
-    tong_dat: item?.tong_dat || 0,
-    ty_le_tuan_thu: item?.ty_le_tuan_thu || 0,
-  });
+const AtptProcessReport: React.FC<{ data: SurgerySafety[]; areaOptions: string[] }> = ({ data, areaOptions }) => {
+  const currentYear = new Date().getFullYear();
+  const [reportFilter, setReportFilter] = useState({ year: String(currentYear), department: '' });
+  const [exporting, setExporting] = useState(false);
 
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    const ids = CRITERIA.map(c => c.id) as (keyof SurgerySafety)[];
-    const count = ids.filter(id => formData[id] === true).length;
-    const rate = (count / CRITERIA.length) * 100;
-    setFormData((prev: SurgerySafety) => ({ ...prev, tong_dat: count, ty_le_tuan_thu: rate }));
-  }, [
-    formData.tc1_xac_nhan_danh_tinh, formData.tc2_xac_nhan_vi_tri, formData.tc3_cam_ket_phau_thuat,
-    formData.tc4_kiem_tra_thiet_bi, formData.tc5_danh_gia_nguy_co, formData.tc6_gioi_thieu_nhan_su,
-    formData.tc7_xac_nhan_lan_cuoi, formData.tc8_du_phong_nhiem_khuan, formData.tc9_cac_van_de_phat_sinh,
-    formData.tc10_kiem_dem_dung_cu, formData.tc11_mau_benh_pham, formData.tc12_ghi_chep_ho_so,
-    formData.tc13_ban_giao_hoi_tinh
-  ]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-
-    // Check if all criteria are answered
-    const unanswered = CRITERIA.some(c => formData[c.id as keyof SurgerySafety] === null);
-    if (unanswered) {
-      alert("Vui lòng hoàn thành đánh giá Đạt/Không đạt cho tất cả 13 tiêu chí.");
-      setSaving(false);
-      return;
-    }
-
-    const dataToSend: any = {
-      ngay_giam_sat: formData.ngay_giam_sat,
-      nguoi_giam_sat: formData.nguoi_giam_sat,
-      ban_mo_so: formData.ban_mo_so,
-      khoa_phau_thuat: formData.khoa_phau_thuat,
-      ho_ten_nguoi_benh: formData.ho_ten_nguoi_benh,
-      kip_phau_thuat: formData.kip_phau_thuat,
-      ghi_chu_chung: formData.ghi_chu_chung,
-      tong_dat: formData.tong_dat,
-      ty_le_tuan_thu: formData.ty_le_tuan_thu,
-    };
-
-    CRITERIA.forEach(c => {
-      dataToSend[c.id] = (formData as any)[c.id] ?? false;
+  const yearOptions = useMemo(() => {
+    const years = new Set<string>([String(currentYear)]);
+    data.forEach(d => {
+      const y = yearOf(d.ngay_giam_sat);
+      if (y) years.add(y);
     });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [data, currentYear]);
 
+  const scoped = useMemo(() => {
+    const keyword = reportFilter.department.trim().toLowerCase();
+    return data.filter(item => {
+      const matchYear = yearOf(item.ngay_giam_sat) === reportFilter.year;
+      const matchDept = !keyword || (item.khoa_phau_thuat || '').toLowerCase().includes(keyword);
+      return matchYear && matchDept;
+    });
+  }, [data, reportFilter]);
+
+  const isDat = (i: SurgerySafety) => verdictOf(i) === 'Đạt';
+
+  const byMonth = useMemo(
+    () => MONTHS.map(m => {
+      const rows = scoped.filter(i => monthOf(i.ngay_giam_sat) === m);
+      return { thang: m, label: `Tháng ${m}`, n: rows.length, dat: rows.filter(isDat).length };
+    }),
+    [scoped]
+  );
+
+  const byQuarter = useMemo(
+    () => QUARTERS.map(q => {
+      const months = byMonth.filter(m => Math.ceil(m.thang / 3) === q);
+      return {
+        quy: q,
+        label: `Quý ${q}`,
+        n: months.reduce((s, m) => s + m.n, 0),
+        dat: months.reduce((s, m) => s + m.dat, 0)
+      };
+    }),
+    [byMonth]
+  );
+
+  // Chỉ liệt kê khoa/khu vực thực có trong bảng DS thu thập của kỳ báo cáo
+  const byKhuVuc = useMemo(() => {
+    const groups = new Map<string, SurgerySafety[]>();
+    scoped.forEach(i => {
+      const key = (i.khoa_phau_thuat || '').trim() || 'Chưa xác định';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(i);
+    });
+    return Array.from(groups.entries())
+      .map(([label, rows]) => {
+        const n = rows.length;
+        const minSample = jciMinSample(n);
+        return { label, n, dat: rows.filter(isDat).length, minSample, ok: n >= minSample };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label, 'vi'));
+  }, [scoped]);
+
+  const byNhom = useMemo(() => {
+    const groups = new Map<string, SurgerySafety[]>();
+    ATPT_NHOM_PTTT_OPTIONS.forEach(o => groups.set(o, []));
+    scoped.forEach(i => {
+      const key = (i.loai_pt_tt || '').trim() || 'Chưa xác định';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(i);
+    });
+    return Array.from(groups.entries()).map(([label, rows]) => ({
+      label,
+      n: rows.length,
+      dat: rows.filter(isDat).length
+    }));
+  }, [scoped]);
+
+  const byCriteria = useMemo(() => {
+    const stats: Record<string, { co: number; khong: number; khongApDung: number }> = {};
+    ATPT_CRITERIA.forEach(c => { stats[c.id] = { co: 0, khong: 0, khongApDung: 0 }; });
+    scoped.forEach(i => {
+      if (!i.checklist_23) return;
+      ATPT_CRITERIA.forEach(c => {
+        const v = i.checklist_23?.[c.id];
+        if (v === 'Có') stats[c.id].co += 1;
+        else if (v === 'Không') stats[c.id].khong += 1;
+        else if (v === 'Không áp dụng') stats[c.id].khongApDung += 1;
+      });
+    });
+    return stats;
+  }, [scoped]);
+
+  const totals = useMemo(() => ({ n: scoped.length, dat: scoped.filter(isDat).length }), [scoped]);
+  const khongDat = totals.n - totals.dat;
+
+  const chartData = useMemo(
+    () => byMonth.map(m => ({ ten: m.label, tyLe: Number((m.n > 0 ? (m.dat / m.n) * 100 : 0).toFixed(1)), soCa: m.n })),
+    [byMonth]
+  );
+
+  const handleExport = async () => {
+    setExporting(true);
     try {
-      if (item?.id) await updateSurgerySafety(item.id, dataToSend);
-      else await addSurgerySafety(dataToSend);
-      onSaved();
-    } catch (err: any) {
-      console.error('Error saving surgery safety:', err);
-      alert('Lỗi khi lưu dữ liệu: ' + (err.message || JSON.stringify(err)));
+      await exportAtptReportExcel({
+        year: reportFilter.year,
+        department: reportFilter.department.trim(),
+        byMonth: byMonth.map(m => ({ label: m.label, n: m.n, dat: m.dat })),
+        byQuarter: byQuarter.map(q => ({ label: q.label, n: q.n, dat: q.dat })),
+        byKhuVuc, byNhom, byCriteria,
+        totals
+      });
+    } catch (err) {
+      console.error('Lỗi xuất Excel:', err);
+      alert('Có lỗi xảy ra khi xuất file Excel.');
     } finally {
-      setSaving(false);
+      setExporting(false);
     }
   };
 
-  const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
-    <div className={`flex items-center gap-2 p-3 ${color} text-white rounded-t-xl font-bold uppercase text-[10px] tracking-wider shadow-sm`}>
-      <Icon size={14} />
-      {title}
-    </div>
-  );
-
-  const CriteriaItem = ({ criteria, formData, setFormData }: { criteria: any, formData: SurgerySafety, setFormData: any }) => (
-    <div className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col gap-3 transition-all hover:border-indigo-100 shadow-sm">
-      <div className="flex flex-col gap-1">
-        <p className="text-[11px] font-bold leading-tight text-slate-700">{criteria.label}</p>
-        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic mt-0.5">Xác nhận: {criteria.role}</p>
-      </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setFormData((prev: any) => ({ ...prev, [criteria.id]: true }))}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${formData[criteria.id as keyof SurgerySafety] === true
-            ? 'bg-emerald-600 text-white border-transparent shadow-md'
-            : 'bg-white border-slate-200 text-slate-400 hover:border-emerald-200 hover:text-emerald-600'
-            }`}
-        >
-          <Check size={14} strokeWidth={3} /> Đạt
-        </button>
-        <button
-          type="button"
-          onClick={() => setFormData((prev: any) => ({ ...prev, [criteria.id]: false }))}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${formData[criteria.id as keyof SurgerySafety] === false
-            ? 'bg-red-600 text-white border-transparent shadow-md'
-            : 'bg-white border-slate-200 text-slate-400 hover:border-red-200 hover:text-red-600'
-            }`}
-        >
-          <X size={14} strokeWidth={3} /> K.Đạt
-        </button>
-      </div>
-    </div>
+  const CriteriaBlock: React.FC<{ letter: string; group: keyof typeof ATPT_GROUPS }> = ({ letter, group }) => (
+    <ReportTable
+      index={`5${letter}`}
+      title={`Nhóm ${ATPT_GROUPS[group]}`}
+      headers={['Tiêu chí', 'Có', 'Không', 'Không áp dụng', 'Tổng áp dụng', 'Tỷ lệ % Có']}
+    >
+      {ATPT_CRITERIA.filter(c => c.group === group).map(c => {
+        const s = byCriteria[c.id];
+        const apDung = s.co + s.khong;
+        return (
+          <tr key={c.id} className="hover:bg-slate-50">
+            <td className="p-3 text-slate-700">{c.label}</td>
+            <td className="p-3 text-center text-green-700 font-medium">{s.co}</td>
+            <td className="p-3 text-center text-red-700 font-medium">{s.khong}</td>
+            <td className="p-3 text-center text-slate-500">{s.khongApDung}</td>
+            <td className="p-3 text-center">{apDung}</td>
+            <td className="p-3 text-center">{fmtPct(apDung > 0 ? (s.co / apDung) * 100 : 0)}</td>
+          </tr>
+        );
+      })}
+    </ReportTable>
   );
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] bg-white animate-in fade-in duration-500">
-      <div className="w-full flex flex-col h-full">
-
-        {/* Main Header - Premium Green Layout */}
-        <div className="bg-[#059669] p-8 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-            <ShieldCheck size={160} />
+    <div className="space-y-6">
+      {/* Bộ lọc + xuất Excel */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Năm</label>
+            <select value={reportFilter.year} onChange={e => setReportFilter({ ...reportFilter, year: e.target.value })} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+              {yearOptions.map(y => <option key={y} value={y}>Năm {y}</option>)}
+            </select>
           </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <button
-                onClick={onClose}
-                className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all active:scale-95 border border-white/10"
-              >
-                <ArrowLeft size={24} />
-              </button>
-              <div>
-                <h1 className="text-2xl font-black uppercase tracking-tight leading-tight max-w-2xl">
-                  BẢNG KIỂM GIÁM SÁT TUÂN THỦ BẢNG KIỂM ATPT
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] italic">An toàn Phẫu thuật WHO</span>
-                  <div className="w-1 h-1 bg-white/40 rounded-full" />
-                  <span className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em]">Audit Tool</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 px-8 py-3 rounded-3xl backdrop-blur-md border border-white/20 text-center min-w-[160px] shadow-2xl">
-              <p className="text-[10px] uppercase font-black text-white/70 tracking-widest leading-none mb-1">Tỷ lệ tuân thủ</p>
-              <p className="text-4xl font-black italic">{formData.ty_le_tuan_thu.toFixed(1)}%</p>
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-8 space-y-10">
-
-          {/* Administrative Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50 p-8 rounded-[32px] border border-slate-200 shadow-inner">
-            <FormField label="Ngày giám sát" icon={<Calendar size={18} />}>
-              <input
-                type="date" required
-                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white"
-                value={formData.ngay_giam_sat}
-                onChange={(e) => setFormData({ ...formData, ngay_giam_sat: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Người giám sát" icon={<UserCheck size={18} />}>
-              <input
-                type="text" disabled
-                className="w-full p-3.5 rounded-2xl border border-slate-300 outline-none text-sm font-bold bg-slate-100 text-slate-500"
-                value={formData.nguoi_giam_sat}
-              />
-            </FormField>
-            <FormField label="Bàn mổ số" icon={<ClipboardCheck size={18} />}>
-              <input
-                type="text" placeholder="Số hiệu..."
-                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white"
-                value={formData.ban_mo_so}
-                onChange={(e) => setFormData({ ...formData, ban_mo_so: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Họ tên người bệnh" icon={<Users size={18} />}>
-              <input
-                type="text" placeholder="NGUYỄN VĂN A" required
-                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-black transition bg-white uppercase"
-                value={formData.ho_ten_nguoi_benh}
-                onChange={(e) => setFormData({ ...formData, ho_ten_nguoi_benh: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Khoa phẫu thuật" icon={<Building2 size={18} />}>
-              <select
-                value={formData.khoa_phau_thuat} required
-                onChange={(e) => setFormData({ ...formData, khoa_phau_thuat: e.target.value })}
-                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white appearance-none"
-              >
-                <option value="">-- Chọn khoa --</option>
-                {departmentList.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </FormField>
-            <FormField label="Kíp phẫu thuật" icon={<Users size={18} />}>
-              <input
-                type="text" placeholder="BS chính, kíp gây mê..."
-                className="w-full p-3.5 rounded-2xl border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-bold transition bg-white"
-                value={formData.kip_phau_thuat}
-                onChange={(e) => setFormData({ ...formData, kip_phau_thuat: e.target.value })}
-              />
-            </FormField>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Đơn vị</label>
+            <input
+              type="text"
+              list="atpt-report-area-options"
+              value={reportFilter.department}
+              onChange={e => setReportFilter({ ...reportFilter, department: e.target.value })}
+              placeholder="Gõ từ khóa để tìm đơn vị... (bỏ trống = tất cả)"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+            />
+            <datalist id="atpt-report-area-options">
+              {areaOptions.map(n => <option key={n} value={n} />)}
+            </datalist>
           </div>
 
-          {/* Checklist 3 Stages - Grid Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            {/* Stage 1: SIGN IN */}
-            <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <SectionHeader icon={Clock} title="I. TRƯỚC GÂY MÊ (SI)" color="bg-orange-500" />
-              <div className="p-4 space-y-4 flex-1">
-                {CRITERIA.filter(c => c.section === 'I').map(item => (
-                  <CriteriaItem
-                    key={item.id}
-                    criteria={item}
-                    formData={formData}
-                    setFormData={setFormData}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Stage 2: TIME OUT */}
-            <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <SectionHeader icon={Activity} title="II. TRƯỚC RẠCH DA (TO)" color="bg-indigo-600" />
-              <div className="p-4 space-y-4 flex-1">
-                {CRITERIA.filter(c => c.section === 'II').map(item => (
-                  <CriteriaItem
-                    key={item.id}
-                    criteria={item}
-                    formData={formData}
-                    setFormData={setFormData}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Stage 3: SIGN OUT */}
-            <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <SectionHeader icon={LogOut} title="III. TRƯỚC RỜI PHÒNG (SO)" color="bg-emerald-600" />
-              <div className="p-4 space-y-4 flex-1">
-                {CRITERIA.filter(c => c.section === 'III').map(item => (
-                  <CriteriaItem
-                    key={item.id}
-                    criteria={item}
-                    formData={formData}
-                    setFormData={setFormData}
-                  />
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* Footer Info & Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-slate-100">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-widest pl-2">
-                <AlertTriangle size={18} className="text-amber-500" /> Ghi chú đặc biệt / Kiến nghị
-              </div>
-              <textarea
-                className="w-full p-5 rounded-[28px] border border-slate-300 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-medium transition h-32 shadow-inner bg-slate-50/30"
-                placeholder="Nhập các sự cố hoặc lỗi quy trình quan sát được..."
-                value={formData.ghi_chu_chung}
-                onChange={(e) => setFormData({ ...formData, ghi_chu_chung: e.target.value })}
-              />
-            </div>
-
-            <div className="flex flex-col justify-end space-y-6">
-              <div className="flex items-center justify-between p-6 bg-slate-900 rounded-[32px] text-white shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-indigo-500/10 to-transparent pointer-events-none" />
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className="p-3 bg-white/10 rounded-2xl">
-                    <Percent size={24} className="text-indigo-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Tổng kết giám sát</p>
-                    <p className="text-xl font-black italic">Tuân thủ: {formData.ty_le_tuan_thu.toFixed(1)}%</p>
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-2xl font-black transition active:scale-95 uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-500/40 border border-indigo-400/30 relative z-10 disabled:opacity-50"
-                >
-                  <Save size={18} className="inline mr-2" /> {saving ? 'Đang lưu...' : 'Lưu kết quả'}
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </form>
-
-        <div className="bg-slate-50 px-8 py-5 border-t text-[9px] text-slate-400 flex justify-between uppercase tracking-[0.25em] font-black italic">
-          <span></span>
-          <span className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-200" />
-
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const SurgerySafetyDetailView = ({ item, currentUser, onClose, onEdit, onDelete }: {
-  item: SurgerySafety,
-  currentUser: any,
-  onClose: () => void,
-  onEdit: () => void,
-  onDelete: () => void
-}) => {
-  const isAdmin = currentUser?.role === 'ADMIN';
-  const isCreator = item.nguoi_giam_sat === currentUser?.full_name;
-
-  return (
-    <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-12 animate-in fade-in slide-in-from-bottom-8 duration-500 border border-slate-200">
-      <div className="max-w-4xl mx-auto space-y-12">
-        {/* Actions Header */}
-        <div className="flex justify-between items-center border-b border-slate-100 pb-8">
-          <button onClick={onClose} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-all group">
-            <X className="group-hover:rotate-90 transition-all duration-300" />
-            <span className="text-xs font-black uppercase tracking-widest" id="close-btn">Đóng</span>
+          <button onClick={handleExport} disabled={exporting} className="w-full px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70">
+            {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
+            {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
           </button>
-          <div className="flex gap-3">
-            {(isAdmin || isCreator) && (
-              <button onClick={onEdit} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 flex items-center gap-2" id="edit-btn">
-                <Edit2 size={16} /> Sửa bản ghi
-              </button>
-            )}
-            {isAdmin && (
-              <button onClick={onDelete} className="bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2" id="delete-btn">
-                <Trash2 size={16} /> Xóa
-              </button>
-            )}
-          </div>
         </div>
+        <p className="text-xs text-slate-500 mt-3">
+          Dữ liệu lấy từ bảng DS thu thập · Năm {reportFilter.year}
+          {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : ' · Tất cả đơn vị'}
+          {` · ${totals.n} ca giám sát`}
+        </p>
+      </div>
 
-        {/* Traditional Form Layout */}
-        <div className="text-center space-y-4">
-          <h1 className="text-main-title font-bold text-slate-900 uppercase tracking-tight leading-tight">
-            BẢNG KIỂM GIÁM SÁT TUÂN THỦ BẢNG KIỂM AN TOÀN PHẪU THUẬT
-          </h1>
-          <p className="text-slate-500 italic text-sm">(Sử dụng để giám sát đột xuất hoặc định kỳ tại phòng mổ)</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 text-sm border-t border-b border-slate-100 py-8">
-          <DetailField label="Khoa - Phòng mổ" value={`${item.khoa_phau_thuat} - Bàn ${item.ban_mo_so}`} />
-          <DetailField label="Ngày giám sát" value={new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')} />
-          <DetailField label="Tên người bệnh" value={item.ho_ten_nguoi_benh} uppercase />
-          <DetailField label="Kíp PT" value={item.kip_phau_thuat} />
-          <DetailField label="Người giám sát" value={item.nguoi_giam_sat} />
-          <DetailField label="Kết quả chung" value={`Đạt ${item.tong_dat}/13 tiêu chí (${item.ty_le_tuan_thu}%)`} color={Number(item.ty_le_tuan_thu) >= 100 ? 'text-[#059669]' : 'text-amber-600'} />
-        </div>
-
-        <div className="overflow-hidden border border-slate-200 rounded-2xl shadow-sm">
-          <table className="w-full text-left border-collapse text-[12pt]">
-            <thead>
-              <tr className="bg-slate-50 text-[12pt] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200">
-                <th className="p-4 w-16 text-center border-r border-slate-200">STT</th>
-                <th className="p-4 border-r border-slate-200">Tiêu chí giám sát</th>
-                <th className="p-4 w-24 text-center border-r border-slate-200">Đạt</th>
-                <th className="p-4 w-24 text-center border-r border-slate-200">Không đạt</th>
-                <th className="p-4 w-48">Ghi chú/Người xác nhận</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {['I', 'II', 'III'].map(section => (
-                <React.Fragment key={section}>
-                  <tr className="bg-slate-50/50">
-                    <td className="p-4 text-center border-r border-slate-200 font-black text-slate-800">{section}</td>
-                    <td colSpan={4} className="p-4 font-black text-slate-800 uppercase tracking-wide">
-                      GIAI ĐOẠN {section === 'I' ? '1: TRƯỚC GÂY MÊ (SIGN IN)' : section === 'II' ? '2: TRƯỚC RẠCH DA (TIME OUT)' : '3: TRƯỚC KHI RỜI PHÒNG MỔ (SIGN OUT)'}
-                    </td>
-                  </tr>
-                  {CRITERIA.filter(c => c.section === section).map((c, idx) => {
-                    const isDat = item[c.id as keyof SurgerySafety] === true;
-                    return (
-                      <tr key={c.id}>
-                        <td className="p-4 text-center border-r border-slate-200 text-slate-400 font-bold">{idx + 1}</td>
-                        <td className="p-4 border-r border-slate-200 font-bold text-slate-700 leading-tight">{c.label}</td>
-                        <td className="p-4 text-center border-r border-slate-200">
-                          {isDat && <div className="mx-auto w-6 h-6 bg-[#059669] text-white rounded-full flex items-center justify-center shadow-lg shadow-green-100"><CheckCircle2 size={14} /></div>}
-                        </td>
-                        <td className="p-4 text-center border-r border-slate-200">
-                          {!isDat && <div className="mx-auto w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-100"><XCircle size={14} /></div>}
-                        </td>
-                        <td className="p-4 text-[10px] font-bold text-slate-400 uppercase leading-snug">{c.role}</td>
-                      </tr>
-                    );
-                  })}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+      {/* Biểu đồ xu hướng */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h4 className="font-bold text-slate-800 text-center text-base sm:text-lg mb-4">
+          Xu hướng tỷ lệ tuân thủ Bảng kiểm ATPT theo tháng
+        </h4>
+        <div className="h-72 sm:h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 40 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <XAxis dataKey="ten" angle={-45} textAnchor="end" interval={0} height={64} tick={{ fontSize: 11, fill: '#475569' }} />
+              <YAxis domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={(v: number) => `${v}%`} tick={{ fontSize: 11, fill: '#475569' }} width={60} label={{ value: 'Tỷ lệ tuân thủ %', angle: -90, position: 'insideLeft', style: { fontSize: 11, fontWeight: 700, fill: '#334155' } }} />
+              <RechartsTooltip formatter={(value: any, _n: any, entry: any) => [`${value}% (${entry?.payload?.soCa || 0} ca)`, 'Tỷ lệ tuân thủ']} />
+              <Legend verticalAlign="bottom" height={24} />
+              <Line type="linear" dataKey="tyLe" name="Tỷ lệ tuân thủ %" stroke="#4472C4" strokeWidth={2.5} dot={{ r: 3, fill: '#4472C4' }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
+
+      {/* 1. Theo tháng */}
+      <ReportTable index="1" title="Tổng hợp theo tháng" headers={['Tháng', 'Tổng số ca được giám sát (Mẫu số)', 'Số ca đạt (Tử số)', 'Tỷ lệ tuân thủ %']}>
+        {byMonth.map(m => (
+          <tr key={m.thang} className="hover:bg-slate-50">
+            <td className="p-3 text-slate-700">{m.label}</td>
+            <td className="p-3 text-center">{m.n}</td>
+            <td className="p-3 text-center">{m.dat}</td>
+            <td className="p-3 text-center">{fmtPct(m.n > 0 ? (m.dat / m.n) * 100 : 0)}</td>
+          </tr>
+        ))}
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng năm</td>
+          <td className="p-3 text-center">{totals.n}</td>
+          <td className="p-3 text-center">{totals.dat}</td>
+          <td className="p-3 text-center">{fmtPct(totals.n > 0 ? (totals.dat / totals.n) * 100 : 0)}</td>
+        </tr>
+      </ReportTable>
+
+      {/* 2. Theo quý */}
+      <ReportTable index="2" title="Tổng hợp theo quý" headers={['Quý', 'Tổng số ca giám sát', 'Số ca đạt', 'Tỷ lệ tuân thủ %']}>
+        {byQuarter.map(q => (
+          <tr key={q.quy} className="hover:bg-slate-50">
+            <td className="p-3 text-slate-700">{q.label}</td>
+            <td className="p-3 text-center">{q.n}</td>
+            <td className="p-3 text-center">{q.dat}</td>
+            <td className="p-3 text-center">{fmtPct(q.n > 0 ? (q.dat / q.n) * 100 : 0)}</td>
+          </tr>
+        ))}
+      </ReportTable>
+
+      {/* 3. Theo khoa/khu vực */}
+      <ReportTable
+        index="3"
+        title="Phân tổ theo khoa/khu vực (kèm kiểm tra cỡ mẫu tối thiểu theo JCI)"
+        note={JCI_SAMPLE_NOTE}
+        headers={['Khoa/Khu vực', 'Tổng số ca (N)', 'Số ca đạt', 'Tỷ lệ tuân thủ %', 'Cỡ mẫu tối thiểu yêu cầu (JCI)', 'Đạt cỡ mẫu tối thiểu?']}
+      >
+        {byKhuVuc.length === 0 ? (
+          <tr><td colSpan={6} className="p-6 text-center text-slate-500">Chưa có dữ liệu thu thập trong kỳ báo cáo</td></tr>
+        ) : (
+          byKhuVuc.map(k => (
+            <tr key={k.label} className="hover:bg-slate-50">
+              <td className="p-3 text-slate-700">{k.label}</td>
+              <td className="p-3 text-center">{k.n}</td>
+              <td className="p-3 text-center">{k.dat}</td>
+              <td className="p-3 text-center">{fmtPct(k.n > 0 ? (k.dat / k.n) * 100 : 0)}</td>
+              <td className="p-3 text-center font-medium">{k.minSample}</td>
+              <td className="p-3 text-center">
+                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${k.ok ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {k.ok ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+                  {k.ok ? 'Đạt' : `Chưa đạt (thiếu ${k.minSample - k.n})`}
+                </span>
+              </td>
+            </tr>
+          ))
+        )}
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng</td>
+          <td className="p-3 text-center">{totals.n}</td>
+          <td className="p-3 text-center">{totals.dat}</td>
+          <td className="p-3 text-center">{fmtPct(totals.n > 0 ? (totals.dat / totals.n) * 100 : 0)}</td>
+          <td className="p-3 text-center">{byKhuVuc.reduce((s, k) => s + k.minSample, 0)}</td>
+          <td className="p-3" />
+        </tr>
+      </ReportTable>
+
+      {/* 4. Theo nhóm PT/TT */}
+      <ReportTable index="4" title="Phân tổ theo nhóm phẫu thuật/thủ thuật" headers={['Nhóm PT/TT', 'Tổng số ca', 'Số ca đạt', 'Tỷ lệ tuân thủ %']}>
+        {byNhom.map(k => (
+          <tr key={k.label} className="hover:bg-slate-50">
+            <td className="p-3 text-slate-700">{k.label}</td>
+            <td className="p-3 text-center">{k.n}</td>
+            <td className="p-3 text-center">{k.dat}</td>
+            <td className="p-3 text-center">{fmtPct(k.n > 0 ? (k.dat / k.n) * 100 : 0)}</td>
+          </tr>
+        ))}
+        <tr className="bg-[#DCE6F1] font-bold">
+          <td className="p-3">Tổng cộng</td>
+          <td className="p-3 text-center">{totals.n}</td>
+          <td className="p-3 text-center">{totals.dat}</td>
+          <td className="p-3 text-center">{fmtPct(totals.n > 0 ? (totals.dat / totals.n) * 100 : 0)}</td>
+        </tr>
+      </ReportTable>
+
+      {/* 5. Theo từng tiêu chí */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <p className="text-sm font-bold text-slate-800">5. Phân tổ theo từng tiêu chí trong bảng kiểm (23 tiêu chí)</p>
+        <p className="text-xs italic text-slate-500 mt-1">
+          "Tổng áp dụng" = Có + Không (loại trừ "Không áp dụng"). Giúp xác định tiêu chí nào hay bị bỏ sót nhất.
+          Chỉ tính các bản ghi đã nhập theo bảng kiểm 23 tiêu chí.
+        </p>
+      </div>
+      <CriteriaBlock letter="a" group="SIGN_IN" />
+      <CriteriaBlock letter="b" group="TIME_OUT" />
+      <CriteriaBlock letter="c" group="SIGN_OUT" />
+
+      {/* 6. Kết quả chung */}
+      <ReportTable
+        index="6"
+        title="Kết quả chung (Đạt/Không đạt)"
+        note="Mục tiêu IPSG.04.00/04.01: 100% ca PT/TT xâm lấn được thực hiện đầy đủ cả 3 bước Sign-in — Time-out — Sign-out."
+        headers={['Kết quả', 'Số lượng', 'Tỷ lệ %']}
+      >
+        <tr className="hover:bg-slate-50">
+          <td className="p-3"><span className="inline-flex items-center gap-1.5 text-green-700 font-medium"><CheckCircle2 size={16} /> Đạt</span></td>
+          <td className="p-3 text-center">{totals.dat}</td>
+          <td className="p-3 text-center">{fmtPct(totals.n > 0 ? (totals.dat / totals.n) * 100 : 0)}</td>
+        </tr>
+        <tr className="hover:bg-slate-50">
+          <td className="p-3"><span className="inline-flex items-center gap-1.5 text-red-700 font-medium"><XCircle size={16} /> Không đạt</span></td>
+          <td className="p-3 text-center">{khongDat}</td>
+          <td className="p-3 text-center">{fmtPct(totals.n > 0 ? (khongDat / totals.n) * 100 : 0)}</td>
+        </tr>
+      </ReportTable>
     </div>
   );
 };
-
-const DetailField = ({ label, value, uppercase, color }: { label: string, value: string, uppercase?: boolean, color?: string }) => (
-  <div className="flex flex-col gap-1">
-    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{label}</span>
-    <span className={`text-[15px] font-bold ${uppercase ? 'uppercase' : ''} ${color || 'text-slate-800'}`}>{value || '---'}</span>
-  </div>
-);
-
-const FormField = ({ label, icon, children }: { label: string, icon: React.ReactElement, children: React.ReactNode }) => (
-  <div className="space-y-1.5 group">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2 transition-colors group-focus-within:text-indigo-600">
-      {React.cloneElement(icon, { size: 12 } as any)}
-      {label}
-    </label>
-    {children}
-  </div>
-);

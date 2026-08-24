@@ -1589,6 +1589,25 @@ main form textarea:focus {
     display: none;
   }
 
+  /* Chỉ số JCI (IPSG.01.00, AOP.02.00...): thẻ danh sách rút gọn trên mobile.
+     CSS thẻ ở trên dùng `display: block !important` nên class `hidden` của
+     Tailwind không có tác dụng - phải ẩn lại bằng !important. */
+  .mobile-module-content .jci-list-table th.jci-col-hide,
+  .mobile-module-content .jci-list-table td.jci-col-hide {
+    display: none !important;
+  }
+
+  /* Ẩn nhãn "THAO TÁC", cho 3 nút chia đều trên hàng cuối của thẻ */
+  .mobile-module-content .jci-list-table td.jci-actions-cell {
+    display: block !important;
+    padding: 10px 12px !important;
+  }
+
+  .mobile-module-content .jci-list-table td.jci-actions-cell::before {
+    content: none !important;
+    display: none !important;
+  }
+
   .mobile-module-content .supervision-tab-button {
     display: flex !important;
     min-height: 104px;
