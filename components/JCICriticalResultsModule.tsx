@@ -261,7 +261,7 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
               />
               <datalist id="critical-department-options">
-                {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+                {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
               </datalist>
             </div>
           </div>
@@ -458,7 +458,7 @@ const CriticalForm: React.FC<CriticalFormProps> = ({
           </div>
 
           <datalist id="critical-form-department-options">
-            {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+            {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
           </datalist>
 
           <div className="space-y-1.5">
@@ -856,7 +856,7 @@ const CriticalProcessReport: React.FC<{ data: JCICriticalResult[]; departments: 
               className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
             />
             <datalist id="critical-report-department-options">
-              {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+              {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
             </datalist>
           </div>
 

@@ -249,7 +249,7 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
               />
               <datalist id="fall-department-options">
-                {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+                {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
               </datalist>
             </div>
           </div>
@@ -398,7 +398,7 @@ const FallForm: React.FC<FallFormProps> = ({
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
           />
           <datalist id="fall-form-department-options">
-            {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+            {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
           </datalist>
         </div>
 
@@ -793,7 +793,7 @@ const FallProcessReport: React.FC<{ data: JCIFallIncident[]; departments: any[] 
               className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
             />
             <datalist id="fall-report-department-options">
-              {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+              {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
             </datalist>
           </div>
 

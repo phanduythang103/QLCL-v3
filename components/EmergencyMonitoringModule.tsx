@@ -386,7 +386,7 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Giờ (24h)</label>
              <input type="text" placeholder="HH:mm" value={form.ngay_kiem_tra.split('T')[1].substring(0, 5)} onChange={e => { const val = e.target.value; const datePart = form.ngay_kiem_tra.split('T')[0]; setField('ngay_kiem_tra', `${datePart}T${val}`); }} onBlur={e => { let val = e.target.value; if (!/^\d{1,2}:\d{2}$/.test(val)) return; const [h, m] = val.split(':'); const formattedH = h.padStart(2, '0'); const formattedM = m.padStart(2, '0'); const datePart = form.ngay_kiem_tra.split('T')[0]; setField('ngay_kiem_tra', `${datePart}T${formattedH}:${formattedM}`); }} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" />
            </div>
-           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa được giám sát</label><input list="cap-cuu-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" /><datalist id="cap-cuu-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ten_don_vi}`} />)}</datalist></div>
+           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa được giám sát</label><input list="cap-cuu-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" /><datalist id="cap-cuu-dv-list">{deptList.map((d: any) => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}</datalist></div>
            <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_kiem_tra} onChange={e => setField('nguoi_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" /></div>
         </div>
 
@@ -554,7 +554,7 @@ export const EmergencyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ o
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
                <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-rose-500">
                  <option value="">Tất cả các khoa</option>
-                 {deptList.map((d: any) => <option key={d.id} value={d.ten_don_vi}>{d.ten_don_vi}</option>)}
+                 {deptList.map((d: any) => { const label = d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi; return <option key={d.id} value={label}>{label}</option>; })}
                </select>
 
                {activeTab !== 'LIST' && (

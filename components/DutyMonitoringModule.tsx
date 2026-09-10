@@ -418,7 +418,7 @@ const CdTrucForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
                className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none"
              />
            </div>
-           <div className="space-y-1"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Đơn vị được giám sát</label><input list="cd-truc-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="cd-truc-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ten_don_vi}`} />)}</datalist></div>
+           <div className="space-y-1"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Đơn vị được giám sát</label><input list="cd-truc-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="cd-truc-dv-list">{deptList.map((d: any) => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}</datalist></div>
            <div className="space-y-1"><label className="text-label font-bold text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_kiem_tra} onChange={e => setField('nguoi_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
         </div>
 
@@ -584,7 +584,7 @@ export const DutyMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="shrink-0" />
                <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-[#059669]">
                  <option value="">Tất cả khoa</option>
-                 {deptList.map((d: any) => <option key={d.id} value={d.ten_don_vi}>{d.ten_don_vi}</option>)}
+                 {deptList.map((d: any) => { const label = d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi; return <option key={d.id} value={label}>{label}</option>; })}
                </select>
 
                {activeTab !== 'LIST' && (

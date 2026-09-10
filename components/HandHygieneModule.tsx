@@ -67,7 +67,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
     loadData();
   }, []);
 
-  const departmentList = useMemo(() => departments.map(d => d.ten_don_vi).filter(Boolean), [departments]);
+  const departmentList = useMemo(() => departments.map(d => d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi).filter(Boolean), [departments]);
 
   const filteredData = useMemo(() => {
     return data.filter(item => {

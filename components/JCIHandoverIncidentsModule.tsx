@@ -254,7 +254,7 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
               />
               <datalist id="handover-department-options">
-                {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+                {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
               </datalist>
             </div>
           </div>
@@ -441,7 +441,7 @@ const HandoverForm: React.FC<HandoverFormProps> = ({
             </div>
           </div>
           <datalist id="handover-form-department-options">
-            {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+            {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
           </datalist>
           <p className="text-xs text-slate-500">
             Ghi nhận: <span className="font-semibold text-slate-700">{khoaLienQuan(formData.khoa_ban_giao, formData.khoa_tiep_nhan) || '—'}</span>
@@ -806,7 +806,7 @@ const HandoverProcessReport: React.FC<{ data: JCIHandoverIncident[]; departments
               className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
             />
             <datalist id="handover-report-department-options">
-              {departments.map(d => <option key={d.id} value={d.ten_don_vi} />)}
+              {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
             </datalist>
           </div>
 

@@ -249,9 +249,9 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
               <label className="text-sm font-medium text-slate-700">Khoa/Phòng</label>
               <select value={filterConfig.department} onChange={e => setFilterConfig({...filterConfig, department: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
                 <option value="">Tất cả khoa phòng</option>
-                {departments.map(d => (
-                  <option key={d.id} value={d.ten_don_vi}>{d.ten_don_vi}</option>
-                ))}
+                {departments.map(d => { const label = d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi; return (
+                  <option key={d.id} value={label}>{label}</option>
+                ); })}
               </select>
             </div>
             
@@ -445,7 +445,7 @@ const NdnbForm: React.FC<NdnbFormProps> = ({ initialData, departments, evaluator
             />
             <datalist id="ndnb-department-options">
               {departments.map(d => (
-                <option key={d.id} value={d.ten_don_vi} />
+                <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />
               ))}
             </datalist>
           </div>
@@ -873,7 +873,7 @@ const NdnbProcessReport: React.FC<{ data: GiamSatNdnb[]; departments: any[] }> =
             />
             <datalist id="ndnb-report-department-options">
               {departments.map(d => (
-                <option key={d.id} value={d.ten_don_vi} />
+                <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />
               ))}
             </datalist>
           </div>
