@@ -27,6 +27,19 @@
 
   <title>Quản lý chất lượng Bệnh viện Quân y 103</title>
 
+  <!-- PWA: cài ra màn hình chính, chạy toàn màn hình với logo app -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#059669" />
+  <meta name="application-name" content="QLCL 103" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="QLCL 103" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
   <!-- Preload styles for faster loading -->
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <link rel="preconnect" href="https://supabase.co" crossorigin>
@@ -151,13 +164,21 @@
 
 <body class="bg-slate-50 text-slate-900">
   <div id="root">
-    <div
-      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: #64748b;">
+    <!-- MÀN HÌNH KHỞI ĐỘNG (SPLASH) - hiển thị logo ngay khi mở app, React sẽ thay thế khi tải xong -->
+    <div id="app-splash"
+      style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; font-family: 'Segoe UI', -apple-system, system-ui, sans-serif; padding: 24px; box-sizing: border-box;">
+      <img src="/logo.png" alt="Logo Bệnh viện Quân y 103" width="112"
+        height="112"
+        style="width: 112px; height: 112px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(5,150,105,0.18)); animation: splashPulse 1.6s ease-in-out infinite;" />
+      <h1
+        style="margin: 22px 0 4px; font-size: 15px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; line-height: 1.3;">
+        Hệ thống Quản lý Chất lượng</h1>
+      <p
+        style="margin: 0 0 24px; font-size: 12px; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.14em; text-align: center;">
+        Bệnh viện Quân y 103</p>
       <div
-        style="width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #059669; border-radius: 50%; animation: spin 1s linear infinite;">
+        style="width: 34px; height: 34px; border: 3px solid #ecfdf5; border-top: 3px solid #059669; border-radius: 50%; animation: spin 0.9s linear infinite;">
       </div>
-      <p style="margin-top: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">
-        Đang tải...</p>
     </div>
   </div>
   <style>
@@ -168,6 +189,20 @@
 
       100% {
         transform: rotate(360deg);
+      }
+    }
+
+    @keyframes splashPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.06);
+        opacity: 0.85;
       }
     }
   </style>
@@ -181,7 +216,7 @@
      */
     setTimeout(function () {
       var root = document.getElementById('root');
-      if (root && root.innerHTML.indexOf('Đang tải') !== -1) {
+      if (root && root.querySelector('#app-splash')) {
         console.error('❌ FAIL-SAFE: App failed to mount within timeout.');
         root.innerHTML = `
           <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; font-family:sans-serif; text-align:center; background:#f8fafc;">

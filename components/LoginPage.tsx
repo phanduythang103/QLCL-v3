@@ -101,7 +101,7 @@ export function LoginPage() {
                     <div className="mb-10">
                         <div className="flex flex-col items-center mb-8">
                             <img
-                                src="https://i.postimg.cc/YSf7nw74/logo_103_min.png"
+                                src="/logo.png"
                                 alt="Logo 103"
                                 className="w-24 h-24 object-contain drop-shadow-md mb-4"
                             />

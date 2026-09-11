@@ -282,7 +282,7 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
     <aside className={`fixed lg:relative inset-y-0 left-0 z-30 flex flex-col bg-primary-600 transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
       <div className="h-16 flex items-center justify-between px-4 border-b border-white/20 bg-primary-600 relative">
         <div className="flex items-center gap-3 overflow-hidden">
-          <img src="https://i.postimg.cc/YSf7nw74/logo_103_min.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
+          <img src="/logo.png" alt="Logo 103" className="w-10 h-10 object-contain drop-shadow-md shrink-0" />
           {!collapsed && (
             <div className="flex flex-col overflow-hidden py-1">
               <h1 className="text-white font-bold text-label uppercase leading-relaxed whitespace-nowrap">BỆNH VIỆN QUÂN Y 103</h1>
