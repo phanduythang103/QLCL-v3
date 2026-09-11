@@ -16,6 +16,7 @@ import {
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import { exportHandoverReportExcel, handoverRate } from '../utils/handoverReportExcel';
+import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 
 // --- Danh mục dùng cho dropdown (bám theo sheet DanhMuc của bản mẫu) ---
 export const LOAI_HINH_BAN_GIAO_OPTIONS = [
@@ -614,7 +615,14 @@ const ReportTable: React.FC<{
 
 const HandoverProcessReport: React.FC<{ data: JCIHandoverIncident[]; departments: any[] }> = ({ data, departments }) => {
   const currentYear = new Date().getFullYear();
-  const [reportFilter, setReportFilter] = useState({ year: String(currentYear), department: '' });
+  const { user } = useAuth();
+  const isAdmin = /admin|quản trị|quan tri/.test((user?.role || '').toLowerCase());
+  const departmentOptions = useMemo(
+    () => departments.map(d => d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi).filter(Boolean),
+    [departments]
+  );
+  const [reportFilter, setReportFilter] = useState<ProcessReportFilterState>(() =>
+    makeDefaultReportFilter(isAdmin, user?.department, String(currentYear)));
   const [visits, setVisits] = useState<number[]>(Array(12).fill(0));
   const [savingMonth, setSavingMonth] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -658,13 +666,13 @@ const HandoverProcessReport: React.FC<{ data: JCIHandoverIncident[]; departments
   const scoped = useMemo(() => {
     const keyword = reportFilter.department.trim().toLowerCase();
     return data.filter(item => {
-      const matchYear = yearOf(item.thoi_gian_su_co) === reportFilter.year;
+      const matchPeriod = matchesReportPeriod(item.thoi_gian_su_co, reportFilter);
       const matchDept =
         !keyword ||
         (item.khoa_lien_quan || '').toLowerCase().includes(keyword) ||
         (item.khoa_ban_giao || '').toLowerCase().includes(keyword) ||
         (item.khoa_tiep_nhan || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);
 
@@ -786,41 +794,25 @@ const HandoverProcessReport: React.FC<{ data: JCIHandoverIncident[]; departments
   return (
     <div className="space-y-6">
       {/* Bộ lọc + xuất Excel */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Năm</label>
-            <select value={reportFilter.year} onChange={e => setReportFilter({ ...reportFilter, year: e.target.value })} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-              {yearOptions.map(y => <option key={y} value={y}>Năm {y}</option>)}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Đơn vị</label>
-            <input
-              type="text"
-              list="handover-report-department-options"
-              value={reportFilter.department}
-              onChange={e => setReportFilter({ ...reportFilter, department: e.target.value })}
-              placeholder="Gõ từ khóa để tìm đơn vị... (bỏ trống = tất cả)"
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-            />
-            <datalist id="handover-report-department-options">
-              {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
-            </datalist>
-          </div>
-
-          <button onClick={handleExport} disabled={exporting} className="w-full px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70">
-            {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-            {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
-          </button>
-        </div>
-        <p className="text-xs text-slate-500 mt-3">
-          Dữ liệu lấy từ bảng DS thu thập · Năm {reportFilter.year}
-          {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : ' · Tất cả đơn vị'}
-          {` · ${totals.soSuCo} sự cố`}
-        </p>
-      </div>
+      <ProcessReportFilter
+        filter={reportFilter}
+        onChange={setReportFilter}
+        departmentOptions={departmentOptions}
+        isAdmin={isAdmin}
+        yearOptions={yearOptions}
+        note={
+          <>
+            Dữ liệu lấy từ bảng DS thu thập · {describeReportPeriod(reportFilter)}
+            {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : (isAdmin ? ' · Toàn viện' : '')}
+            {` · ${totals.soSuCo} sự cố`}
+          </>
+        }
+      >
+        <button onClick={handleExport} disabled={exporting} className="px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70">
+          {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
+          {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
+        </button>
+      </ProcessReportFilter>
 
       {/* Biểu đồ xu hướng */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">

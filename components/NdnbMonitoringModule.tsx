@@ -18,6 +18,7 @@ import {
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
+import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { GiamSatNdnb } from '../types';
 
@@ -726,7 +727,14 @@ const RateBadge: React.FC<{ rate: number; show?: boolean }> = ({ rate, show = tr
 
 const NdnbProcessReport: React.FC<{ data: GiamSatNdnb[]; departments: any[] }> = ({ data, departments }) => {
   const currentYear = new Date().getFullYear();
-  const [reportFilter, setReportFilter] = useState({ year: String(currentYear), department: '' });
+  const { user } = useAuth();
+  const isAdmin = /admin|quản trị|quan tri/.test((user?.role || '').toLowerCase());
+  const departmentOptions = useMemo(
+    () => departments.map(d => d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi).filter(Boolean),
+    [departments]
+  );
+  const [reportFilter, setReportFilter] = useState<ProcessReportFilterState>(() =>
+    makeDefaultReportFilter(isAdmin, user?.department, String(currentYear)));
   const [exporting, setExporting] = useState(false);
 
   const yearOptions = useMemo(() => {
@@ -742,9 +750,9 @@ const NdnbProcessReport: React.FC<{ data: GiamSatNdnb[]; departments: any[] }> =
   const scoped = useMemo(() => {
     const keyword = reportFilter.department.trim().toLowerCase();
     return data.filter(item => {
-      const matchYear = yearOf(item.ngay_giam_sat) === reportFilter.year;
+      const matchPeriod = matchesReportPeriod(item.ngay_giam_sat, reportFilter);
       const matchDept = !keyword || (item.khoa_duoc_giam_sat || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);
 
@@ -846,53 +854,29 @@ const NdnbProcessReport: React.FC<{ data: GiamSatNdnb[]; departments: any[] }> =
   return (
     <div className="space-y-6">
       {/* Bộ lọc báo cáo + xuất Excel */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Năm</label>
-            <select
-              value={reportFilter.year}
-              onChange={e => setReportFilter({ ...reportFilter, year: e.target.value })}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-            >
-              {yearOptions.map(y => (
-                <option key={y} value={y}>Năm {y}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Đơn vị</label>
-            <input
-              type="text"
-              list="ndnb-report-department-options"
-              value={reportFilter.department}
-              onChange={e => setReportFilter({ ...reportFilter, department: e.target.value })}
-              placeholder="Gõ từ khóa để tìm đơn vị... (bỏ trống = tất cả)"
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-            />
-            <datalist id="ndnb-report-department-options">
-              {departments.map(d => (
-                <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />
-              ))}
-            </datalist>
-          </div>
-
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="w-full px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70"
-          >
-            {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-            {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
-          </button>
-        </div>
-        <p className="text-xs text-slate-500 mt-3">
-          Dữ liệu lấy từ bảng DS thu thập · Năm {reportFilter.year}
-          {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : ' · Tất cả đơn vị'}
-          {` · ${totals.n} lượt quan sát`}
-        </p>
-      </div>
+      <ProcessReportFilter
+        filter={reportFilter}
+        onChange={setReportFilter}
+        departmentOptions={departmentOptions}
+        isAdmin={isAdmin}
+        yearOptions={yearOptions}
+        note={
+          <>
+            Dữ liệu lấy từ bảng DS thu thập · {describeReportPeriod(reportFilter)}
+            {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : (isAdmin ? ' · Toàn viện' : '')}
+            {` · ${totals.n} lượt quan sát`}
+          </>
+        }
+      >
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70"
+        >
+          {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
+          {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
+        </button>
+      </ProcessReportFilter>
 
       {/* Biểu đồ xu hướng */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">

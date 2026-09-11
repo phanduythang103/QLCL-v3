@@ -15,6 +15,7 @@ import {
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import { exportCriticalResultsReportExcel, CRITICAL_TIME_LIMIT } from '../utils/criticalResultsReportExcel';
+import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { CRITICAL_RESULT_NAMES } from '../utils/criticalResultNames';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -673,7 +674,14 @@ const ReportTable: React.FC<{
 
 const CriticalProcessReport: React.FC<{ data: JCICriticalResult[]; departments: any[] }> = ({ data, departments }) => {
   const currentYear = new Date().getFullYear();
-  const [reportFilter, setReportFilter] = useState({ year: String(currentYear), department: '' });
+  const { user } = useAuth();
+  const isAdmin = /admin|quản trị|quan tri/.test((user?.role || '').toLowerCase());
+  const departmentOptions = useMemo(
+    () => departments.map(d => d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi).filter(Boolean),
+    [departments]
+  );
+  const [reportFilter, setReportFilter] = useState<ProcessReportFilterState>(() =>
+    makeDefaultReportFilter(isAdmin, user?.department, String(currentYear)));
   const [exporting, setExporting] = useState(false);
 
   const yearOptions = useMemo(() => {
@@ -688,9 +696,9 @@ const CriticalProcessReport: React.FC<{ data: JCICriticalResult[]; departments: 
   const scoped = useMemo(() => {
     const keyword = reportFilter.department.trim().toLowerCase();
     return data.filter(item => {
-      const matchYear = yearOf(item.thoi_gian_co_kq) === reportFilter.year;
+      const matchPeriod = matchesReportPeriod(item.thoi_gian_co_kq, reportFilter);
       const matchDept = !keyword || (item.khoa_dieu_tri || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);
 
@@ -836,41 +844,25 @@ const CriticalProcessReport: React.FC<{ data: JCICriticalResult[]; departments: 
   return (
     <div className="space-y-6">
       {/* Bộ lọc + xuất Excel */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Năm</label>
-            <select value={reportFilter.year} onChange={e => setReportFilter({ ...reportFilter, year: e.target.value })} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-              {yearOptions.map(y => <option key={y} value={y}>Năm {y}</option>)}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Đơn vị</label>
-            <input
-              type="text"
-              list="critical-report-department-options"
-              value={reportFilter.department}
-              onChange={e => setReportFilter({ ...reportFilter, department: e.target.value })}
-              placeholder="Gõ từ khóa để tìm đơn vị... (bỏ trống = tất cả)"
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-            />
-            <datalist id="critical-report-department-options">
-              {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
-            </datalist>
-          </div>
-
-          <button onClick={handleExport} disabled={exporting} className="w-full px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70">
-            {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-            {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
-          </button>
-        </div>
-        <p className="text-xs text-slate-500 mt-3">
-          Dữ liệu lấy từ bảng DS thu thập · Năm {reportFilter.year}
-          {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : ' · Tất cả đơn vị'}
-          {` · ${totals.tong} kết quả báo động`}
-        </p>
-      </div>
+      <ProcessReportFilter
+        filter={reportFilter}
+        onChange={setReportFilter}
+        departmentOptions={departmentOptions}
+        isAdmin={isAdmin}
+        yearOptions={yearOptions}
+        note={
+          <>
+            Dữ liệu lấy từ bảng DS thu thập · {describeReportPeriod(reportFilter)}
+            {reportFilter.department.trim() ? ` · Đơn vị chứa "${reportFilter.department.trim()}"` : (isAdmin ? ' · Toàn viện' : '')}
+            {` · ${totals.tong} kết quả báo động`}
+          </>
+        }
+      >
+        <button onClick={handleExport} disabled={exporting} className="px-4 py-2.5 flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm disabled:opacity-70">
+          {exporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
+          {exporting ? 'Đang xuất...' : 'Xuất Excel (A4 dọc)'}
+        </button>
+      </ProcessReportFilter>
 
       {/* Ô kiểm tra dữ liệu của kỳ báo cáo */}
       <div className={`rounded-2xl border p-4 flex items-start gap-3 ${loiNgayGio > 0 ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'}`}>
