@@ -299,7 +299,7 @@ const NdnbTheoktFormView = ({ item, onClose, onSaved, currentUser, departmentLis
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-700 rounded-2xl flex items-center justify-center text-white shadow-lg"><Activity size={22} /></div>
           <div>
-            <h2 className="text-xl font-black text-slate-800 uppercase">GS Nhận diện NB theo KT/Thời điểm</h2>
+            <h2 className="text-main-title font-bold text-slate-800 uppercase">GS Nhận diện NB theo KT/Thời điểm</h2>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kiểm soát an toàn tại các thời điểm quan trọng</p>
           </div>
         </div>

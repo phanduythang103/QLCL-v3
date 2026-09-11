@@ -885,7 +885,7 @@ async function downloadReportPdf(button){var oldText=button.textContent;button.d
 
   return <div className="space-y-4">
     <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600"><ClipboardList size={22} /></div><div><h2 className="text-lg font-black text-slate-900">Phân tích RCA sự cố y khoa</h2><p className="text-sm text-slate-500">Lập báo cáo phân tích nguyên nhân gốc rễ theo mẫu RCA.md.</p></div></div>
+      <div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600"><ClipboardList size={22} /></div><div><h2 className="text-main-title font-bold text-slate-900">Phân tích RCA sự cố y khoa</h2><p className="text-sm text-slate-500">Lập báo cáo phân tích nguyên nhân gốc rễ theo mẫu RCA.md.</p></div></div>
       <button onClick={resetForm} className="btn-primary"><Plus size={16} />Tạo RCA</button>
     </div>
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

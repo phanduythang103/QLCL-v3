@@ -585,7 +585,7 @@ const IndicatorConfigModule: React.FC = () => {
             <div className="p-12 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div className="space-y-8 text-slate-800 leading-relaxed max-w-2xl mx-auto">
                     <div className="border-b-2 border-slate-100 pb-4 mb-2">
-                        <h1 className="text-xl font-black text-slate-900">{viewingConfig.ten_chi_so}</h1>
+                        <h1 className="text-main-title font-bold text-slate-900">{viewingConfig.ten_chi_so}</h1>
                     </div>
 
                     <div className="space-y-6 font-medium">

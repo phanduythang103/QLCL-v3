@@ -164,7 +164,7 @@ export const ContinuousTraining = () => {
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div>
-          <h2 className="text-lg font-black text-slate-900 uppercase">ĐÀO TẠO LIÊN TỤC</h2>
+          <h2 className="text-main-title font-bold text-slate-900 uppercase">ĐÀO TẠO LIÊN TỤC</h2>
         </div>
         <div className="flex bg-slate-100 p-1 rounded-xl">
           <button onClick={() => setMainTab('CONTENT')} className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${mainTab === 'CONTENT' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}><FileText size={16}/> Bài giảng điện tử</button>

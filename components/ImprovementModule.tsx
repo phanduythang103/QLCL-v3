@@ -682,7 +682,7 @@ const KhctclView: React.FC<{ item: Khctcl, onBack: () => void, onEdit: () => voi
   const formatDate = (value?: string) => value ? new Date(value).toLocaleDateString('vi-VN') : '.....';
 
   return (
-    <div className="bg-slate-50 min-h-screen px-0 py-3 sm:px-4 sm:py-10 animate-in fade-in duration-500" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+    <div className="bg-slate-50 min-h-screen px-0 py-3 sm:px-4 sm:py-10 animate-in fade-in duration-500">
       <div className="md:hidden space-y-3 pb-6">
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-3 shadow-sm">
           <div className="grid grid-cols-3 gap-2">
@@ -948,7 +948,7 @@ const StatusPopup: React.FC<{ item: Khctcl, onClose: () => void, onUpdated: () =
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden border border-slate-100 scale-in-center">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-[#108545]/5">
           <h3 className="font-black text-slate-800 uppercase tracking-tight text-lg">Cập nhật trạng thái</h3>
@@ -1041,7 +1041,7 @@ const ImprovementList: React.FC<ImprovementListProps> = ({
   };
 
   return (
-    <div className="space-y-8" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+    <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">Kế hoạch Cải tiến Chất lượng</h2>
@@ -1365,7 +1365,7 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
   };
 
   return (
-    <div className="khctcl-form bg-[#f8fafc] min-h-screen animate-in fade-in duration-500" style={{ fontFamily: 'Tahoma, sans-serif' }}>
+    <div className="khctcl-form bg-[#f8fafc] min-h-screen animate-in fade-in duration-500">
       {/* Optimized Header: Clean & professional (Stationary) */}
       <div className="bg-white border-b border-slate-200 py-6 px-10 shadow-sm">
         <div className="flex justify-between items-center max-w-7xl mx-auto">
@@ -1378,7 +1378,7 @@ const KhctclForm = ({ initialData, onCancel, onSaved }: { initialData?: Khctcl |
               <ArrowLeft size={24} />
             </button>
             <div>
-              <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Lập Kế hoạch Cải tiến (KHCTCL)</h2>
+              <h2 className="text-main-title font-bold text-slate-800 uppercase tracking-tight">Lập Kế hoạch Cải tiến (KHCTCL)</h2>
               <p className="text-[#108545] font-bold text-sm flex items-center gap-2">
                 <CheckCircle2 size={16} /> Quy trình cải tiến chất lượng bệnh viện
               </p>
@@ -1721,7 +1721,7 @@ const BaoCaoTienDoForm = ({ plans, initialData, onCancel, onSaved, isViewOnly = 
   };
 
   return (
-    <div className="bg-[#f8fafc] min-h-screen pb-20" style={{ fontFamily: '"Be Vietnam Pro", "Inter", system-ui, -apple-system, sans-serif' }}>
+    <div className="bg-[#f8fafc] min-h-screen pb-20">
       <div className="bg-white border-b border-slate-200 py-6 px-10 shadow-sm sticky top-0 z-50">
         <div className="flex justify-between items-center max-w-none mx-auto">
           <div className="flex items-center gap-6">
