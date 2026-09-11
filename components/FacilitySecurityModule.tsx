@@ -41,6 +41,31 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
   </button>
 );
 
+/** Định dạng ngày giờ hiển thị trên ô "Thời gian xảy ra": "hh:mm dd/mm/yyyy" (khớp nhãn + placeholder). */
+const fmtDateTimeInput = (dt: Date) => {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(dt.getHours())}:${p(dt.getMinutes())} ${p(dt.getDate())}/${p(dt.getMonth() + 1)}/${dt.getFullYear()}`;
+};
+
+/**
+ * Phân tích ô "Thời gian xảy ra" thành ISO. Chấp nhận cả hai thứ tự người dùng
+ * có thể gõ ("hh:mm dd/mm/yyyy" như nhãn, hoặc "dd/mm/yyyy hh:mm") bằng cách nhận
+ * diện phần giờ qua ":" và phần ngày qua "/". Ném lỗi rõ ràng nếu sai định dạng
+ * để tránh RangeError "Invalid time value" khi lưu.
+ */
+const parseThoiGianXayRa = (raw: string): string => {
+  const tokens = (raw || '').trim().split(/\s+/).filter(Boolean);
+  const timeToken = tokens.find(t => t.includes(':')) || '';
+  const dateToken = tokens.find(t => t.includes('/')) || '';
+  const [d, m, y] = dateToken.split('/').map(n => parseInt(n, 10));
+  const [h, min] = timeToken.split(':').map(n => parseInt(n, 10));
+  const dt = new Date(y, (m || 0) - 1, d, h || 0, min || 0);
+  if (!dateToken || [d, m, y].some(isNaN) || isNaN(dt.getTime())) {
+    throw new Error('Sai định dạng "Thời gian xảy ra". Vui lòng nhập theo mẫu: hh:mm dd/mm/yyyy (VD: 14:30 25/03/2026).');
+  }
+  return dt.toISOString();
+};
+
 export const FacilitySecurityModule: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'SUPERVISION' | 'REPORTS'>('OVERVIEW');
@@ -175,10 +200,7 @@ export const FacilitySecurityModule: React.FC = () => {
       ngay_bao_cao: new Date().toISOString().split('T')[0],
       nguoi_bao_cao: user?.full_name || '',
       don_vi: user?.department || '',
-      thoi_gian_xay_ra: new Date().toLocaleString('vi-VN', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: false
-      }).replace(',', ''),
+      thoi_gian_xay_ra: fmtDateTimeInput(new Date()),
       vi_tri_xay_ra: '',
       mo_ta_dien_bien: '',
       hau_qua: '',
@@ -195,10 +217,7 @@ export const FacilitySecurityModule: React.FC = () => {
       ngay_bao_cao: item.ngay_bao_cao,
       nguoi_bao_cao: item.nguoi_bao_cao,
       don_vi: item.don_vi,
-      thoi_gian_xay_ra: new Date(item.thoi_gian_xay_ra).toLocaleString('vi-VN', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: false
-      }).replace(',', ''),
+      thoi_gian_xay_ra: fmtDateTimeInput(new Date(item.thoi_gian_xay_ra)),
       vi_tri_xay_ra: item.vi_tri_xay_ra,
       mo_ta_dien_bien: item.mo_ta_dien_bien,
       hau_qua: item.hau_qua,
@@ -222,17 +241,9 @@ export const FacilitySecurityModule: React.FC = () => {
   const handleSaveReport = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Helper to parse 'dd/mm/yyyy hh:mm' to ISO
-      const parseDateTime = (str: string) => {
-        const [datePart, timePart] = str.split(' ');
-        const [d, m, y] = datePart.split('/');
-        const [h, min] = timePart.split(':');
-        return new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(h), parseInt(min)).toISOString();
-      };
-
       const finalForm = {
         ...reportForm,
-        thoi_gian_xay_ra: parseDateTime(reportForm.thoi_gian_xay_ra)
+        thoi_gian_xay_ra: parseThoiGianXayRa(reportForm.thoi_gian_xay_ra)
       };
 
       if (editingReport) {

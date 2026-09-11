@@ -17,9 +17,13 @@ ADD COLUMN IF NOT EXISTS pid_nguoi_benh TEXT,
 ADD COLUMN IF NOT EXISTS nguoi_thu_thap TEXT,
 -- Các cột tự động tính từ 23 tiêu chí
 ADD COLUMN IF NOT EXISTS tong_ap_dung INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS ket_qua TEXT;
+ADD COLUMN IF NOT EXISTS ket_qua TEXT,
+-- Ghi chú chung của người giám sát (ô textarea trên form)
+ADD COLUMN IF NOT EXISTS ghi_chu_chung TEXT;
 
 COMMENT ON COLUMN public.giam_sat_atpt.checklist_23 IS
   'Bảng kiểm 23 tiêu chí ATPT (SI1-SI10, TO1-TO8, SO1-SO5), giá trị: Có / Không / Không áp dụng';
 COMMENT ON COLUMN public.giam_sat_atpt.ket_qua IS
   'Tự động: Đạt chỉ khi KHÔNG có tiêu chí áp dụng nào bị đánh "Không"';
+COMMENT ON COLUMN public.giam_sat_atpt.ghi_chu_chung IS
+  'Ghi chú chung / nhận xét của người giám sát cho ca ATPT';
