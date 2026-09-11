@@ -100,13 +100,18 @@ export function LoginPage() {
                 <div className="w-full max-w-md">
                     {/* Logo and Title */}
                     <div className="mb-10">
-                        <div className="flex flex-col items-center mb-8">
+                        <div className="flex flex-col items-center mb-8" style={{ containerType: 'inline-size' }}>
                             <img
                                 src="/logo.png"
                                 alt="Logo 103"
                                 className="w-24 h-24 object-contain drop-shadow-md mb-4"
                             />
-                            <h2 className="text-title font-black text-black text-center uppercase tracking-tight leading-tight">
+                            <p className="font-bold text-primary-700 text-center uppercase tracking-[0.1em] mb-1.5 whitespace-nowrap"
+                                style={{ fontSize: 'clamp(0.7rem, 4.6cqw, 0.95rem)' }}>
+                                BỆNH VIỆN QUÂN Y 103
+                            </p>
+                            <h2 className="font-black text-black text-center uppercase tracking-tight leading-tight whitespace-nowrap"
+                                style={{ fontSize: 'clamp(0.8rem, 6.2cqw, 1.35rem)' }}>
                                 HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG
                             </h2>
                         </div>
