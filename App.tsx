@@ -17,6 +17,7 @@ import { JCIModule } from './components/JCIModule';
 import { SupervisionProvider, useSupervision } from './components/SupervisionContext';
 import { AssessmentProvider, useAssessmentContext } from './components/AssessmentContext';
 import { HeaderUserMenu } from './components/HeaderUserMenu';
+import { InstallPWAButton } from './components/InstallPWAButton';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { supabase } from './supabaseClient';
 import { fetchThongBao, fetchThongBaoReadIds, markThongBaoAsRead, THONG_BAO_READ_EVENT, ThongBao } from './readThongBao';
@@ -321,6 +322,11 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
           )}
         </div>
       </div>
+      {!collapsed && (
+        <div className="px-3 pt-3 bg-primary-600">
+          <InstallPWAButton variant="sidebar" />
+        </div>
+      )}
       <div className="p-4 border-t border-white/20 bg-primary-600 flex justify-center text-[12px] text-white/80 uppercase whitespace-nowrap overflow-hidden">
         {!collapsed && <span>{appVersion}</span>}
       </div>

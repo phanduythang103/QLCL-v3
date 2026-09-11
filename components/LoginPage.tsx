@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { InstallPWAButton } from './InstallPWAButton';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabaseClient';
 import { validateCredentials } from '../utils/auth';
@@ -167,6 +168,7 @@ export function LoginPage() {
                         </button>
                     </form>
 
+                    <InstallPWAButton variant="login" />
 
                 </div>
             </div>
