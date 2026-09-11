@@ -42,6 +42,11 @@ const parseOptions = (value: any): string[] => {
   return [];
 };
 
+// TẠM THỜI: ẩn nội dung đào tạo trong app, chuyển hướng sang ứng dụng riêng.
+// Đổi thành false để bật lại nội dung nội bộ như cũ.
+const TRAINING_EXTERNAL_ONLY = true;
+const TRAINING_APP_URL = 'https://daotao.qlcl103.pro.vn/';
+
 const isPublished = (course: AnyRow) => String(course.status || '').toLowerCase() === 'published';
 
 const normalizeLessonText = (value: any, fallback: string) => String(value || fallback || '')
@@ -136,6 +141,7 @@ export const ContinuousTraining = () => {
   const [mainTab, setMainTab] = useState<'CONTENT' | 'VIDEO' | 'HISTORY'>('CONTENT');
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -153,12 +159,81 @@ export const ContinuousTraining = () => {
     }
   };
 
-  useEffect(() => { load(); }, [user?.id]);
+  useEffect(() => { if (!TRAINING_EXTERNAL_ONLY) load(); }, [user?.id]);
   useEffect(() => { if (!canManage && mode === 'ADMIN') setMode('LEARNER'); }, [canManage, mode]);
 
   const assignedIds = new Set(assignments.map(item => item.course_id));
   const learnerCourses = courses.filter(course => assignedIds.has(course.id) || isPublished(course));
   const selectedCourse = courses.find(course => course.id === selectedCourseId);
+
+  const openTrainingApp = () => {
+    setShowConfirm(false);
+    window.open(TRAINING_APP_URL, '_blank', 'noopener,noreferrer');
+  };
+
+  if (TRAINING_EXTERNAL_ONLY) {
+    return <div className="space-y-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="text-main-title font-bold text-slate-900 uppercase">ĐÀO TẠO LIÊN TỤC</h2>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 shadow-sm">
+        <div className="mx-auto flex max-w-md flex-col items-center text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600">
+            <GraduationCap size={40} />
+          </div>
+          <h3 className="text-main-title mt-5 font-bold text-slate-900">Ứng dụng Đào tạo liên tục</h3>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            Nội dung đào tạo liên tục đã được chuyển sang ứng dụng riêng. Bấm nút bên dưới để mở ứng dụng.
+          </p>
+          <button
+            onClick={() => setShowConfirm(true)}
+            className="mt-6 flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-emerald-700"
+          >
+            <Rocket size={18} /> Mở ứng dụng đào tạo
+          </button>
+          <p className="mt-3 text-xs font-bold text-slate-400 break-all">{TRAINING_APP_URL}</p>
+        </div>
+      </div>
+
+      {showConfirm && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+          onClick={() => setShowConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center px-6 pt-8 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <GraduationCap size={28} />
+              </div>
+              <h3 className="text-title mt-4 text-slate-900">Chuyển đến ứng dụng Đào tạo liên tục?</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                Bạn có muốn mở ứng dụng Đào tạo liên tục trong tab mới không?
+              </p>
+              <p className="mt-2 text-xs font-bold text-emerald-700 break-all">{TRAINING_APP_URL}</p>
+            </div>
+            <div className="mt-6 flex gap-2 border-t border-slate-100 p-4">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={openTrainingApp}
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition-colors hover:bg-emerald-700"
+              >
+                Đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>;
+  }
 
   return <div className="space-y-4">
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
