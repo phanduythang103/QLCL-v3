@@ -13,6 +13,7 @@ import {
 } from '../readGsChung';
 import { fetchDmDonVi } from '../readDmDonVi';
 import EmployeeSelect from './EmployeeSelect';
+import SupervisionScope from './SupervisionScope';
 import { useAuth } from '../contexts/AuthContext';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
@@ -351,10 +352,8 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2">Thời điểm giám sát</label>
              <input type="datetime-local" value={form.ngay_giam_sat} onChange={e => setForm({...form, ngay_giam_sat: e.target.value})} required className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-white shadow-sm transition-all" />
            </div>
-           <div className="md:col-span-3 space-y-2">
-             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2">Khoa được giám sát</label>
-             <input list="gs-chung-dv-list" value={form.khoa_gs} onChange={e => setForm({...form, khoa_gs: e.target.value})} required className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white transition-all shadow-sm" placeholder="Chọn khoa phòng..." />
-             <datalist id="gs-chung-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist>
+           <div className="md:col-span-3">
+             <SupervisionScope department={form.khoa_gs} onDepartmentChange={v => setForm({ ...form, khoa_gs: v })} userDepartment={currentUser?.department} departments={deptList} idPrefix="gs-chung" label="Khoa được giám sát" required containerClassName="space-y-2" labelClassName="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2" inputClassName="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white transition-all shadow-sm" />
            </div>
            <div className="md:col-span-3 space-y-2">
              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2">Đối tượng giám sát</label>
@@ -365,6 +364,7 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
              <EmployeeSelect
                name={form.nguoi_duoc_giam_sat || ''}
                doiTuong={form.doi_tuong || 'Điều dưỡng'}
+               khoaDonVi={form.khoa_gs || ''}
                onChange={({ name, doiTuong }) => setForm({ ...form, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
                idPrefix="gschung-nguoi-duoc-gs"
                namePlaceholder="Chọn/nhập họ tên"

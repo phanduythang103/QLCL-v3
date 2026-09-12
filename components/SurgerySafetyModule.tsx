@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import { SurgerySafety } from '../types';
 import EmployeeSelect from './EmployeeSelect';
+import SupervisionScope from './SupervisionScope';
 import { fetchSurgerySafety, addSurgerySafety, updateSurgerySafety, deleteSurgerySafety } from '../readSurgerySafety';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
@@ -201,6 +202,8 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
         areaOptions={areaOptions}
         collectorOptions={collectorOptions}
         currentUserName={currentUserName}
+        departments={departments}
+        userDepartment={user?.department}
         onSubmit={handleSave}
         onCancel={() => { setViewMode('LIST'); setEditingId(null); }}
       />
@@ -376,14 +379,18 @@ interface AtptFormProps {
   areaOptions: string[];
   collectorOptions: string[];
   currentUserName: string;
+  departments: any[];
+  userDepartment?: string;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 }
 
 const AtptForm: React.FC<AtptFormProps> = ({
-  formData, setFormData, isEditing, areaOptions, collectorOptions, currentUserName, onSubmit, onCancel
+  formData, setFormData, isEditing, areaOptions, collectorOptions, currentUserName, departments, userDepartment, onSubmit, onCancel
 }) => {
   const score = scoreAtpt(formData.checklist_23);
+  // Đơn vị của nhân viên được giám sát (Tự/Chéo) — lọc danh sách tên trong ô chọn
+  const [atptStaffDept, setAtptStaffDept] = useState('');
 
   const setAnswer = (id: string, value: AtptAnswer) =>
     setFormData(prev => ({ ...prev, checklist_23: { ...prev.checklist_23, [id]: value } }));
@@ -455,10 +462,25 @@ const AtptForm: React.FC<AtptFormProps> = ({
           </div>
 
           <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Đơn vị nhân viên được GS</label>
+            <SupervisionScope
+              department={atptStaffDept}
+              onDepartmentChange={setAtptStaffDept}
+              userDepartment={userDepartment}
+              departments={departments}
+              idPrefix="atpt-staff"
+              label=""
+              containerClassName="space-y-1.5"
+              inputClassName="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Nhân viên được giám sát</label>
             <EmployeeSelect
               name={formData.nguoi_duoc_giam_sat || ''}
               doiTuong={formData.doi_tuong || 'Điều dưỡng'}
+              khoaDonVi={atptStaffDept}
               onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
               idPrefix="atpt-nguoi-duoc-gs"
               namePlaceholder="Chọn/nhập họ tên"

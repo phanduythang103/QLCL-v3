@@ -12,6 +12,7 @@ import {
 } from '../readGsRaVaoVien';
 import { fetchDmDonVi } from '../readDmDonVi';
 import EmployeeSelect from './EmployeeSelect';
+import SupervisionScope from './SupervisionScope';
 import { useAuth } from '../contexts/AuthContext';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
@@ -412,11 +413,7 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
                 <label className="text-[11px] font-bold text-slate-500 pl-2">thời gian giám sát</label>
                 <input type="datetime-local" value={form.ngay_giam_sat} onChange={e => setField('ngay_giam_sat', e.target.value)} required className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-white shadow-sm transition-all" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-500 pl-2">khoa được giám sát</label>
-                <input list="ra-vao-dv-list" value={form.khoa_gs} onChange={e => setField('khoa_gs', e.target.value)} required className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white transition-all shadow-sm" placeholder="Chọn khoa phòng..." />
-                <datalist id="ra-vao-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist>
-              </div>
+              <SupervisionScope department={form.khoa_gs} onDepartmentChange={v => setField('khoa_gs', v)} userDepartment={currentUser?.department} departments={deptList} idPrefix="ra-vao" label="Khoa được giám sát" required containerClassName="space-y-2" labelClassName="text-[11px] font-bold text-slate-500 pl-2" inputClassName="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white transition-all shadow-sm" />
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-500 pl-2">cán bộ giám sát</label>
                 <input value={form.nguoi_gs} onChange={e => setField('nguoi_gs', e.target.value)} required className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all" />
@@ -426,6 +423,7 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
                 <EmployeeSelect
                   name={form.nguoi_duoc_giam_sat || ''}
                   doiTuong={form.doi_tuong || 'Điều dưỡng'}
+                  khoaDonVi={form.khoa_gs || ''}
                   onChange={({ name, doiTuong }) => setForm((p: any) => ({ ...p, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong }))}
                   idPrefix="ravao-nguoi-duoc-gs"
                   namePlaceholder="Chọn/nhập họ tên"

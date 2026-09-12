@@ -6,6 +6,8 @@ interface EmployeeSelectProps {
   name: string;
   /** Đối tượng hiện tại (Điều dưỡng / Bác sỹ / ...) */
   doiTuong: string;
+  /** Nếu có: chỉ hiện nhân viên thuộc khoa/đơn vị này (lọc theo bảng Danh sách nhân viên) */
+  khoaDonVi?: string;
   /** Cập nhật cả tên và đối tượng cùng lúc */
   onChange: (next: { name: string; doiTuong: string }) => void;
   disabled?: boolean;
@@ -30,6 +32,7 @@ const DEFAULT_DOI_TUONG = ['Điều dưỡng', 'Bác sỹ'];
 export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
   name,
   doiTuong,
+  khoaDonVi,
   onChange,
   disabled = false,
   doiTuongOptions = DEFAULT_DOI_TUONG,
@@ -52,10 +55,15 @@ export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
 
   const listId = `${idPrefix}-name-options`;
 
-  // Lọc tên theo đối tượng đang chọn (nếu có)
+  const norm = (s?: string | null) => (s || '').trim().toLowerCase();
+
+  // Lọc tên theo đối tượng + khoa/đơn vị đang chọn (nếu có)
   const filteredNames = useMemo(
-    () => staff.filter(s => !doiTuong || s.doi_tuong === doiTuong),
-    [staff, doiTuong]
+    () => staff.filter(s =>
+      (!doiTuong || s.doi_tuong === doiTuong) &&
+      (!khoaDonVi || norm(s.khoa_don_vi) === norm(khoaDonVi))
+    ),
+    [staff, doiTuong, khoaDonVi]
   );
 
   const findEmployee = (val: string) =>

@@ -21,6 +21,7 @@ import { GsVst } from '../types';
 import { fetchGsVst, addGsVst, updateGsVst, deleteGsVst, uploadVstImage } from '../readGsVst';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import EmployeeSelect from './EmployeeSelect';
+import SupervisionScope from './SupervisionScope';
 
 const MOMENTS = [
   "1. Trước khi tiếp xúc người bệnh",
@@ -901,18 +902,17 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
                   <Building2 size={14} /> Khoa giám sát
                 </label>
-                <input
-                  type="text"
-                  list="vst-form-department-options"
-                  value={formData.khoa_duoc_giam_sat}
-                  onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})}
+                <SupervisionScope
+                  department={formData.khoa_duoc_giam_sat}
+                  onDepartmentChange={v => setFormData({ ...formData, khoa_duoc_giam_sat: v })}
+                  userDepartment={currentUser?.department}
+                  departments={departmentList}
                   disabled={isReadOnly}
-                  placeholder="Gõ để tìm hoặc nhập khoa/phòng"
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                  idPrefix="vst"
+                  label=""
+                  containerClassName="space-y-1.5"
+                  inputClassName="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
                 />
-                <datalist id="vst-form-department-options">
-                  {departmentList.map((d: string) => <option key={d} value={d} />)}
-                </datalist>
               </div>
 
               <div className="space-y-2 group">
@@ -922,6 +922,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <EmployeeSelect
                   name={formData.nguoi_duoc_giam_sat}
                   doiTuong={formData.doi_tuong}
+                  khoaDonVi={formData.khoa_duoc_giam_sat}
                   onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
                   disabled={isReadOnly}
                   doiTuongOptions={['Điều dưỡng', 'Bác sỹ', 'Hộ lý', 'Khác']}
