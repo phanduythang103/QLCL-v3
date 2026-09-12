@@ -52,6 +52,14 @@ export const SettingsModule: React.FC = () => {
     { id: 'THEME', label: 'Giao diện', icon: <Layout size={18} />, iconClass: 'text-slate-500', bgClass: 'bg-slate-300' },
   ];
 
+  // Người không phải quản trị: chỉ thấy & dùng được "Danh sách nhân viên"
+  const visibleMenuItems = isRestricted ? menuItems.filter(m => m.id === 'STAFF_LIST') : menuItems;
+  const effectiveTab: SettingTab = isRestricted ? 'STAFF_LIST' : activeTab;
+
+  useEffect(() => {
+    if (isRestricted && activeTab !== 'STAFF_LIST') setActiveTab('STAFF_LIST');
+  }, [isRestricted, activeTab, setActiveTab]);
+
   /* ... renderContent function ... */
   const renderContent = (tab: SettingTab) => {
     switch (tab) {
@@ -99,14 +107,14 @@ export const SettingsModule: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row gap-6 md:h-[calc(100vh-140px)]">
       {/* Mobile & Desktop: Vertical Sidebar (stacked on very small screens) */}
-      {!isRestricted && (
+      {
         <div className="w-full md:w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex-shrink-0 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-slate-100 bg-slate-50">
             <h3 className="text-section font-black text-black uppercase tracking-tight">Danh mục cấu hình</h3>
           </div>
 
           <div className="overflow-y-auto p-2 flex flex-col gap-1 custom-scrollbar">
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as SettingTab)}
@@ -128,13 +136,13 @@ export const SettingsModule: React.FC = () => {
             ))}
           </div>
         </div>
-      )}
+      }
 
       {/* Content Area */}
       <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[500px]">
         {/* Body of Content */}
         <div className="flex-1 p-4 lg:p-6 overflow-y-auto bg-slate-50/30 custom-scrollbar">
-          {renderContent(activeTab)}
+          {renderContent(effectiveTab)}
         </div>
       </div>
     </div>

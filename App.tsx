@@ -304,9 +304,8 @@ const Sidebar = ({ currentModule, handleModuleChange, collapsed, setCollapsed, m
         {canView(ModuleType.DOCS, 'SHARING') && <NavItem icon={<Lightbulb size={20} />} label="Góc chia sẻ" active={currentModule === ModuleType.SHARING} onClick={() => handleModuleChange(ModuleType.SHARING)} collapsed={collapsed} />}
         {canView(ModuleType.REPORTS) && <NavItem icon={<FileText size={20} />} label="Báo cáo Tổng hợp" active={currentModule === ModuleType.REPORTS} onClick={() => handleModuleChange(ModuleType.REPORTS)} collapsed={collapsed} />}
         <div className="pt-4 mt-4 border-t border-white/20">
-          {(canAccessSettings || canView(ModuleType.SETTINGS)) && (
-            <NavItem icon={<Settings size={20} />} label="Cấu hình hệ thống" active={currentModule === ModuleType.SETTINGS} onClick={() => handleModuleChange(ModuleType.SETTINGS)} collapsed={collapsed} />
-          )}
+          {/* Ai cũng vào được Cài đặt; người không phải quản trị chỉ thấy Danh sách nhân viên */}
+          <NavItem icon={<Settings size={20} />} label="Cấu hình hệ thống" active={currentModule === ModuleType.SETTINGS} onClick={() => handleModuleChange(ModuleType.SETTINGS)} collapsed={collapsed} />
         </div>
       </div>
       {!collapsed && (
@@ -645,11 +644,7 @@ const AppContent: React.FC = () => {
   };
 
   const navigateLogic = (module: ModuleType) => {
-    // Allow access if explicitly checking notifications (bypass restriction)
-    if (module === ModuleType.SETTINGS && !canAccessSettings && activeSettingsTab !== 'NOTI') {
-      alert('Bạn không có quyền truy cập module này.');
-      return;
-    }
+    // Cài đặt: ai cũng vào được (người không phải quản trị chỉ thấy Danh sách nhân viên)
     navigateToModule(module);
     setMobileSidebarOpen(false);
   }
@@ -669,7 +664,7 @@ const AppContent: React.FC = () => {
       case ModuleType.INDICATORS: return <IndicatorsModule />;
       case ModuleType.REPORTS: return <ReportsModule />;
       case ModuleType.SETTINGS:
-        return (canAccessSettings || activeSettingsTab === 'NOTI') ? <SettingsModule /> : <Dashboard />; // Redirect to Dashboard if no access
+        return <SettingsModule />; // SettingsModule tự giới hạn: không phải quản trị chỉ thấy Danh sách nhân viên
       default: return <Dashboard />;
     }
   };
@@ -710,8 +705,8 @@ const AppContent: React.FC = () => {
 
   const filteredMobileModules = mobileModuleItems.filter(item => {
     const normalizedLabel = item.label.replace(/\n/g, ' ').toLowerCase();
-    const hasPermission = item.requiresSettingsAccess 
-        ? (canAccessSettings || canView(item.permission, item.subPermission)) 
+    const hasPermission = item.module === ModuleType.SETTINGS
+        ? true // Cài đặt luôn hiển thị; nội dung được giới hạn bên trong SettingsModule
         : canView(item.permission, item.subPermission);
     return hasPermission && normalizedLabel.includes(mobileSearch.trim().toLowerCase());
   });
