@@ -249,6 +249,10 @@ export interface SurgerySafety {
   tong_ap_dung?: number;
   /** Đạt / Không đạt - tự động */
   ket_qua?: string;
+  /** Nhân viên được giám sát (lấy từ Danh sách nhân viên) */
+  nguoi_duoc_giam_sat?: string;
+  /** Đối tượng nhân viên: Điều dưỡng / Bác sỹ */
+  doi_tuong?: string;
 }
 
 export interface DrugMonitoring {

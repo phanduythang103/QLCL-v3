@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users, AlertTriangle, TrendingUp, Activity,
-  CheckCircle, Smile, Star, Calendar
+  CheckCircle, Smile, Star, Calendar,
+  TrendingDown, Bell, AlertCircle, ShieldCheck, HandMetal, Award
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -33,6 +34,19 @@ import { fetchGsChung } from '../readGsChung';
 
 // Improvement plans
 import { fetchKhctcl } from '../readKhctcl';
+
+// JCI indicators
+import { fetchJciIndicatorCounts, JciIndicatorCounts } from '../readJciCounts';
+
+// ── 6 chỉ số chất lượng JCI (khớp id với JCIModule) ─────────
+const JCI_INDICATORS: { id: keyof JciIndicatorCounts; label: string; Icon: React.ElementType; accent: string; bg: string }[] = [
+  { id: 'FALL_RATE', label: 'Tỷ suất NB ngã', Icon: TrendingDown, accent: '#ef4444', bg: '#fef2f2' },
+  { id: 'PATIENT_IDENTIFICATION', label: 'Nhận dạng người bệnh', Icon: Users, accent: '#3b82f6', bg: '#eff6ff' },
+  { id: 'CRITICAL_RESULTS', label: 'Báo động KQ cận LS', Icon: Bell, accent: '#14b8a6', bg: '#f0fdfa' },
+  { id: 'HANDOVER_INCIDENTS', label: 'Sự cố khi bàn giao', Icon: AlertCircle, accent: '#a855f7', bg: '#faf5ff' },
+  { id: 'SURGERY_SAFETY', label: 'Tuân thủ ATPT', Icon: ShieldCheck, accent: '#10b981', bg: '#ecfdf5' },
+  { id: 'HAND_HYGIENE', label: 'Tuân thủ 5 thời điểm VST', Icon: HandMetal, accent: '#06b6d4', bg: '#ecfeff' },
+];
 
 // ── Helpers ───────────────────────────────────────────────
 const getRangeDates = (filter: DateFilterState) => {
@@ -152,6 +166,10 @@ export const Dashboard: React.FC = () => {
   // Compliance data
   const [complianceData, setComplianceData] = useState<any[]>([]);
   const [complianceLoading, setComplianceLoading] = useState(true);
+
+  // JCI indicator overview (số phiếu thu thập của 6 chỉ số)
+  const [jciCounts, setJciCounts] = useState<JciIndicatorCounts | null>(null);
+  const [jciLoading, setJciLoading] = useState(true);
 
   // 1. Load Personnel & Incidents
   const loadBasicStats = useCallback(async () => {
@@ -294,13 +312,24 @@ export const Dashboard: React.FC = () => {
     setComplianceLoading(false);
   }, [compFilter]);
 
+  // 5. Load JCI indicator counts
+  const loadJciCounts = useCallback(async () => {
+    setJciLoading(true);
+    try {
+      const result = await fetchJciIndicatorCounts();
+      setJciCounts(result);
+    } catch (err) { console.error(err); }
+    setJciLoading(false);
+  }, []);
+
   // Initial load
   useEffect(() => {
     loadBasicStats();
     loadSatisfactionData();
     loadImpStats();
     loadComplianceData();
-  }, [loadBasicStats, loadSatisfactionData, loadImpStats, loadComplianceData]);
+    loadJciCounts();
+  }, [loadBasicStats, loadSatisfactionData, loadImpStats, loadComplianceData, loadJciCounts]);
 
   // Realtime Subscriptions
   useEffect(() => {
@@ -322,11 +351,18 @@ export const Dashboard: React.FC = () => {
       { name: 'gs_cap_cuu', cb: loadComplianceData },
       { name: 'gs_ra_vao_vien', cb: loadComplianceData },
       { name: 'gs_chung', cb: loadComplianceData },
+      // JCI indicator overview
+      { name: 'jci_fall_incidents', cb: loadJciCounts },
+      { name: 'jci_critical_results', cb: loadJciCounts },
+      { name: 'jci_handover_incidents', cb: loadJciCounts },
+      { name: 'gs_ndnb', cb: loadJciCounts },
+      { name: 'giam_sat_atpt_jci', cb: loadJciCounts, table: 'giam_sat_atpt' },
+      { name: 'gs_vst_jci', cb: loadJciCounts, table: 'gs_vst' },
     ];
 
-    const channels = tables.map(t =>
+    const channels = tables.map((t: any) =>
       supabase.channel(`${t.name}_dashboard_sync`)
-        .on('postgres_changes', { event: '*', table: t.name, schema: 'public' }, () => {
+        .on('postgres_changes', { event: '*', table: t.table || t.name, schema: 'public' }, () => {
           t.cb();
         })
         .subscribe()
@@ -335,7 +371,7 @@ export const Dashboard: React.FC = () => {
     return () => {
       channels.forEach(ch => supabase.removeChannel(ch));
     };
-  }, [loadBasicStats, loadImpStats, loadSatisfactionData, loadComplianceData]);
+  }, [loadBasicStats, loadImpStats, loadSatisfactionData, loadComplianceData, loadJciCounts]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 pb-10">
@@ -361,39 +397,33 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
 
-          {/* Mức độ hài lòng */}
-          <div className="ql-card p-6 md:p-8 space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Tổng quan 6 chỉ số chất lượng JCI */}
+          <div className="ql-card p-6 md:p-8 space-y-6">
+            <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
-                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Mức độ hài lòng</h3>
+                <div className="w-2 h-8 bg-teal-500 rounded-full"></div>
+                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Tổng quan chỉ số chất lượng JCI</h3>
               </div>
-
-              <div className="flex items-center gap-3">
-                <DateRangeFilter filter={satFilter} onChange={setSatFilter} />
-              </div>
+              <Award size={20} className="text-teal-500 shrink-0" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {satisfactionLoading ? (
-                <div className="col-span-2 text-center py-10 text-slate-400 font-black uppercase animate-pulse">Đang tải...</div>
-              ) : (
-                satisfactionData.map((item) => (
-                  <div key={item.name} className="p-6 rounded-2xl border border-slate-50 bg-slate-50/30 hover:bg-white hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                        <span className="text-sm font-black text-slate-700 uppercase tracking-tight truncate">{item.name}</span>
-                      </div>
-                      <span className="text-lg font-black text-slate-800">{item.value}%</span>
-                    </div>
-                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${item.value}%`, backgroundColor: item.color }}></div>
-                    </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {JCI_INDICATORS.map(({ id, label, Icon, accent, bg }) => (
+                <div key={id} className="p-4 rounded-2xl border border-slate-50 bg-slate-50/30 hover:bg-white hover:shadow-md transition-all flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: bg, color: accent }}>
+                    <Icon size={20} />
                   </div>
-                ))
-              )}
+                  <div className="min-w-0">
+                    <p className="text-2xl font-black text-slate-800 leading-none">{jciLoading ? '...' : (jciCounts ? jciCounts[id] : 0)}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 leading-tight">{label}</p>
+                  </div>
+                </div>
+              ))}
             </div>
+
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+              <CheckCircle size={11} className="text-teal-500" /> Số phiếu đã thu thập theo từng chỉ số
+            </p>
           </div>
 
           {/* Tỷ lệ tuân thủ quy trình giám sát */}
@@ -450,6 +480,41 @@ export const Dashboard: React.FC = () => {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Mức độ hài lòng */}
+          <div className="ql-card p-6 md:p-8 space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
+                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Mức độ hài lòng</h3>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DateRangeFilter filter={satFilter} onChange={setSatFilter} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {satisfactionLoading ? (
+                <div className="col-span-2 text-center py-10 text-slate-400 font-black uppercase animate-pulse">Đang tải...</div>
+              ) : (
+                satisfactionData.map((item) => (
+                  <div key={item.name} className="p-6 rounded-2xl border border-slate-50 bg-slate-50/30 hover:bg-white hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <span className="text-sm font-black text-slate-700 uppercase tracking-tight truncate">{item.name}</span>
+                      </div>
+                      <span className="text-lg font-black text-slate-800">{item.value}%</span>
+                    </div>
+                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${item.value}%`, backgroundColor: item.color }}></div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

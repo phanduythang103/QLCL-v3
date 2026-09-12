@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { GsVst } from '../types';
 import { fetchGsVst, addGsVst, updateGsVst, deleteGsVst, uploadVstImage } from '../readGsVst';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
+import EmployeeSelect from './EmployeeSelect';
 
 const MOMENTS = [
   "1. Trước khi tiếp xúc người bệnh",
@@ -676,7 +677,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-slate-800 tracking-tight">{new Date(item.ngay_giam_sat).toLocaleDateString('vi-VN')}</h4>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Supervisor: {item.nguoi_giam_sat}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Người GS: {item.nguoi_giam_sat}</p>
                 </div>
               </div>
               <div className="flex gap-1">
@@ -918,27 +919,18 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                 <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 group-focus-within:text-emerald-600 transition-colors">
                   <Users size={14} /> Đối tượng được giám sát
                 </label>
-                <div className="flex gap-2">
-                  <select
-                    value={formData.doi_tuong}
-                    onChange={e => setFormData({...formData, doi_tuong: e.target.value})}
-                    disabled={isReadOnly}
-                    className="w-24 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none text-center"
-                  >
-                    <option value="Bác sỹ">BS</option>
-                    <option value="Điều dưỡng">ĐD</option>
-                    <option value="Hộ lý">HL</option>
-                    <option value="Khác">Khác</option>
-                  </select>
-                  <input
-                    type="text"
-                    value={formData.nguoi_duoc_giam_sat}
-                    onChange={e => setFormData({...formData, nguoi_duoc_giam_sat: e.target.value})}
-                    disabled={isReadOnly}
-                    className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
-                    placeholder="Họ tên NVYT"
-                  />
-                </div>
+                <EmployeeSelect
+                  name={formData.nguoi_duoc_giam_sat}
+                  doiTuong={formData.doi_tuong}
+                  onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
+                  disabled={isReadOnly}
+                  doiTuongOptions={['Điều dưỡng', 'Bác sỹ', 'Hộ lý', 'Khác']}
+                  idPrefix="vst-nguoi-duoc-gs"
+                  namePlaceholder="Họ tên NVYT (chọn từ Danh sách nhân viên)"
+                  wrapperClassName="flex gap-2"
+                  selectClassName="w-28 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none text-center"
+                  inputClassName="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"
+                />
               </div>
             </div>
 

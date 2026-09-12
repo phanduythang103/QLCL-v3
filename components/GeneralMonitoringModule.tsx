@@ -12,6 +12,7 @@ import {
   deleteGsChung, uploadGsChungImage, GiamSatChung, GiamSatChungItem
 } from '../readGsChung';
 import { fetchDmDonVi } from '../readDmDonVi';
+import EmployeeSelect from './EmployeeSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
@@ -49,6 +50,8 @@ const defaultFormGsChung = (userName = ''): any => ({
   nguoi_gs: userName,
   khoa_gs: '',
   doi_tuong_gs: '',
+  nguoi_duoc_giam_sat: '',
+  doi_tuong: 'Điều dưỡng',
   noi_dung_gs: [
     { id: 'initial-1', label: '', is_pass: true, note: '' }
   ],
@@ -356,6 +359,19 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
            <div className="md:col-span-3 space-y-2">
              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2">Đối tượng giám sát</label>
              <input value={form.doi_tuong_gs} onChange={e => setForm({...form, doi_tuong_gs: e.target.value})} required placeholder="VD: NB Nguyễn Văn A, Hồ sơ..." className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all" />
+           </div>
+           <div className="md:col-span-3 space-y-2">
+             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2">Nhân viên được giám sát</label>
+             <EmployeeSelect
+               name={form.nguoi_duoc_giam_sat || ''}
+               doiTuong={form.doi_tuong || 'Điều dưỡng'}
+               onChange={({ name, doiTuong }) => setForm({ ...form, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
+               idPrefix="gschung-nguoi-duoc-gs"
+               namePlaceholder="Chọn/nhập họ tên"
+               wrapperClassName="flex gap-2"
+               selectClassName="w-24 p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all appearance-none"
+               inputClassName="flex-1 p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all"
+             />
            </div>
            <div className="md:col-span-3 space-y-2">
              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-2">Cán bộ giám sát</label>

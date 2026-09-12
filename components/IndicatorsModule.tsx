@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, TrendingDown, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { fetchChiSoQlcl, ChiSoQlcl } from '../readChiSoQlcl';
 import { VAPModule } from './VAPModule';
 import { KtcmModule } from './KtcmModule';
@@ -23,7 +22,6 @@ export const IndicatorsModule: React.FC = () => {
   const [indicators, setIndicators] = useState<ChiSoQlcl[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('06/2024');
 
   const getCategoryTitle = (cat: IndicatorCategory) => {
     switch (cat) {
@@ -73,26 +71,6 @@ export const IndicatorsModule: React.FC = () => {
             </h2>
           )}
         </div>
-        {!category && (
-          <div className="flex gap-2">
-            <button
-              onClick={loadData}
-              className="hidden md:block p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50"
-              title="Làm mới dữ liệu"
-            >
-              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-            </button>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="hidden md:block bg-white border border-slate-200 text-black text-input font-bold rounded-lg p-2.5 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="06/2024">Tháng 6/2024</option>
-              <option value="05/2024">Tháng 5/2024</option>
-              <option value="Q1/2024">Quý 1/2024</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {error && (

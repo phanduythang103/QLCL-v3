@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { EndoscopyMonitoring } from '../types';
+import EmployeeSelect from './EmployeeSelect';
 
 export const CRITERIA_ENDOSCOPY = [
   { group: 'A. GIAI ĐOẠN CHUẨN BỊ' },
@@ -62,6 +63,7 @@ const defaultForm = (userName = ''): Partial<EndoscopyMonitoring> => {
     nguoi_giam_sat: userName,
     khoa_phong: '',
     nguoi_duoc_giam_sat: '',
+    doi_tuong: 'Điều dưỡng',
     checklist_data: {},
     tong_dat: TOTAL_CRITERIA,
     tong_co_hoi: TOTAL_CRITERIA,
@@ -289,7 +291,7 @@ const EndoscopyForm = ({ item, currentUser, departmentList, onSaved, onClose }: 
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ngày giám sát</label><input type="date" value={form.ngay_giam_sat} onChange={e => setField('ngay_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold focus:ring-4 focus:ring-blue-500/10 outline-none" /></div>
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_giam_sat} onChange={e => setField('nguoi_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa/Phòng</label><input list="endoscopy-dv-list" value={form.khoa_phong || ''} onChange={e => setField('khoa_phong', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="endoscopy-dv-list">{departmentList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist></div>
-           <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người được giám sát</label><input value={form.nguoi_duoc_giam_sat || ''} onChange={e => setField('nguoi_duoc_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
+           <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người được giám sát</label><EmployeeSelect name={form.nguoi_duoc_giam_sat || ''} doiTuong={form.doi_tuong || 'Điều dưỡng'} onChange={({ name, doiTuong }) => setForm((p: any) => ({ ...p, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong }))} required idPrefix="endoscopy-nguoi-duoc-gs" namePlaceholder="Chọn/nhập họ tên" wrapperClassName="flex gap-2" selectClassName="w-28 p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none bg-white appearance-none" inputClassName="flex-1 p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">

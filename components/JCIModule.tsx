@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell, TrendingDown, Users, Award } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell, TrendingDown, Users } from 'lucide-react';
 import { JCIFallIncidentsModule } from './JCIFallIncidentsModule';
 import { JCICriticalResultsModule } from './JCICriticalResultsModule';
 import { JCIHandoverIncidentsModule } from './JCIHandoverIncidentsModule';
@@ -7,23 +7,72 @@ import { NdnbMonitoringModule } from './NdnbMonitoringModule';
 import { SurgerySafetyModule } from './SurgerySafetyModule';
 import { HandHygieneModule } from './HandHygieneModule';
 import { usePermissions } from '../contexts/PermissionsContext';
-import { fetchJciIndicatorCounts, JciIndicatorCounts } from '../readJciCounts';
+import { fetchJciIndicatorCounts, JciIndicatorCounts, JciCountRange } from '../readJciCounts';
+import DateRangeFilter, { DateFilterState } from './DateRangeFilter';
+
+// Tính khoảng ngày (ISO) từ bộ lọc; null = tất cả thời gian
+const computeJciRange = (filter: DateFilterState): JciCountRange | null => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const d = now.getDate();
+  const dow = now.getDay() || 7; // Mon=1..Sun=7
+  const iso = (dt: Date) => dt.toISOString();
+  const startOf = (dt: Date) => { dt.setHours(0, 0, 0, 0); return dt; };
+  const endOf = (dt: Date) => { dt.setHours(23, 59, 59, 999); return dt; };
+
+  switch (filter.type) {
+    case 'all':
+      return null;
+    case 'thisWeek':
+      return { start: iso(startOf(new Date(y, m, d - dow + 1))), end: iso(endOf(new Date(y, m, d - dow + 7))) };
+    case 'lastWeek':
+      return { start: iso(startOf(new Date(y, m, d - dow - 6))), end: iso(endOf(new Date(y, m, d - dow))) };
+    case 'thisMonth':
+      return { start: iso(startOf(new Date(y, m, 1))), end: iso(endOf(new Date(y, m + 1, 0))) };
+    case 'lastMonth':
+      return { start: iso(startOf(new Date(y, m - 1, 1))), end: iso(endOf(new Date(y, m, 0))) };
+    case 'thisQuarter': {
+      const q = Math.floor(m / 3);
+      return { start: iso(startOf(new Date(y, q * 3, 1))), end: iso(endOf(new Date(y, q * 3 + 3, 0))) };
+    }
+    case 'lastQuarter': {
+      const q = Math.floor(m / 3);
+      return { start: iso(startOf(new Date(y, (q - 1) * 3, 1))), end: iso(endOf(new Date(y, q * 3, 0))) };
+    }
+    case 'thisYear':
+      return { start: iso(startOf(new Date(y, 0, 1))), end: iso(endOf(new Date(y, 11, 31))) };
+    case 'lastYear':
+      return { start: iso(startOf(new Date(y - 1, 0, 1))), end: iso(endOf(new Date(y - 1, 11, 31))) };
+    case 'custom':
+      if (filter.startDate && filter.endDate) {
+        return { start: iso(startOf(new Date(filter.startDate))), end: iso(endOf(new Date(filter.endDate))) };
+      }
+      return null;
+    default:
+      return null;
+  }
+};
 
 export const JCIModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'INDICATORS'>('INDICATORS');
   const [category, setCategory] = useState<string | null>(null);
   const [counts, setCounts] = useState<JciIndicatorCounts | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilterState>({ type: 'all', startDate: '', endDate: '' });
   const { canView } = usePermissions();
 
-  // Số phiếu đã thu thập của từng chỉ số, nạp lại mỗi khi quay về lưới danh mục
+  const range = useMemo(() => computeJciRange(dateFilter), [dateFilter]);
+
+  // Số phiếu đã thu thập của từng chỉ số, nạp lại mỗi khi quay về lưới danh mục hoặc đổi bộ lọc
   useEffect(() => {
     if (category) return;
     let cancelled = false;
-    fetchJciIndicatorCounts()
+    setCounts(null);
+    fetchJciIndicatorCounts(range)
       .then(result => { if (!cancelled) setCounts(result); })
       .catch(err => console.error('Error loading JCI counts:', err));
     return () => { cancelled = true; };
-  }, [category]);
+  }, [category, range]);
 
   const jciIndicators = [
     { id: 'FALL_RATE', label: 'Tỷ suất NB ngã', icon: TrendingDown, desc: 'Giám sát tỷ suất người bệnh ngã', bgClass: 'bg-red-300', iconClass: 'text-red-500' },
@@ -61,27 +110,19 @@ export const JCIModule: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header section */}
-      <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-3xl p-6 md:p-10 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10">
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-2">Tiêu chuẩn JCI</h1>
-          <p className="text-teal-100 font-medium max-w-2xl text-sm md:text-base">Quản lý và giám sát các chỉ số chất lượng, đánh giá an toàn người bệnh theo tiêu chuẩn quốc tế JCI.</p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Nhãn chỉ số chất lượng + bộ lọc thời gian */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+          <button
+            onClick={() => setActiveTab('INDICATORS')}
+            className={`flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-sm
+              ${activeTab === 'INDICATORS' ? 'bg-teal-500 text-white shadow-teal-200' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'}`}
+          >
+            Chỉ số chất lượng
+          </button>
         </div>
-        <div className="absolute right-0 top-0 opacity-10 pointer-events-none translate-x-1/4 -translate-y-1/4 transform">
-          <Award size={240} />
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-        <button
-          onClick={() => setActiveTab('INDICATORS')}
-          className={`flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-sm
-            ${activeTab === 'INDICATORS' ? 'bg-teal-500 text-white shadow-teal-200' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'}`}
-        >
-          Chỉ số chất lượng
-        </button>
+        <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="sm:justify-end" />
       </div>
 
       {/* Grid Content */}

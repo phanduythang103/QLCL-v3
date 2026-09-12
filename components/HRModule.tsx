@@ -451,42 +451,42 @@ export const HRModule: React.FC = () => {
         className="hidden"
       />
 
-      <div className="flex flex-col lg:flex-row justify-end items-start lg:items-center gap-4">
-        <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-          {canView('HR', activeTab) && (
-            <button
-              onClick={handleExportExcel}
-              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
-            >
-              <Download size={16} /> Xuất Excel
-            </button>
-          )}
-          {canCreate('HR', activeTab) && (
-            <button
-              onClick={handleImportClick}
-              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
-            >
-              <Upload size={16} /> Nhập Excel
-            </button>
-          )}
-          {canCreate('HR', activeTab) && (
-            <button
-              onClick={openAddForm}
-              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm"
-            >
-              <Plus size={16} /> Thêm nhân sự
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Thanh công cụ + tab — Desktop: cùng 1 dòng */}
+      <div className="flex flex-wrap lg:flex-nowrap lg:overflow-x-auto items-center gap-2 pb-1 custom-scrollbar">
+        {canView('HR', activeTab) && (
+          <button
+            onClick={handleExportExcel}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+          >
+            <Download size={16} /> Xuất Excel
+          </button>
+        )}
+        {canCreate('HR', activeTab) && (
+          <button
+            onClick={handleImportClick}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+          >
+            <Upload size={16} /> Nhập Excel
+          </button>
+        )}
+        {canCreate('HR', activeTab) && (
+          <button
+            onClick={openAddForm}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+          >
+            <Plus size={16} /> Thêm nhân sự
+          </button>
+        )}
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2">
+        {/* Ngăn cách nhóm hành động và tab (chỉ desktop) */}
+        <div className="hidden lg:block w-px h-6 bg-slate-200 mx-1 shrink-0" />
+
+        {/* Tabs */}
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
+            className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id
               ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}

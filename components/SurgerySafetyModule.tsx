@@ -9,6 +9,7 @@ import {
   Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
 import { SurgerySafety } from '../types';
+import EmployeeSelect from './EmployeeSelect';
 import { fetchSurgerySafety, addSurgerySafety, updateSurgerySafety, deleteSurgerySafety } from '../readSurgerySafety';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,6 +42,8 @@ const emptyForm = (nguoiGiamSat = ''): SurgerySafety => {
     loai_pt_tt: '',
     pid_nguoi_benh: '',
     nguoi_thu_thap: nguoiGiamSat,
+    nguoi_duoc_giam_sat: '',
+    doi_tuong: 'Điều dưỡng',
     tong_dat: 0,
     tong_ap_dung: 0,
     ty_le_tuan_thu: 0,
@@ -449,6 +452,20 @@ const AtptForm: React.FC<AtptFormProps> = ({
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Kíp phẫu thuật</label>
             <input type="text" value={formData.kip_phau_thuat} onChange={e => setFormData({ ...formData, kip_phau_thuat: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Nhân viên được giám sát</label>
+            <EmployeeSelect
+              name={formData.nguoi_duoc_giam_sat || ''}
+              doiTuong={formData.doi_tuong || 'Điều dưỡng'}
+              onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
+              idPrefix="atpt-nguoi-duoc-gs"
+              namePlaceholder="Chọn/nhập họ tên"
+              wrapperClassName="flex gap-2"
+              selectClassName="w-28 px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors appearance-none"
+              inputClassName="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+            />
           </div>
 
           <div className="space-y-1.5">

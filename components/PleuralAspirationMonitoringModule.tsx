@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { PleuralAspirationMonitoring } from '../types';
+import EmployeeSelect from './EmployeeSelect';
 
 export const CRITERIA_CDMP = [
   { id: 'c1', group: 'A. GIAI ĐOẠN CHUẨN BỊ', label: '1. Chuẩn bị người bệnh (Kiểm tra hành chính, khám, tư thế, giải thích)' },
@@ -35,6 +36,7 @@ const defaultForm = (userName = ''): Partial<PleuralAspirationMonitoring> => {
     nguoi_giam_sat: userName,
     khoa_duoc_giam_sat: '',
     nguoi_duoc_giam_sat: '',
+    doi_tuong: 'Điều dưỡng',
     checklist_data: {},
     tong_dat: TOTAL_CRITERIA,
     tong_co_hoi: TOTAL_CRITERIA,
@@ -256,7 +258,7 @@ const CdmpForm = ({ item, currentUser, departmentList, onSaved, onClose }: any) 
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ngày giám sát</label><input type="date" value={form.ngay_giam_sat} onChange={e => setField('ngay_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold focus:ring-4 focus:ring-teal-500/10 outline-none" /></div>
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_giam_sat} onChange={e => setField('nguoi_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa</label><input list="cdmp-dv-list" value={form.khoa_duoc_giam_sat || ''} onChange={e => setField('khoa_duoc_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="cdmp-dv-list">{departmentList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist></div>
-           <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">NVYT / Kíp thủ thuật</label><input placeholder="Nhập tên NVYT/Kíp" value={form.nguoi_duoc_giam_sat || ''} onChange={e => setField('nguoi_duoc_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
+           <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">NVYT / Kíp thủ thuật</label><EmployeeSelect name={form.nguoi_duoc_giam_sat || ''} doiTuong={form.doi_tuong || 'Điều dưỡng'} onChange={({ name, doiTuong }) => setForm((p: any) => ({ ...p, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong }))} required idPrefix="pleural-nguoi-duoc-gs" namePlaceholder="Chọn/nhập tên NVYT" wrapperClassName="flex gap-2" selectClassName="w-28 p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none bg-white appearance-none" inputClassName="flex-1 p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">

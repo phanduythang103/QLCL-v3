@@ -11,6 +11,7 @@ import {
   deleteGsRaVaoVien, uploadRaVaoVienImage, GiamSatRaVaoVien
 } from '../readGsRaVaoVien';
 import { fetchDmDonVi } from '../readDmDonVi';
+import EmployeeSelect from './EmployeeSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
@@ -94,6 +95,8 @@ const defaultFormRaVao = (userName = ''): any => {
     nguoi_gs: userName,
     khoa_gs: '',
     doi_tuong_gs: [],
+    nguoi_duoc_giam_sat: '',
+    doi_tuong: 'Điều dưỡng',
     ket_luan_chung: '',
     hinh_anh_minh_chung: [],
     tong_dat: TOTAL_CRITERIA_RA_VAO,
@@ -417,6 +420,19 @@ const RaVaoForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-500 pl-2">cán bộ giám sát</label>
                 <input value={form.nguoi_gs} onChange={e => setField('nguoi_gs', e.target.value)} required className="w-full p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 pl-2">nhân viên được giám sát</label>
+                <EmployeeSelect
+                  name={form.nguoi_duoc_giam_sat || ''}
+                  doiTuong={form.doi_tuong || 'Điều dưỡng'}
+                  onChange={({ name, doiTuong }) => setForm((p: any) => ({ ...p, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong }))}
+                  idPrefix="ravao-nguoi-duoc-gs"
+                  namePlaceholder="Chọn/nhập họ tên"
+                  wrapperClassName="flex gap-2"
+                  selectClassName="w-24 p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all appearance-none"
+                  inputClassName="flex-1 p-3.5 rounded-2xl border border-slate-200 text-[13px] font-bold text-black outline-none focus:ring-4 focus:ring-emerald-500/10 bg-white shadow-sm transition-all"
+                />
               </div>
            </div>
            <div className="space-y-4 pt-4 border-t border-slate-200/60">

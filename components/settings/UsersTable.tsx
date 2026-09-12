@@ -25,6 +25,7 @@ export default function UsersTable() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [selectedUserDetail, setSelectedUserDetail] = useState<any | null>(null);
+  const [showDetailPassword, setShowDetailPassword] = useState(false);
   const { user: currentUser } = useAuth();
   const isAdmin = currentUser?.role === 'Quản trị viên';
 
@@ -567,10 +568,9 @@ export default function UsersTable() {
                   />
                 </th>
                 <th className="px-6 py-5">Tài khoản & Vai trò</th>
-                <th className="px-6 py-5">Họ và tên & Đơn vị</th>
+                <th className="px-6 py-5 min-w-[340px]">Họ và tên & Đơn vị</th>
                 <th className="px-6 py-5">Đối tượng</th>
-                <th className="px-6 py-5">Ghi chú</th>
-                <th className="px-6 py-5 text-right">Thao tác</th>
+                <th className="px-6 py-5 text-right min-w-[320px]">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -601,7 +601,7 @@ export default function UsersTable() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 min-w-[340px]">
                     <div className="flex flex-col">
                       <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight">{user.full_name}</span>
                       <span className="text-[9px] font-bold text-slate-400 uppercase">{user.department || 'Chưa phân khoa'}</span>
@@ -612,12 +612,9 @@ export default function UsersTable() {
                       {user.category || 'Nhân viên'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-[10px] font-bold text-slate-400 max-w-[200px] truncate" title={user.notes}>
-                    {user.notes || '-'}
-                  </td>
-                  <td className="px-6 py-4 text-right min-w-[300px]">
+                  <td className="px-6 py-4 text-right min-w-[320px]">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setSelectedUserDetail(user)} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Xem chi tiết">
+                      <button onClick={() => { setShowDetailPassword(false); setSelectedUserDetail(user); }} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Xem chi tiết">
                         <Eye size={14} /> Xem
                       </button>
                       <button onClick={() => handleEdit(user)} className="flex items-center gap-1.5 px-3 py-1.5 text-[#059669] hover:bg-green-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Sửa">
@@ -681,7 +678,7 @@ export default function UsersTable() {
               </div>
               <p className="mt-3 line-clamp-2 text-[11px] font-bold text-slate-500">{user.notes || '-'}</p>
               <div className="mt-4 grid grid-cols-3 gap-2">
-                <button onClick={() => setSelectedUserDetail(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase text-blue-600">
+                <button onClick={() => { setShowDetailPassword(false); setSelectedUserDetail(user); }} className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] font-black uppercase text-blue-600">
                   <Eye size={14} /> Xem
                 </button>
                 <button onClick={() => handleEdit(user)} className="flex items-center justify-center gap-1.5 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-[10px] font-black uppercase text-[#059669]">
@@ -743,7 +740,7 @@ export default function UsersTable() {
                   <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2 block">Tài khoản & Vai trò</label>
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                      <p className="font-black text-slate-800 uppercase text-sm mb-1">{selectedUserDetail.username}</p>
+                      <p className="font-black text-slate-800 lowercase text-sm mb-1">{selectedUserDetail.username}</p>
                       <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{selectedUserDetail.role}</span>
                     </div>
                   </div>
@@ -751,9 +748,21 @@ export default function UsersTable() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-2 block">Mật khẩu truy cập</label>
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                       {isAdmin ? (
-                        <div className="flex items-center gap-2">
-                          <Lock size={16} className="text-[#059669]" />
-                          <span className="font-mono font-black text-[#059669] tracking-[0.2em] text-lg">{selectedUserDetail.password}</span>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Lock size={16} className="text-[#059669]" />
+                            <span className="font-mono font-black text-[#059669] tracking-[0.2em] text-lg">
+                              {showDetailPassword ? selectedUserDetail.password : '••••••'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowDetailPassword(v => !v)}
+                            className="p-1.5 text-slate-400 hover:text-[#059669] hover:bg-white rounded-lg transition-all shrink-0"
+                            title={showDetailPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                          >
+                            {showDetailPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-slate-300 italic">

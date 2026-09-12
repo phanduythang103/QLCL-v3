@@ -11,6 +11,7 @@ import {
   deleteGsCapCuu, uploadCapCuuImage, GiamSatCapCuu
 } from '../readGsCapCuu';
 import { fetchDmDonVi } from '../readDmDonVi';
+import EmployeeSelect from './EmployeeSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
@@ -90,6 +91,8 @@ const defaultFormCapCuu = (userName = ''): any => {
     ngay_kiem_tra: toLocalISO(new Date()),
     nguoi_kiem_tra: userName,
     don_vi_duoc_kiem_tra: '',
+    nguoi_duoc_giam_sat: '',
+    doi_tuong: 'Điều dưỡng',
     ket_luan_chung: '',
     hinh_anh_minh_chung: [],
     tong_dat: TOTAL_CRITERIA_CAP_CUU,
@@ -388,6 +391,7 @@ const CapCuuForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
            </div>
            <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa được giám sát</label><input list="cap-cuu-dv-list" value={form.don_vi_duoc_kiem_tra} onChange={e => setField('don_vi_duoc_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" /><datalist id="cap-cuu-dv-list">{deptList.map((d: any) => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}</datalist></div>
            <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_kiem_tra} onChange={e => setField('nguoi_kiem_tra', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" /></div>
+           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Nhân viên được giám sát</label><EmployeeSelect name={form.nguoi_duoc_giam_sat || ''} doiTuong={form.doi_tuong || 'Điều dưỡng'} onChange={({ name, doiTuong }) => setForm((p: any) => ({ ...p, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong }))} idPrefix="capcuu-nguoi-duoc-gs" namePlaceholder="Chọn/nhập họ tên" wrapperClassName="flex gap-2" selectClassName="w-24 p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none bg-white appearance-none" inputClassName="flex-1 p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-green-200" /></div>
         </div>
 
         <div className="space-y-6">

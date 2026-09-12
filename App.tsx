@@ -58,20 +58,17 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
 
   const subNavItems = ([
     { label: "Tổng quan", cat: null as SupervisionCategory, subId: 'OVERVIEW' },
-    { label: "An toàn phẫu thuật", cat: 'SURGERY' as SupervisionCategory, subId: 'SURGERY' },
-    { label: "Vệ sinh tay", cat: 'HAND_HYGIENE' as SupervisionCategory, subId: 'HAND_HYGIENE' },
-    { label: "Giám sát 5S", cat: '5S' as SupervisionCategory, subId: '5S' },
-    { label: "Nhận diện người bệnh", cat: 'NDNB' as SupervisionCategory, subId: 'NDNB' },
+    { label: "Công khai thuốc", cat: 'DRUGS' as SupervisionCategory, subId: 'DRUGS' },
+    { label: "Quản lý 5S", cat: '5S' as SupervisionCategory, subId: '5S' },
     { label: "Hồ sơ bệnh án", cat: 'RECORDS' as SupervisionCategory, subId: 'RECORDS' },
-    { label: "Sử dụng thuốc", cat: 'DRUGS' as SupervisionCategory, subId: 'DRUGS' },
     {
       label: "Chế độ chuyên môn",
       cat: 'PROFESSIONAL' as SupervisionCategory,
       subId: 'PROFESSIONAL',
       children: [
-        { label: "Công tác thường trực", cat: 'PROF_DUTY' as SupervisionCategory },
+        { label: "Trực chuyên môn", cat: 'PROF_DUTY' as SupervisionCategory },
         { label: "Công tác cấp cứu", cat: 'PROF_EMERGENCY' as SupervisionCategory },
-        { label: "Vào viện/CK/CV/RV", cat: 'PROF_ADMISSION' as SupervisionCategory },
+        { label: "Ra, vào viện/CK, CV", cat: 'PROF_ADMISSION' as SupervisionCategory },
       ]
     },
     { label: "Giám sát chung", cat: 'GENERAL' as SupervisionCategory, subId: 'GENERAL' },
@@ -79,6 +76,7 @@ const SupervisionNav = ({ collapsed, active, onSelectModule }: { collapsed: bool
     { label: "Nội soi TQDD có gây mê", cat: 'STOMACH_ENDOSCOPY' as SupervisionCategory, subId: 'STOMACH_ENDOSCOPY' },
     { label: "Tiêm ngoài màng cứng", cat: 'EPIDURAL_INJECTION' as SupervisionCategory, subId: 'EPIDURAL_INJECTION' },
     { label: "Nội soi phế quản sinh thiết", cat: 'BRONCHOSCOPY' as SupervisionCategory, subId: 'BRONCHOSCOPY' },
+    { label: "Chọc dịch màng phổi", cat: 'PLEURAL_ASPIRATION' as SupervisionCategory, subId: 'PLEURAL_ASPIRATION' },
   ]).filter(item => item.subId === 'OVERVIEW' || canView('SUPERVISION', item.subId));
 
 
@@ -174,31 +172,20 @@ const AssessmentNav = ({ collapsed, active, onSelectModule }: { collapsed: boole
   }
 
   return (
-    <div>
-      <button
-        onClick={toggleExpansion}
-        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${active ? 'bg-white/10 text-white shadow-inner' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
-      >
-        <div className={`flex items-center justify-center ${collapsed ? 'w-full' : ''}`}>
-          <ClipboardCheck size={20} />
+    <div className="space-y-1">
+      <button onClick={toggleExpansion} className={`w-full flex items-center justify-between px-4 py-2.5 mb-1 transition-colors group text-[12px] ${active ? 'bg-white text-primary-600 font-bold' : 'text-white hover:bg-white/10'}`} title={collapsed ? "Đánh giá Chất lượng" : ''}>
+        <div className="flex items-center overflow-hidden">
+          <div className="flex-shrink-0"><ClipboardCheck size={20} /></div>
+          {!collapsed && <span className="ml-3 text-label truncate">Đánh giá Chất lượng</span>}
         </div>
-        {!collapsed && (
-          <>
-            <span className="flex-1 text-left uppercase text-[13px] tracking-wide font-bold whitespace-nowrap">Đánh giá Chất lượng</span>
-            <ChevronDown size={16} className={`transition-transform duration-200 ${isExpanded && active ? 'rotate-180' : ''}`} />
-          </>
-        )}
+        {!collapsed && <ChevronDown size={16} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />}
       </button>
 
-      {!collapsed && isExpanded && active && (
-        <div className="bg-black/20 py-1 animate-in slide-in-from-top-2 duration-200">
+      {!collapsed && isExpanded && (
+        <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
           {subNavItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => handleSubNavClick(item.tab)}
-              className={`w-full text-left pl-11 pr-4 py-2 text-[12px] transition-colors relative flex items-center justify-between ${activeTab === item.tab ? 'bg-white/15 text-white font-bold' : 'text-white/85 hover:text-white hover:bg-white/10'}`}
-            >
-              <span className="truncate">{item.label}</span>
+            <button key={item.label} onClick={() => handleSubNavClick(item.tab)} className={`w-full text-left pl-11 pr-4 py-2 text-[12px] transition-colors relative ${active && activeTab === item.tab ? 'bg-white/15 text-white font-bold' : 'text-white/85 hover:text-white hover:bg-white/10'}`}>
+              {item.label}
             </button>
           ))}
         </div>

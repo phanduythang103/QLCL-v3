@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ModuleType } from '../types';
 import UsersTable from './settings/UsersTable';
+import StaffListTable from './settings/StaffListTable';
 import DeptTable from './settings/DeptTable';
 import PositionTable from './settings/PositionTable';
 import RankTable from './settings/RankTable';
@@ -37,6 +38,7 @@ export const SettingsModule: React.FC = () => {
 
   const menuItems = [
     { id: 'USER', label: 'Người dùng', icon: <Users size={18} />, iconClass: 'text-indigo-500', bgClass: 'bg-indigo-300' },
+    { id: 'STAFF_LIST', label: 'Danh sách nhân viên', icon: <Users2 size={18} />, iconClass: 'text-green-500', bgClass: 'bg-green-300' },
     { id: 'NOTI', label: 'Thông báo', icon: <Bell size={18} />, iconClass: 'text-orange-500', bgClass: 'bg-orange-300' },
     { id: 'PERMISSIONS', label: 'Phân quyền', icon: <ShieldCheck size={18} />, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-300' },
     { id: 'DEPT', label: 'Đơn vị', icon: <Building size={18} />, iconClass: 'text-sky-500', bgClass: 'bg-sky-300' },
@@ -57,6 +59,8 @@ export const SettingsModule: React.FC = () => {
         return <PermissionManager />;
       case 'USER':
         return <UsersTable />;
+      case 'STAFF_LIST':
+        return <StaffListTable />;
       case 'NOTI':
         return <NotificationTable />;
       case 'DEPT':
