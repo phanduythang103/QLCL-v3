@@ -7,8 +7,20 @@ import { NdnbMonitoringModule } from './NdnbMonitoringModule';
 import { SurgerySafetyModule } from './SurgerySafetyModule';
 import { HandHygieneModule } from './HandHygieneModule';
 import { usePermissions } from '../contexts/PermissionsContext';
-import { fetchJciIndicatorCounts, JciIndicatorCounts, JciCountRange } from '../readJciCounts';
+import { fetchJciIndicatorStats, JciIndicatorStats, JciCountRange } from '../readJciCounts';
 import DateRangeFilter, { DateFilterState } from './DateRangeFilter';
+
+/** Màu tỷ lệ đạt theo ngưỡng (đồng bộ với badge trong các module giám sát). */
+const rateColorClass = (rate: number): string =>
+  rate >= 90 ? 'text-green-600' : rate >= 70 ? 'text-amber-600' : 'text-red-600';
+
+/** Một ô số liệu nhỏ (giá trị + nhãn) dùng cho khối Tổng / Đạt / Tỷ lệ trên thẻ. */
+const MiniStat: React.FC<{ value: React.ReactNode; label: string; valueClass?: string }> = ({ value, label, valueClass = 'text-slate-800' }) => (
+  <div className="flex min-w-[44px] flex-col items-center">
+    <span className={`text-lg font-black leading-none ${valueClass}`}>{value}</span>
+    <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</span>
+  </div>
+);
 
 // Tính khoảng ngày (ISO) từ bộ lọc; null = tất cả thời gian
 const computeJciRange = (filter: DateFilterState): JciCountRange | null => {
@@ -57,20 +69,20 @@ const computeJciRange = (filter: DateFilterState): JciCountRange | null => {
 export const JCIModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'INDICATORS'>('INDICATORS');
   const [category, setCategory] = useState<string | null>(null);
-  const [counts, setCounts] = useState<JciIndicatorCounts | null>(null);
+  const [stats, setStats] = useState<JciIndicatorStats | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilterState>({ type: 'all', startDate: '', endDate: '' });
   const { canView } = usePermissions();
 
   const range = useMemo(() => computeJciRange(dateFilter), [dateFilter]);
 
-  // Số phiếu đã thu thập của từng chỉ số, nạp lại mỗi khi quay về lưới danh mục hoặc đổi bộ lọc
+  // Thống kê từng chỉ số (tổng / đạt), nạp lại mỗi khi quay về lưới danh mục hoặc đổi bộ lọc
   useEffect(() => {
     if (category) return;
     let cancelled = false;
-    setCounts(null);
-    fetchJciIndicatorCounts(range)
-      .then(result => { if (!cancelled) setCounts(result); })
-      .catch(err => console.error('Error loading JCI counts:', err));
+    setStats(null);
+    fetchJciIndicatorStats(range)
+      .then(result => { if (!cancelled) setStats(result); })
+      .catch(err => console.error('Error loading JCI stats:', err));
     return () => { cancelled = true; };
   }, [category, range]);
 
@@ -134,7 +146,12 @@ export const JCIModule: React.FC = () => {
         </div>
         <div className="p-4 sm:p-6 lg:p-8 bg-slate-50/30">
           <div className="grid grid-cols-4 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-3 lg:gap-6">
-            {jciIndicators.map((item) => (
+            {jciIndicators.map((item) => {
+              const stat = stats ? stats[item.id as keyof JciIndicatorStats] : null;
+              const rate = stat && stat.dat !== null && stat.total > 0
+                ? (stat.dat / stat.total) * 100
+                : 0;
+              return (
               <button
                 key={item.id}
                 onClick={() => setCategory(item.id)}
@@ -142,10 +159,10 @@ export const JCIModule: React.FC = () => {
               >
                 <div className={`function-icon-box ${item.bgClass} relative lg:shadow-sm`}>
                   <item.icon size={28} className={item.iconClass} />
-                  {/* Mobile/tablet: số phiếu hiển thị dạng huy hiệu trên icon */}
-                  {counts && (
+                  {/* Mobile/tablet: tổng số phiếu hiển thị dạng huy hiệu trên icon */}
+                  {stat && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-teal-600 px-1 text-[10px] font-black leading-none text-white shadow-sm lg:hidden">
-                      {counts[item.id as keyof JciIndicatorCounts] > 99 ? '99+' : counts[item.id as keyof JciIndicatorCounts]}
+                      {stat.total > 99 ? '99+' : stat.total}
                     </span>
                   )}
                 </div>
@@ -153,15 +170,23 @@ export const JCIModule: React.FC = () => {
                   <h4 className="function-icon-label uppercase transition-colors group-hover:text-teal-600 lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
                   <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
                 </div>
-                {/* Desktop: số phiếu nằm cùng hàng với icon và text */}
-                <div className="hidden shrink-0 flex-col items-end lg:flex">
-                  <span className="text-xl font-black leading-none text-teal-600">
-                    {counts ? counts[item.id as keyof JciIndicatorCounts] : '—'}
-                  </span>
-                  <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">phiếu</span>
+                {/* Desktop: khối số liệu Tổng / Đạt / Tỷ lệ (chỉ số nhật ký sự cố chỉ có Tổng) */}
+                <div className="hidden shrink-0 items-stretch gap-3 lg:flex">
+                  {!stat ? (
+                    <MiniStat value="—" label="phiếu" valueClass="text-teal-600" />
+                  ) : stat.dat === null ? (
+                    <MiniStat value={stat.total} label="phiếu" valueClass="text-teal-600" />
+                  ) : (
+                    <>
+                      <MiniStat value={stat.total} label="Tổng" />
+                      <MiniStat value={stat.dat} label="Đạt" valueClass="text-teal-600" />
+                      <MiniStat value={`${rate.toFixed(1)}%`} label="Tỷ lệ" valueClass={rateColorClass(rate)} />
+                    </>
+                  )}
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
