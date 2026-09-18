@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { fetchDanhSachNhanVien, DanhSachNhanVien } from '../readDanhSachNhanVien';
+import { fetchDanhSachNhanVien, DanhSachNhanVien, DOI_TUONG_OPTIONS } from '../readDanhSachNhanVien';
 
 interface EmployeeSelectProps {
   /** Họ và tên nhân viên hiện tại */
@@ -22,7 +22,7 @@ interface EmployeeSelectProps {
   required?: boolean;
 }
 
-const DEFAULT_DOI_TUONG = ['Điều dưỡng', 'Bác sỹ'];
+const DEFAULT_DOI_TUONG = DOI_TUONG_OPTIONS;
 
 /**
  * Ô chọn Họ và tên nhân viên lấy theo bảng "Danh sách nhân viên" (Cài đặt).

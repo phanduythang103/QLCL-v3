@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { fetchDanhSachNhanVien, addDanhSachNhanVien, updateDanhSachNhanVien, deleteDanhSachNhanVien } from '../../readDanhSachNhanVien';
+import { fetchDanhSachNhanVien, addDanhSachNhanVien, updateDanhSachNhanVien, deleteDanhSachNhanVien, syncNhanVienToPhieuGiamSat, DOI_TUONG_OPTIONS } from '../../readDanhSachNhanVien';
 import { fetchDmDonVi } from '../../readDmDonVi';
-import { Edit2, Trash2, Plus, X, Check, Search, Stethoscope, HeartPulse } from 'lucide-react';
+import { Edit2, Trash2, Plus, X, Check, Search, Stethoscope, HeartPulse, Wrench, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-
-const DOI_TUONG_OPTIONS = ['Điều dưỡng', 'Bác sỹ'];
 
 export default function StaffListTable() {
   const { user } = useAuth();
@@ -19,6 +17,11 @@ export default function StaffListTable() {
   const [filterName, setFilterName] = useState('');
   const [filterDoiTuong, setFilterDoiTuong] = useState('');
   const [filterDonVi, setFilterDonVi] = useState('');
+
+  // Cập nhật hàng loạt chức danh
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDoiTuong, setBulkDoiTuong] = useState(DOI_TUONG_OPTIONS[0]);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Quản trị: xem tất cả + lọc theo đơn vị. User thường: chỉ xem đơn vị của mình.
   const isAdmin = useMemo(() => {
@@ -65,8 +68,24 @@ export default function StaffListTable() {
     e.preventDefault();
     try {
       if (editingId) {
+        const original = items.find(it => it.id === editingId);
+        const oldName = (original?.ho_ten || '').trim();
+        const nameChanged = oldName !== (form.ho_ten || '').trim();
+        const doiTuongChanged = (original?.doi_tuong || '') !== form.doi_tuong;
+
         await updateDanhSachNhanVien(editingId, form);
-        setMessage('Cập nhật thành công!');
+
+        // Đồng bộ sang các phiếu đã giám sát (khớp theo họ tên cũ)
+        let syncMsg = '';
+        if (oldName && (nameChanged || doiTuongChanged)) {
+          const { updated, errors } = await syncNhanVienToPhieuGiamSat(oldName, {
+            ...(nameChanged ? { ho_ten: form.ho_ten } : {}),
+            ...(doiTuongChanged ? { doi_tuong: form.doi_tuong } : {}),
+          });
+          if (updated > 0) syncMsg = ` Đã đồng bộ ${updated} phiếu giám sát.`;
+          if (errors.length) console.warn('Sync phiếu giám sát lỗi:', errors);
+        }
+        setMessage('Cập nhật thành công!' + syncMsg);
       } else {
         await addDanhSachNhanVien(form);
         setMessage('Thêm mới thành công!');
@@ -76,7 +95,7 @@ export default function StaffListTable() {
     } catch (err: any) {
       setMessage('Lỗi: ' + err.message);
     }
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(''), 4000);
   };
 
   const handleEdit = (item: any) => {
@@ -102,6 +121,40 @@ export default function StaffListTable() {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkUpdate = async () => {
+    const targets = items.filter(it => selectedIds.has(it.id));
+    if (targets.length === 0) return;
+    if (!window.confirm(`Đặt chức danh "${bulkDoiTuong}" cho ${targets.length} nhân viên và đồng bộ các phiếu đã giám sát?`)) return;
+
+    setBulkBusy(true);
+    let staffUpdated = 0;
+    let phieuUpdated = 0;
+    try {
+      for (const it of targets) {
+        if (it.doi_tuong === bulkDoiTuong) continue; // bỏ qua nếu không đổi
+        await updateDanhSachNhanVien(it.id, { doi_tuong: bulkDoiTuong });
+        staffUpdated++;
+        const { updated } = await syncNhanVienToPhieuGiamSat((it.ho_ten || '').trim(), { doi_tuong: bulkDoiTuong });
+        phieuUpdated += updated;
+      }
+      setSelectedIds(new Set());
+      setMessage(`Đã cập nhật chức danh cho ${staffUpdated} nhân viên` + (phieuUpdated > 0 ? `, đồng bộ ${phieuUpdated} phiếu giám sát.` : '.'));
+      loadData();
+    } catch (err: any) {
+      setMessage('Lỗi: ' + err.message);
+    }
+    setBulkBusy(false);
+    setTimeout(() => setMessage(''), 4000);
+  };
+
   // Danh sách đơn vị (chỉ admin dùng để lọc), lấy từ dữ liệu hiện có để luôn khớp
   const donViOptions = useMemo(() => {
     const set = new Set(items.map(it => (it.khoa_don_vi || '').trim()).filter(Boolean));
@@ -116,6 +169,24 @@ export default function StaffListTable() {
       : norm(it.khoa_don_vi) === norm(userDept);
     return matchName && matchDoiTuong && matchDonVi;
   }), [items, filterName, filterDoiTuong, filterDonVi, isAdmin, userDept]);
+
+  const selectedCount = useMemo(
+    () => filteredItems.filter(it => selectedIds.has(it.id)).length,
+    [filteredItems, selectedIds]
+  );
+  const allFilteredSelected = filteredItems.length > 0 && selectedCount === filteredItems.length;
+
+  const toggleSelectAll = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allFilteredSelected) {
+        filteredItems.forEach(it => next.delete(it.id));
+      } else {
+        filteredItems.forEach(it => next.add(it.id));
+      }
+      return next;
+    });
+  };
 
   if (loading) return <div className="text-center py-8 text-slate-500">Đang tải dữ liệu...</div>;
   if (error) return <div className="text-center py-8 text-red-500">Lỗi: {error}</div>;
@@ -215,11 +286,51 @@ export default function StaffListTable() {
         </div>
       )}
 
+      {!showForm && selectedCount > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3">
+          <span className="text-input font-black text-emerald-800 uppercase">Đã chọn {selectedCount} nhân viên</span>
+          <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest">Đặt chức danh</label>
+            <select
+              value={bulkDoiTuong}
+              onChange={e => setBulkDoiTuong(e.target.value)}
+              disabled={bulkBusy}
+              className="px-4 py-2 bg-white border border-emerald-200 rounded-xl text-input font-bold text-slate-700 focus:ring-2 focus:ring-[#059669] outline-none appearance-none"
+            >
+              {DOI_TUONG_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <button
+              onClick={handleBulkUpdate}
+              disabled={bulkBusy}
+              className="flex items-center gap-2 bg-[#059669] text-white px-4 py-2 rounded-xl hover:bg-[#0d6e39] text-input font-black uppercase shadow-md disabled:opacity-60"
+            >
+              <RefreshCw size={16} className={bulkBusy ? 'animate-spin' : ''} /> {bulkBusy ? 'Đang cập nhật...' : 'Áp dụng & đồng bộ'}
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              disabled={bulkBusy}
+              className="px-4 py-2 border border-emerald-200 rounded-xl text-input font-black text-emerald-700 hover:bg-emerald-100 uppercase"
+            >
+              Bỏ chọn
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-[#059669] text-white font-black uppercase text-table h-12">
               <tr>
+                <th className="px-4 py-3 w-10 text-center">
+                  <input
+                    type="checkbox"
+                    checked={allFilteredSelected}
+                    onChange={toggleSelectAll}
+                    aria-label="Chọn tất cả"
+                    className="w-4 h-4 accent-white cursor-pointer align-middle"
+                  />
+                </th>
                 <th className="px-4 py-3 w-12 text-center hidden sm:table-cell">#</th>
                 <th className="px-4 py-3">Khoa / Đơn vị</th>
                 <th className="px-4 py-3">Họ và tên</th>
@@ -229,18 +340,36 @@ export default function StaffListTable() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredItems.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400">Chưa có dữ liệu</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">Chưa có dữ liệu</td></tr>
               ) : (
                 filteredItems.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-slate-50">
+                  <tr key={item.id} className={`hover:bg-slate-50 ${selectedIds.has(item.id) ? 'bg-emerald-50/60' : ''}`}>
+                    <td className="px-4 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(item.id)}
+                        onChange={() => toggleSelect(item.id)}
+                        aria-label={`Chọn ${item.ho_ten}`}
+                        className="w-4 h-4 accent-[#059669] cursor-pointer align-middle"
+                      />
+                    </td>
                     <td className="px-4 py-3 text-center text-slate-500 hidden sm:table-cell">{idx + 1}</td>
                     <td className="px-4 py-3 text-slate-600 text-xs font-bold uppercase">{item.khoa_don_vi || '---'}</td>
                     <td className="px-4 py-3 text-black font-black text-table">{item.ho_ten}</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${item.doi_tuong === 'Bác sỹ' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-purple-50 text-purple-600 border-purple-100'}`}>
-                        {item.doi_tuong === 'Bác sỹ' ? <Stethoscope size={12} /> : <HeartPulse size={12} />}
-                        {item.doi_tuong}
-                      </span>
+                      {(() => {
+                        const style = item.doi_tuong === 'Bác sỹ'
+                          ? { cls: 'bg-blue-50 text-blue-600 border-blue-100', icon: <Stethoscope size={12} /> }
+                          : item.doi_tuong === 'Kỹ thuật viên'
+                          ? { cls: 'bg-amber-50 text-amber-600 border-amber-100', icon: <Wrench size={12} /> }
+                          : { cls: 'bg-purple-50 text-purple-600 border-purple-100', icon: <HeartPulse size={12} /> };
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${style.cls}`}>
+                            {style.icon}
+                            {item.doi_tuong}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
