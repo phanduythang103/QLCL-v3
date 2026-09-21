@@ -366,6 +366,7 @@ const GsChungForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => 
                doiTuong={form.doi_tuong || 'Điều dưỡng'}
                khoaDonVi={form.khoa_gs || ''}
                onChange={({ name, doiTuong }) => setForm({ ...form, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
+               required
                idPrefix="gschung-nguoi-duoc-gs"
                namePlaceholder="Chọn/nhập họ tên"
                wrapperClassName="flex gap-2"

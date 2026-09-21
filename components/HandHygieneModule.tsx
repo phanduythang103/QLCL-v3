@@ -952,6 +952,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   khoaDonVi={formData.khoa_duoc_giam_sat}
                   onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
                   disabled={isReadOnly}
+                  required
                   doiTuongOptions={[...DOI_TUONG_OPTIONS, 'Hộ lý', 'Khác']}
                   idPrefix="vst-nguoi-duoc-gs"
                   namePlaceholder="Họ tên NVYT (chọn từ Danh sách nhân viên)"

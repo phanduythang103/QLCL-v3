@@ -505,6 +505,7 @@ const AtptForm: React.FC<AtptFormProps> = ({
               doiTuong={formData.doi_tuong || 'Điều dưỡng'}
               khoaDonVi={atptStaffDept}
               onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
+              required
               idPrefix="atpt-nguoi-duoc-gs"
               namePlaceholder="Chọn/nhập họ tên"
               wrapperClassName="flex gap-2"
