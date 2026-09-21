@@ -16,7 +16,7 @@ const rateColorClass = (rate: number): string =>
 
 /** Một ô số liệu nhỏ (giá trị + nhãn) dùng cho khối Tổng / Đạt / Tỷ lệ trên thẻ. */
 const MiniStat: React.FC<{ value: React.ReactNode; label: string; valueClass?: string }> = ({ value, label, valueClass = 'text-slate-800' }) => (
-  <div className="flex min-w-[44px] flex-col items-center">
+  <div className="flex min-w-[44px] flex-1 flex-col items-center">
     <span className={`text-lg font-black leading-none ${valueClass}`}>{value}</span>
     <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</span>
   </div>
@@ -155,7 +155,7 @@ export const JCIModule: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setCategory(item.id)}
-                className="function-icon-tile jci-indicator-tile group lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-teal-500/30 lg:hover:shadow-xl lg:hover:shadow-teal-500/5"
+                className="function-icon-tile jci-indicator-tile group lg:rounded-2xl lg:border lg:border-[var(--color-primary-100)] lg:bg-[var(--color-primary-50)] lg:p-5 lg:text-left lg:hover:border-teal-500/40 lg:hover:shadow-xl lg:hover:shadow-teal-500/5"
               >
                 {/* Đầu thẻ: icon + tiêu đề chính. Mobile giữ nguyên (icon trên, nhãn dưới nhờ display:contents);
                     desktop icon và tiêu đề nằm cùng một dòng trên cùng. */}
@@ -174,7 +174,7 @@ export const JCIModule: React.FC = () => {
                 {/* Desktop: tiêu đề phụ nằm dưới tiêu đề chính */}
                 <p className="mt-1 hidden w-full text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
                 {/* Desktop: khối số liệu Tổng / Đạt / Tỷ lệ ở dưới cùng (chỉ số nhật ký sự cố chỉ có Tổng) */}
-                <div className="hidden w-full items-stretch gap-3 border-t border-slate-100 pt-3 lg:mt-auto lg:flex">
+                <div className="hidden w-full items-stretch gap-3 border-t border-[var(--color-primary-100)] pt-3 lg:mt-auto lg:flex">
                   {!stat ? (
                     <MiniStat value="—" label="phiếu" valueClass="text-teal-600" />
                   ) : stat.dat === null ? (
