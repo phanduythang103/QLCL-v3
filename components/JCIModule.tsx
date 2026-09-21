@@ -157,21 +157,24 @@ export const JCIModule: React.FC = () => {
                 onClick={() => setCategory(item.id)}
                 className="function-icon-tile jci-indicator-tile group lg:rounded-2xl lg:border lg:border-slate-100 lg:bg-white lg:p-5 lg:text-left lg:hover:border-teal-500/30 lg:hover:shadow-xl lg:hover:shadow-teal-500/5"
               >
-                <div className={`function-icon-box ${item.bgClass} relative lg:shadow-sm`}>
-                  <item.icon size={28} className={item.iconClass} />
-                  {/* Mobile/tablet: tổng số phiếu hiển thị dạng huy hiệu trên icon */}
-                  {stat && (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-teal-600 px-1 text-[10px] font-black leading-none text-white shadow-sm lg:hidden">
-                      {stat.total > 99 ? '99+' : stat.total}
-                    </span>
-                  )}
+                {/* Đầu thẻ: icon + tiêu đề chính. Mobile giữ nguyên (icon trên, nhãn dưới nhờ display:contents);
+                    desktop icon và tiêu đề nằm cùng một dòng trên cùng. */}
+                <div className="contents lg:flex lg:w-full lg:items-center lg:gap-3">
+                  <div className={`function-icon-box ${item.bgClass} relative lg:shadow-sm`}>
+                    <item.icon size={28} className={item.iconClass} />
+                    {/* Mobile/tablet: tổng số phiếu hiển thị dạng huy hiệu trên icon */}
+                    {stat && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-teal-600 px-1 text-[10px] font-black leading-none text-white shadow-sm lg:hidden">
+                        {stat.total > 99 ? '99+' : stat.total}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="function-icon-label uppercase transition-colors group-hover:text-teal-600 lg:min-w-0 lg:flex-1 lg:text-left lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
                 </div>
-                <div className="min-w-0 lg:flex-1">
-                  <h4 className="function-icon-label uppercase transition-colors group-hover:text-teal-600 lg:text-table lg:font-black lg:normal-case">{item.label}</h4>
-                  <p className="mt-1 hidden text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
-                </div>
-                {/* Desktop: khối số liệu Tổng / Đạt / Tỷ lệ (chỉ số nhật ký sự cố chỉ có Tổng) */}
-                <div className="hidden shrink-0 items-stretch gap-3 lg:flex">
+                {/* Desktop: tiêu đề phụ nằm dưới tiêu đề chính */}
+                <p className="mt-1 hidden w-full text-xs font-medium leading-relaxed text-slate-500 lg:block">{item.desc}</p>
+                {/* Desktop: khối số liệu Tổng / Đạt / Tỷ lệ ở dưới cùng (chỉ số nhật ký sự cố chỉ có Tổng) */}
+                <div className="hidden w-full items-stretch gap-3 border-t border-slate-100 pt-3 lg:mt-auto lg:flex">
                   {!stat ? (
                     <MiniStat value="—" label="phiếu" valueClass="text-teal-600" />
                   ) : stat.dat === null ? (

@@ -112,18 +112,28 @@ body {
   }
 }
 
-/* Thẻ chỉ số JCI: desktop xếp ngang icon - nội dung - số phiếu.
+/* Thẻ chỉ số JCI trên desktop: xếp dọc - tiêu đề chính (kèm icon) ở trên,
+   tiêu đề phụ ở giữa, khối số liệu ở dưới cùng.
    Cần rule tường minh vì .function-icon-tile đặt flex-direction: column
-   cùng độ ưu tiên với lg:flex-row của Tailwind. */
+   cùng độ ưu tiên với class Tailwind. */
 @media (min-width: 1024px) {
   .jci-indicator-tile {
     min-height: 0;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: flex-start;
-    gap: 16px;
+    gap: 8px;
     padding: 20px;
     text-align: left;
+  }
+
+  /* Ngăn tiêu đề bị ngắt giữa từ (xuống dòng từng ký tự) khi cột hẹp;
+     ghi đè overflow-wrap: anywhere / white-space: pre-line dùng cho mobile. */
+  .jci-indicator-tile .function-icon-label {
+    width: auto;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
   }
 }
 
