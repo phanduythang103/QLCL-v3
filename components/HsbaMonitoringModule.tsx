@@ -11,6 +11,7 @@ import {
 } from '../readGiamSatHsba';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
+import DepartmentSelect from './DepartmentSelect';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
 import * as XLSX from 'xlsx';
@@ -379,7 +380,7 @@ const HsbaForm = ({ item, currentUser, deptList, onSaved, onClose }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-5 rounded-[28px] border border-slate-100">
            <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ngày giám sát</label><input type="date" value={form.ngay_giam_sat} onChange={e => setField('ngay_giam_sat', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
            <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Mã HSBA</label><input value={form.ma_hsba} onChange={e => setField('ma_hsba', e.target.value)} required placeholder="Nhập mã HSBA..." className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
-           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa được GS</label><input list="hsba-dv-list" value={form.khoa_duoc_giam_sat} onChange={e => setField('khoa_duoc_giam_sat', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="hsba-dv-list">{deptList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist></div>
+           <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa được GS</label><DepartmentSelect value={form.khoa_duoc_giam_sat} onChange={v => setField('khoa_duoc_giam_sat', v)} departments={deptList} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
            <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_giam_sat} onChange={e => setField('nguoi_giam_sat', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" /></div>
         </div>
 

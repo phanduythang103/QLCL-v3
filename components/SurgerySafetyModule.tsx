@@ -81,7 +81,12 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
   const [detailItem, setDetailItem] = useState<SurgerySafety | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState<SurgerySafety>(emptyForm());
-  const [filterConfig, setFilterConfig] = useState({ year: '', department: '' });
+  // Khoa phẫu thuật lưu theo TÊN khoa (không kèm mã) -> mặc định lọc theo phần tên của khoa user
+  const [filterConfig, setFilterConfig] = useState(() => {
+    const dep = (user?.department || '').trim();
+    const namePart = dep.includes(' - ') ? dep.split(' - ').slice(1).join(' - ').trim() : dep;
+    return { year: '', department: namePart, person: '' };
+  });
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -132,10 +137,14 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
 
   const filteredData = useMemo(() => {
     const keyword = filterConfig.department.trim().toLowerCase();
+    const personKw = filterConfig.person.trim().toLowerCase();
     return data.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.ngay_giam_sat) === filterConfig.year;
       const matchDept = !keyword || (item.khoa_phau_thuat || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      const matchPerson = !personKw ||
+        (item.nguoi_giam_sat || '').toLowerCase().includes(personKw) ||
+        (item.nguoi_thu_thap || '').toLowerCase().includes(personKw);
+      return matchYear && matchDept && matchPerson;
     });
   }, [data, filterConfig]);
 
@@ -264,6 +273,20 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               />
               <datalist id="atpt-area-options">
                 {areaOptions.map(n => <option key={n} value={n} />)}
+              </datalist>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Người giám sát</label>
+              <input
+                type="text"
+                list="atpt-person-options"
+                value={filterConfig.person}
+                onChange={e => setFilterConfig({ ...filterConfig, person: e.target.value })}
+                placeholder="Gõ tên người giám sát..."
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+              <datalist id="atpt-person-options">
+                {collectorOptions.map(n => <option key={n} value={n} />)}
               </datalist>
             </div>
           </div>

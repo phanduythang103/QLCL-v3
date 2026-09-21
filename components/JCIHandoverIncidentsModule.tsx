@@ -14,6 +14,7 @@ import {
   fetchHandoverVisits, upsertHandoverVisits
 } from '../readJCIIndicators';
 import { fetchDmDonVi } from '../readDmDonVi';
+import DepartmentSelect from './DepartmentSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { exportHandoverReportExcel, handoverRate } from '../utils/handoverReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
@@ -71,7 +72,7 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
   const [detailItem, setDetailItem] = useState<JCIHandoverIncident | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState(emptyForm());
-  const [filterConfig, setFilterConfig] = useState({ year: '', department: '' });
+  const [filterConfig, setFilterConfig] = useState(() => ({ year: '', department: (user?.department || '').trim(), person: '' }));
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -113,6 +114,7 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
 
   const filteredData = useMemo(() => {
     const keyword = filterConfig.department.trim().toLowerCase();
+    const personKw = filterConfig.person.trim().toLowerCase();
     return incidents.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.thoi_gian_su_co) === filterConfig.year;
       const matchDept =
@@ -120,7 +122,8 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
         (item.khoa_lien_quan || '').toLowerCase().includes(keyword) ||
         (item.khoa_ban_giao || '').toLowerCase().includes(keyword) ||
         (item.khoa_tiep_nhan || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      const matchPerson = !personKw || (item.nguoi_tong_hop || '').toLowerCase().includes(personKw);
+      return matchYear && matchDept && matchPerson;
     });
   }, [incidents, filterConfig]);
 
@@ -256,6 +259,20 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
               />
               <datalist id="handover-department-options">
                 {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
+              </datalist>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Người tổng hợp</label>
+              <input
+                type="text"
+                list="handover-person-options"
+                value={filterConfig.person}
+                onChange={e => setFilterConfig({ ...filterConfig, person: e.target.value })}
+                placeholder="Gõ tên người tổng hợp..."
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+              <datalist id="handover-person-options">
+                {summarizerOptions.map(n => <option key={n} value={n} />)}
               </datalist>
             </div>
           </div>
@@ -418,32 +435,27 @@ const HandoverForm: React.FC<HandoverFormProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
             <div className="space-y-1">
               <span className="text-xs font-medium text-slate-500">Khoa bàn giao</span>
-              <input
-                type="text"
+              <DepartmentSelect
                 required
-                list="handover-form-department-options"
                 value={formData.khoa_ban_giao}
-                onChange={e => setFormData({ ...formData, khoa_ban_giao: e.target.value })}
-                placeholder="Gõ từ khóa để tìm khoa..."
+                onChange={v => setFormData({ ...formData, khoa_ban_giao: v })}
+                departments={departments}
+                placeholder="-- Chọn khoa bàn giao --"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl transition-colors"
               />
             </div>
             <ArrowRight size={20} className="hidden sm:block text-slate-400 mt-5 shrink-0" />
             <div className="space-y-1">
               <span className="text-xs font-medium text-slate-500">Khoa tiếp nhận</span>
-              <input
-                type="text"
-                list="handover-form-department-options"
+              <DepartmentSelect
                 value={formData.khoa_tiep_nhan}
-                onChange={e => setFormData({ ...formData, khoa_tiep_nhan: e.target.value })}
-                placeholder="Gõ từ khóa để tìm khoa..."
+                onChange={v => setFormData({ ...formData, khoa_tiep_nhan: v })}
+                departments={departments}
+                placeholder="-- Chọn khoa tiếp nhận --"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl transition-colors"
               />
             </div>
           </div>
-          <datalist id="handover-form-department-options">
-            {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
-          </datalist>
           <p className="text-xs text-slate-500">
             Ghi nhận: <span className="font-semibold text-slate-700">{khoaLienQuan(formData.khoa_ban_giao, formData.khoa_tiep_nhan) || '—'}</span>
           </p>

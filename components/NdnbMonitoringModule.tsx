@@ -18,6 +18,7 @@ import {
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
+import DepartmentSelect from './DepartmentSelect';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { GiamSatNdnb } from '../types';
@@ -76,13 +77,13 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
   const [activeTab, setActiveTab] = useState<'DANH_SACH' | 'BAO_CAO'>('DANH_SACH');
   const [detailItem, setDetailItem] = useState<GiamSatNdnb | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filterConfig, setFilterConfig] = useState({
+  const [filterConfig, setFilterConfig] = useState(() => ({
     timeRange: 'thisMonth',
     fromDate: '',
     toDate: '',
-    department: '',
+    department: (user?.department || '').trim(),
     evaluator: ''
-  });
+  }));
 
   const loadData = async () => {
     setLoading(true);
@@ -435,20 +436,13 @@ const NdnbForm: React.FC<NdnbFormProps> = ({ initialData, departments, evaluator
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Khoa / Phòng <span className="text-red-500">*</span></label>
-            <input
-              type="text"
-              required
-              list="ndnb-department-options"
+            <DepartmentSelect
               value={formData.khoa_duoc_giam_sat}
-              onChange={e => setFormData({...formData, khoa_duoc_giam_sat: e.target.value})}
-              placeholder="Gõ từ khóa để tìm khoa/phòng..."
+              onChange={v => setFormData({...formData, khoa_duoc_giam_sat: v})}
+              departments={departments}
+              required
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
             />
-            <datalist id="ndnb-department-options">
-              {departments.map(d => (
-                <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />
-              ))}
-            </datalist>
           </div>
 
           <div className="space-y-1.5">

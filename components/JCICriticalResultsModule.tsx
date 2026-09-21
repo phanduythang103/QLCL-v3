@@ -13,6 +13,7 @@ import {
   fetchCriticalResults, addCriticalResult, updateCriticalResult, deleteCriticalResult
 } from '../readJCIIndicators';
 import { fetchDmDonVi } from '../readDmDonVi';
+import DepartmentSelect from './DepartmentSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { exportCriticalResultsReportExcel, CRITICAL_TIME_LIMIT } from '../utils/criticalResultsReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
@@ -84,7 +85,7 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
   const [detailItem, setDetailItem] = useState<JCICriticalResult | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState(emptyForm());
-  const [filterConfig, setFilterConfig] = useState({ year: '', department: '' });
+  const [filterConfig, setFilterConfig] = useState(() => ({ year: '', department: (user?.department || '').trim(), person: '' }));
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -126,10 +127,14 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
 
   const filteredData = useMemo(() => {
     const keyword = filterConfig.department.trim().toLowerCase();
+    const personKw = filterConfig.person.trim().toLowerCase();
     return results.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.thoi_gian_co_kq) === filterConfig.year;
       const matchDept = !keyword || (item.khoa_dieu_tri || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      const matchPerson = !personKw ||
+        (item.nguoi_thong_bao || '').toLowerCase().includes(personKw) ||
+        (item.nguoi_nhan_thong_bao || '').toLowerCase().includes(personKw);
+      return matchYear && matchDept && matchPerson;
     });
   }, [results, filterConfig]);
 
@@ -263,6 +268,20 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
               />
               <datalist id="critical-department-options">
                 {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
+              </datalist>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Người thông báo</label>
+              <input
+                type="text"
+                list="critical-person-options"
+                value={filterConfig.person}
+                onChange={e => setFilterConfig({ ...filterConfig, person: e.target.value })}
+                placeholder="Gõ tên người thông báo..."
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+              <datalist id="critical-person-options">
+                {notifierOptions.map(n => <option key={n} value={n} />)}
               </datalist>
             </div>
           </div>
@@ -450,17 +469,13 @@ const CriticalForm: React.FC<CriticalFormProps> = ({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Khoa thông báo <span className="text-red-500">*</span></label>
-            <input type="text" required list="critical-form-department-options" value={formData.khoa_thong_bao} onChange={e => setFormData({ ...formData, khoa_thong_bao: e.target.value })} placeholder="Gõ từ khóa để tìm khoa..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+            <DepartmentSelect required value={formData.khoa_thong_bao} onChange={v => setFormData({ ...formData, khoa_thong_bao: v })} departments={departments} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
           </div>
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Khoa điều trị <span className="text-xs font-normal text-slate-400">(khoa nhận thông báo)</span> <span className="text-red-500">*</span></label>
-            <input type="text" required list="critical-form-department-options" value={formData.khoa_dieu_tri} onChange={e => setFormData({ ...formData, khoa_dieu_tri: e.target.value })} placeholder="Gõ từ khóa để tìm khoa..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+            <DepartmentSelect required value={formData.khoa_dieu_tri} onChange={v => setFormData({ ...formData, khoa_dieu_tri: v })} departments={departments} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
           </div>
-
-          <datalist id="critical-form-department-options">
-            {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
-          </datalist>
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Họ tên người bệnh <span className="text-red-500">*</span></label>

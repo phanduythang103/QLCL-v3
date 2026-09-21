@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { fetchDanhSachNhanVien, DanhSachNhanVien, DOI_TUONG_OPTIONS } from '../readDanhSachNhanVien';
+import SearchableSelect, { SearchableOption } from './SearchableSelect';
 
 interface EmployeeSelectProps {
   /** Họ và tên nhân viên hiện tại */
@@ -93,6 +94,15 @@ export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
     return set;
   }, [doiTuongOptions, doiTuong]);
 
+  // Options cho combobox tên: mỗi tên kèm dòng phụ "đối tượng · khoa"
+  const nameOptions = useMemo<SearchableOption[]>(
+    () => filteredNames.map(s => ({
+      value: s.ho_ten,
+      hint: [s.doi_tuong, s.khoa_don_vi].filter(Boolean).join(' · '),
+    })),
+    [filteredNames]
+  );
+
   return (
     <div className={wrapperClassName}>
       <select
@@ -103,23 +113,19 @@ export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
       >
         {mergedDoiTuongOptions.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
-      <input
-        type="text"
-        list={listId}
+      <SearchableSelect
+        id={listId}
         value={name}
-        onChange={e => handleNameChange(e.target.value)}
+        onChange={handleNameChange}
+        options={nameOptions}
+        allowCustom
         disabled={disabled}
-        placeholder={namePlaceholder}
         required={required}
+        placeholder={namePlaceholder}
         className={inputClassName}
+        wrapperClassName="flex-1"
+        emptyText="Không tìm thấy nhân viên"
       />
-      <datalist id={listId}>
-        {filteredNames.map(s => (
-          <option key={s.id} value={s.ho_ten}>
-            {[s.doi_tuong, s.khoa_don_vi].filter(Boolean).join(' · ')}
-          </option>
-        ))}
-      </datalist>
     </div>
   );
 };

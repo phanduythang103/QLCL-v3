@@ -10,6 +10,7 @@ import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import DateRangeFilter from './DateRangeFilter';
+import DepartmentSelect from './DepartmentSelect';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 
 // ─── CRITERIA DEFINITION ─────────────────────────────────────────────────────
@@ -334,8 +335,7 @@ const FiveSFormView = ({ item, onClose, onSaved, currentUser, departmentList }: 
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Building2 size={11} className="text-orange-400" /> Đơn vị được GS</label>
-            <input list="don-vi-list" value={form.don_vi_duoc_giam_sat} onChange={e => setField('don_vi_duoc_giam_sat', e.target.value)} placeholder="Chọn hoặc nhập đơn vị" required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none focus:ring-4 focus:ring-orange-500/10" />
-            <datalist id="don-vi-list">{departmentList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist>
+            <DepartmentSelect value={form.don_vi_duoc_giam_sat} onChange={v => setField('don_vi_duoc_giam_sat', v)} departments={departmentList} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none focus:ring-4 focus:ring-orange-500/10" />
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><LayoutGrid size={11} className="text-orange-400" /> Khu vực GS</label>

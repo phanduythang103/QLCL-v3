@@ -10,6 +10,7 @@ import {
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
+import DepartmentSelect from './DepartmentSelect';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { DrugMonitoring } from '../types';
 
@@ -252,7 +253,7 @@ const DrugForm = ({ item, currentUser, departmentList, onSaved, onClose }: any) 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 bg-slate-50 p-5 rounded-[28px] border border-slate-100 shadow-inner">
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ngày giám sát</label><input type="date" value={form.ngay_giam_sat} onChange={e => setField('ngay_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 outline-none" /></div>
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Người giám sát</label><input value={form.nguoi_giam_sat} onChange={e => setField('nguoi_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
-           <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa/Phòng</label><input list="drug-dv-list" value={form.don_vi_duoc_giam_sat || ''} onChange={e => setField('don_vi_duoc_giam_sat', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /><datalist id="drug-dv-list">{departmentList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist></div>
+           <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Khoa/Phòng</label><DepartmentSelect value={form.don_vi_duoc_giam_sat || ''} onChange={v => setField('don_vi_duoc_giam_sat', v)} departments={departmentList} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
            <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">NVYT / BN được GS</label><input placeholder="Nhập tên NVYT/BN" value={form.ho_ten_nb || ''} onChange={e => setField('ho_ten_nb', e.target.value)} required className="w-full p-3 rounded-2xl border border-slate-200 text-sm font-bold outline-none" /></div>
         </div>
 

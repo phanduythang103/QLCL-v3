@@ -14,6 +14,7 @@ import {
   fetchFallPatientDays, upsertFallPatientDays
 } from '../readJCIIndicators';
 import { fetchDmDonVi } from '../readDmDonVi';
+import DepartmentSelect from './DepartmentSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { exportFallReportExcel, fallRate, benchmarkLabel, FALL_BENCHMARK } from '../utils/fallReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
@@ -76,7 +77,7 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
   const [detailItem, setDetailItem] = useState<JCIFallIncident | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState(emptyForm());
-  const [filterConfig, setFilterConfig] = useState({ year: '', department: '' });
+  const [filterConfig, setFilterConfig] = useState(() => ({ year: '', department: (user?.department || '').trim(), person: '' }));
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -118,10 +119,12 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
 
   const filteredData = useMemo(() => {
     const keyword = filterConfig.department.trim().toLowerCase();
+    const personKw = filterConfig.person.trim().toLowerCase();
     return incidents.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.thoi_gian_nga) === filterConfig.year;
       const matchDept = !keyword || (item.khoa_dieu_tri || '').toLowerCase().includes(keyword);
-      return matchYear && matchDept;
+      const matchPerson = !personKw || (item.nguoi_tong_hop || '').toLowerCase().includes(personKw);
+      return matchYear && matchDept && matchPerson;
     });
   }, [incidents, filterConfig]);
 
@@ -251,6 +254,20 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
               />
               <datalist id="fall-department-options">
                 {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
+              </datalist>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Người tổng hợp</label>
+              <input
+                type="text"
+                list="fall-person-options"
+                value={filterConfig.person}
+                onChange={e => setFilterConfig({ ...filterConfig, person: e.target.value })}
+                placeholder="Gõ tên người tổng hợp..."
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+              <datalist id="fall-person-options">
+                {summarizerOptions.map(n => <option key={n} value={n} />)}
               </datalist>
             </div>
           </div>
@@ -389,18 +406,13 @@ const FallForm: React.FC<FallFormProps> = ({
 
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-slate-700">Khoa điều trị <span className="text-red-500">*</span></label>
-          <input
-            type="text"
+          <DepartmentSelect
             required
-            list="fall-form-department-options"
             value={formData.khoa_dieu_tri}
-            onChange={e => setFormData({ ...formData, khoa_dieu_tri: e.target.value })}
-            placeholder="Gõ từ khóa để tìm khoa/phòng..."
+            onChange={v => setFormData({ ...formData, khoa_dieu_tri: v })}
+            departments={departments}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
           />
-          <datalist id="fall-form-department-options">
-            {departments.map(d => <option key={d.id} value={d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi} />)}
-          </datalist>
         </div>
 
         <div className="space-y-1.5">

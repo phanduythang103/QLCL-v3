@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DepartmentSelect from './DepartmentSelect';
 
 type DeptItem = string | { id?: string; ma_don_vi?: string; ten_don_vi?: string };
 
@@ -23,9 +24,6 @@ const norm = (s?: string) => (s || '').trim().toLowerCase();
 
 const initialMode = (dep: string, userDep?: string): 'self' | 'cross' =>
   (userDep && dep && norm(dep) !== norm(userDep)) ? 'cross' : 'self';
-
-const deptValue = (d: DeptItem): string =>
-  typeof d === 'string' ? d : (d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : (d.ten_don_vi || ''));
 
 /**
  * Chọn phạm vi giám sát:
@@ -72,21 +70,16 @@ export const SupervisionScope: React.FC<SupervisionScopeProps> = ({
         <button type="button" disabled={disabled} onClick={selectSelf} className={pill(mode === 'self')}>Tự giám sát</button>
         <button type="button" disabled={disabled} onClick={selectCross} className={pill(mode === 'cross')}>Giám sát chéo</button>
       </div>
-      <input
-        list={dlId}
+      <DepartmentSelect
+        id={dlId}
         value={department}
-        onChange={e => onDepartmentChange(e.target.value)}
+        onChange={onDepartmentChange}
+        departments={departments}
         disabled={disabled || mode === 'self'}
         required={required}
-        placeholder={mode === 'self' ? 'Khoa của bạn' : 'Chọn khoa/đơn vị khác...'}
+        placeholder={mode === 'self' ? 'Khoa của bạn' : '-- Chọn khoa/đơn vị --'}
         className={inputClassName}
       />
-      <datalist id={dlId}>
-        {departments.map((d, i) => {
-          const v = deptValue(d);
-          return <option key={(typeof d === 'string' ? d : d.id) || i} value={v} />;
-        })}
-      </datalist>
     </div>
   );
 };

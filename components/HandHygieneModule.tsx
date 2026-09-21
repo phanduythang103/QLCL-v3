@@ -43,12 +43,13 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   const [editingItem, setEditingItem] = useState<GsVst | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [activeTab, setActiveTab] = useState<'DANH_SACH' | 'BAO_CAO'>('DANH_SACH');
-  const [filterConfig, setFilterConfig] = useState({
+  const [filterConfig, setFilterConfig] = useState(() => ({
     type: 'thisMonth',
     startDate: '',
     endDate: '',
-    department: 'Tất cả'
-  });
+    department: (user?.department || '').trim() || 'Tất cả',
+    person: ''
+  }));
 
 
   const loadData = async () => {
@@ -73,6 +74,14 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
 
   const departmentList = useMemo(() => departments.map(d => d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : d.ten_don_vi).filter(Boolean), [departments]);
 
+  // Gợi ý người giám sát: tên user đăng nhập + các tên đã từng nhập
+  const supervisorOptions = useMemo(() => {
+    const names = [(user?.full_name || user?.username || ''), ...data.map(d => d.nguoi_giam_sat || '')]
+      .map(n => (n || '').trim())
+      .filter(Boolean);
+    return Array.from(new Set(names));
+  }, [data, user]);
+
   const filteredData = useMemo(() => {
     return data.filter(item => {
       const range = getDateRange(filterConfig.type, filterConfig.startDate, filterConfig.endDate);
@@ -81,7 +90,9 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
       const matchDept = !departmentQuery
         || departmentQuery === 'tất cả'
         || item.khoa_duoc_giam_sat.toLowerCase().includes(departmentQuery);
-      return matchDept && matchTime;
+      const personKw = filterConfig.person.trim().toLowerCase();
+      const matchPerson = !personKw || (item.nguoi_giam_sat || '').toLowerCase().includes(personKw);
+      return matchDept && matchTime && matchPerson;
     });
   }, [data, filterConfig]);
 
@@ -150,9 +161,23 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
                 {departmentList.map(dept => <option key={dept} value={dept} />)}
               </datalist>
             </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Người giám sát</label>
+              <input
+                type="text"
+                list="vst-person-filter-options"
+                value={filterConfig.person}
+                onChange={e => setFilterConfig({...filterConfig, person: e.target.value})}
+                placeholder="Gõ tên người giám sát..."
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none ring-indigo-500/10 focus:ring-4 transition-all"
+              />
+              <datalist id="vst-person-filter-options">
+                {supervisorOptions.map(n => <option key={n} value={n} />)}
+              </datalist>
+            </div>
             <div className="flex items-end">
               <button
-                onClick={() => setFilterConfig({ type: 'thisMonth', startDate: '', endDate: '', department: 'Tất cả' })}
+                onClick={() => setFilterConfig({ type: 'thisMonth', startDate: '', endDate: '', department: 'Tất cả', person: '' })}
                 className="w-full p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl border border-dashed border-slate-300 transition-all text-[10px] font-black uppercase tracking-widest"
               >
                 <RotateCcw size={14} className="inline mr-2" /> Xóa lọc
@@ -909,6 +934,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   userDepartment={currentUser?.department}
                   departments={departmentList}
                   disabled={isReadOnly}
+                  required
                   idPrefix="vst"
                   label=""
                   containerClassName="space-y-1.5"

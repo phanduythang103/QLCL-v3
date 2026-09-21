@@ -12,6 +12,7 @@ import {
 import { uploadNdnbImage } from '../readGiamSatNdnb'; // Re-use upload from the other NDNB module
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
+import DepartmentSelect from './DepartmentSelect';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // ─── CRITERIA ─────────────────────────────────────────────────────────────────
@@ -318,8 +319,7 @@ const NdnbTheoktFormView = ({ item, onClose, onSaved, currentUser, departmentLis
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase">Khoa được GS</label>
-            <input list="theokt-don-vi-list" value={form.khoa_duoc_giam_sat} onChange={e => setField('khoa_duoc_giam_sat', e.target.value)} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
-            <datalist id="theokt-don-vi-list">{departmentList.map((d: any) => <option key={d.id} value={`${d.ma_don_vi} - ${d.ten_don_vi}`} />)}</datalist>
+            <DepartmentSelect value={form.khoa_duoc_giam_sat} onChange={v => setField('khoa_duoc_giam_sat', v)} departments={departmentList} required className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase">Đối tượng được GS</label>
