@@ -14,6 +14,7 @@ import {
 } from '../readJCIIndicators';
 import { fetchDmDonVi } from '../readDmDonVi';
 import DepartmentSelect from './DepartmentSelect';
+import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { exportCriticalResultsReportExcel, CRITICAL_TIME_LIMIT } from '../utils/criticalResultsReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
@@ -85,7 +86,8 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
   const [detailItem, setDetailItem] = useState<JCICriticalResult | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState(emptyForm());
-  const [filterConfig, setFilterConfig] = useState(() => ({ year: '', department: (user?.department || '').trim(), person: '' }));
+  // Mặc định KHÔNG lọc sẵn theo khoa: xem hết phiếu rồi mới thu hẹp bằng bộ lọc.
+  const [filterConfig, setFilterConfig] = useState({ year: '', department: '', person: '' });
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -126,11 +128,11 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
   }, [results]);
 
   const filteredData = useMemo(() => {
-    const keyword = filterConfig.department.trim().toLowerCase();
+    const keyword = filterConfig.department.trim();
     const personKw = filterConfig.person.trim().toLowerCase();
     return results.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.thoi_gian_co_kq) === filterConfig.year;
-      const matchDept = !keyword || (item.khoa_dieu_tri || '').toLowerCase().includes(keyword);
+      const matchDept = matchesDepartment(item.khoa_dieu_tri, keyword);
       const matchPerson = !personKw ||
         (item.nguoi_thong_bao || '').toLowerCase().includes(personKw) ||
         (item.nguoi_nhan_thong_bao || '').toLowerCase().includes(personKw);
@@ -339,7 +341,14 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredData.length === 0 ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-slate-500">Chưa có dữ liệu kết quả báo động</td></tr>
+                  <tr><td colSpan={7} className="p-8 text-center text-slate-500">
+                    {results.length > 0 ? (
+                      <span className="flex flex-col items-center gap-2">
+                        Không có phiếu nào khớp bộ lọc (tổng {results.length} phiếu).
+                        <button onClick={() => setFilterConfig({ year: '', department: '', person: '' })} className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 text-teal-700 hover:bg-teal-50">Xóa bộ lọc</button>
+                      </span>
+                    ) : 'Chưa có dữ liệu kết quả báo động'}
+                  </td></tr>
                 ) : (
                   filteredData.map(item => {
                     const minutes = notifyMinutes(item);

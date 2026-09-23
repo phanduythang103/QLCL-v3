@@ -19,6 +19,7 @@ import {
   scoreAtpt, jciMinSample, JCI_SAMPLE_NOTE, AtptAnswer
 } from '../utils/atptCriteria';
 import { exportAtptReportExcel } from '../utils/atptReportExcel';
+import { matchesDepartment } from '../utils/departmentMatch';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -81,12 +82,9 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
   const [detailItem, setDetailItem] = useState<SurgerySafety | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState<SurgerySafety>(emptyForm());
-  // Khoa phẫu thuật lưu theo TÊN khoa (không kèm mã) -> mặc định lọc theo phần tên của khoa user
-  const [filterConfig, setFilterConfig] = useState(() => {
-    const dep = (user?.department || '').trim();
-    const namePart = dep.includes(' - ') ? dep.split(' - ').slice(1).join(' - ').trim() : dep;
-    return { year: '', department: namePart, person: '' };
-  });
+  // Mặc định KHÔNG lọc sẵn theo khoa: khoa phẫu thuật trên phiếu ghi nhiều kiểu
+  // ("Phòng mổ", "B5", "Bệnh phổi") nên lọc sẵn theo khoa của user làm danh sách trống.
+  const [filterConfig, setFilterConfig] = useState({ year: '', department: '', person: '' });
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -136,11 +134,11 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
   }, [data]);
 
   const filteredData = useMemo(() => {
-    const keyword = filterConfig.department.trim().toLowerCase();
+    const keyword = filterConfig.department.trim();
     const personKw = filterConfig.person.trim().toLowerCase();
     return data.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.ngay_giam_sat) === filterConfig.year;
-      const matchDept = !keyword || (item.khoa_phau_thuat || '').toLowerCase().includes(keyword);
+      const matchDept = matchesDepartment(item.khoa_phau_thuat, keyword);
       const matchPerson = !personKw ||
         (item.nguoi_giam_sat || '').toLowerCase().includes(personKw) ||
         (item.nguoi_thu_thap || '').toLowerCase().includes(personKw);
@@ -334,7 +332,14 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredData.length === 0 ? (
-                  <tr><td colSpan={8} className="p-8 text-center text-slate-500">Chưa có dữ liệu giám sát ATPT</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-slate-500">
+                    {data.length > 0 ? (
+                      <span className="flex flex-col items-center gap-2">
+                        Không có phiếu nào khớp bộ lọc (tổng {data.length} phiếu).
+                        <button onClick={() => setFilterConfig({ year: '', department: '', person: '' })} className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 text-teal-700 hover:bg-teal-50">Xóa bộ lọc</button>
+                      </span>
+                    ) : 'Chưa có dữ liệu giám sát ATPT'}
+                  </td></tr>
                 ) : (
                   filteredData.map(item => {
                     const verdict = verdictOf(item);
@@ -766,10 +771,10 @@ const AtptProcessReport: React.FC<{ data: SurgerySafety[]; areaOptions: string[]
   }, [data, currentYear]);
 
   const scoped = useMemo(() => {
-    const keyword = reportFilter.department.trim().toLowerCase();
+    const keyword = reportFilter.department.trim();
     return data.filter(item => {
       const matchPeriod = matchesReportPeriod(item.ngay_giam_sat, reportFilter);
-      const matchDept = !keyword || (item.khoa_phau_thuat || '').toLowerCase().includes(keyword);
+      const matchDept = matchesDepartment(item.khoa_phau_thuat, keyword);
       return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);

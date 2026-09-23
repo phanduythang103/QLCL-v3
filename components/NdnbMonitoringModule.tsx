@@ -19,6 +19,7 @@ import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
 import DepartmentSelect from './DepartmentSelect';
+import { matchesDepartment } from '../utils/departmentMatch';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { GiamSatNdnb } from '../types';
@@ -77,13 +78,15 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
   const [activeTab, setActiveTab] = useState<'DANH_SACH' | 'BAO_CAO'>('DANH_SACH');
   const [detailItem, setDetailItem] = useState<GiamSatNdnb | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filterConfig, setFilterConfig] = useState(() => ({
+  // Mặc định KHÔNG lọc sẵn theo khoa: lọc sẵn theo khoa của user khiến danh sách
+  // trống vì khoa trên phiếu được ghi nhiều kiểu ("A10 - Nhi", "Nhi", "A10").
+  const [filterConfig, setFilterConfig] = useState({
     timeRange: 'thisMonth',
     fromDate: '',
     toDate: '',
-    department: (user?.department || '').trim(),
+    department: '',
     evaluator: ''
-  }));
+  });
 
   const loadData = async () => {
     setLoading(true);
@@ -124,9 +127,9 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
       const range = getDateRange(filterConfig.timeRange, filterConfig.fromDate, filterConfig.toDate);
       const isDateValid = isDateInRange(item.ngay_giam_sat, range);
       
-      const isDeptValid = !filterConfig.department || filterConfig.department === 'ALL' 
-        ? true 
-        : item.khoa_duoc_giam_sat === filterConfig.department;
+      const isDeptValid = filterConfig.department === 'ALL'
+        ? true
+        : matchesDepartment(item.khoa_duoc_giam_sat, filterConfig.department);
         
       const isEvalValid = !filterConfig.evaluator 
         ? true 
@@ -742,10 +745,10 @@ const NdnbProcessReport: React.FC<{ data: GiamSatNdnb[]; departments: any[] }> =
 
   // Bộ lọc riêng của báo cáo, chạy trên toàn bộ dữ liệu bảng DS thu thập
   const scoped = useMemo(() => {
-    const keyword = reportFilter.department.trim().toLowerCase();
+    const keyword = reportFilter.department.trim();
     return data.filter(item => {
       const matchPeriod = matchesReportPeriod(item.ngay_giam_sat, reportFilter);
-      const matchDept = !keyword || (item.khoa_duoc_giam_sat || '').toLowerCase().includes(keyword);
+      const matchDept = matchesDepartment(item.khoa_duoc_giam_sat, keyword);
       return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);

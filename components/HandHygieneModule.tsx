@@ -16,6 +16,7 @@ import {
 import DateRangeFilter from './DateRangeFilter';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
+import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { GsVst } from '../types';
 import { fetchGsVst, addGsVst, updateGsVst, deleteGsVst, uploadVstImage } from '../readGsVst';
@@ -47,7 +48,8 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
     type: 'thisMonth',
     startDate: '',
     endDate: '',
-    department: (user?.department || '').trim() || 'Tất cả',
+    // Mặc định xem tất cả các khoa; lọc sẵn theo khoa của user làm danh sách trống
+    department: 'Tất cả',
     person: ''
   }));
 
@@ -86,10 +88,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
     return data.filter(item => {
       const range = getDateRange(filterConfig.type, filterConfig.startDate, filterConfig.endDate);
       const matchTime = isDateInRange(item.ngay_giam_sat, range);
-      const departmentQuery = filterConfig.department.trim().toLowerCase();
-      const matchDept = !departmentQuery
-        || departmentQuery === 'tất cả'
-        || item.khoa_duoc_giam_sat.toLowerCase().includes(departmentQuery);
+      const matchDept = matchesDepartment(item.khoa_duoc_giam_sat, filterConfig.department);
       const personKw = filterConfig.person.trim().toLowerCase();
       const matchPerson = !personKw || (item.nguoi_giam_sat || '').toLowerCase().includes(personKw);
       return matchDept && matchTime && matchPerson;
@@ -297,10 +296,10 @@ const VstProcessReport: React.FC<{ data: GsVst[]; departmentList: string[] }> = 
   }, [data, currentYear]);
 
   const scoped = useMemo(() => {
-    const keyword = reportFilter.department.trim().toLowerCase();
+    const keyword = reportFilter.department.trim();
     return data.filter(item => {
       const matchPeriod = matchesReportPeriod(item.ngay_giam_sat, reportFilter);
-      const matchDept = !keyword || (item.khoa_duoc_giam_sat || '').toLowerCase().includes(keyword);
+      const matchDept = matchesDepartment(item.khoa_duoc_giam_sat, keyword);
       return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);

@@ -15,6 +15,7 @@ import {
 } from '../readJCIIndicators';
 import { fetchDmDonVi } from '../readDmDonVi';
 import DepartmentSelect from './DepartmentSelect';
+import { matchesDepartment, isAllDepartments } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { exportHandoverReportExcel, handoverRate } from '../utils/handoverReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
@@ -72,7 +73,8 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
   const [detailItem, setDetailItem] = useState<JCIHandoverIncident | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState(emptyForm());
-  const [filterConfig, setFilterConfig] = useState(() => ({ year: '', department: (user?.department || '').trim(), person: '' }));
+  // Mặc định KHÔNG lọc sẵn theo khoa: xem hết phiếu rồi mới thu hẹp bằng bộ lọc.
+  const [filterConfig, setFilterConfig] = useState({ year: '', department: '', person: '' });
 
   const currentUserName = useMemo(
     () => (user?.full_name || user?.username || '').trim(),
@@ -113,15 +115,15 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
   }, [incidents]);
 
   const filteredData = useMemo(() => {
-    const keyword = filterConfig.department.trim().toLowerCase();
+    const keyword = filterConfig.department.trim();
     const personKw = filterConfig.person.trim().toLowerCase();
     return incidents.filter(item => {
       const matchYear = !filterConfig.year || yearOf(item.thoi_gian_su_co) === filterConfig.year;
       const matchDept =
-        !keyword ||
-        (item.khoa_lien_quan || '').toLowerCase().includes(keyword) ||
-        (item.khoa_ban_giao || '').toLowerCase().includes(keyword) ||
-        (item.khoa_tiep_nhan || '').toLowerCase().includes(keyword);
+        isAllDepartments(keyword) ||
+        matchesDepartment(item.khoa_lien_quan, keyword) ||
+        matchesDepartment(item.khoa_ban_giao, keyword) ||
+        matchesDepartment(item.khoa_tiep_nhan, keyword);
       const matchPerson = !personKw || (item.nguoi_tong_hop || '').toLowerCase().includes(personKw);
       return matchYear && matchDept && matchPerson;
     });
@@ -318,7 +320,14 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredData.length === 0 ? (
-                  <tr><td colSpan={8} className="p-8 text-center text-slate-500">Chưa có dữ liệu sự cố bàn giao</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-slate-500">
+                    {incidents.length > 0 ? (
+                      <span className="flex flex-col items-center gap-2">
+                        Không có phiếu nào khớp bộ lọc (tổng {incidents.length} phiếu).
+                        <button onClick={() => setFilterConfig({ year: '', department: '', person: '' })} className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 text-teal-700 hover:bg-teal-50">Xóa bộ lọc</button>
+                      </span>
+                    ) : 'Chưa có dữ liệu sự cố bàn giao'}
+                  </td></tr>
                 ) : (
                   filteredData.map(item => (
                     <tr key={item.id} className="hover:bg-slate-50 transition-colors">
@@ -676,14 +685,14 @@ const HandoverProcessReport: React.FC<{ data: JCIHandoverIncident[]; departments
   };
 
   const scoped = useMemo(() => {
-    const keyword = reportFilter.department.trim().toLowerCase();
+    const keyword = reportFilter.department.trim();
     return data.filter(item => {
       const matchPeriod = matchesReportPeriod(item.thoi_gian_su_co, reportFilter);
       const matchDept =
-        !keyword ||
-        (item.khoa_lien_quan || '').toLowerCase().includes(keyword) ||
-        (item.khoa_ban_giao || '').toLowerCase().includes(keyword) ||
-        (item.khoa_tiep_nhan || '').toLowerCase().includes(keyword);
+        isAllDepartments(keyword) ||
+        matchesDepartment(item.khoa_lien_quan, keyword) ||
+        matchesDepartment(item.khoa_ban_giao, keyword) ||
+        matchesDepartment(item.khoa_tiep_nhan, keyword);
       return matchPeriod && matchDept;
     });
   }, [data, reportFilter]);
