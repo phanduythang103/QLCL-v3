@@ -556,10 +556,18 @@ export default function UsersTable() {
 
       <div className="hidden bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50 md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-[#059669] text-white font-black uppercase text-[10px] tracking-widest">
+          {/* Chia cột theo tỷ lệ cố định, chữ 1 dòng (quá dài thì "…" + tooltip) */}
+          <table className="w-full min-w-[900px] table-fixed text-sm text-left border-collapse">
+            <colgroup>
+              <col className="w-14" />
+              <col className="w-[24%]" />
+              <col className="w-[32%]" />
+              <col className="w-[16%]" />
+              <col className="w-[28%]" />
+            </colgroup>
+            <thead className="bg-[#059669] text-white font-black uppercase text-[10px] tracking-widest whitespace-nowrap">
               <tr>
-                <th className="px-6 py-5 w-12 text-center">
+                <th className="px-4 py-5 text-center">
                   <input
                     type="checkbox"
                     onChange={handleSelectAll}
@@ -568,9 +576,9 @@ export default function UsersTable() {
                   />
                 </th>
                 <th className="px-6 py-5">Tài khoản & Vai trò</th>
-                <th className="px-6 py-5 min-w-[340px]">Họ và tên & Đơn vị</th>
+                <th className="px-6 py-5">Họ và tên & Đơn vị</th>
                 <th className="px-6 py-5">Đối tượng</th>
-                <th className="px-6 py-5 text-right min-w-[320px]">Thao tác</th>
+                <th className="px-4 py-5 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -579,7 +587,7 @@ export default function UsersTable() {
                   key={user.id}
                   className={`hover:bg-green-50/50 transition-colors group ${selectedUserIds.includes(user.id) ? 'bg-green-50' : ''}`}
                 >
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-4 py-4 text-center">
                     <input
                       type="checkbox"
                       checked={selectedUserIds.includes(user.id)}
@@ -587,33 +595,33 @@ export default function UsersTable() {
                       className="w-4 h-4 rounded accent-[#059669] cursor-pointer"
                     />
                   </td>
-                  <td className="px-6 py-4 min-w-[180px]">
-                    <div className="flex items-center gap-3">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-2xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary-700 font-black text-[10px] uppercase overflow-hidden shrink-0">
                         {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : user.username.substring(0, 2)}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-black text-slate-800 text-[12px] tracking-tight">{user.username}</span>
-                        <span className={`text-[9px] font-black w-fit px-1.5 rounded ${user.role === 'Quản trị viên' ? 'text-purple-600 bg-purple-50' : 'text-blue-600 bg-blue-50'
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-black text-slate-800 text-[12px] tracking-tight truncate" title={user.username}>{user.username}</span>
+                        <span className={`text-[9px] font-black w-fit max-w-full truncate whitespace-nowrap px-1.5 rounded ${user.role === 'Quản trị viên' ? 'text-purple-600 bg-purple-50' : 'text-blue-600 bg-blue-50'
                           }`}>
                           {user.role}
                         </span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 min-w-[340px]">
-                    <div className="flex flex-col">
-                      <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight">{user.full_name}</span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase">{user.department || 'Chưa phân khoa'}</span>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight truncate" title={user.full_name}>{user.full_name}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase truncate" title={user.department || ''}>{user.department || 'Chưa phân khoa'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black">
+                    <span className="inline-block max-w-full truncate whitespace-nowrap align-middle px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black" title={user.category || 'Nhân viên'}>
                       {user.category || 'Nhân viên'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right min-w-[320px]">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="px-4 py-4 text-right">
+                    <div className="flex justify-end gap-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => { setShowDetailPassword(false); setSelectedUserDetail(user); }} className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg font-black text-[10px] uppercase transition-all" title="Xem chi tiết">
                         <Eye size={14} /> Xem
                       </button>
