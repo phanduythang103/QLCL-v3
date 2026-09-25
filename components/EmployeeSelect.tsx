@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { fetchDanhSachNhanVien, DanhSachNhanVien, DOI_TUONG_OPTIONS } from '../readDanhSachNhanVien';
+import { fetchDanhSachNhanVien, addDanhSachNhanVien, DanhSachNhanVien, DOI_TUONG_OPTIONS } from '../readDanhSachNhanVien';
 import SearchableSelect, { SearchableOption } from './SearchableSelect';
 
 interface EmployeeSelectProps {
@@ -29,6 +29,7 @@ const DEFAULT_DOI_TUONG = DOI_TUONG_OPTIONS;
  * Ô chọn Họ và tên nhân viên lấy theo bảng "Danh sách nhân viên" (Cài đặt).
  * - Chọn tên  -> tự điền đối tượng tương ứng.
  * - Chọn đối tượng -> lọc danh sách tên tương ứng.
+ * - Chọn "+ Thêm mới" -> lưu luôn vào Danh sách nhân viên (theo đối tượng + khoa đang chọn).
  */
 export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
   name,
@@ -80,6 +81,31 @@ export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
     }
   };
 
+  // Tên chưa có trong danh sách -> lưu vào bảng Danh sách nhân viên để lần sau chọn được
+  const handleCreate = async (val: string) => {
+    const hoTen = val.trim();
+    // Trùng tên + cùng khoa (hoặc không chọn khoa) thì coi như đã có, không lưu lặp
+    const dup = staff.some(s =>
+      norm(s.ho_ten) === norm(hoTen) && (!khoaDonVi || norm(s.khoa_don_vi) === norm(khoaDonVi))
+    );
+    if (!hoTen || dup) return;
+    try {
+      const created = await addDanhSachNhanVien({
+        ho_ten: hoTen,
+        doi_tuong: doiTuong || DEFAULT_DOI_TUONG[0],
+        khoa_don_vi: (khoaDonVi || '').trim() || null,
+      });
+      if (created) {
+        setStaff(prev => [...prev, created].sort((a, b) =>
+          (a.ho_ten || '').localeCompare(b.ho_ten || '', 'vi', { sensitivity: 'base' })
+        ));
+      }
+    } catch (err: any) {
+      console.error('EmployeeSelect: error adding staff', err);
+      alert(`Không lưu được "${hoTen}" vào Danh sách nhân viên: ${err?.message || err}`);
+    }
+  };
+
   const handleDoiTuongChange = (val: string) => {
     // Nếu tên hiện tại là nhân viên có sẵn nhưng khác đối tượng mới -> xóa tên để lọc lại
     const emp = findEmployee(name);
@@ -119,6 +145,7 @@ export const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
         onChange={handleNameChange}
         options={nameOptions}
         allowCustom
+        onCreate={handleCreate}
         disabled={disabled}
         required={required}
         placeholder={namePlaceholder}

@@ -23,6 +23,7 @@ import { matchesDepartment } from '../utils/departmentMatch';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { GiamSatNdnb } from '../types';
+import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
 export const CRITERIA_NDNB = [
   { id: 'c1', label: 'Câu 1: NVYT xác nhận họ tên đầy đủ bằng câu hỏi mở?' },
@@ -138,6 +139,10 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
       return isDateValid && isDeptValid && isEvalValid;
     });
   }, [data, filterConfig]);
+
+  // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
+  const pager = usePagination(filteredData);
+  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => i.khoa_duoc_giam_sat, i => ({ coHoi: i.tong_co_hoi || 0, dat: i.tong_dat || 0 })), [filteredData]);
 
   const stats = useMemo(() => {
     const total = filteredData.length;
@@ -291,6 +296,7 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
       </div>
 
       {activeTab === 'DANH_SACH' ? (
+      <>
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left jci-list-table">
@@ -312,7 +318,7 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                   <td colSpan={8} className="p-8 text-center text-slate-500">Không tìm thấy dữ liệu phù hợp</td>
                 </tr>
               ) : (
-                filteredData.map((item) => {
+                pager.pageItems.map((item) => {
                   const kq = computeKetQua(item.checklist_data);
                   const KqIcon = kq === 'Đạt' ? CheckCircle2 : XCircle;
                   return (
@@ -355,7 +361,10 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
             </tbody>
           </table>
         </div>
+        <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="phiếu" />
       </div>
+      <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} coHoiLabel="Số cơ hội (tiêu chí)" note="Tỷ lệ đạt = tổng tiêu chí đạt / tổng tiêu chí áp dụng." />
+    </>
       ) : (
         <NdnbProcessReport data={data} departments={departments} />
       )}

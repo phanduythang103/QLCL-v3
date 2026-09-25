@@ -24,6 +24,7 @@ import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
 import EmployeeSelect from './EmployeeSelect';
 import { DOI_TUONG_OPTIONS } from '../readDanhSachNhanVien';
 import SupervisionScope from './SupervisionScope';
+import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
 const MOMENTS = [
   "1. Trước khi tiếp xúc người bệnh",
@@ -603,7 +604,15 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
     );
   }, [data, searchTerm]);
 
+  // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
+  const pager = usePagination(searchedData);
+  const deptSummary = useMemo(
+    () => summarizeByDept(searchedData, i => i.khoa_duoc_giam_sat, i => ({ coHoi: i.tong_co_hoi || 0, dat: i.so_lan_tuan_thu || 0 })),
+    [searchedData]
+  );
+
   return (
+    <>
     <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/30">
         <button
@@ -639,7 +648,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {searchedData.map(item => (
+            {pager.pageItems.map(item => (
               <tr key={item.id} className="hover:bg-slate-50/80 transition-all group">
                 <td className="p-6">
                   <div className="flex flex-col">
@@ -694,7 +703,7 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
       </div>
 
       <div className="md:hidden divide-y divide-slate-100">
-        {searchedData.map(item => (
+        {pager.pageItems.map(item => (
           <div key={item.id} className="p-5 space-y-4">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
@@ -741,7 +750,16 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
             <p className="font-black uppercase tracking-widest text-xs">Chưa có bản ghi giám sát nào</p>
           </div>
         )}
+        <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="lượt quan sát" />
       </div>
+      <DeptSummaryTable
+        rows={deptSummary.rows}
+        total={deptSummary.total}
+        phieuLabel="Số lượt quan sát"
+        coHoiLabel="Số cơ hội VST"
+        note="Tỷ lệ đạt = số cơ hội tuân thủ VST / tổng số cơ hội VST."
+      />
+    </>
   );
 };
 
@@ -954,7 +972,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
                   required
                   doiTuongOptions={[...DOI_TUONG_OPTIONS, 'Hộ lý', 'Khác']}
                   idPrefix="vst-nguoi-duoc-gs"
-                  namePlaceholder="Họ tên NVYT (chọn từ Danh sách nhân viên)"
+                  namePlaceholder="Chọn/nhập họ tên NVYT"
                   wrapperClassName="flex gap-2"
                   selectClassName="w-28 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none text-center"
                   inputClassName="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all"

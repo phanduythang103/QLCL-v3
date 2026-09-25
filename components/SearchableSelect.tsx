@@ -8,6 +8,8 @@ export interface SearchableOption {
   label?: string;
   /** Dòng phụ nhỏ bên dưới (vd đối tượng · khoa) */
   hint?: string;
+  /** Dòng "Thêm mới" (giá trị tự nhập, không có trong danh sách) */
+  isNew?: boolean;
 }
 
 interface SearchableSelectProps {
@@ -19,6 +21,8 @@ interface SearchableSelectProps {
   required?: boolean;
   /** Cho phép nhập giá trị tự do không có trong danh sách (vd tên nhân viên mới) */
   allowCustom?: boolean;
+  /** Gọi khi người dùng chọn dòng "+ Thêm mới" (vd lưu vào danh mục) */
+  onCreate?: (value: string) => void;
   className?: string;
   /** Class cho thẻ bọc ngoài (vd 'flex-1' khi đặt trong hàng flex) */
   wrapperClassName?: string;
@@ -41,6 +45,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   disabled = false,
   required = false,
   allowCustom = false,
+  onCreate,
   className = '',
   wrapperClassName = '',
   id,
@@ -63,7 +68,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     return options.filter(o => (o.label || o.value).toLowerCase().includes(kw) || (o.hint || '').toLowerCase().includes(kw));
   }, [options, typing, query]);
 
+  // Cho phép tự nhập: nếu đang gõ tên KHÔNG trùng khớp mục nào -> thêm dòng "+ Thêm mới" cuối danh sách
+  const items = useMemo<SearchableOption[]>(() => {
+    const q = query.trim();
+    if (!allowCustom || !typing || !q) return visible;
+    const exists = options.some(o => (o.label || o.value).trim().toLowerCase() === q.toLowerCase());
+    return exists ? visible : [...visible, { value: q, label: `+ Thêm mới: "${q}"`, hint: 'Không có trong danh sách', isNew: true }];
+  }, [visible, options, allowCustom, typing, query]);
+
   const display = typing ? query : value;
+
+  // Giá trị mới nhất cho các handler chạy trễ (chạm ra ngoài / blur) để không đọc state cũ
+  const latest = useRef({ typing, query, value, allowCustom, onChange });
+  latest.current = { typing, query, value, allowCustom, onChange };
 
   const measure = useCallback(() => {
     const el = inputRef.current;
@@ -90,7 +107,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     const onDocPointer = (e: PointerEvent) => {
       const t = e.target as Node;
       if (inputRef.current?.contains(t) || panelRef.current?.contains(t)) return;
-      close();
+      commitCustom();
     };
     document.addEventListener('pointerdown', onDocPointer, true);
     return () => document.removeEventListener('pointerdown', onDocPointer, true);
@@ -115,15 +132,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const commitCustom = () => {
     // Khi cho phép tự do: chốt giá trị đang gõ nếu khác giá trị hiện tại
-    if (allowCustom && typing) {
-      const v = query.trim();
-      if (v !== (value || '').trim()) onChange(v);
+    const cur = latest.current;
+    if (cur.allowCustom && cur.typing) {
+      const v = cur.query.trim();
+      if (v !== (cur.value || '').trim()) cur.onChange(v);
     }
     close();
   };
 
   const selectOption = (opt: SearchableOption) => {
     onChange(opt.value);
+    if (opt.isNew) onCreate?.(opt.value);
     if (blurTimer.current) { window.clearTimeout(blurTimer.current); blurTimer.current = null; }
     close();
     inputRef.current?.blur();
@@ -140,12 +159,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (!open) { openDropdown(); return; }
-      setActiveIdx(i => Math.min(i + 1, visible.length - 1));
+      setActiveIdx(i => Math.min(i + 1, items.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIdx(i => Math.max(i - 1, 0));
     } else if (e.key === 'Enter') {
-      if (open && visible[activeIdx]) { e.preventDefault(); selectOption(visible[activeIdx]); }
+      if (open && items[activeIdx]) { e.preventDefault(); selectOption(items[activeIdx]); }
       else if (open) commitCustom();
     } else if (e.key === 'Escape') {
       close();
@@ -209,11 +228,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           // Ngăn input mất focus (đóng dropdown) trước khi kịp nhận cú chạm chọn
           onPointerDown={e => e.preventDefault()}
         >
-          {visible.length === 0 ? (
+          {items.length === 0 ? (
             <div className="px-3 py-2.5 text-sm text-slate-400">{emptyText}</div>
           ) : (
-            visible.map((opt, i) => {
-              const selected = opt.value === value;
+            items.map((opt, i) => {
+              const selected = !opt.isNew && opt.value === value;
               const active = i === activeIdx;
               return (
                 <button
@@ -223,7 +242,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   onMouseEnter={() => setActiveIdx(i)}
                   className={`flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left transition-colors ${
                     active ? 'bg-slate-100' : ''
-                  } ${selected ? 'font-bold text-[#059669]' : 'text-slate-700'}`}
+                  } ${opt.isNew ? 'border-t border-slate-100 font-bold text-[#059669]' : selected ? 'font-bold text-[#059669]' : 'text-slate-700'}`}
                 >
                   <span className="text-sm leading-tight">{opt.label || opt.value}</span>
                   {opt.hint ? <span className="text-[11px] font-medium text-slate-400 leading-tight">{opt.hint}</span> : null}

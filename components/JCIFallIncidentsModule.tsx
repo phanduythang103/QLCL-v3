@@ -19,6 +19,7 @@ import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { exportFallReportExcel, fallRate, benchmarkLabel, FALL_BENCHMARK } from '../utils/fallReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
+import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
 // --- Danh mục dùng cho dropdown (bám theo sheet DanhMuc của bản mẫu) ---
 export const THANG_DIEM_OPTIONS = [
@@ -130,6 +131,10 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
       return matchYear && matchDept && matchPerson;
     });
   }, [incidents, filterConfig]);
+
+  // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
+  const pager = usePagination(filteredData);
+  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => i.khoa_dieu_tri), [filteredData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,6 +306,7 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
       </div>
 
       {activeTab === 'DANH_SACH' ? (
+        <>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left jci-list-table">
@@ -326,7 +332,7 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
                     ) : 'Chưa có dữ liệu sự cố ngã'}
                   </td></tr>
                 ) : (
-                  filteredData.map(item => (
+                  pager.pageItems.map(item => (
                     <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3 md:p-4 font-medium text-slate-700 whitespace-nowrap">{formatDateTime(item.thoi_gian_nga)}</td>
                       <td className="p-3 md:p-4">{item.khoa_dieu_tri}</td>
@@ -360,7 +366,10 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
               </tbody>
             </table>
           </div>
+          <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="sự cố" />
         </div>
+        <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} phieuLabel="Số sự cố" note="Chỉ số sự cố không tính tỷ lệ đạt; tỷ suất/1000 ngày nằm viện xem ở tab Báo cáo." />
+      </>
       ) : (
         <FallProcessReport data={incidents} departments={departments} />
       )}

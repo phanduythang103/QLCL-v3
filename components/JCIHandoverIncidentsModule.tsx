@@ -19,6 +19,7 @@ import { matchesDepartment, isAllDepartments } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { exportHandoverReportExcel, handoverRate } from '../utils/handoverReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
+import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
 // --- Danh mục dùng cho dropdown (bám theo sheet DanhMuc của bản mẫu) ---
 export const LOAI_HINH_BAN_GIAO_OPTIONS = [
@@ -128,6 +129,10 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
       return matchYear && matchDept && matchPerson;
     });
   }, [incidents, filterConfig]);
+
+  // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
+  const pager = usePagination(filteredData);
+  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => (i.khoa_ban_giao || i.khoa_tiep_nhan) ? [i.khoa_ban_giao || '', i.khoa_tiep_nhan || ''] : i.khoa_lien_quan), [filteredData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,6 +308,7 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
       </div>
 
       {activeTab === 'DANH_SACH' ? (
+        <>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left jci-list-table">
@@ -329,7 +335,7 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
                     ) : 'Chưa có dữ liệu sự cố bàn giao'}
                   </td></tr>
                 ) : (
-                  filteredData.map(item => (
+                  pager.pageItems.map(item => (
                     <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3 md:p-4 font-medium text-slate-700 whitespace-nowrap">{formatDateTime(item.thoi_gian_su_co)}</td>
                       <td className="p-3 md:p-4">{item.khoa_lien_quan}</td>
@@ -368,7 +374,10 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
               </tbody>
             </table>
           </div>
+          <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="sự cố" />
         </div>
+        <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} phieuLabel="Số sự cố" note="Một sự cố được tính cho cả khoa bàn giao và khoa tiếp nhận. Chỉ số sự cố không tính tỷ lệ đạt; tỷ suất xem ở tab Báo cáo." />
+      </>
       ) : (
         <HandoverProcessReport data={incidents} departments={departments} />
       )}

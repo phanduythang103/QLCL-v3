@@ -21,6 +21,7 @@ import {
 import { exportAtptReportExcel } from '../utils/atptReportExcel';
 import { matchesDepartment } from '../utils/departmentMatch';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
+import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const QUARTERS = [1, 2, 3, 4];
@@ -145,6 +146,10 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
       return matchYear && matchDept && matchPerson;
     });
   }, [data, filterConfig]);
+
+  // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
+  const pager = usePagination(filteredData);
+  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => i.khoa_phau_thuat, i => ({ coHoi: 1, dat: verdictOf(i) === 'Đạt' ? 1 : 0 })), [filteredData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,6 +320,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
       </div>
 
       {activeTab === 'DANH_SACH' ? (
+        <>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left jci-list-table">
@@ -341,7 +347,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
                     ) : 'Chưa có dữ liệu giám sát ATPT'}
                   </td></tr>
                 ) : (
-                  filteredData.map(item => {
+                  pager.pageItems.map(item => {
                     const verdict = verdictOf(item);
                     return (
                       <tr key={item.id} className="hover:bg-slate-50 transition-colors">
@@ -379,7 +385,10 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
               </tbody>
             </table>
           </div>
+          <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="phiếu" />
         </div>
+        <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} coHoiLabel="Số ca giám sát" note="Tỷ lệ đạt = số ca tuân thủ đủ bảng kiểm / số ca được giám sát." />
+      </>
       ) : (
         <AtptProcessReport data={data} areaOptions={areaOptions} />
       )}

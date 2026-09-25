@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { exportCriticalResultsReportExcel, CRITICAL_TIME_LIMIT } from '../utils/criticalResultsReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { CRITICAL_RESULT_NAMES } from '../utils/criticalResultNames';
+import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const QUARTERS = [1, 2, 3, 4];
@@ -139,6 +140,10 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
       return matchYear && matchDept && matchPerson;
     });
   }, [results, filterConfig]);
+
+  // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
+  const pager = usePagination(filteredData);
+  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => i.khoa_dieu_tri, i => { const v = criticalVerdict(i); return { coHoi: v === 'Đạt' || v === 'Không đạt' ? 1 : 0, dat: v === 'Đạt' ? 1 : 0 }; }), [filteredData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -325,6 +330,7 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
       </div>
 
       {activeTab === 'DANH_SACH' ? (
+        <>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left jci-list-table">
@@ -350,7 +356,7 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
                     ) : 'Chưa có dữ liệu kết quả báo động'}
                   </td></tr>
                 ) : (
-                  filteredData.map(item => {
+                  pager.pageItems.map(item => {
                     const minutes = notifyMinutes(item);
                     const verdict = criticalVerdict(item);
                     return (
@@ -384,7 +390,10 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
               </tbody>
             </table>
           </div>
+          <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="phiếu" />
         </div>
+        <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} coHoiLabel="Số KQ đánh giá được" note="Tỷ lệ đạt = số KQ báo động thông báo đạt thời gian / số KQ đánh giá được (không tính phiếu lỗi ngày giờ hoặc chưa đủ dữ liệu)." />
+      </>
       ) : (
         <CriticalProcessReport data={results} departments={departments} />
       )}
