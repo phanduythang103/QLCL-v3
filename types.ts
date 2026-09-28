@@ -188,6 +188,7 @@ export interface BcNhanLucCa {
 }
 
 export interface GsVst {
+  nguoi_tao?: string | null; // tên đăng nhập người tạo phiếu (phân quyền sửa/xóa)
   id?: string;
   created_at?: string;
   ngay_giam_sat: string;
@@ -213,6 +214,7 @@ export interface GsVst {
 }
 
 export interface SurgerySafety {
+  nguoi_tao?: string | null; // tên đăng nhập người tạo phiếu (phân quyền sửa/xóa)
   id?: string;
   created_at?: string;
   updated_at?: string;
@@ -315,6 +317,7 @@ export interface PromptConfig {
 }
 
 export interface GiamSatNdnb {
+  nguoi_tao?: string | null; // tên đăng nhập người tạo phiếu (phân quyền sửa/xóa)
   id?: string;
   created_at?: string;
   updated_at?: string;
@@ -339,6 +342,7 @@ export interface GiamSatNdnb {
 
 /** AOP.02.00 - Tỷ suất người bệnh ngã */
 export interface JCIFallIncident {
+  nguoi_tao?: string | null; // tên đăng nhập người tạo phiếu (phân quyền sửa/xóa)
   id?: string;
   created_at?: string;
   updated_at?: string;
@@ -376,6 +380,7 @@ export interface JCIFallPatientDays {
 
 /** IPSG.02.00 - Thông báo kết quả báo động cận lâm sàng */
 export interface JCICriticalResult {
+  nguoi_tao?: string | null; // tên đăng nhập người tạo phiếu (phân quyền sửa/xóa)
   id?: string;
   created_at?: string;
   updated_at?: string;
@@ -406,6 +411,7 @@ export interface JCIHandoverVisits {
 
 /** IPSG.02.01 / QPS.03.04 - Sự cố liên quan đến bàn giao thông tin người bệnh */
 export interface JCIHandoverIncident {
+  nguoi_tao?: string | null; // tên đăng nhập người tạo phiếu (phân quyền sửa/xóa)
   id?: string;
   created_at?: string;
   updated_at?: string;

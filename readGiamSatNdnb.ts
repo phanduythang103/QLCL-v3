@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { insertWithCreator, withoutCreator } from './utils/recordOwnership';
 import { GiamSatNdnb } from './types';
 import { compressFile } from './utils/compression';
 import { fetchAllRows } from './utils/fetchAllRows';
@@ -14,11 +15,11 @@ export async function fetchGiamSatNdnb(): Promise<GiamSatNdnb[]> {
 }
 
 export async function addGiamSatNdnb(record: Omit<GiamSatNdnb, 'id' | 'created_at' | 'updated_at'>): Promise<GiamSatNdnb> {
-  const { data, error } = await supabase
+  const { data, error } = await insertWithCreator(record, row => supabase
     .from('gs_ndnb')
-    .insert([record])
+    .insert([row])
     .select()
-    .single();
+    .single());
 
   if (error) {
     console.error('Error adding gs_ndnb:', error);
@@ -30,7 +31,7 @@ export async function addGiamSatNdnb(record: Omit<GiamSatNdnb, 'id' | 'created_a
 export async function updateGiamSatNdnb(id: string, record: Partial<GiamSatNdnb>): Promise<GiamSatNdnb> {
   const { data, error } = await supabase
     .from('gs_ndnb')
-    .update({ ...record, updated_at: new Date().toISOString() })
+    .update({ ...withoutCreator(record), updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();

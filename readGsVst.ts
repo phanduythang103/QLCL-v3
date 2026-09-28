@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { insertWithCreator, withoutCreator } from './utils/recordOwnership';
 import { GsVst } from './types';
 import { fetchAllRows } from './utils/fetchAllRows';
 
@@ -8,10 +9,10 @@ export const fetchGsVst = async () => {
 };
 
 export const addGsVst = async (item: GsVst) => {
-  const { data, error } = await supabase
+  const { data, error } = await insertWithCreator(item, row => supabase
     .from('gs_vst')
-    .insert([item])
-    .select();
+    .insert([row])
+    .select());
 
   if (error) throw error;
   return data?.[0] as GsVst;
@@ -20,7 +21,7 @@ export const addGsVst = async (item: GsVst) => {
 export const updateGsVst = async (id: string, item: Partial<GsVst>) => {
   const { data, error } = await supabase
     .from('gs_vst')
-    .update(item)
+    .update(withoutCreator(item))
     .eq('id', id)
     .select();
 

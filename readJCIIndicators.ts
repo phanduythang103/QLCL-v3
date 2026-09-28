@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { insertWithCreator, withoutCreator } from './utils/recordOwnership';
 import { JCIFallIncident, JCIFallPatientDays, JCICriticalResult, JCIHandoverIncident, JCIHandoverVisits } from './types';
 
 // ==========================================
@@ -18,11 +19,11 @@ export const fetchFallIncidents = async (): Promise<JCIFallIncident[]> => {
 };
 
 export const addFallIncident = async (incident: Omit<JCIFallIncident, 'id' | 'created_at'>): Promise<JCIFallIncident | null> => {
-  const { data, error } = await supabase
+  const { data, error } = await insertWithCreator(incident, row => supabase
     .from('jci_fall_incidents')
-    .insert([incident])
+    .insert([row])
     .select()
-    .single();
+    .single());
 
   if (error) {
     console.error('Error adding fall incident:', error);
@@ -34,7 +35,7 @@ export const addFallIncident = async (incident: Omit<JCIFallIncident, 'id' | 'cr
 export const updateFallIncident = async (id: string, incident: Partial<JCIFallIncident>): Promise<JCIFallIncident | null> => {
   const { data, error } = await supabase
     .from('jci_fall_incidents')
-    .update({ ...incident, updated_at: new Date().toISOString() })
+    .update({ ...withoutCreator(incident), updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();
@@ -77,11 +78,11 @@ export const fetchCriticalResults = async (): Promise<JCICriticalResult[]> => {
 };
 
 export const addCriticalResult = async (result: Omit<JCICriticalResult, 'id' | 'created_at'>): Promise<JCICriticalResult | null> => {
-  const { data, error } = await supabase
+  const { data, error } = await insertWithCreator(result, row => supabase
     .from('jci_critical_results')
-    .insert([result])
+    .insert([row])
     .select()
-    .single();
+    .single());
 
   if (error) {
     console.error('Error adding critical result:', error);
@@ -93,7 +94,7 @@ export const addCriticalResult = async (result: Omit<JCICriticalResult, 'id' | '
 export const updateCriticalResult = async (id: string, result: Partial<JCICriticalResult>): Promise<JCICriticalResult | null> => {
   const { data, error } = await supabase
     .from('jci_critical_results')
-    .update({ ...result, updated_at: new Date().toISOString() })
+    .update({ ...withoutCreator(result), updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();
@@ -136,11 +137,11 @@ export const fetchHandoverIncidents = async (): Promise<JCIHandoverIncident[]> =
 };
 
 export const addHandoverIncident = async (incident: Omit<JCIHandoverIncident, 'id' | 'created_at'>): Promise<JCIHandoverIncident | null> => {
-  const { data, error } = await supabase
+  const { data, error } = await insertWithCreator(incident, row => supabase
     .from('jci_handover_incidents')
-    .insert([incident])
+    .insert([row])
     .select()
-    .single();
+    .single());
 
   if (error) {
     console.error('Error adding handover incident:', error);
@@ -152,7 +153,7 @@ export const addHandoverIncident = async (incident: Omit<JCIHandoverIncident, 'i
 export const updateHandoverIncident = async (id: string, incident: Partial<JCIHandoverIncident>): Promise<JCIHandoverIncident | null> => {
   const { data, error } = await supabase
     .from('jci_handover_incidents')
-    .update({ ...incident, updated_at: new Date().toISOString() })
+    .update({ ...withoutCreator(incident), updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();

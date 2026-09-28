@@ -17,6 +17,7 @@ import { fetchDmDonVi } from '../readDmDonVi';
 import DepartmentSelect from './DepartmentSelect';
 import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
+import { useRecordOwnership } from '../utils/recordOwnership';
 import { exportFallReportExcel, fallRate, benchmarkLabel, FALL_BENCHMARK } from '../utils/fallReportExcel';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
@@ -88,6 +89,14 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
     [user]
   );
 
+  // Người tạo phiếu được sửa/xóa, admin toàn quyền, người khác chỉ xem
+  const { creator, canModify } = useRecordOwnership();
+  const canModifyItem = (item: JCIFallIncident) => canModify(item.nguoi_tao, item.nguoi_tong_hop);
+  const canModifyId = (id?: string | null) => {
+    const item = incidents.find(d => d.id === id);
+    return !item || canModifyItem(item);
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -140,9 +149,13 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
     e.preventDefault();
     try {
       if (editingId) {
+        if (!canModifyId(editingId)) {
+          alert('Bạn chỉ được sửa phiếu do mình tạo.');
+          return;
+        }
         await updateFallIncident(editingId, formData);
       } else {
-        await addFallIncident(formData);
+        await addFallIncident({ ...formData, nguoi_tao: creator });
       }
       setViewMode('LIST');
       setEditingId(null);
@@ -175,6 +188,10 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
   };
 
   const handleDelete = async (id: string) => {
+    if (!canModifyId(id)) {
+      alert('Bạn chỉ được xóa phiếu do mình tạo.');
+      return;
+    }
     if (window.confirm('Bạn có chắc chắn muốn xóa bản ghi này?')) {
       try {
         await deleteFallIncident(id);
@@ -345,11 +362,12 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
                       </td>
                       <td className="p-4 hidden md:table-cell jci-col-hide">{item.nguoi_tong_hop}</td>
                       <td className="p-3 md:p-4 jci-actions-cell">
-                        <div className="grid grid-cols-3 gap-2 md:flex md:items-center md:gap-2">
+                        <div className={`grid ${canModifyItem(item) ? 'grid-cols-3' : 'grid-cols-1'} gap-2 md:flex md:items-center md:gap-2`}>
                           <button onClick={() => setDetailItem(item)} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-teal-50" title="Xem chi tiết">
                             <Eye size={16} className="shrink-0" />
                             <span className="md:hidden">Xem</span>
                           </button>
+                          {canModifyItem(item) && (<>
                           <button onClick={() => handleEdit(item)} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-blue-50" title="Sửa">
                             <Edit2 size={16} className="shrink-0" />
                             <span className="md:hidden">Sửa</span>
@@ -358,6 +376,7 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
                             <Trash2 size={16} className="shrink-0" />
                             <span className="md:hidden">Xóa</span>
                           </button>
+                          </>)}
                         </div>
                       </td>
                     </tr>

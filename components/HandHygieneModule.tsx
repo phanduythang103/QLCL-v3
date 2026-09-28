@@ -18,6 +18,7 @@ import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter,
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
 import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
+import { useRecordOwnership } from '../utils/recordOwnership';
 import { GsVst } from '../types';
 import { fetchGsVst, addGsVst, updateGsVst, deleteGsVst, uploadVstImage } from '../readGsVst';
 import { fetchDmDonVi, DmDonVi } from '../readDmDonVi';
@@ -40,6 +41,9 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
   const [error, setError] = useState<string | null>(null);
   const [departments, setDepartments] = useState<DmDonVi[]>([]);
   const { user } = useAuth();
+  // Người tạo phiếu được sửa/xóa, admin toàn quyền, người khác chỉ xem
+  const { creator, canModify } = useRecordOwnership();
+  const canModifyItem = (item: GsVst) => canModify(item.nguoi_tao, item.nguoi_giam_sat);
 
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
   const [editingItem, setEditingItem] = useState<GsVst | null>(null);
@@ -104,6 +108,7 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
         onClose={() => setViewMode('LIST')}
         onSaved={() => { setViewMode('LIST'); loadData(); }}
         currentUser={user}
+        creator={creator}
         departmentList={departmentList}
       />
     );
@@ -200,8 +205,14 @@ export const HandHygieneModule: React.FC<{ onBack?: () => void }> = ({ onBack })
             data={filteredData}
             onAdd={() => { setEditingItem(null); setIsReadOnly(false); setViewMode('FORM'); }}
             onView={(item) => { setEditingItem(item); setIsReadOnly(true); setViewMode('FORM'); }}
-            onEdit={(item) => { setEditingItem(item); setIsReadOnly(false); setViewMode('FORM'); }}
+            canModifyItem={canModifyItem}
+            onEdit={(item) => { setEditingItem(item); setIsReadOnly(!canModifyItem(item)); setViewMode('FORM'); }}
             onDelete={async (id) => {
+              const target = data.find(d => d.id === id);
+              if (target && !canModifyItem(target)) {
+                alert('Bạn chỉ được xóa phiếu do mình tạo.');
+                return;
+              }
               if (window.confirm('Bạn có chắc muốn xóa bản ghi giám sát này?')) {
                 await deleteGsVst(id!);
                 loadData();
@@ -594,7 +605,7 @@ const VstProcessReport: React.FC<{ data: GsVst[]; departmentList: string[] }> = 
   );
 };
 
-const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onView: (item: GsVst) => void, onEdit: (item: GsVst) => void, onDelete: (id: string) => void, onAdd: () => void }) => {
+const VstList = ({ data, onView, onEdit, onDelete, onAdd, canModifyItem }: { data: GsVst[], onView: (item: GsVst) => void, onEdit: (item: GsVst) => void, onDelete: (id: string) => void, onAdd: () => void, canModifyItem: (item: GsVst) => boolean }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const searchedData = useMemo(() => {
@@ -692,8 +703,10 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
                 <td className="p-6">
                    <div className="flex items-center justify-end gap-2 text-sm">
                      <button onClick={() => onView(item)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-indigo-100"><Eye size={16} /></button>
+                     {canModifyItem(item) && (<>
                      <button onClick={() => onEdit(item)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all border border-emerald-100"><Edit2 size={16} /></button>
                      <button onClick={() => onDelete(item.id!)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-rose-100"><Trash2 size={16} /></button>
+                     </>)}
                    </div>
                 </td>
               </tr>
@@ -717,8 +730,10 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
               </div>
               <div className="flex gap-1">
                 <button onClick={() => onView(item)} className="p-2.5 text-indigo-600 bg-indigo-50 rounded-xl active:scale-90 transition-all"><Eye size={16} /></button>
+                {canModifyItem(item) && (<>
                 <button onClick={() => onEdit(item)} className="p-2.5 text-emerald-600 bg-emerald-50 rounded-xl active:scale-90 transition-all"><Edit2 size={16} /></button>
                 <button onClick={() => onDelete(item.id!)} className="p-2.5 text-rose-600 bg-rose-50 rounded-xl active:scale-90 transition-all"><Trash2 size={16} /></button>
+                </>)}
               </div>
             </div>
 
@@ -763,12 +778,13 @@ const VstList = ({ data, onView, onEdit, onDelete, onAdd }: { data: GsVst[], onV
   );
 };
 
-const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentList }: {
+const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, creator, departmentList }: {
   item: GsVst | null,
   isReadOnly: boolean,
   onClose: () => void,
   onSaved: () => void,
   currentUser: any,
+  creator: string,
   departmentList: string[]
 }) => {
   const [formData, setFormData] = useState<GsVst>({
@@ -869,7 +885,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, departmentLi
     setSaving(true);
     try {
       if (item?.id) await updateGsVst(item.id, formData);
-      else await addGsVst(formData);
+      else await addGsVst({ ...formData, nguoi_tao: creator });
       onSaved();
     } catch (err: any) {
       console.error('Error saving hand hygiene monitoring:', err);

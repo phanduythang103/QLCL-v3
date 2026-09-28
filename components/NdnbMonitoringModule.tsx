@@ -17,6 +17,7 @@ import {
 } from '../readGiamSatNdnb';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
+import { useRecordOwnership } from '../utils/recordOwnership';
 import DateRangeFilter from './DateRangeFilter';
 import DepartmentSelect from './DepartmentSelect';
 import EmployeeSelect from './EmployeeSelect';
@@ -76,6 +77,9 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
   const [loading, setLoading] = useState(true);
   const [departments, setDepartments] = useState<any[]>([]);
   const { user } = useAuth();
+  // Người tạo phiếu được sửa/xóa, admin toàn quyền, người khác chỉ xem
+  const { creator, canModify } = useRecordOwnership();
+  const canModifyItem = (item: GiamSatNdnb) => canModify(item.nguoi_tao, item.nguoi_giam_sat);
   
   const [editingItem, setEditingItem] = useState<GiamSatNdnb | null>(null);
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM' | 'DETAIL'>('LIST');
@@ -168,9 +172,14 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
   const handleSave = async (item: Partial<GiamSatNdnb>) => {
     try {
       if (item.id) {
+        const original = data.find(d => d.id === item.id);
+        if (original && !canModifyItem(original)) {
+          alert('Bạn chỉ được sửa phiếu do mình tạo.');
+          return;
+        }
         await updateGiamSatNdnb(item.id, item);
       } else {
-        await addGiamSatNdnb(item as Omit<GiamSatNdnb, 'id' | 'created_at' | 'updated_at'>);
+        await addGiamSatNdnb({ ...item, nguoi_tao: creator } as Omit<GiamSatNdnb, 'id' | 'created_at' | 'updated_at'>);
       }
       await loadData();
       setViewMode('LIST');
@@ -182,6 +191,11 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
   };
 
   const handleDelete = async (id: string) => {
+    const target = data.find(d => d.id === id);
+    if (target && !canModifyItem(target)) {
+      alert('Bạn chỉ được xóa phiếu do mình tạo.');
+      return;
+    }
     if (window.confirm('Bạn có chắc chắn muốn xóa bản ghi này?')) {
       try {
         await deleteGiamSatNdnb(id);
@@ -342,11 +356,12 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                     </td>
                     <td className="p-4 hidden md:table-cell jci-col-hide">{item.nguoi_giam_sat}</td>
                     <td className="p-3 md:p-4 jci-actions-cell">
-                      <div className="grid grid-cols-3 gap-2 md:flex md:items-center md:gap-2">
+                      <div className={`grid ${canModifyItem(item) ? 'grid-cols-3' : 'grid-cols-1'} gap-2 md:flex md:items-center md:gap-2`}>
                         <button onClick={() => setDetailItem(item)} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-teal-50" title="Xem chi tiết">
                           <Eye size={16} className="shrink-0" />
                           <span className="md:hidden">Xem</span>
                         </button>
+                        {canModifyItem(item) && (<>
                         <button onClick={() => { setEditingItem(item); setViewMode('FORM'); }} className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium active:scale-95 transition-transform md:border-0 md:bg-transparent md:p-1.5 md:hover:bg-blue-50" title="Sửa">
                           <Edit2 size={16} className="shrink-0" />
                           <span className="md:hidden">Sửa</span>
@@ -355,6 +370,7 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
                           <Trash2 size={16} className="shrink-0" />
                           <span className="md:hidden">Xóa</span>
                         </button>
+                        </>)}
                       </div>
                     </td>
                   </tr>

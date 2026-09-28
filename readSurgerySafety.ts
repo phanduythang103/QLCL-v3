@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { insertWithCreator, withoutCreator } from './utils/recordOwnership';
 import { SurgerySafety } from './types';
 
 export const fetchSurgerySafety = async () => {
@@ -12,10 +13,10 @@ export const fetchSurgerySafety = async () => {
 };
 
 export const addSurgerySafety = async (item: SurgerySafety) => {
-  const { data, error } = await supabase
+  const { data, error } = await insertWithCreator(item, row => supabase
     .from('giam_sat_atpt')
-    .insert([item])
-    .select();
+    .insert([row])
+    .select());
 
   if (error) throw error;
   return data?.[0] as SurgerySafety;
@@ -24,7 +25,7 @@ export const addSurgerySafety = async (item: SurgerySafety) => {
 export const updateSurgerySafety = async (id: string, item: Partial<SurgerySafety>) => {
   const { data, error } = await supabase
     .from('giam_sat_atpt')
-    .update(item)
+    .update(withoutCreator(item))
     .eq('id', id)
     .select();
 
