@@ -19,6 +19,8 @@ import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import DateRangeFilter from './DateRangeFilter';
 import DepartmentSelect from './DepartmentSelect';
+import EmployeeSelect from './EmployeeSelect';
+import { DOI_TUONG_OPTIONS } from '../readDanhSachNhanVien';
 import { matchesDepartment } from '../utils/departmentMatch';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { getDateRange, isDateInRange } from '../utils/dateUtils';
@@ -45,11 +47,12 @@ const THOI_DIEM_OPTIONS = [
   'Dán nhãn các yếu tố liên quan đến NB'
 ];
 
-const defaultForm = (userName = ''): Partial<GiamSatNdnb> => {
+const defaultForm = (userName = '', userDepartment = ''): Partial<GiamSatNdnb> => {
   const base: any = {
     ngay_giam_sat: new Date().toISOString().split('T')[0],
     nguoi_giam_sat: userName,
-    khoa_duoc_giam_sat: '',
+    // Điền sẵn khoa của người đang đăng nhập; vẫn đổi được sang khoa khác
+    khoa_duoc_giam_sat: userDepartment,
     doi_tuong_giam_sat: '',
     ho_ten_nguoi_benh: '',
     thoi_diem_dinh_danh: '',
@@ -202,7 +205,7 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
   if (viewMode === 'FORM') {
     return (
       <NdnbForm 
-        initialData={editingItem || defaultForm(currentUserName)}
+        initialData={editingItem || defaultForm(currentUserName, (user?.department || '').trim())}
         departments={departments}
         evaluatorOptions={evaluatorOptions}
         currentUserName={currentUserName}
@@ -388,6 +391,9 @@ interface NdnbFormProps {
 const NdnbForm: React.FC<NdnbFormProps> = ({ initialData, departments, evaluatorOptions, currentUserName, onSave, onCancel }) => {
   const [formData, setFormData] = useState<Partial<GiamSatNdnb>>(initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Doi tuong cua NVYT duoc giam sat: phieu NDNB khong luu cot nay, chi dung de
+  // loc goi y theo Danh sach nhan vien va ghi dung doi tuong khi them moi.
+  const [doiTuongNvyt, setDoiTuongNvyt] = useState(DOI_TUONG_OPTIONS[0]);
 
   const calculateScore = (data: Partial<GiamSatNdnb>) => {
     let achieved = 0;
@@ -442,42 +448,6 @@ const NdnbForm: React.FC<NdnbFormProps> = ({ initialData, departments, evaluator
       <div className="p-4 sm:p-6 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">Họ và tên NVYT thực hiện <span className="text-red-500">*</span></label>
-            <input type="text" required value={formData.doi_tuong_giam_sat} onChange={e => setFormData({...formData, doi_tuong_giam_sat: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" placeholder="Nguyễn Văn A" />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">Khoa / Phòng <span className="text-red-500">*</span></label>
-            <DepartmentSelect
-              value={formData.khoa_duoc_giam_sat}
-              onChange={v => setFormData({...formData, khoa_duoc_giam_sat: v})}
-              departments={departments}
-              required
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">Họ và tên người bệnh <span className="text-red-500">*</span></label>
-            <input type="text" required value={formData.ho_ten_nguoi_benh} onChange={e => setFormData({...formData, ho_ten_nguoi_benh: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" placeholder="Trần Thị B" />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">Ngày giám sát <span className="text-red-500">*</span></label>
-            <input type="date" required value={formData.ngay_giam_sat} onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">Thời điểm định danh <span className="text-red-500">*</span></label>
-            <select required value={formData.thoi_diem_dinh_danh} onChange={e => setFormData({...formData, thoi_diem_dinh_danh: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors">
-              <option value="">Chọn thời điểm...</option>
-              {THOI_DIEM_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Người thực hiện giám sát <span className="text-red-500">*</span></label>
             <input
               type="text"
@@ -502,6 +472,57 @@ const NdnbForm: React.FC<NdnbFormProps> = ({ initialData, departments, evaluator
                 <User size={14} /> Dùng tên của tôi ({currentUserName})
               </button>
             )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Khoa / Phòng <span className="text-red-500">*</span></label>
+            <DepartmentSelect
+              value={formData.khoa_duoc_giam_sat || ''}
+              onChange={v => setFormData({...formData, khoa_duoc_giam_sat: v})}
+              departments={departments}
+              required
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+            />
+          </div>
+
+          <div className="space-y-1.5 md:col-span-2">
+            <label className="block text-sm font-medium text-slate-700">Họ và tên NVYT thực hiện <span className="text-red-500">*</span></label>
+            <EmployeeSelect
+              name={formData.doi_tuong_giam_sat || ''}
+              doiTuong={doiTuongNvyt}
+              khoaDonVi={formData.khoa_duoc_giam_sat}
+              onChange={({ name, doiTuong }) => {
+                setFormData({...formData, doi_tuong_giam_sat: name});
+                setDoiTuongNvyt(doiTuong);
+              }}
+              required
+              idPrefix="ndnb-nvyt"
+              namePlaceholder="Chọn/nhập họ tên NVYT"
+              wrapperClassName="flex gap-2"
+              selectClassName="w-36 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+              inputClassName="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+            />
+            <p className="text-xs text-slate-400">Gợi ý theo Danh sách nhân viên của khoa đang chọn. Tên chưa có sẽ được thêm vào danh sách.</p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Họ và tên người bệnh <span className="text-red-500">*</span></label>
+            <input type="text" required value={formData.ho_ten_nguoi_benh} onChange={e => setFormData({...formData, ho_ten_nguoi_benh: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" placeholder="Trần Thị B" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Ngày giám sát <span className="text-red-500">*</span></label>
+            <input type="date" required value={formData.ngay_giam_sat} onChange={e => setFormData({...formData, ngay_giam_sat: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Thời điểm định danh <span className="text-red-500">*</span></label>
+            <select required value={formData.thoi_diem_dinh_danh} onChange={e => setFormData({...formData, thoi_diem_dinh_danh: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors">
+              <option value="">Chọn thời điểm...</option>
+              {THOI_DIEM_OPTIONS.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1.5 md:col-span-2">

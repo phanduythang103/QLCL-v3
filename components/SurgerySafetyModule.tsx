@@ -11,11 +11,13 @@ import {
 import { SurgerySafety } from '../types';
 import EmployeeSelect from './EmployeeSelect';
 import SupervisionScope from './SupervisionScope';
+import SearchableSelect from './SearchableSelect';
+import DepartmentSelect from './DepartmentSelect';
 import { fetchSurgerySafety, addSurgerySafety, updateSurgerySafety, deleteSurgerySafety } from '../readSurgerySafety';
 import { fetchDmDonVi } from '../readDmDonVi';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  ATPT_CRITERIA, ATPT_GROUPS, ATPT_ANSWERS, ATPT_KHU_VUC_OPTIONS, ATPT_NHOM_PTTT_OPTIONS,
+  ATPT_CRITERIA, ATPT_GROUPS, ATPT_ANSWERS, ATPT_NHOM_PTTT_OPTIONS,
   scoreAtpt, jciMinSample, JCI_SAMPLE_NOTE, AtptAnswer
 } from '../utils/atptCriteria';
 import { exportAtptReportExcel } from '../utils/atptReportExcel';
@@ -116,14 +118,32 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
     return Array.from(new Set(names));
   }, [data, currentUserName]);
 
+  // Danh sach khoa/khu vuc lay theo danh muc don vi dang "Ma khoa - Ten khoa"
+  // (giong phieu Ve sinh tay). Giu them cac gia tri lich su da luu trong phieu
+  // cu ("Phong mo", "B5", ...) de bo loc van tim duoc nhung phieu do.
   const areaOptions = useMemo(() => {
-    const names = new Set<string>(ATPT_KHU_VUC_OPTIONS);
+    const names = new Set<string>();
     departments.forEach(d => {
-      const n = (d.ten_don_vi || '').trim();
-      if (n) names.add(n);
+      const v = (d.ma_don_vi ? `${d.ma_don_vi} - ${d.ten_don_vi}` : (d.ten_don_vi || '')).trim();
+      if (v) names.add(v);
+    });
+    data.forEach(d => {
+      const v = (d.khoa_phau_thuat || '').trim();
+      if (v) names.add(v);
     });
     return Array.from(names);
-  }, [departments]);
+  }, [departments, data]);
+
+  // Goi y Loai PT/TT: nhom chuan + moi gia tri da tung luu o cot loai_pt_tt,
+  // nen nhom moi them o phieu truoc se tu dong co san cho phieu sau.
+  const loaiPttOptions = useMemo(() => {
+    const names = new Set<string>(ATPT_NHOM_PTTT_OPTIONS);
+    data.forEach(d => {
+      const v = (d.loai_pt_tt || '').trim();
+      if (v) names.add(v);
+    });
+    return Array.from(names);
+  }, [data]);
 
   const yearOptions = useMemo(() => {
     const years = new Set<string>([String(new Date().getFullYear())]);
@@ -212,6 +232,7 @@ export const SurgerySafetyModule: React.FC<{ onBack?: () => void }> = ({ onBack 
         setFormData={setFormData}
         isEditing={!!editingId}
         areaOptions={areaOptions}
+        loaiPttOptions={loaiPttOptions}
         collectorOptions={collectorOptions}
         currentUserName={currentUserName}
         departments={departments}
@@ -414,6 +435,7 @@ interface AtptFormProps {
   setFormData: React.Dispatch<React.SetStateAction<SurgerySafety>>;
   isEditing: boolean;
   areaOptions: string[];
+  loaiPttOptions: string[];
   collectorOptions: string[];
   currentUserName: string;
   departments: any[];
@@ -423,11 +445,21 @@ interface AtptFormProps {
 }
 
 const AtptForm: React.FC<AtptFormProps> = ({
-  formData, setFormData, isEditing, areaOptions, collectorOptions, currentUserName, departments, userDepartment, onSubmit, onCancel
+  formData, setFormData, isEditing, areaOptions, loaiPttOptions, collectorOptions, currentUserName, departments, userDepartment, onSubmit, onCancel
 }) => {
   const score = scoreAtpt(formData.checklist_23);
   // Đơn vị của nhân viên được giám sát (Tự/Chéo) — lọc danh sách tên trong ô chọn
   const [atptStaffDept, setAtptStaffDept] = useState('');
+
+  // Nhóm PT/TT vừa gõ thêm trong phiên nhập này: hiện ngay trong gợi ý, và sẽ
+  // thành gợi ý sẵn cho mọi phiếu sau khi phiếu hiện tại được lưu.
+  const [loaiPttMoi, setLoaiPttMoi] = useState<string[]>([]);
+  const loaiPttAll = useMemo(() => {
+    const set = new Set<string>(loaiPttOptions);
+    loaiPttMoi.forEach(v => set.add(v));
+    if (formData.loai_pt_tt) set.add(formData.loai_pt_tt);
+    return Array.from(set);
+  }, [loaiPttOptions, loaiPttMoi, formData.loai_pt_tt]);
 
   const setAnswer = (id: string, value: AtptAnswer) =>
     setFormData(prev => ({ ...prev, checklist_23: { ...prev.checklist_23, [id]: value } }));
@@ -464,18 +496,31 @@ const AtptForm: React.FC<AtptFormProps> = ({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Khoa/Khu vực thực hiện <span className="text-red-500">*</span></label>
-            <input type="text" required list="atpt-form-area-options" value={formData.khoa_phau_thuat} onChange={e => setFormData({ ...formData, khoa_phau_thuat: e.target.value })} placeholder="Gõ từ khóa để tìm khu vực..." className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors" />
-            <datalist id="atpt-form-area-options">
-              {areaOptions.map(n => <option key={n} value={n} />)}
-            </datalist>
+            <DepartmentSelect
+              id="atpt-form-area"
+              required
+              value={formData.khoa_phau_thuat}
+              onChange={v => setFormData({ ...formData, khoa_phau_thuat: v })}
+              departments={departments}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+            />
           </div>
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-700">Loại PT/TT (nhóm) <span className="text-red-500">*</span></label>
-            <select required value={formData.loai_pt_tt} onChange={e => setFormData({ ...formData, loai_pt_tt: e.target.value })} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors">
-              <option value="">Chọn nhóm PT/TT...</option>
-              {ATPT_NHOM_PTTT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
+            <SearchableSelect
+              id="atpt-form-loai-ptt"
+              required
+              allowCustom
+              value={formData.loai_pt_tt || ''}
+              onChange={v => setFormData({ ...formData, loai_pt_tt: v })}
+              onCreate={v => setLoaiPttMoi(prev => prev.includes(v) ? prev : [...prev, v])}
+              options={loaiPttAll.map(o => ({ value: o }))}
+              placeholder="Chọn hoặc nhập nhóm PT/TT..."
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
+              emptyText="Chưa có nhóm nào khớp"
+            />
+            <p className="text-xs text-slate-400">Nhóm chưa có thì gõ vào rồi chọn dòng “+ Thêm mới”; lưu phiếu xong nhóm đó sẽ thành gợi ý sẵn cho lần sau.</p>
           </div>
 
           <div className="space-y-1.5">
