@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell, TrendingDown, Users } from 'lucide-react';
+import { LayoutGrid, Activity, AlertCircle, ShieldCheck, HandMetal, FileText, ArrowLeft, Pill, Bell, TrendingDown, Users, FileDown, ListChecks } from 'lucide-react';
 import { JCIFallIncidentsModule } from './JCIFallIncidentsModule';
 import { JCICriticalResultsModule } from './JCICriticalResultsModule';
 import { JCIHandoverIncidentsModule } from './JCIHandoverIncidentsModule';
@@ -9,6 +9,8 @@ import { HandHygieneModule } from './HandHygieneModule';
 import { usePermissions } from '../contexts/PermissionsContext';
 import { fetchJciIndicatorStats, JciIndicatorStats, JciCountRange } from '../readJciCounts';
 import DateRangeFilter, { DateFilterState } from './DateRangeFilter';
+import { Jci6csReportModal, Jci6csReportListPage } from './Jci6csReportModal';
+import type { BaoCaoJci6cs } from '../readBaoCaoJci6cs';
 
 /** Màu tỷ lệ đạt theo ngưỡng (đồng bộ với badge trong các module giám sát). */
 const rateColorClass = (rate: number): string =>
@@ -71,6 +73,10 @@ export const JCIModule: React.FC = () => {
   const [category, setCategory] = useState<string | null>(null);
   const [stats, setStats] = useState<JciIndicatorStats | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilterState>({ type: 'all', startDate: '', endDate: '' });
+  const [showReport, setShowReport] = useState(false);
+  // Trang danh sách báo cáo; `createdReport` = báo cáo cần mở ngay form sửa (vừa tạo hoặc đã có cùng kỳ)
+  const [showReportList, setShowReportList] = useState(false);
+  const [createdReport, setCreatedReport] = useState<{ item: BaoCaoJci6cs; justCreated: boolean } | null>(null);
   const { canView } = usePermissions();
 
   const range = useMemo(() => computeJciRange(dateFilter), [dateFilter]);
@@ -94,6 +100,15 @@ export const JCIModule: React.FC = () => {
     { id: 'SURGERY_SAFETY', label: 'Tuân thủ ATPT', icon: ShieldCheck, desc: 'Tỷ lệ tuân thủ An toàn phẫu thuật', bgClass: 'bg-emerald-300', iconClass: 'text-emerald-500' },
     { id: 'HAND_HYGIENE', label: 'Tuân thủ 5 thời điểm VST', icon: HandMetal, desc: 'Tỷ lệ tuân thủ 5 thời điểm vệ sinh tay', bgClass: 'bg-cyan-300', iconClass: 'text-cyan-500' },
   ].filter(item => canView('JCI', item.id));
+
+  if (showReportList) {
+    return (
+      <Jci6csReportListPage
+        initialEdit={createdReport}
+        onBack={() => { setShowReportList(false); setCreatedReport(null); }}
+      />
+    );
+  }
 
   if (category) {
     switch (category) {
@@ -123,26 +138,56 @@ export const JCIModule: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Nhãn chỉ số chất lượng + bộ lọc thời gian */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+      {/* Nhãn chỉ số chất lượng + bộ lọc thời gian: luôn cùng một dòng (kể cả mobile) */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
+        <div className="flex flex-shrink-0 gap-2">
           <button
             onClick={() => setActiveTab('INDICATORS')}
-            className={`flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-sm
+            className={`flex-shrink-0 whitespace-nowrap rounded-2xl px-3 py-2.5 text-xs font-black uppercase tracking-normal shadow-sm transition-all sm:px-6 sm:py-3 sm:text-sm sm:tracking-widest
               ${activeTab === 'INDICATORS' ? 'bg-teal-500 text-white shadow-teal-200' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'}`}
           >
             Chỉ số chất lượng
           </button>
         </div>
-        <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="sm:justify-end" />
+        <DateRangeFilter filter={dateFilter} onChange={setDateFilter} className="min-w-0 flex-1 justify-end sm:flex-none" />
+      </div>
+
+      {/* Mobile/tablet: 2 nút báo cáo cùng một dòng ngay dưới nhãn (desktop nằm ở đầu thẻ danh mục) */}
+      <div className="grid grid-cols-2 gap-2 lg:hidden">
+        <button
+          onClick={() => setShowReportList(true)}
+          className="flex items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+        >
+          <ListChecks size={16} className="flex-shrink-0" /> Danh sách báo cáo
+        </button>
+        <button
+          onClick={() => setShowReport(true)}
+          className="flex items-center justify-center gap-1.5 rounded-2xl bg-teal-500 px-3 py-2.5 text-xs font-bold text-white shadow-sm shadow-teal-200 transition-colors hover:bg-teal-600"
+        >
+          <FileDown size={16} className="flex-shrink-0" /> Tổng hợp báo cáo
+        </button>
       </div>
 
       {/* Grid Content */}
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-3">
           <h2 className="text-main-title font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
             <LayoutGrid className="text-teal-500" size={24} /> Danh mục chỉ số
           </h2>
+          <div className="hidden flex-wrap gap-2 lg:flex">
+            <button
+              onClick={() => setShowReportList(true)}
+              className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+            >
+              <ListChecks size={16} /> Danh sách báo cáo
+            </button>
+            <button
+              onClick={() => setShowReport(true)}
+              className="flex items-center gap-2 rounded-2xl bg-teal-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-sm shadow-teal-200 transition-colors hover:bg-teal-600"
+            >
+              <FileDown size={16} /> Xuất báo cáo tổng hợp 6 chỉ số
+            </button>
+          </div>
         </div>
         <div className="p-4 sm:p-6 lg:p-8 bg-slate-50/30">
           <div className="grid grid-cols-4 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-3 lg:gap-6">
@@ -193,6 +238,13 @@ export const JCIModule: React.FC = () => {
           </div>
         </div>
       </div>
+      {showReport && (
+        <Jci6csReportModal
+          onClose={() => setShowReport(false)}
+          onCreated={item => { setShowReport(false); setCreatedReport({ item, justCreated: true }); setShowReportList(true); }}
+          onOpenExisting={item => { setShowReport(false); setCreatedReport({ item, justCreated: false }); setShowReportList(true); }}
+        />
+      )}
     </div>
   );
 };
