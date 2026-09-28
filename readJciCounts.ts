@@ -108,6 +108,8 @@ const countRowsWhere = async (
  * Với các chỉ số cần tính "đạt" phía client (dựa trên checklist_data), tải về
  * đúng các cột cần thiết rồi tính tổng/đạt trong JS để khớp với module.
  */
+const PAGE_SIZE = 1000;
+
 const totalAndDatFromRows = async (
   table: string,
   selectCols: string,
@@ -115,16 +117,30 @@ const totalAndDatFromRows = async (
   dateCol: string,
   range?: JciCountRange | null
 ): Promise<JciIndicatorStat> => {
-  let query = supabase.from(table).select(selectCols);
-  if (range && dateCol) {
-    query = query.gte(dateCol, range.start).lte(dateCol, range.end);
+  const rows: any[] = [];
+
+  // Phân trang: PostgREST chỉ trả tối đa 1.000 dòng/lượt và cắt bớt không báo
+  // lỗi, nên bảng vượt ngưỡng sẽ hiện thiếu phiếu trên thẻ chỉ số.
+  for (let from = 0; ; from += PAGE_SIZE) {
+    let query = supabase.from(table).select(selectCols);
+    if (range && dateCol) {
+      query = query.gte(dateCol, range.start).lte(dateCol, range.end);
+    }
+    const { data, error } = await query
+      .order(dateCol, { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error(`Error fetching ${table}:`, error);
+      return { total: 0, dat: 0 };
+    }
+
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) break;
   }
-  const { data, error } = await query;
-  if (error) {
-    console.error(`Error fetching ${table}:`, error);
-    return { total: 0, dat: 0 };
-  }
-  const rows = data || [];
+
   return { total: rows.length, dat: rows.filter(isDat).length };
 };
 

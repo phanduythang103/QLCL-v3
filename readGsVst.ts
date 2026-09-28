@@ -1,14 +1,10 @@
 import { supabase } from './supabaseClient';
 import { GsVst } from './types';
+import { fetchAllRows } from './utils/fetchAllRows';
 
 export const fetchGsVst = async () => {
-  const { data, error } = await supabase
-    .from('gs_vst')
-    .select('*')
-    .order('ngay_giam_sat', { ascending: false });
-
-  if (error) throw error;
-  return data as GsVst[];
+  // Phân trang: bảng sắp chạm mốc 1.000 phiếu, gọi 1 lượt sẽ bị cắt bớt âm thầm
+  return await fetchAllRows<GsVst>('gs_vst', { orderBy: 'ngay_giam_sat' });
 };
 
 export const addGsVst = async (item: GsVst) => {

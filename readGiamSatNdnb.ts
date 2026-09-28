@@ -1,18 +1,16 @@
 import { supabase } from './supabaseClient';
 import { GiamSatNdnb } from './types';
 import { compressFile } from './utils/compression';
+import { fetchAllRows } from './utils/fetchAllRows';
 
 export async function fetchGiamSatNdnb(): Promise<GiamSatNdnb[]> {
-  const { data, error } = await supabase
-    .from('gs_ndnb')
-    .select('*')
-    .order('ngay_giam_sat', { ascending: false });
-
-  if (error) {
+  try {
+    // Phân trang: bảng đã vượt 1.000 phiếu, gọi 1 lượt sẽ bị cắt bớt âm thầm
+    return await fetchAllRows<GiamSatNdnb>('gs_ndnb', { orderBy: 'ngay_giam_sat' });
+  } catch (error) {
     console.error('Error fetching gs_ndnb:', error);
     throw error;
   }
-  return data || [];
 }
 
 export async function addGiamSatNdnb(record: Omit<GiamSatNdnb, 'id' | 'created_at' | 'updated_at'>): Promise<GiamSatNdnb> {
