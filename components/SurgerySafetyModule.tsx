@@ -658,7 +658,9 @@ const AtptForm: React.FC<AtptFormProps> = ({
                     {ATPT_ANSWERS.map(a => {
                       const active = formData.checklist_23?.[c.id] === a;
                       return (
-                        <label key={a} className={`flex items-center justify-center px-3 py-2 rounded-xl cursor-pointer transition-all border text-xs font-medium whitespace-nowrap ${answerStyle(a, active)}`}>
+                        // relative: giữ ô radio sr-only (absolute) nằm trong nhãn; nếu không,
+                        // trên mobile trình duyệt focus nó ở tận khung gốc overflow-hidden và cuộn trắng trang
+                        <label key={a} className={`relative flex items-center justify-center px-3 py-2 rounded-xl cursor-pointer transition-all border text-xs font-medium whitespace-nowrap ${answerStyle(a, active)}`}>
                           <input type="radio" name={c.id} className="sr-only" checked={active} onChange={() => setAnswer(c.id, a)} />
                           {a}
                         </label>
