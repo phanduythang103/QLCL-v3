@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { saveAs } from 'file-saver';
 import {
-  X, FileDown, Download, Trash2, Loader2, FileText, CalendarRange, Building2, Pencil, Save, Plus, ListChecks, Search, ArrowLeft, Eye,
+  X, FileDown, ChevronLeft, ChevronRight, Download, Trash2, Loader2, FileText, CalendarRange, Building2, Pencil, Save, Plus, ListChecks, Search, ArrowLeft, Eye,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -15,6 +15,8 @@ import {
   fetchBaoCaoJci6csData, updateBaoCaoJci6cs, findBaoCaoJci6cs, blobToBase64, base64ToBlob,
 } from '../readBaoCaoJci6cs';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import { DepartmentSelect } from './DepartmentSelect';
+import { DmDonVi, fetchDmDonVi } from '../readDmDonVi';
 
 const KY_OPTIONS: { value: KyLoai; label: string }[] = [
   { value: 'thang', label: 'Tháng' },
@@ -68,6 +70,35 @@ const ModalShell: React.FC<{
   </div>
 );
 
+const deptLabel = (d: DmDonVi) => `${d.ma_don_vi} - ${d.ten_don_vi}`;
+
+/** Chọn đơn vị theo Khối: lọc danh mục theo khối trước rồi chọn đơn vị trong khối đó. */
+const KhoiDeptPicker: React.FC<{
+  depts: DmDonVi[]; khoi: string; onKhoiChange: (k: string) => void;
+  value: string; onChange: (v: string) => void; placeholder: string;
+}> = ({ depts, khoi, onKhoiChange, value, onChange, placeholder }) => {
+  const khoiList = useMemo(() => [...new Set(depts.map(d => (d.khoi || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi')), [depts]);
+  const options = useMemo(() => depts.filter(d => !khoi || (d.khoi || '').trim() === khoi), [depts, khoi]);
+  return (
+    <div className="grid gap-2 sm:grid-cols-[11rem_1fr]">
+      <select
+        value={khoi}
+        onChange={e => {
+          const k = e.target.value;
+          onKhoiChange(k);
+          // Đơn vị đang chọn không thuộc khối mới thì bỏ chọn
+          if (k && value && !depts.some(d => deptLabel(d) === value && (d.khoi || '').trim() === k)) onChange('');
+        }}
+        className={inputCls}
+      >
+        <option value="">Tất cả khối</option>
+        {khoiList.map(k => <option key={k} value={k}>Khối {k}</option>)}
+      </select>
+      <DepartmentSelect value={value} onChange={onChange} departments={options} required placeholder={placeholder} />
+    </div>
+  );
+};
+
 const Alert: React.FC<{ kind: 'error' | 'success'; children: React.ReactNode }> = ({ kind, children }) => (
   <div className={`rounded-xl border px-4 py-3 text-sm font-semibold ${kind === 'error' ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
     {children}
@@ -93,6 +124,15 @@ export const Jci6csReportModal: React.FC<{
   // User thường: mặc định cấp Khoa/đơn vị; Admin chọn Cơ quan/đầu mối hoặc Toàn viện
   const [cap, setCap] = useState<CapBaoCao>(isAdmin ? 'toan_vien' : 'khoa');
   const [tenCoQuan, setTenCoQuan] = useState(userDept);
+  // Admin: chọn khoa/đơn vị bất kỳ để tổng hợp; danh mục lọc theo Khối
+  const [khoaChon, setKhoaChon] = useState('');
+  const [khoiKhoa, setKhoiKhoa] = useState('');
+  const [khoiCoQuan, setKhoiCoQuan] = useState('Cơ quan');
+  const [depts, setDepts] = useState<DmDonVi[]>([]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchDmDonVi().then(setDepts).catch(() => setDepts([]));
+  }, [isAdmin]);
   const [kinhGui, setKinhGui] = useState('Giám đốc Bệnh viện Quân y 103');
   // Mặc định áp dụng cả 6 chỉ số; đơn vị bỏ chọn chỉ số không áp dụng (KAD)
   const [khongApDung, setKhongApDung] = useState<IndicatorId[]>([]);
@@ -100,7 +140,7 @@ export const Jci6csReportModal: React.FC<{
   const [error, setError] = useState('');
 
   const period: ReportPeriod = { loai: kyLoai, so: kyLoai === 'thang' ? thang : kyLoai === 'quy' ? quy : 0, nam };
-  const donVi = cap === 'khoa' ? userDept : cap === 'co_quan' ? tenCoQuan.trim() : 'Bệnh viện Quân y 103';
+  const donVi = cap === 'khoa' ? (isAdmin ? khoaChon.trim() : userDept) : cap === 'co_quan' ? tenCoQuan.trim() : 'Bệnh viện Quân y 103';
   const reportKey = { ky_loai: period.loai, ky_so: period.so, nam: period.nam, cap_bao_cao: cap, don_vi: donVi };
 
   // Mỗi đơn vị chỉ 1 báo cáo cho mỗi kỳ: kiểm tra ngay khi đổi kỳ/cấp để báo trước
@@ -121,12 +161,14 @@ export const Jci6csReportModal: React.FC<{
 
   const handleCreate = async () => {
     setError('');
-    if (cap === 'khoa' && !userDept) {
-      setError('Tài khoản chưa được gán Khoa/đơn vị, không thể lập báo cáo cấp khoa.');
+    if (cap === 'khoa' && !donVi) {
+      setError(isAdmin
+        ? 'Vui lòng chọn Khoa/đơn vị cần tổng hợp.'
+        : 'Tài khoản chưa được gán Khoa/đơn vị, không thể lập báo cáo cấp khoa.');
       return;
     }
     if (cap === 'co_quan' && !donVi) {
-      setError('Vui lòng nhập tên Cơ quan/đầu mối chỉ số.');
+      setError('Vui lòng chọn Cơ quan/đầu mối chỉ số.');
       return;
     }
     setCreating(true);
@@ -211,8 +253,8 @@ export const Jci6csReportModal: React.FC<{
             <Building2 size={16} className="text-teal-500" /> Cấp báo cáo
           </label>
           {isAdmin ? (
-            <div className="grid gap-2 sm:grid-cols-2">
-              {(['co_quan', 'toan_vien'] as CapBaoCao[]).map(c => (
+            <div className="grid gap-2 sm:grid-cols-3">
+              {(['khoa', 'co_quan', 'toan_vien'] as CapBaoCao[]).map(c => (
                 <label
                   key={c}
                   className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-bold transition-all ${cap === c ? 'border-teal-500 bg-teal-50 text-teal-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
@@ -227,18 +269,22 @@ export const Jci6csReportModal: React.FC<{
               {CAP_BAO_CAO_LABEL.khoa}: <span className="font-black">{userDept || 'Chưa gán khoa/đơn vị'}</span>
             </div>
           )}
+          {isAdmin && cap === 'khoa' && (
+            <KhoiDeptPicker
+              depts={depts} khoi={khoiKhoa} onKhoiChange={setKhoiKhoa}
+              value={khoaChon} onChange={setKhoaChon} placeholder="-- Chọn khoa/đơn vị cần tổng hợp --"
+            />
+          )}
           {isAdmin && cap === 'co_quan' && (
-            <input
-              value={tenCoQuan}
-              onChange={e => setTenCoQuan(e.target.value)}
-              placeholder="Tên cơ quan/đầu mối chỉ số (VD: Phòng Quản lý chất lượng)"
-              className={inputCls}
+            <KhoiDeptPicker
+              depts={depts} khoi={khoiCoQuan} onKhoiChange={setKhoiCoQuan}
+              value={tenCoQuan} onChange={setTenCoQuan} placeholder="-- Chọn cơ quan/đầu mối chỉ số --"
             />
           )}
           <input value={kinhGui} onChange={e => setKinhGui(e.target.value)} placeholder="Kính gửi" className={inputCls} />
           <p className="text-xs font-medium text-slate-400">
             {cap === 'khoa'
-              ? 'Số liệu lọc theo khoa/đơn vị của tài khoản. Tỷ suất sự cố bàn giao và ngã chỉ tính được ở cấp toàn viện (mẫu số nhập theo toàn viện).'
+              ? `Số liệu lọc theo ${isAdmin ? 'khoa/đơn vị được chọn' : 'khoa/đơn vị của tài khoản'}. Tỷ suất sự cố bàn giao và ngã chỉ tính được ở cấp toàn viện (mẫu số nhập theo toàn viện).`
               : 'Số liệu tổng hợp toàn bộ các khoa/đơn vị trong bệnh viện.'}
           </p>
         </section>
@@ -307,6 +353,8 @@ export const Jci6csReportModal: React.FC<{
 // 2. Trang danh sách báo cáo đã lưu (user chỉ thấy báo cáo của đơn vị mình)
 // ===========================================================================
 
+const PAGE_SIZE = 10;
+
 const kyLabel = (i: BaoCaoJci6cs) => describePeriod({ loai: i.ky_loai, so: i.ky_so, nam: i.nam });
 
 export const Jci6csReportListPage: React.FC<{ onBack: () => void; initialEdit?: { item: BaoCaoJci6cs; justCreated: boolean } | null }> = ({ onBack, initialEdit }) => {
@@ -347,6 +395,14 @@ export const Jci6csReportListPage: React.FC<{ onBack: () => void; initialEdit?: 
     (kyFilter === 'all' || i.ky_loai === kyFilter) &&
     (!search.trim() || `${i.ten_bao_cao} ${i.nguoi_tao || ''}`.toLowerCase().includes(search.trim().toLowerCase()))
   );
+
+  // Phân trang 10 dòng/trang; đổi bộ lọc thì quay về trang 1
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [search, namFilter, kyFilter]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const curPage = Math.min(page, totalPages);
+  const pageStart = (curPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
   const handleDownload = async (item: BaoCaoJci6cs) => {
     setDownloadingId(item.id);
@@ -492,9 +548,9 @@ export const Jci6csReportListPage: React.FC<{ onBack: () => void; initialEdit?: 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filtered.map((item, idx) => (
+                  {pageItems.map((item, idx) => (
                     <tr key={item.id} className="hover:bg-slate-50/60">
-                      <td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td>
+                      <td className="px-4 py-3 text-center text-slate-500">{pageStart + idx + 1}</td>
                       <td className="whitespace-nowrap px-4 py-3 font-bold text-slate-800">{kyLabel(item)}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-slate-600">{CAP_BAO_CAO_LABEL[item.cap_bao_cao]}</td>
                       <td className="px-4 py-3 text-slate-600">{item.cap_bao_cao === 'toan_vien' ? 'Toàn viện' : item.don_vi || '—'}</td>
@@ -508,7 +564,7 @@ export const Jci6csReportListPage: React.FC<{ onBack: () => void; initialEdit?: 
             </div>
             {/* Mobile: thẻ */}
             <ul className="divide-y divide-slate-100 md:hidden">
-              {filtered.map(item => (
+              {pageItems.map(item => (
                 <li key={item.id} className="space-y-2 px-4 py-3">
                   <p className="text-sm font-bold text-slate-800">{item.ten_bao_cao}</p>
                   <p className="text-xs text-slate-400">{CAP_BAO_CAO_LABEL[item.cap_bao_cao]} · {item.nguoi_tao || '—'} · {fmtDateTime(item.created_at)}</p>
@@ -516,6 +572,38 @@ export const Jci6csReportListPage: React.FC<{ onBack: () => void; initialEdit?: 
                 </li>
               ))}
             </ul>
+            {totalPages > 1 && (
+              <div className="flex flex-col items-center justify-between gap-2 border-t border-slate-100 px-4 py-3 text-xs font-semibold text-slate-500 sm:flex-row">
+                <span>Hiển thị {pageStart + 1}–{pageStart + pageItems.length} / {filtered.length} báo cáo</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPage(curPage - 1)}
+                    disabled={curPage <= 1}
+                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+                    aria-label="Trang trước"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`min-w-8 rounded-lg px-2.5 py-1.5 font-black ${n === curPage ? 'bg-teal-500 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage(curPage + 1)}
+                    disabled={curPage >= totalPages}
+                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+                    aria-label="Trang sau"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
