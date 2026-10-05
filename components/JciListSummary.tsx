@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
+import { sameDepartment, hasDeptCode } from '../utils/departmentMatch';
 
 /** Số dòng mỗi trang của bảng danh sách giám sát các chỉ số JCI */
 export const JCI_PAGE_SIZE = 10;
@@ -97,9 +98,19 @@ export function summarizeByDept<T>(
 ): { rows: DeptSummaryRow[]; total: DeptSummaryRow } {
   const map = new Map<string, DeptSummaryRow>();
   const total: DeptSummaryRow = { dept: 'Tổng cộng', phieu: 0, coHoi: getCounts ? 0 : null, dat: getCounts ? 0 : null };
+  // Gộp biến thể tên của cùng một khoa ("Thận và lọc máu" ↔ "A12 - Thận - lọc máu");
+  // nhãn dòng ưu tiên dạng có mã khoa
+  const groupOf = (d: string): string => {
+    for (const row of map.values()) {
+      if (!sameDepartment(row.dept, d)) continue;
+      if (hasDeptCode(d) && !hasDeptCode(row.dept)) { map.delete(row.dept); row.dept = d; map.set(d, row); }
+      return row.dept;
+    }
+    return d;
+  };
   for (const item of items) {
     const raw = getDept(item);
-    const depts = Array.from(new Set((Array.isArray(raw) ? raw : [raw]).map(d => (d || '').trim()).filter(Boolean)));
+    const depts = Array.from(new Set((Array.isArray(raw) ? raw : [raw]).map(d => (d || '').trim()).filter(Boolean).map(groupOf)));
     if (depts.length === 0) depts.push('Chưa xác định');
     const c = getCounts?.(item);
     for (const d of depts) {

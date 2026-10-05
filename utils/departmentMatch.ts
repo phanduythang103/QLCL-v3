@@ -28,11 +28,21 @@ const splitDept = (s?: string): [string, string] => {
   return isCodeLike(code) || spaced ? [code, name] : ['', n];
 };
 
+/** Giá trị khoa có kèm mã ("A12 - Thận - lọc máu"). */
+export const hasDeptCode = (s?: string): boolean => !!splitDept(s)[0];
+
 /** Từ khoá lọc rỗng / "tất cả" / "all" nghĩa là không lọc. */
 export const isAllDepartments = (filterValue?: string): boolean => {
   const n = normalize(filterValue);
   return !n || n === 'tất cả' || n === 'all';
 };
+
+/**
+ * Khoá so sánh tên khoa: bỏ dấu nối "-", "&", ",", "/" và chữ "và" giữa các vế,
+ * nên "Thận - lọc máu", "Thận và Lọc máu", "Thận & lọc máu" cùng là một khoa.
+ */
+const nameKey = (s: string): string =>
+  normalize(s.replace(/[-–&,/]/g, ' ').replace(/(^|\s)và(?=\s|$)/g, ' '));
 
 /**
  * Hai tên khoa trùng nhau hoặc tên này chứa tên kia. Không so chuỗi con với mã khoa:
@@ -42,8 +52,23 @@ const namesOverlap = (a: string, b: string): boolean => {
   if (!a || !b) return false;
   if (a === b) return true;
   if (isCodeLike(a) || isCodeLike(b)) return false;
-  const [shorter, longer] = a.length <= b.length ? [a, b] : [b, a];
+  const [ka, kb] = [nameKey(a), nameKey(b)];
+  const [shorter, longer] = ka.length <= kb.length ? [ka, kb] : [kb, ka];
   return shorter.length >= 3 && longer.includes(shorter);
+};
+
+/**
+ * Hai giá trị khoa chỉ cùng một khoa (dùng để gộp dòng tổng hợp) - chặt hơn
+ * `matchesDepartment`: tên phải trùng hẳn (sau `nameKey`), không chấp nhận tên chứa tên.
+ */
+export const sameDepartment = (a?: string, b?: string): boolean => {
+  if (!normalize(a) || !normalize(b)) return false;
+  const [codeA, nameA] = splitDept(a);
+  const [codeB, nameB] = splitDept(b);
+  if (codeA && codeB) return codeA === codeB;
+  if (codeA && nameB === codeA) return true;
+  if (codeB && nameA === codeB) return true;
+  return nameKey(nameA) === nameKey(nameB);
 };
 
 /**
