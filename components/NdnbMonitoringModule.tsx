@@ -149,20 +149,14 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
 
   // Danh sách: 10 dòng/trang + bảng tổng hợp theo đơn vị bên dưới
   const pager = usePagination(filteredData);
-  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => i.khoa_duoc_giam_sat, i => ({ coHoi: i.tong_co_hoi || 0, dat: i.tong_dat || 0 })), [filteredData]);
+  // Tính theo lượt (đạt đủ c1 + c2) — khớp với Báo cáo quy trình và BC 06 chỉ số
+  const deptSummary = useMemo(() => summarizeByDept(filteredData, i => i.khoa_duoc_giam_sat, i => ({ coHoi: 1, dat: computeKetQua(i.checklist_data) === 'Đạt' ? 1 : 0 })), [filteredData]);
 
   const stats = useMemo(() => {
     const total = filteredData.length;
-    let totalAchieved = 0;
-    let totalOpportunities = 0;
-    
-    filteredData.forEach(item => {
-      totalAchieved += item.tong_dat || 0;
-      totalOpportunities += item.tong_co_hoi || 0;
-    });
-    
-    const complianceRate = totalOpportunities > 0 ? (totalAchieved / totalOpportunities) * 100 : 0;
-    
+    const dat = filteredData.filter(item => computeKetQua(item.checklist_data) === 'Đạt').length;
+    const complianceRate = total > 0 ? (dat / total) * 100 : 0;
+
     return {
       total,
       complianceRate: complianceRate.toFixed(1)
@@ -382,7 +376,7 @@ export const NdnbMonitoringModule: React.FC<{ onBack?: () => void }> = ({ onBack
         </div>
         <ListPagination page={pager.page} totalPages={pager.totalPages} total={pager.total} onPageChange={pager.setPage} unit="phiếu" />
       </div>
-      <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} coHoiLabel="Số cơ hội (tiêu chí)" note="Tỷ lệ đạt = tổng tiêu chí đạt / tổng tiêu chí áp dụng." />
+      <DeptSummaryTable rows={deptSummary.rows} total={deptSummary.total} coHoiLabel="Số lượt giám sát" note="Tỷ lệ đạt = số lượt xác nhận đủ họ tên + ngày sinh / số lượt được giám sát." />
     </>
       ) : (
         <NdnbProcessReport data={data} departments={departments} />

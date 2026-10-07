@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { saveAs } from 'file-saver';
 import {
-  X, FileDown, ChevronLeft, ChevronRight, Download, Trash2, Loader2, FileText, CalendarRange, Building2, Pencil, Save, Plus, ListChecks, Search, ArrowLeft, Eye,
+  X, FileDown, ChevronLeft, ChevronRight, Download, Trash2, Loader2, FileText, CalendarRange, Building2, Pencil, Save, Plus, ListChecks, Search, ArrowLeft, Eye, RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -715,6 +715,37 @@ export const Jci6csReportEditor: React.FC<{
     }
   };
 
+  // Tổng hợp lại số liệu từ dữ liệu giám sát hiện tại; giữ phần đơn vị tự nhập
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    if (!data) return;
+    if (!window.confirm('Cập nhật lại số liệu từ dữ liệu giám sát hiện tại?\n\nSố liệu, nội dung tồn tại, khoa liên quan và ô Đánh giá sẽ được tính lại. Thông tin chung, nguyên nhân và kiến nghị được giữ nguyên.')) return;
+    setRefreshing(true);
+    setError('');
+    setMessage('');
+    try {
+      const khongApDung = INDICATOR_ORDER.filter(id => data.indicators[id].khongApDung);
+      const fresh = await buildJci6csReport({ period: data.period, cap: data.cap, donVi: data.donVi, kinhGui: data.kinhGui, nguoiLap: data.nguoiLap, khongApDung });
+      const indicators = { ...fresh.indicators };
+      INDICATOR_ORDER.forEach(id => { indicators[id] = { ...indicators[id], nguyenNhan: data.indicators[id].nguyenNhan }; });
+      setData({
+        ...fresh,
+        indicators,
+        ngayLap: data.ngayLap,
+        soVanBan: data.soVanBan,
+        nguoiKy: data.nguoiKy,
+        chungNguyenNhan: data.chungNguyenNhan,
+        kienNghi: data.kienNghi ?? defaultKienNghi(fresh),
+      });
+      setDirty(true);
+      setMessage('Đã cập nhật lại số liệu. Kiểm tra rồi bấm Lưu để ghi vào báo cáo.');
+    } catch (e: any) {
+      setError(`Lỗi cập nhật dữ liệu: ${e.message}`);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   // Tải file đúng với nội dung đang hiển thị trên form
   const handleDownload = async () => {
     if (!data) return;
@@ -751,7 +782,17 @@ export const Jci6csReportEditor: React.FC<{
           </div>
         </div>
         {data && (
-          <div className="flex w-full gap-2 sm:w-auto">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+            {!readOnly && (
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-700 hover:bg-sky-100 disabled:opacity-60 sm:flex-none"
+                title="Tổng hợp lại số liệu từ dữ liệu giám sát hiện tại"
+              >
+                <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Đang cập nhật...' : 'Cập nhật dữ liệu'}
+              </button>
+            )}
             <button
               onClick={handleDownload}
               disabled={downloading}
