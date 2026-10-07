@@ -1,13 +1,13 @@
 import { supabase } from './supabaseClient';
 
-export type DoiTuongNhanVien = 'Điều dưỡng' | 'Bác sỹ' | 'Kỹ thuật viên';
+export type DoiTuongNhanVien = 'Điều dưỡng' | 'Bác sỹ' | 'Kỹ thuật viên' | 'Khác';
 
 /**
  * Danh sách chức danh (đối tượng) dùng chung cho toàn hệ thống:
  * cấu hình Danh sách nhân viên và ô chọn tên↔đối tượng trên các phiếu giám sát (form mẫu).
  * Sửa ở đây là đồng bộ mọi nơi.
  */
-export const DOI_TUONG_OPTIONS: string[] = ['Điều dưỡng', 'Bác sỹ', 'Kỹ thuật viên'];
+export const DOI_TUONG_OPTIONS: string[] = ['Điều dưỡng', 'Bác sỹ', 'Kỹ thuật viên', 'Khác'];
 
 export interface DanhSachNhanVien {
   id: string;

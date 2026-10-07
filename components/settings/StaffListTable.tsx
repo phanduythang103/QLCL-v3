@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { fetchDanhSachNhanVien, addDanhSachNhanVien, updateDanhSachNhanVien, deleteDanhSachNhanVien, syncNhanVienToPhieuGiamSat, DOI_TUONG_OPTIONS } from '../../readDanhSachNhanVien';
 import { fetchDmDonVi } from '../../readDmDonVi';
-import { Edit2, Trash2, Plus, X, Check, Search, Stethoscope, HeartPulse, Wrench, RefreshCw } from 'lucide-react';
+import { Edit2, Trash2, Plus, X, Check, Search, Stethoscope, HeartPulse, Wrench, RefreshCw, UserRound } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function StaffListTable() {
@@ -362,6 +362,8 @@ export default function StaffListTable() {
                           ? { cls: 'bg-blue-50 text-blue-600 border-blue-100', icon: <Stethoscope size={12} /> }
                           : item.doi_tuong === 'Kỹ thuật viên'
                           ? { cls: 'bg-amber-50 text-amber-600 border-amber-100', icon: <Wrench size={12} /> }
+                          : item.doi_tuong === 'Khác'
+                          ? { cls: 'bg-slate-100 text-slate-600 border-slate-200', icon: <UserRound size={12} /> }
                           : { cls: 'bg-purple-50 text-purple-600 border-purple-100', icon: <HeartPulse size={12} /> };
                         return (
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${style.cls}`}>

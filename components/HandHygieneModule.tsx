@@ -986,7 +986,7 @@ const VstForm = ({ item, isReadOnly, onClose, onSaved, currentUser, creator, dep
                   onChange={({ name, doiTuong }) => setFormData({ ...formData, nguoi_duoc_giam_sat: name, doi_tuong: doiTuong })}
                   disabled={isReadOnly}
                   required
-                  doiTuongOptions={[...DOI_TUONG_OPTIONS, 'Hộ lý', 'Khác']}
+                  doiTuongOptions={[...DOI_TUONG_OPTIONS.filter(o => o !== 'Khác'), 'Hộ lý', 'Khác']}
                   idPrefix="vst-nguoi-duoc-gs"
                   namePlaceholder="Chọn/nhập họ tên NVYT"
                   wrapperClassName="flex gap-2"
