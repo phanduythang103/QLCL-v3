@@ -446,7 +446,7 @@ const answerStyle = (answer: AtptAnswer, active: boolean) => {
   if (!active) return 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50';
   if (answer === 'Có') return 'bg-teal-50 border-teal-200 text-teal-700 shadow-sm';
   if (answer === 'Không') return 'bg-red-50 border-red-200 text-red-700 shadow-sm';
-  return 'bg-amber-100 border-amber-400 text-amber-800 shadow-sm';
+  return 'bg-orange-500 border-orange-500 text-white shadow-sm';
 };
 
 interface AtptFormProps {
