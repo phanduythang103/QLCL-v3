@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ChevronRight, ClipboardList, ArrowLeft, ClipboardCheck, Smile } from 'lucide-react';
+import { ChevronRight, ClipboardList, ArrowLeft, ClipboardCheck, Smile, FlaskConical } from 'lucide-react';
 import { TieuChiCoBanModule } from './TieuChiCoBanModule';
 import { StandardMeasurementModule } from './StandardMeasurementModule';
+import { IsoSatisfactionSurvey } from './IsoSatisfactionSurvey';
 
 interface AssessmentReportsProps {
   setViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
@@ -62,6 +63,20 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
     );
   }
 
+  if (activeSubModule === 'standard-iso') {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 text-slate-500 hover:text-[#059669] font-black text-[10px] uppercase transition-all bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"
+        >
+          <ArrowLeft size={14} /> Quay lại danh sách tiêu chuẩn
+        </button>
+        <IsoSatisfactionSurvey setParentViewMode={setViewMode} />
+      </div>
+    );
+  }
+
   const reportItems = [
     {
       id: 'standard-1',
@@ -76,13 +91,20 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
       icon: <Smile size={32} />,
       color: '#3b82f6',
       bgColor: '#eff6ff',
+    },
+    {
+      id: 'standard-iso',
+      title: 'Khảo sát hài lòng ISO',
+      icon: <FlaskConical size={32} />,
+      color: '#8b5cf6',
+      bgColor: '#f5f3ff',
     }
   ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Desktop Grid */}
-      <div className="hidden md:grid grid-cols-2 gap-8">
+      <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8">
         {reportItems.map(item => (
           <button
             key={item.id}
@@ -106,7 +128,7 @@ export const AssessmentReports: React.FC<AssessmentReportsProps> = ({ setViewMod
 
       {/* Mobile Grid - Single Card Style */}
       <div className="md:hidden bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-50">
-        <div className="grid grid-cols-2 gap-y-12 gap-x-6">
+        <div className="grid grid-cols-3 gap-y-12 gap-x-4">
           {reportItems.map(item => (
             <button
               key={item.id}

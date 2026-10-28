@@ -40,6 +40,17 @@ const matchDate = (value: string | undefined, f: DateFilterState) => {
       const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       return d.getMonth() === last.getMonth() && d.getFullYear() === last.getFullYear();
     }
+    case 'thisQuarter':
+    case 'lastQuarter': {
+      let q = Math.floor(now.getMonth() / 3) - (f.type === 'lastQuarter' ? 1 : 0);
+      let y = now.getFullYear();
+      if (q < 0) { q = 3; y -= 1; }
+      return d.getFullYear() === y && Math.floor(d.getMonth() / 3) === q;
+    }
+    case 'thisYear':
+      return d.getFullYear() === now.getFullYear();
+    case 'lastYear':
+      return d.getFullYear() === now.getFullYear() - 1;
     case 'custom': {
       const start = f.startDate ? new Date(f.startDate) : null;
       const end = f.endDate ? new Date(f.endDate) : null;
