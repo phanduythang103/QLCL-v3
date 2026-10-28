@@ -6,6 +6,7 @@ import {
   LEGACY_INPATIENT_QUESTIONS, isMauByt, returnIntentLabel,
 } from '../types/patientSatisfactionMauByt';
 import { CheckOption, ScoreTable } from './PatientSatisfactionMauByt';
+import { PatientSurveyPaperView } from './PatientSurveyPaper';
 
 interface Props {
   data: InpatientSurveyResponse | undefined;
@@ -20,6 +21,7 @@ export const InpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) =
   };
 
   const mauByt = isMauByt(data, INPATIENT_SECTIONS);
+  if (mauByt) return <PatientSurveyPaperView kind="noi_tru" data={data} onBack={onBack} />;
 
   return (
     <div className="w-full h-full bg-slate-100/50 p-2 md:p-8 animate-in fade-in zoom-in-95 duration-500">
