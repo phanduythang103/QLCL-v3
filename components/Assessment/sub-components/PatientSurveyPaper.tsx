@@ -59,9 +59,11 @@ const cell = 'border border-black px-1.5 py-1 align-top';
 const lineInput = 'bg-transparent border-0 border-b border-dotted border-slate-500 outline-none px-1 font-semibold text-[#047857] focus:border-[#059669] disabled:text-[#047857] disabled:opacity-100';
 
 /** Số trong vòng tròn giống ①..⑤ trên phiếu giấy */
-const Circle: React.FC<{ n: number | string; selected?: boolean; size?: 'sm' | 'md'; onClick?: () => void; disabled?: boolean; title?: string }> = ({ n, selected, size = 'md', onClick, disabled, title }) => {
-  const dim = size === 'sm' ? 'w-[18px] h-[18px] text-[11px]' : 'w-[25px] h-[25px] md:w-8 md:h-8 text-[12px] md:text-[15px]';
-  const cls = `${dim} inline-flex items-center justify-center rounded-full border border-black font-sans font-semibold shrink-0 transition-all ${selected ? 'bg-[#059669] border-[#059669] text-white shadow' : 'bg-white text-black'}`;
+const Circle: React.FC<{ n: number | string; selected?: boolean; size?: 'sm' | 'md' | 'lg'; onClick?: () => void; disabled?: boolean; title?: string }> = ({ n, selected, size = 'md', onClick, disabled, title }) => {
+  const dim = size === 'sm' ? 'w-[18px] h-[18px] text-[11px]'
+    : size === 'lg' ? 'w-11 h-11 text-[17px]'
+      : 'w-[25px] h-[25px] md:w-8 md:h-8 text-[12px] md:text-[15px]';
+  const cls = `kshl-circle ${selected ? 'kshl-circle-on' : ''} ${dim} inline-flex items-center justify-center rounded-full border border-black font-sans font-semibold shrink-0 transition-all ${selected ? 'bg-[#059669] border-[#059669] text-white shadow' : 'bg-white text-black'}`;
   if (!onClick) return <span className={cls}>{n}</span>;
   return (
     <button type="button" title={title} disabled={disabled} onClick={onClick} className={`${cls} ${disabled ? '' : 'hover:border-[#059669] hover:text-[#059669] cursor-pointer'} ${selected && !disabled ? 'hover:text-white' : ''}`}>
@@ -96,7 +98,7 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
   const maKhoa = (data.department || '').includes(' - ') ? data.department.split(' - ')[0] : '';
 
   return (
-    <div className="bg-white text-black font-['Times_New_Roman',Times,serif] text-[15px] md:text-[17px] leading-snug">
+    <div className="kshl-paper bg-white text-black font-['Times_New_Roman',Times,serif] text-[15px] md:text-[17px] leading-snug">
       {/* Tiêu đề */}
       <h1 className="text-center font-bold uppercase text-[16px] md:text-[19px]">
         Phiếu khảo sát ý kiến người bệnh {isNoiTru ? 'nội trú' : 'ngoại trú'}
@@ -157,7 +159,7 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
                 <Opt key={o.value} label={o.label} selected={data.gender === o.value} readOnly={readOnly} onClick={() => set('gender', o.value)} />
               ))}
             </td>
-            <td className={`${cell} w-[40%]`}>
+            <td className={`${cell} kshl-half`}>
               A2. Tuổi{' '}
               <input type="number" min={0} max={120} disabled={readOnly} value={data.age ?? ''} onChange={e => set('age', num(e.target.value))} className={`${lineInput} w-16`} />
             </td>
@@ -227,18 +229,46 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
         </tbody>
       </table>
 
-      <table className="w-full border-collapse">
+      {/* Điện thoại: mỗi câu một thẻ, "B1. Nội dung" trên một dòng, thang điểm chia đều 5 cột */}
+      <div className="md:hidden space-y-4 mb-4">
+        {sections.map(sec => (
+          <div key={sec.stt} className="space-y-2">
+            <div className="bg-[#059669] text-white font-bold rounded-lg px-3 py-2">{sec.stt}. {sec.name}</div>
+            {sec.questions.map(q => (
+              <div key={q.code} className="border border-slate-300 rounded-xl px-3 py-2.5">
+                <p><b>{q.code.toUpperCase()}.</b> {q.text}</p>
+                <div className="grid grid-cols-5 gap-1 mt-2 justify-items-center">
+                  {SCALE_OPTIONS.map(o => (
+                    <Circle
+                      key={o.value}
+                      n={o.value}
+                      size="lg"
+                      title={o.label}
+                      selected={data[q.code] === o.value}
+                      disabled={readOnly}
+                      onClick={readOnly ? undefined : () => set(q.code, o.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Máy tính: bảng kẻ ô như bản giấy */}
+      <table className="kshl-q-desktop w-full border-collapse">
         <tbody>
           {sections.map(sec => (
             <React.Fragment key={sec.stt}>
               <tr>
-                <td className={`${cell} font-bold`} colSpan={3}>{sec.stt}. {sec.name}</td>
+                <td className={`${cell} kshl-sec font-bold`} colSpan={3}>{sec.stt}. {sec.name}</td>
               </tr>
               {sec.questions.map(q => (
                 <tr key={q.code}>
-                  <td className={`${cell} w-9 md:w-11 text-center`}>{q.code.toUpperCase()}.</td>
+                  <td className={`${cell} kshl-code`}>{q.code.toUpperCase()}.</td>
                   <td className={cell}>{q.text}</td>
-                  <td className={`${cell} w-[150px] md:w-[200px] align-middle`}>
+                  <td className={`${cell} kshl-rate`}>
                     <div className="flex items-center justify-center gap-[3px] md:gap-1.5">
                       {SCALE_OPTIONS.map(o => (
                         <Circle
@@ -256,10 +286,14 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
               ))}
             </React.Fragment>
           ))}
+        </tbody>
+      </table>
 
+      <table className="kshl-after-q w-full border-collapse">
+        <tbody>
           {/* G1 / F */}
           <tr>
-            <td className={`${cell} text-center font-bold`}>{isNoiTru ? 'G1' : 'F'}</td>
+            <td className={`${cell} kshl-code font-bold`}>{isNoiTru ? 'G1' : 'F'}</td>
             <td className={cell}>
               {isNoiTru
                 ? <>Đánh giá chung, bệnh viện <b>đã đáp ứng được bao nhiêu % so với mong đợi</b> của Ông/Bà trước khi nằm viện?</>
@@ -267,14 +301,14 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
               <br />
               <i>(điền số từ 0% đến 100% hoặc có thể điền trên 100% nếu bệnh viện điều trị tốt, vượt quá mong đợi của Ông/Bà)</i>
             </td>
-            <td className={`${cell} align-middle text-center whitespace-nowrap`}>
+            <td className={`${cell} kshl-rate kshl-center whitespace-nowrap`}>
               <input type="number" min={0} max={200} disabled={readOnly} value={data.satisfaction_percent ?? ''} onChange={e => set('satisfaction_percent', num(e.target.value))} className={`${lineInput} w-16 text-center text-lg`} />%
             </td>
           </tr>
 
           {/* G2 / G */}
           <tr>
-            <td className={`${cell} text-center font-bold`}>{isNoiTru ? 'G2' : 'G'}</td>
+            <td className={`${cell} kshl-code font-bold`}>{isNoiTru ? 'G2' : 'G'}</td>
             <td className={cell} colSpan={2}>
               <div className="flex flex-col md:flex-row gap-1 md:gap-3">
                 <div className="md:w-[38%] shrink-0">
@@ -310,7 +344,7 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
           {/* H (chỉ nội trú) */}
           {isNoiTru && (
             <tr>
-              <td className={`${cell} text-center font-bold`}>H</td>
+              <td className={`${cell} kshl-code font-bold`}>H</td>
               <td className={cell} colSpan={2}>
                 <div className="flex flex-col md:flex-row gap-1 md:gap-3">
                   <div className="md:w-[38%] shrink-0">Ông/Bà có ý kiến gì khác, xin ghi rõ?</div>

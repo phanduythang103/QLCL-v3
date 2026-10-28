@@ -2347,3 +2347,128 @@ main form textarea:focus {
   .table-standardized tr { display: table-row !important; }
   .table-standardized th, .table-standardized td { display: table-cell !important; }
 }
+
+/* Phiếu khảo sát ý kiến người bệnh mẫu BYT (PatientSurveyPaper): giữ đúng bảng kẻ ô
+   như bản giấy - không áp dụng kiểu bảng chung, cũng không chuyển thành thẻ trên mobile. */
+.kshl-paper table {
+  display: table !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.kshl-paper table tbody {
+  display: table-row-group !important;
+  gap: 0 !important;
+}
+
+.kshl-paper table tr,
+.kshl-paper table tbody tr:nth-child(even),
+.kshl-paper table tbody tr:hover {
+  display: table-row !important;
+  width: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.kshl-paper table td {
+  display: table-cell !important;
+  width: auto !important;
+  max-width: none !important;
+  border: 1px solid #000 !important;
+  padding: 4px 6px !important;
+  font-size: inherit !important;
+  color: inherit !important;
+  background: transparent !important;
+  text-align: inherit !important;
+  white-space: normal !important;
+  vertical-align: top !important;
+}
+
+.kshl-paper table td[colspan],
+.kshl-paper table td[data-label] {
+  display: table-cell !important;
+}
+
+.kshl-paper table td::before {
+  content: none !important;
+}
+
+.kshl-paper table td.kshl-code {
+  width: 2.6rem !important;
+  text-align: center !important;
+}
+
+.kshl-paper table td.kshl-rate {
+  width: 146px !important;
+  padding: 4px 3px !important;
+  vertical-align: middle !important;
+}
+
+.kshl-paper table td.kshl-half {
+  width: 40% !important;
+}
+
+.kshl-paper table td.kshl-center {
+  text-align: center !important;
+}
+
+.kshl-paper table td.kshl-mid {
+  vertical-align: middle !important;
+}
+
+/* Nhãn nhóm câu hỏi A, B... nền xanh */
+.kshl-paper table td.kshl-sec {
+  background: #059669 !important;
+  color: #fff !important;
+}
+
+/* Bảng G1/G2/H nối liền bảng câu hỏi (không bị đôi viền) */
+.kshl-paper table.kshl-after-q {
+  margin-top: -1px !important;
+}
+
+/* Điện thoại dùng thẻ câu hỏi thay cho bảng câu hỏi */
+@media (max-width: 767px) {
+  .kshl-paper table.kshl-q-desktop {
+    display: none !important;
+  }
+
+  .kshl-paper table.kshl-after-q {
+    margin-top: 0 !important;
+  }
+}
+
+/* Vòng tròn chấm điểm: giữ viền đen như bản giấy (không theo kiểu thẻ/nút chung) */
+.kshl-paper .kshl-circle {
+  border: 1px solid #000 !important;
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+.kshl-paper .kshl-circle.kshl-circle-on {
+  border-color: #059669 !important;
+  background: #059669 !important;
+  color: #fff !important;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.35) !important;
+}
+
+/* >= 16px để iPhone không tự phóng to khi chạm vào ô nhập */
+.kshl-paper input,
+.kshl-paper textarea {
+  font-size: 16px !important;
+}
+
+@media (min-width: 768px) {
+  .kshl-paper table td.kshl-rate {
+    width: 200px !important;
+  }
+}
