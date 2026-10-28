@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Save, User, Phone, MapPin, Clock, Users, Star, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Phone, Building2, Calendar, MapPin } from 'lucide-react';
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
-import { outpatientSatisfactionService } from '../services/outpatientSatisfactionService';
+import {
+  GENDER_OPTIONS, HOSPITAL_NAME, OUTPATIENT_RETURN_OPTIONS, OUTPATIENT_RETURN_OTHER,
+  OUTPATIENT_SECTIONS, SURVEY_INTRO,
+} from '../types/patientSatisfactionMauByt';
+import { ChoiceButtons, firstUnanswered, RatingSections, ReturnIntentChoices, ScaleLegend } from './PatientSatisfactionMauByt';
 
 interface Props {
   initialData?: OutpatientSurveyResponse;
@@ -10,59 +14,11 @@ interface Props {
   onCancel: () => void;
   saving: boolean;
   isPublic?: boolean;
+  setParentViewMode?: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
 }
 
-const RATING_LABELS: Record<number, string> = {
-  1: "Rất kém",
-  2: "Kém",
-  3: "Bình thường",
-  4: "Tốt",
-  5: "Rất tốt",
-  0: "Không sử dụng"
-};
-
-const CATEGORIES = [
-  {
-    name: "A. Tiếp cận và chỉ dẫn",
-    questions: [
-      { id: 1, text: "Sự thuận tiện tại khu vực gửi xe" },
-      { id: 2, text: "Phân luồng Quân - Dân rõ ràng" },
-      { id: 3, text: "Biển báo và hướng dẫn tại sảnh" }
-    ]
-  },
-  {
-    name: "B. Thời gian chờ đợi",
-    questions: [
-      { id: 4, text: "Thời gian đăng ký và thanh toán" },
-      { id: 5, text: "Chờ siêu âm, chiếu chụp" },
-      { id: 6, text: "Thời gian trả kết quả xét nghiệm" }
-    ]
-  },
-  {
-    name: "C. Cơ sở vật chất",
-    questions: [
-      { id: 7, text: "Ghế ngồi chờ" },
-      { id: 8, text: "Nhà vệ sinh" },
-      { id: 9, text: "Wifi" }
-    ]
-  },
-  {
-    name: "D. Nhân viên",
-    questions: [
-      { id: 10, text: "Thái độ nhân viên hành chính" },
-      { id: 11, text: "Bác sĩ tư vấn, lắng nghe" },
-      { id: 12, text: "Thực hiện kỹ thuật của học viên" },
-      { id: 13, text: "Không dùng điện thoại khi làm việc" }
-    ]
-  },
-  {
-    name: "E. Kết quả và chi phí",
-    questions: [
-      { id: 14, text: "Tin tưởng kết quả chẩn đoán" },
-      { id: 15, text: "Minh bạch chi phí" }
-    ]
-  }
-];
+const labelCls = 'text-[13px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-2';
+const inputCls = 'w-full bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all';
 
 export const OutpatientSatisfactionForm: React.FC<Props> = ({
   initialData,
@@ -73,335 +29,234 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
   isPublic = false
 }) => {
   const [formData, setFormData] = useState<OutpatientSurveyResponse>(initialData || {
-    full_name: '',
     phone: '',
-    area: '',
-    visit_time: new Date().toISOString().split('T')[0],
-    respondent: 'patient',
-    q1: null, q2: null, q3: null, q4: null, q5: null, q6: null, q7: null, q8: null, q9: null, q10: null, q11: null, q12: null, q13: null, q14: null, q15: null,
-    waiting_issues: [],
-    priority_improvement: [],
-    feedback: '',
-    ngay_khao_sat: new Date().toISOString()
+    gender: null,
+    age: null,
+    distance_km: null,
+    has_bhyt: null,
+    satisfaction_percent: null,
+    return_intent: '',
+    return_intent_other: '',
   });
 
-  const [shift, setShift] = useState<'Sáng' | 'Chiều'>('Sáng');
-
-  const handleChange = (field: keyof OutpatientSurveyResponse, value: any) => {
+  const handleChange = (field: keyof OutpatientSurveyResponse | string, value: any) => {
     if (readOnly) return;
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleRatingChange = (qId: number, val: number) => {
-    if (readOnly) return;
-    setFormData(prev => ({ ...prev, [`q${qId}`]: val }));
-  };
-
-  const toggleWaitingIssue = (issue: string) => {
-    if (readOnly) return;
-    const current = formData.waiting_issues || [];
-    if (current.includes(issue)) {
-      setFormData(prev => ({ ...prev, waiting_issues: current.filter(i => i !== issue) }));
-    } else {
-      setFormData(prev => ({ ...prev, waiting_issues: [...current, issue] }));
-    }
-  };
-
-  const togglePriorityImprovement = (item: string) => {
-    if (readOnly) return;
-    const current = formData.priority_improvement || [];
-    if (current.includes(item)) {
-      setFormData(prev => ({ ...prev, priority_improvement: current.filter(i => i !== item) }));
-    } else {
-      setFormData(prev => ({ ...prev, priority_improvement: [...current, item] }));
-    }
-  };
+  const toNumber = (v: string) => (v === '' ? null : Number(v));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (readOnly) return;
 
-    // Validation
-    if (!formData.full_name?.trim()) return alert('Chưa nhập thông tin: Họ và tên');
-    if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: Số điện thoại');
-    if (!formData.area) return alert('Chưa nhập thông tin: Khu vực khám');
+    if (!formData.gender) return alert('Chưa nhập thông tin: A1. Giới tính');
+    if (!formData.age) return alert('Chưa nhập thông tin: A2. Tuổi');
+    if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: A3. Số di động');
+    if (formData.distance_km == null) return alert('Chưa nhập thông tin: A4. Khoảng cách từ nơi sinh sống đến bệnh viện');
+    if (formData.has_bhyt == null) return alert('Chưa nhập thông tin: A5. Sử dụng thẻ BHYT');
 
-    for (let i = 1; i <= 15; i++) {
-      if ((formData as any)[`q${i}`] === null || (formData as any)[`q${i}`] === undefined) {
-        const qText = CATEGORIES.flatMap(c => c.questions).find(q => q.id === i)?.text || `Câu hỏi ${i}`;
-        return alert(`Chưa nhập thông tin: ${qText}`);
-      }
+    const missing = firstUnanswered(OUTPATIENT_SECTIONS, formData);
+    if (missing) return alert(`Chưa đánh giá câu ${missing.code.toUpperCase()}: ${missing.text}`);
+
+    if (formData.satisfaction_percent == null) return alert('Chưa nhập thông tin: F. Mức đáp ứng so với mong đợi (%)');
+    if (!formData.return_intent) return alert('Chưa nhập thông tin: G. Dự định quay lại hoặc giới thiệu');
+    if (formData.return_intent === OUTPATIENT_RETURN_OTHER && !formData.return_intent_other?.trim()) {
+      return alert('Vui lòng ghi rõ lựa chọn "Khác" ở câu G');
     }
 
-    const payload = {
+    onSave({
       ...formData,
-      visit_time: `${formData.visit_time} (${shift})`,
-      ngay_khao_sat: new Date().toISOString()
-    };
-
-    onSave(payload);
+      return_intent_other: formData.return_intent === OUTPATIENT_RETURN_OTHER ? formData.return_intent_other : ''
+    });
   };
 
-  const themeColor = '#059669';
+  const surveyDate = initialData?.ngay_khao_sat ? new Date(initialData.ngay_khao_sat) : new Date();
 
   return (
     <div className="w-full pb-20 animate-in fade-in duration-700 bg-slate-50 min-h-screen px-4 md:px-8">
-      {/* HEADER SECTION - ĐỒNG BỘ VỚI CÁC FORM CHẠY TỐT */}
-      <div className={`bg-[${themeColor}] text-white p-6 md:p-10 rounded-3xl shadow-2xl text-center space-y-4 relative overflow-hidden mb-8 mx-auto max-w-5xl mt-4`}>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full -ml-32 -mb-32 blur-2xl" />
+      {/* HEADER SECTION */}
+      <div className="bg-[#059669] text-white p-5 md:p-8 rounded-2xl shadow-xl text-center space-y-4 mt-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/5 rounded-full -ml-24 -mb-24 blur-2xl"></div>
 
-        <div className="relative z-10">
-          {!isPublic && (
-            <div className="flex justify-start mb-4">
+        <div className="flex justify-between items-center mb-2 relative z-10">
+          {!isPublic ? (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex items-center gap-2 text-white/80 hover:text-white font-black text-[10px] uppercase transition-all"
+            >
+              <ArrowLeft size={16} /> Quay lại
+            </button>
+          ) : <span />}
+          <span className="border border-white/60 rounded-lg px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-wider">Mẫu số 2</span>
+        </div>
+
+        <div className="flex flex-col items-center justify-center gap-1 mb-2 relative z-10">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight uppercase text-center">
+            Phiếu khảo sát ý kiến
+          </h1>
+          <span className="font-black uppercase tracking-tight text-lg md:text-xl lg:text-2xl">Người bệnh ngoại trú</span>
+        </div>
+
+        <p className="text-xs md:text-sm text-white/90 w-full max-w-5xl mx-auto font-medium leading-relaxed px-2 md:px-6 text-justify md:text-center relative z-10">
+          {SURVEY_INTRO}
+        </p>
+      </div>
+
+      <div className="space-y-8 mt-8">
+        {/* Thông tin chung */}
+        <div className="bg-white p-6 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div className="space-y-3">
+              <label className={labelCls}><Building2 size={14} className="text-[#059669]" /> 1. Tên bệnh viện:</label>
+              <div className={`${inputCls} text-slate-600`}>{HOSPITAL_NAME}</div>
+            </div>
+            <div className="space-y-3">
+              <label className={labelCls}><Calendar size={14} className="text-[#059669]" /> 2. Ngày điền phiếu:</label>
+              <div className={`${inputCls} text-slate-600`}>{surveyDate.toLocaleDateString('vi-VN')}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Thông tin người bệnh */}
+        <div className="bg-white p-6 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl space-y-8">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
+            <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">Thông tin người bệnh</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div className="space-y-3">
+              <label className={labelCls}>A1. Giới tính:</label>
+              <ChoiceButtons options={GENDER_OPTIONS} value={formData.gender} readOnly={readOnly} onChange={v => handleChange('gender', v)} />
+            </div>
+            <div className="space-y-3">
+              <label className={labelCls}>A2. Tuổi:</label>
+              <input
+                type="number"
+                min={0}
+                max={120}
+                disabled={readOnly}
+                value={formData.age ?? ''}
+                onChange={e => handleChange('age', toNumber(e.target.value))}
+                placeholder="Nhập tuổi..."
+                className={inputCls}
+              />
+            </div>
+            <div className="space-y-3">
+              <label className={labelCls}><Phone size={14} className="text-[#059669]" /> A3. Số di động (bắt buộc):</label>
+              <input
+                type="tel"
+                disabled={readOnly}
+                value={formData.phone || ''}
+                onChange={e => handleChange('phone', e.target.value)}
+                placeholder="Nhập số điện thoại..."
+                className={inputCls}
+              />
+            </div>
+            <div className="space-y-3">
+              <label className={labelCls}><MapPin size={14} className="text-[#059669]" /> A4. Ước tính khoảng cách từ nơi sinh sống đến bệnh viện:</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.1"
+                  disabled={readOnly}
+                  value={formData.distance_km ?? ''}
+                  onChange={e => handleChange('distance_km', toNumber(e.target.value))}
+                  className="w-32 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center font-black text-slate-800 text-lg outline-none focus:border-[#059669] transition-all"
+                />
+                <span className="font-bold text-slate-500 text-sm">km</span>
+              </div>
+            </div>
+            <div className="space-y-3 md:col-span-2">
+              <label className={labelCls}>A5. Ông/Bà có sử dụng thẻ BHYT cho lần khám bệnh này không?</label>
+              <ChoiceButtons
+                options={[{ value: true, label: '1. Có' }, { value: false, label: '2. Không' }]}
+                value={formData.has_bhyt}
+                readOnly={readOnly}
+                onChange={v => handleChange('has_bhyt', v)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Đánh giá việc sử dụng dịch vụ y tế */}
+        <div className="bg-white p-6 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-8 bg-[#059669] rounded-full"></div>
+            <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">Đánh giá việc sử dụng dịch vụ y tế</h3>
+          </div>
+          <ScaleLegend />
+          <RatingSections
+            sections={OUTPATIENT_SECTIONS}
+            values={formData}
+            readOnly={readOnly}
+            onChange={(code, v) => handleChange(code, v)}
+          />
+        </div>
+
+        {/* F, G */}
+        <div className="bg-white p-6 md:p-10 rounded-[2rem] border border-slate-100 shadow-xl space-y-10">
+          <div className="space-y-4">
+            <label className="text-[15px] font-black text-slate-900 leading-relaxed block">
+              F. Đánh giá chung bệnh viện đã đáp ứng được bao nhiêu % so với mong đợi trước khi tới khám bệnh?
+            </label>
+            <p className="text-xs italic text-slate-500 font-medium">
+              (điền số từ 0% đến 100% hoặc có thể điền trên 100% nếu bệnh viện điều trị tốt, vượt quá mong đợi của Ông/Bà)
+            </p>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={0}
+                max={200}
+                disabled={readOnly}
+                value={formData.satisfaction_percent ?? ''}
+                onChange={e => handleChange('satisfaction_percent', e.target.value === '' ? null : parseInt(e.target.value))}
+                className="w-32 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center font-black text-[#059669] text-xl outline-none focus:border-[#059669] transition-all"
+              />
+              <span className="font-black text-slate-500 text-lg">%</span>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="text-[15px] font-black text-slate-900 leading-relaxed block">
+              G. Nếu có nhu cầu khám bệnh, Ông/Bà có quay trở lại hoặc giới thiệu cho người khác đến không?
+            </label>
+            <ReturnIntentChoices
+              options={OUTPATIENT_RETURN_OPTIONS}
+              otherValue={OUTPATIENT_RETURN_OTHER}
+              value={formData.return_intent}
+              otherText={formData.return_intent_other}
+              readOnly={readOnly}
+              onChange={v => handleChange('return_intent', v)}
+              onOtherChange={v => handleChange('return_intent_other', v)}
+            />
+          </div>
+
+          {!readOnly && (
+            <div className="pt-10 border-t border-slate-100 flex flex-col items-center gap-6">
+              <p className="font-black text-slate-700 uppercase tracking-widest text-sm text-center">Xin trân trọng cảm ơn!</p>
               <button
-                type="button"
-                onClick={onCancel}
-                className="flex items-center gap-2 text-white/80 hover:text-white font-black text-xs uppercase transition-all"
+                onClick={handleSubmit}
+                disabled={saving}
+                className="flex items-center gap-3 px-16 py-5 bg-[#059669] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-sm uppercase shadow-2xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
               >
-                <ArrowLeft size={18} /> Quay lại
+                {saving ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : <Save size={20} />}
+                {saving ? 'Đang gửi...' : 'Gửi phiếu khảo sát'}
               </button>
             </div>
           )}
-
-          <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase mb-2">PHIẾU KHẢO SÁT HÀI LÒNG</h1>
-            <h2 className="text-xl md:text-2xl font-bold opacity-90 uppercase">Người bệnh ngoại trú 2026</h2>
-          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-8 pb-12">
-        {/* Section 1: Thông tin chung */}
-        <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-8 border-l-4 border-[#059669] pl-4">
-            <User className="text-[#059669]" size={24} />
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">1. Thông tin chung</h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Họ và tên</label>
-              <input
-                type="text"
-                required
-                placeholder="Nhập họ và tên..."
-                value={formData.full_name}
-                onChange={e => handleChange('full_name', e.target.value)}
-                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Số điện thoại</label>
-              <input
-                type="tel"
-                placeholder="Nhập số điện thoại..."
-                value={formData.phone}
-                onChange={e => handleChange('phone', e.target.value)}
-                className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all"
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Khu vực khám</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {[
-                  { value: 'kham_dan', label: 'K. Khám bệnh (Dân)' },
-                  { value: 'kham_quan', label: 'Khám Quân' },
-                  { value: 'bhyt', label: 'Khám BHYT' },
-                  { value: 'yeu_cau', label: 'KKB theo yêu cầu' },
-                  { value: 'pk232', label: 'PK232' }
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleChange('area', opt.value)}
-                    className={`px-4 py-3 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.area === opt.value ? 'bg-[#059669] border-[#059669] text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-[#059669]'}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[13px] font-black text-slate-500 uppercase ml-2">Thời điểm khám</label>
-              <div className="flex gap-4">
-                <input
-                  type="date"
-                  value={formData.visit_time}
-                  onChange={e => handleChange('visit_time', e.target.value)}
-                  className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm font-bold text-slate-800 outline-none flex-1"
-                />
-                <div className="flex bg-slate-100 rounded-2xl p-1">
-                  {['Sáng', 'Chiều'].map(s => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setShift(s as any)}
-                      className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${shift === s ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-500'}`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Đối tượng trả lời</label>
-              <div className="flex bg-slate-100 rounded-2xl p-1">
-                {[
-                  { value: 'patient', label: 'Người bệnh' },
-                  { value: 'relative', label: 'Người nhà' }
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleChange('respondent', opt.value)}
-                    className={`flex-1 px-6 py-4 rounded-xl text-[10px] font-black uppercase transition-all ${formData.respondent === opt.value ? 'bg-white text-[#059669] shadow-sm' : 'text-slate-500'}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 2: Đánh giá dịch vụ */}
-        <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-8 border-l-4 border-[#059669] pl-4">
-            <Star className="text-[#059669]" size={24} />
-            <div className="flex flex-col">
-              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">2. Đánh giá quy trình & dịch vụ</h3>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">(1: Rất kém {"->"} 5: Rất tốt; 0: Không sử dụng)</p>
-            </div>
-          </div>
-
-          <div className="space-y-12">
-            {CATEGORIES.map(category => (
-              <div key={category.name} className="space-y-6">
-                <h4 className="text-sm font-black text-white uppercase tracking-wider bg-[#059669] px-6 py-2 rounded-full inline-block shadow-md">
-                  {category.name}
-                </h4>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {category.questions.map(q => (
-                    <div key={q.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-6 bg-slate-50/50 rounded-3xl border border-slate-100 gap-4 hover:bg-white transition-colors group">
-                      <div className="flex-1">
-                        <p className="text-[17px] font-bold text-slate-700">
-                          <span className="text-[13px] text-slate-400 font-black mr-2 opacity-50">{q.id}.</span> {q.text}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {[1, 2, 3, 4, 5, 0].map(val => (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() => handleRatingChange(q.id, val)}
-                            className={`w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center font-black text-xs transition-all border-2
-                              ${(formData as any)[`q${q.id}`] === val
-                                ? 'bg-[#059669] border-[#059669] text-white shadow-lg'
-                                : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-300'}`}
-                          >
-                            {val}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 3: Root Cause */}
-        <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-8 border-l-4 border-amber-400 pl-4">
-            <AlertCircle className="text-amber-500" size={24} />
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">3. Truy vấn nguyên nhân & góp ý</h3>
-          </div>
-
-          <div className="space-y-10">
-            <div className="space-y-4">
-              <label className="text-[13px] font-black text-slate-600 uppercase flex items-center gap-2">
-                Nếu có chờ đợi, khâu nào khiến Ông/Bà mệt mỏi nhất?
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Đăng ký khám",
-                  "Chờ bác sĩ",
-                  "Chờ siêu âm/X-quang",
-                  "Thanh toán",
-                  "Lấy thuốc"
-                ].map(opt => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => toggleWaitingIssue(opt)}
-                    className={`px-6 py-3 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.waiting_issues?.includes(opt) ? 'bg-amber-100 border-amber-400 text-amber-700 shadow-md' : 'bg-white border-slate-100 text-slate-500 hover:border-amber-200'}`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="text-[13px] font-black text-slate-600 uppercase flex items-center gap-2">
-                Ưu tiên cần cải thiện ngay:
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  "Tăng máy siêu âm",
-                  "Mở thêm quầy thanh toán",
-                  "Wifi mạnh hơn",
-                  "Thay đổi bảo vệ"
-                ].map(opt => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => togglePriorityImprovement(opt)}
-                    className={`w-full text-left px-6 py-4 rounded-2xl border-2 transition-all text-[10px] font-black uppercase ${formData.priority_improvement?.includes(opt) ? 'bg-[#059669] border-[#059669] text-white shadow-lg' : 'bg-white border-slate-100 text-slate-500 hover:border-[#059669]'}`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="text-[13px] font-black text-slate-600 uppercase">Ý kiến chi tiết (nhân viên, khâu cụ thể):</label>
-              <textarea
-                rows={4}
-                value={formData.feedback}
-                onChange={e => handleChange('feedback', e.target.value)}
-                placeholder="Ví dụ: mô tả nhân viên, vị trí trực nếu không hài lòng..."
-                className="w-full bg-slate-50 p-6 rounded-[2rem] border border-slate-200 text-sm font-bold text-slate-800 outline-none focus:border-[#059669] transition-all"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex flex-col items-center gap-4 pt-10">
-          <button
-            type="submit"
-            disabled={saving}
-            className="group flex items-center gap-4 px-16 py-6 bg-[#059669] hover:bg-emerald-700 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl transition-all disabled:bg-slate-300 active:scale-95"
-          >
-            {saving ? (
-              <span className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : <Save size={24} />}
-            {saving ? 'Đang gửi...' : 'Gửi phiếu khảo sát'}
-          </button>
-          <p className="text-[9px] font-black text-slate-300 tracking-[0.3em] uppercase">Bệnh viện Quân y 103 &copy; 2026</p>
-        </div>
-      </form>
+      <div className="py-12 text-center text-slate-400">
+        <p className="text-[9px] font-black uppercase tracking-[0.2em]">Bệnh viện Quân y 103 &copy; 2026</p>
+      </div>
     </div>
   );
 };

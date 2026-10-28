@@ -13,6 +13,7 @@ import * as XLSX from 'xlsx';
 // Import All Data Services
 import { inpatientSatisfactionService } from './Assessment/services/inpatientSatisfactionService';
 import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
+import { INPATIENT_SECTIONS, OUTPATIENT_SECTIONS, SurveySection } from './Assessment/types/patientSatisfactionMauByt';
 import { staffSatisfactionService } from './Assessment/services/staffSatisfactionService';
 import { ksNuoiConService } from './Assessment/services/ksNuoiConService';
 import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
@@ -37,6 +38,11 @@ import { fetchGsChung } from '../readGsChung';
 import { fetchAssessmentSheets, fetchKqDanhGia83 } from '../readKqDanhGia83';
 import { fetchData83tc } from '../readData83tc';
 import { tieuChiCoBanService } from './Assessment/services/tieuChiCoBanService';
+
+// Nhãn cột theo mẫu BYT: a1 -> "A1. Các sơ đồ, biển báo..."
+const mauBytLabels = (sections: SurveySection[]) =>
+  Object.fromEntries(sections.flatMap(sec => sec.questions.map(q => [q.code, `${q.code.toUpperCase()}. ${q.text}`])));
+
 
 type ReportCategory =
   | 'SATISFACTION_INPATIENT' | 'SATISFACTION_OUTPATIENT' | 'SATISFACTION_STAFF'
@@ -133,7 +139,11 @@ const FIELD_LABELS: Record<string, string> = {
   full_name: 'Họ tên người trả lời',
   respondent: 'Đối tượng trả lời',
   return_intent: 'Quay lại / Giới thiệu',
+  return_intent_other: 'Quay lại (ghi rõ)',
   feedback: 'Ý kiến góp ý',
+  gender: 'Giới tính',
+  has_bhyt: 'Sử dụng BHYT',
+  distance_km: 'Khoảng cách đến BV (km)',
   q1: 'NT-A1: Thời gian chờ thang máy',
   q2: 'NT-A2: Hỗ trợ di chuyển',
   q3: 'NT-B3: Thủ tục ra viện',
@@ -193,7 +203,6 @@ const FIELD_LABELS: Record<string, string> = {
   prenatal_check: 'Khám thai trước sinh',
   prenatal_check_other: 'Khám thai (ghi rõ)',
   birth_method_other: 'Cách sinh (ghi rõ)',
-  return_intent_other: 'Quay lại (ghi rõ)',
   note: 'Ý kiến thêm',
   ea1: 'A1. Thủ tục nhập viện thuận tiện',
   ea2: 'A2. Phân luồng, chỉ dẫn rõ ràng',
@@ -451,10 +460,11 @@ export const ReportsModule: React.FC = () => {
     // For dynamic columns, derive from first row
     if (!data.length) return [];
     const firstRow = flattenRow(data[0]);
-    const qLabels =
+    const qLabels: Record<string, string> =
       selectedCategory === 'SATISFACTION_STAFF' ? STAFF_Q_LABELS :
-        selectedCategory === 'SATISFACTION_OUTPATIENT' ? OUTPATIENT_Q_LABELS :
-          selectedCategory === 'GS_ADMISSION' ? GS_ADMISSION_LABELS : {};
+        selectedCategory === 'SATISFACTION_OUTPATIENT' ? { ...OUTPATIENT_Q_LABELS, ...mauBytLabels(OUTPATIENT_SECTIONS) } :
+          selectedCategory === 'SATISFACTION_INPATIENT' ? mauBytLabels(INPATIENT_SECTIONS) :
+            selectedCategory === 'GS_ADMISSION' ? GS_ADMISSION_LABELS : {};
     return Object.keys(firstRow).filter(k => k !== 'id').map(k => ({
       key: k,
       label: qLabels[k] || FIELD_LABELS[k] || k,

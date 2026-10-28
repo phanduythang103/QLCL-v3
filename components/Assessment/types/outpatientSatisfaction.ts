@@ -2,12 +2,25 @@ export interface OutpatientSurveyResponse {
   id?: string;
   // General information
   full_name?: string;
-  phone?: string;
-  area?: string;               // e.g., kham_dan, kham_quan, bhyt, yeu_cau, pk232
-  visit_time?: string;        // Full ISO timestamp (date + shift info can be embedded or handled)
-  respondent?: string;        // patient or relative
+  phone?: string;              // A3. Số di động
+  gender?: 'nam' | 'nu' | null; // A1
+  age?: number | null;          // A2
+  distance_km?: number | null;  // A4. Khoảng cách từ nơi sinh sống đến bệnh viện
+  has_bhyt?: boolean | null;    // A5
+  area?: string;               // Mẫu cũ: kham_dan, kham_quan, bhyt, yeu_cau, pk232
+  visit_time?: string;        // Mẫu cũ
+  respondent?: string;        // Mẫu cũ: patient or relative
 
-  // Rating questions (q1-q15) – 0 = not applicable, 1-5 scale
+  // Đánh giá theo mẫu BYT (thang 1-5), tên cột = mã câu
+  a1?: number | null; a2?: number | null; a3?: number | null; a4?: number | null; a5?: number | null;
+  b1?: number | null; b2?: number | null; b3?: number | null; b4?: number | null; b5?: number | null;
+  b6?: number | null; b7?: number | null; b8?: number | null; b9?: number | null; b10?: number | null;
+  c1?: number | null; c2?: number | null; c3?: number | null; c4?: number | null;
+  c5?: number | null; c6?: number | null; c7?: number | null; c8?: number | null;
+  d1?: number | null; d2?: number | null; d3?: number | null; d4?: number | null;
+  e1?: number | null; e2?: number | null; e3?: number | null; e4?: number | null;
+
+  // Mẫu cũ (q1-q15) – 0 = not applicable, 1-5 scale
   q1?: number | null;
   q2?: number | null;
   q3?: number | null;
@@ -24,7 +37,12 @@ export interface OutpatientSurveyResponse {
   q14?: number | null;
   q15?: number | null;
 
-  // Root cause analysis
+  // Đánh giá chung
+  satisfaction_percent?: number | null; // F. % đáp ứng mong đợi
+  return_intent?: string;               // G. mã 1-5
+  return_intent_other?: string;         // G. Khác (ghi rõ)
+
+  // Mẫu cũ - root cause analysis
   waiting_issues?: string[]; // Stored as JSONB in SQL (array of selected options)
   priority_improvement?: string[]; // Stored as JSONB in SQL (array of selected options)
   priority_improvement_other?: string;
@@ -34,4 +52,3 @@ export interface OutpatientSurveyResponse {
   ngay_khao_sat?: string;
   created_at?: string;
 }
-

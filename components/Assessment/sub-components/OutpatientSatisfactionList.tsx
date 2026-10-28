@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Edit2, Eye, Trash2, Calendar, User, BarChart3, Download, Trophy, Users } from 'lucide-react';
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
+import { allQuestions, isMauByt, OUTPATIENT_RETURN_OPTIONS, OUTPATIENT_SECTIONS, outpatientPercent, returnIntentLabel } from '../types/patientSatisfactionMauByt';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -14,18 +15,16 @@ interface Props {
   onAddNew: () => void;
   dateFilter: DateFilterState;
   setDateFilter: (filter: DateFilterState) => void;
-  areaFilter: string;
-  setAreaFilter: (area: string) => void;
-  respondentFilter: string;
-  setRespondentFilter: (r: string) => void;
+  bhytFilter: string;
+  setBhytFilter: (v: string) => void;
   totalSurveys: number;
   avgSatisfaction: number;
 }
 
 export const OutpatientSatisfactionList: React.FC<Props> = ({
   surveys, loading, onEdit, onView, onDelete, onAddNew,
-  dateFilter, setDateFilter, areaFilter, setAreaFilter,
-  respondentFilter, setRespondentFilter, totalSurveys, avgSatisfaction
+  dateFilter, setDateFilter, bhytFilter, setBhytFilter,
+  totalSurveys, avgSatisfaction
 }) => {
   const { user } = useAuth();
   const isAdmin = !!user?.role && (
@@ -33,35 +32,12 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
     user.role.toLowerCase().includes('admin')
   );
 
-  const calculatePercentage = (s: OutpatientSurveyResponse) => {
-    let totalScore = 0;
-    let validCount = 0;
-    for (let i = 1; i <= 15; i++) {
-      const val = (s as any)[`q${i}`];
-      if (val && val > 0) {
-        totalScore += val;
-        validCount++;
-      }
-    }
-    if (validCount === 0) return 0;
-    return Math.round((totalScore / (validCount * 5)) * 100);
-  };
+  const calculatePercentage = outpatientPercent;
 
   const getScoreColor = (percent: number) => {
     if (percent >= 90) return 'text-emerald-600 bg-emerald-50';
     if (percent >= 70) return 'text-amber-600 bg-amber-50';
     return 'text-rose-600 bg-rose-50';
-  };
-
-  const getAreaLabel = (area?: string) => {
-    switch (area) {
-      case 'kham_dan': return 'K. Khám bệnh (Dân)';
-      case 'kham_quan': return 'Khám Quân';
-      case 'bhyt': return 'Khám BHYT';
-      case 'yeu_cau': return 'KKB theo yêu cầu';
-      case 'pk232': return 'PK232';
-      default: return area || 'N/A';
-    }
   };
 
   const handleExportExcel = () => {
@@ -75,15 +51,14 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
       return {
         'STT': index + 1,
         'Ngày khảo sát': d.toLocaleDateString('vi-VN'),
-        'Khu vực': getAreaLabel(s.area),
-        'Đối tượng': s.respondent === 'patient' ? 'Người bệnh' : 'Người nhà',
-        'Tỷ lệ hài lòng (%)': calculatePercentage(s),
-        'Vấn đề chờ đợi': (s.waiting_issues || []).join(', '),
-        'Cần cải thiện': (s.priority_improvement || []).join(', '),
-        'Góp ý': s.feedback || '',
-        ...Array.from({ length: 15 }, (_, i) => ({
-          [`Câu ${i + 1}`]: (s as any)[`q${i + 1}`] || 0
-        })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+        'Giới tính': s.gender === 'nam' ? 'Nam' : s.gender === 'nu' ? 'Nữ' : '',
+        'Tuổi': s.age ?? '',
+        'Khoảng cách (km)': s.distance_km ?? '',
+        'BHYT': s.has_bhyt == null ? '' : s.has_bhyt ? 'Có' : 'Không',
+        ...Object.fromEntries(allQuestions(OUTPATIENT_SECTIONS).map(q => [q.code.toUpperCase(), (s as any)[q.code] ?? ''])),
+        'F. Đáp ứng mong đợi (%)': calculatePercentage(s),
+        'G. Dự định quay lại': returnIntentLabel(s.return_intent, OUTPATIENT_RETURN_OPTIONS, s.return_intent_other),
+        'Mẫu phiếu': isMauByt(s, OUTPATIENT_SECTIONS) ? 'Mẫu BYT' : 'Mẫu cũ',
       };
     });
 
@@ -140,25 +115,13 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
             <select
-              value={areaFilter}
-              onChange={(e) => setAreaFilter(e.target.value)}
+              value={bhytFilter}
+              onChange={(e) => setBhytFilter(e.target.value)}
               className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
             >
-              <option value="all">Tất cả Khu vực</option>
-              <option value="kham_dan">K. Khám bệnh (Dân)</option>
-              <option value="kham_quan">Khám Quân</option>
-              <option value="bhyt">Khám BHYT</option>
-              <option value="yeu_cau">KKB theo yêu cầu</option>
-              <option value="pk232">PK232</option>
-            </select>
-            <select
-              value={respondentFilter}
-              onChange={(e) => setRespondentFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
-            >
-              <option value="all">Tất cả Đối tượng</option>
-              <option value="patient">Người bệnh</option>
-              <option value="relative">Người nhà</option>
+              <option value="all">Tất cả BHYT</option>
+              <option value="yes">Có BHYT</option>
+              <option value="no">Không BHYT</option>
             </select>
           </div>
         </div>

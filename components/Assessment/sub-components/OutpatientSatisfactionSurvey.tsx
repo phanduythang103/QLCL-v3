@@ -5,6 +5,7 @@ import { OutpatientSurveyResponse as SurveyType } from '../types/outpatientSatis
 import { outpatientSatisfactionService } from '../services/outpatientSatisfactionService';
 import { OutpatientSatisfactionDetail } from './OutpatientSatisfactionDetail';
 import { DateFilterState } from '../../DateRangeFilter';
+import { outpatientPercent } from '../types/patientSatisfactionMauByt';
 
 interface Props {
   setParentViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
@@ -21,8 +22,7 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
   const [dateFilter, setDateFilter] = useState<DateFilterState>({
     type: 'all', startDate: '', endDate: ''
   });
-  const [areaFilter, setAreaFilter] = useState<string>('all');
-  const [respondentFilter, setRespondentFilter] = useState<string>('all');
+  const [bhytFilter, setBhytFilter] = useState<string>('all');
 
   const loadSurveys = async () => {
     try {
@@ -89,35 +89,18 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
         }
       } else if (dateFilter.type !== 'all' && !s.ngay_khao_sat) dateMatch = false;
 
-      // 2. Filter by Area
-      const areaMatch = areaFilter === 'all' || s.area === areaFilter;
+      // 2. Filter by BHYT
+      const bhytMatch = bhytFilter === 'all' || s.has_bhyt === (bhytFilter === 'yes');
 
-      // 3. Filter by Respondent
-      const respondentMatch = respondentFilter === 'all' || s.respondent === respondentFilter;
-
-      return dateMatch && areaMatch && respondentMatch;
+      return dateMatch && bhytMatch;
     });
-  }, [surveys, dateFilter, areaFilter, respondentFilter]);
+  }, [surveys, dateFilter, bhytFilter]);
 
   const stats = useMemo(() => {
     const total = filteredSurveys.length;
     if (total === 0) return { total: 0, avgSatisfaction: 0 };
 
-    const calculatePercentage = (s: SurveyType) => {
-      let totalScore = 0;
-      let validCount = 0;
-      for (let i = 1; i <= 15; i++) {
-        const val = (s as any)[`q${i}`];
-        if (val && val > 0) {
-          totalScore += val;
-          validCount++;
-        }
-      }
-      if (validCount === 0) return 0;
-      return (totalScore / (validCount * 5)) * 100;
-    };
-
-    const sumPercentages = filteredSurveys.reduce((acc, s) => acc + calculatePercentage(s), 0);
+    const sumPercentages = filteredSurveys.reduce((acc, s) => acc + outpatientPercent(s), 0);
     return {
       total,
       avgSatisfaction: Math.round(sumPercentages / total)
@@ -184,10 +167,8 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
             onAddNew={handleAddNew}
             dateFilter={dateFilter}
             setDateFilter={setDateFilter}
-            areaFilter={areaFilter}
-            setAreaFilter={setAreaFilter}
-            respondentFilter={respondentFilter}
-            setRespondentFilter={setRespondentFilter}
+            bhytFilter={bhytFilter}
+            setBhytFilter={setBhytFilter}
             totalSurveys={stats.total}
             avgSatisfaction={stats.avgSatisfaction}
           />

@@ -1,60 +1,18 @@
 import React from 'react';
-import { ArrowLeft, CheckCircle2, Star } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
+import {
+  GENDER_OPTIONS, HOSPITAL_NAME, LEGACY_OUTPATIENT_QUESTIONS, OUTPATIENT_RETURN_OPTIONS,
+  OUTPATIENT_SECTIONS, isMauByt, outpatientPercent,
+} from '../types/patientSatisfactionMauByt';
+import { CheckOption, ScoreTable } from './PatientSatisfactionMauByt';
 
 interface Props {
   data: OutpatientSurveyResponse | undefined;
   onBack: () => void;
 }
 
-const CATEGORIES = [
-  {
-    stt: 'A',
-    name: "Tiếp cận và chỉ dẫn",
-    questions: [
-      { id: 1, text: "Sự thuận tiện tại khu vực gửi xe" },
-      { id: 2, text: "Phân luồng Quân - Dân rõ ràng" },
-      { id: 3, text: "Biển báo và hướng dẫn tại sảnh" }
-    ]
-  },
-  {
-    stt: 'B',
-    name: "Thời gian chờ đợi",
-    questions: [
-      { id: 4, text: "Thời gian đăng ký và thanh toán" },
-      { id: 5, text: "Chờ siêu âm, chiếu chụp" },
-      { id: 6, text: "Thời gian trả kết quả xét nghiệm" }
-    ]
-  },
-  {
-    stt: 'C',
-    name: "Cơ sở vật chất",
-    questions: [
-      { id: 7, text: "Ghế ngồi chờ" },
-      { id: 8, text: "Nhà vệ sinh" },
-      { id: 9, text: "Wifi" }
-    ]
-  },
-  {
-    stt: 'D',
-    name: "Nhân viên",
-    questions: [
-      { id: 10, text: "Thái độ nhân viên hành chính" },
-      { id: 11, text: "Bác sĩ tư vấn, lắng nghe" },
-      { id: 12, text: "Thực hiện kỹ thuật của học viên" },
-      { id: 13, text: "Không dùng điện thoại khi làm việc" }
-    ]
-  },
-  {
-    stt: 'E',
-    name: "Kết quả và chi phí",
-    questions: [
-      { id: 14, text: "Tin tưởng kết quả chẩn đoán" },
-      { id: 15, text: "Minh bạch chi phí" }
-    ]
-  }
-];
-
+// Mẫu cũ
 const AREA_LABELS: Record<string, string> = {
   'kham_dan': 'K. Khám bệnh (Dân)',
   'kham_quan': 'Khám Quân',
@@ -75,24 +33,7 @@ export const OutpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) 
     window.print();
   };
 
-  const renderScore = (currentScore: number) => {
-    if (currentScore === 0) return <span className="text-[10px] text-slate-300 font-black italic">N/A</span>;
-    const scores = [1, 2, 3, 4, 5];
-
-    return (
-      <div className="flex items-center gap-2 md:gap-3 font-sans">
-        {scores.map(val => (
-          <span
-            key={val}
-            className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full border border-slate-300 text-[9px] md:text-[11px] font-bold transition-all
-              ${currentScore === val ? 'bg-[#059669] text-white border-[#059669] ring-2 ring-[#059669]/20 scale-110 md:scale-125' : 'text-slate-400 opacity-60'}`}
-          >
-            {val}
-          </span>
-        ))}
-      </div>
-    );
-  };
+  const mauByt = isMauByt(data, OUTPATIENT_SECTIONS);
 
   return (
     <div className="w-full h-full bg-slate-100/50 p-2 md:p-8 animate-in fade-in zoom-in-95 duration-500">
@@ -113,148 +54,108 @@ export const OutpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) 
 
           {/* Header Title */}
           <div className="text-center mb-6 md:mb-10">
+            {mauByt && <p className="text-right text-[11px] md:text-xs font-black uppercase mb-2">Mẫu số 2</p>}
             <h1 className="text-lg md:text-2xl font-black text-slate-900 leading-tight uppercase">
-              PHIẾU KHẢO SÁT SỰ HÀI LÒNG NGƯỜI BỆNH NGOẠI TRÚ
+              PHIẾU KHẢO SÁT Ý KIẾN NGƯỜI BỆNH NGOẠI TRÚ
             </h1>
-            <p className="mt-2 text-[11px] md:text-xs text-slate-500 font-bold tracking-wide uppercase">
-              Năm 2026 - Bệnh viện Quân y
-            </p>
+            {data.ngay_khao_sat && (() => {
+              const d = new Date(data.ngay_khao_sat);
+              const pad = (n: number) => String(n).padStart(2, '0');
+              const code = `NGOAITRU-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+              return (
+                <p className="mt-2 text-[11px] md:text-xs text-slate-500 font-bold tracking-wide">
+                  (Mã khảo sát: {code})
+                </p>
+              );
+            })()}
+            {!mauByt && (
+              <p className="mt-2 text-[11px] md:text-xs text-amber-600 font-bold">Phiếu thu theo mẫu cũ (trước khi áp dụng mẫu Bộ Y tế)</p>
+            )}
           </div>
 
-          {/* Section 1: Thông tin chung */}
+          {/* Thông tin chung */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 md:gap-y-4 gap-x-12 text-xs md:text-sm mb-8">
+            <Field label="1. Tên bệnh viện:" value={HOSPITAL_NAME} />
+            <Field label="2. Ngày điền phiếu:" value={data.ngay_khao_sat ? new Date(data.ngay_khao_sat).toLocaleDateString('vi-VN') : ''} />
+            {!mauByt && (
+              <>
+                {data.full_name && <Field label="Họ và tên:" value={data.full_name} upper />}
+                <Field label="Khu vực khám:" value={AREA_LABELS[data.area || ''] || data.area} />
+                <Field label="Thời điểm khám:" value={data.visit_time} />
+                <Field label="Đối tượng trả lời:" value={RESPONDENT_LABELS[data.respondent || ''] || data.respondent} />
+              </>
+            )}
+          </div>
+
+          {/* Thông tin người bệnh */}
           <div className="space-y-4 md:space-y-6 mb-8 md:mb-12">
-            <h3 className="font-black text-sm md:text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">1. THÔNG TIN NGƯỜI BỆNH</h3>
+            <h3 className="font-black text-sm md:text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">THÔNG TIN NGƯỜI BỆNH</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 md:gap-y-4 gap-x-12 text-xs md:text-sm">
-              <div className="flex gap-2">
-                <span className="font-bold whitespace-nowrap">Họ và tên:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#059669] uppercase tracking-wide">
-                  {data.full_name || '...........................................'}
-                </span>
+              <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+                <span className="font-bold">A1. Giới tính:</span>
+                {GENDER_OPTIONS.map(o => <CheckOption key={o.value} checked={data.gender === o.value} label={o.label} />)}
               </div>
-              <div className="flex gap-2">
-                <span className="font-bold whitespace-nowrap">SĐT:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold">
-                  {data.phone || '...........................................'}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <span className="font-bold whitespace-nowrap">Khu vực khám:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold uppercase">
-                  {AREA_LABELS[data.area || ''] || data.area || '...........................................'}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <span className="font-bold whitespace-nowrap">Thời điểm khám:</span>
-                <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold">
-                  {data.visit_time || '...........................................'}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2 md:gap-3 md:col-span-2 mt-2">
-                <span className="font-bold">Đối tượng trả lời:</span>
-                <div className="flex gap-6 md:gap-8 pl-2 md:pl-4">
-                  {[
-                    { val: 'patient', label: 'Người bệnh' },
-                    { val: 'relative', label: 'Người nhà' }
-                  ].map(opt => (
-                    <div key={opt.val} className="flex items-center gap-1.5 md:gap-2">
-                      <div className={`w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-slate-400 rounded-sm flex items-center justify-center p-0.5 ${data.respondent === opt.val ? 'bg-[#059669] border-[#059669]' : ''}`}>
-                        {data.respondent === opt.val && <CheckCircle2 size={10} className="text-white" />}
-                      </div>
-                      <span className={data.respondent === opt.val ? 'font-bold text-[#059669]' : 'text-slate-600'}>{opt.label}</span>
-                    </div>
-                  ))}
-                </div>
+              <Field label="A2. Tuổi:" value={data.age ?? ''} />
+              <Field label="A3. Số di động:" value={data.phone} />
+              <Field label="A4. Khoảng cách đến bệnh viện:" value={data.distance_km != null ? `${data.distance_km} km` : ''} />
+              <div className="flex flex-wrap gap-x-6 gap-y-2 items-center md:col-span-2">
+                <span className="font-bold">A5. Sử dụng thẻ BHYT cho lần khám bệnh này:</span>
+                <CheckOption checked={data.has_bhyt === true} label="1. Có" />
+                <CheckOption checked={data.has_bhyt === false} label="2. Không" />
               </div>
             </div>
           </div>
 
-          {/* Section 2: Đánh giá */}
+          {/* Đánh giá */}
           <div className="space-y-4 mb-8 md:mb-12">
             <h3 className="font-black text-sm md:text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">
-              2. ĐÁNH GIÁ CỦA NGƯỜI BỆNH
+              ĐÁNH GIÁ VIỆC SỬ DỤNG DỊCH VỤ Y TẾ
             </h3>
-
-            <div className="border border-slate-900 overflow-hidden text-[11px] md:text-[13px]">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50">
-                    <th className="border border-slate-900 px-1 md:px-3 py-2 md:py-3 w-8 md:w-12 text-center uppercase font-black">STT</th>
-                    <th className="border border-slate-900 px-2 md:px-4 py-2 md:py-3 text-left uppercase font-black tracking-tight">Nội dung khảo sát</th>
-                    <th className="border border-slate-900 px-2 md:px-6 py-2 md:py-3 w-28 md:w-48 text-center uppercase font-black">Mức độ hài lòng</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {CATEGORIES.map(cat => (
-                    <React.Fragment key={cat.stt}>
-                      {/* Category Header Row */}
-                      <tr>
-                        <td className="border border-slate-900 bg-slate-50 font-black text-center px-1 py-2 md:py-3">{cat.stt}</td>
-                        <td className="border border-slate-900 bg-slate-50 font-black px-2 md:px-4 py-2 md:py-3 uppercase tracking-tight">{cat.name}</td>
-                        <td className="border border-slate-900 bg-slate-50"></td>
-                      </tr>
-                      {/* Questions Rows */}
-                      {cat.questions.map(q => (
-                        <tr key={q.id}>
-                          <td className="border border-slate-900 text-center px-1 py-3 md:py-4 text-slate-600 font-bold">{q.id}</td>
-                          <td className="border border-slate-900 px-2 md:px-4 py-3 md:py-4 leading-relaxed font-medium text-slate-800">{q.text}</td>
-                          <td className="border border-slate-900 px-2 md:px-6 py-3 md:py-4">
-                            <div className="flex justify-center">
-                              {renderScore((data as any)[`q${q.id}`] || 0)}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {mauByt ? (
+              <ScoreTable sections={OUTPATIENT_SECTIONS} data={data} />
+            ) : (
+              <ScoreTable sections={[{ stt: '', name: '', questions: LEGACY_OUTPATIENT_QUESTIONS }]} data={data} scale={[1, 2, 3, 4, 5, 0]} />
+            )}
           </div>
 
-          {/* Section 3: Góp ý */}
-          <div className="space-y-6 mb-8 md:mb-12">
-            <h3 className="font-black text-sm md:text-lg border-b-2 border-slate-900 pb-1 inline-block uppercase">
-              3. PHẢN HỒI VÀ GÓP Ý
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs md:text-sm">
-              <div className="space-y-6">
-                <div className="flex flex-col gap-3">
-                  <span className="font-bold uppercase tracking-tight text-amber-600">Nguyên nhân mệt mỏi:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {data.waiting_issues && data.waiting_issues.length > 0 ? (
-                      data.waiting_issues.map(issue => (
-                        <span key={issue} className="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg border border-amber-100 font-bold text-[10px] uppercase">
-                          {issue}
-                        </span>
-                      ))
-                    ) : <span className="italic text-slate-400">Không có phản ánh</span>}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <span className="font-bold uppercase tracking-tight text-[#059669]">Ưu tiên cải tiến:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {data.priority_improvement && data.priority_improvement.length > 0 ? (
-                      data.priority_improvement.map(item => (
-                        <span key={item} className="px-3 py-1 bg-emerald-50 text-[#059669] rounded-lg border border-emerald-100 font-bold text-[10px] uppercase">
-                          {item}
-                        </span>
-                      ))
-                    ) : <span className="italic text-slate-400">Không có phản ánh</span>}
-                  </div>
-                </div>
+          {/* Đánh giá chung */}
+          <div className="space-y-6 mb-8 md:mb-12 text-xs md:text-sm">
+            <div className="flex flex-col gap-2">
+              <span className="font-bold">F. Bệnh viện đã đáp ứng được bao nhiêu % so với mong đợi trước khi tới khám bệnh?</span>
+              <div className="bg-emerald-50 text-[#059669] px-4 py-2 rounded-xl border border-emerald-100 font-black text-xl tracking-tight w-fit">
+                {outpatientPercent(data)}%
               </div>
-
-              <div className="space-y-3">
-                <span className="font-bold uppercase tracking-tight">Ý kiến khác:</span>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-700 min-h-[120px] whitespace-pre-wrap leading-relaxed">
-                  {data.feedback || "Không có nội dung góp ý."}
-                </div>
-              </div>
+              {!mauByt && <span className="italic text-slate-400 text-[11px]">(phiếu mẫu cũ: quy đổi từ điểm trung bình các câu)</span>}
             </div>
+
+            {mauByt ? (
+              <div className="flex flex-col gap-3">
+                <span className="font-bold">G. Nếu có nhu cầu khám bệnh, Ông/Bà có quay trở lại hoặc giới thiệu cho người khác đến không?</span>
+                <div className="flex flex-col gap-2 pl-2">
+                  {OUTPATIENT_RETURN_OPTIONS.map(opt => (
+                    <CheckOption
+                      key={opt.value}
+                      checked={data.return_intent === opt.value}
+                      label={`${opt.value}. ${opt.label}${data.return_intent === opt.value && data.return_intent_other ? `: ${data.return_intent_other}` : ''}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Field label="Nguyên nhân chờ đợi:" value={(data.waiting_issues || []).join(', ')} />
+                <Field label="Ưu tiên cải tiến:" value={(data.priority_improvement || []).join(', ')} />
+                <span className="font-bold block pt-2">Ý kiến khác:</span>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-700 whitespace-pre-wrap leading-relaxed">
+                  {data.feedback || 'Không có nội dung góp ý.'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="font-black text-lg md:text-xl tracking-widest uppercase text-slate-800">XIN TRÂN TRỌNG CẢM ƠN!</p>
           </div>
 
           {/* Footer */}
@@ -285,3 +186,12 @@ export const OutpatientSatisfactionDetail: React.FC<Props> = ({ data, onBack }) 
     </div>
   );
 };
+
+const Field: React.FC<{ label: string; value: React.ReactNode; upper?: boolean }> = ({ label, value, upper }) => (
+  <div className="flex gap-2">
+    <span className="font-bold whitespace-nowrap">{label}</span>
+    <span className={`border-b border-dotted border-slate-400 flex-1 px-1 font-bold ${upper ? 'uppercase' : ''}`}>
+      {value === '' || value == null ? '...........................' : value}
+    </span>
+  </div>
+);

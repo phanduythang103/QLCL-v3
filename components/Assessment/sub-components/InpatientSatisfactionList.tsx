@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, User, Eye, Edit2, Trash2, Plus, BarChart3, Download, Trophy, Users, AlertTriangle } from 'lucide-react';
 import { InpatientSurveyResponse } from '../types/inpatientSatisfaction';
+import { allQuestions, INPATIENT_RETURN_OPTIONS, INPATIENT_SECTIONS, isMauByt, returnIntentLabel } from '../types/patientSatisfactionMauByt';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -56,13 +57,15 @@ export const InpatientSatisfactionList: React.FC<Props> = ({
         'Ngày khảo sát': d.toLocaleDateString('vi-VN'),
         'Khoa': s.department || 'N/A',
         'Đối tượng': s.respondent === 'patient' ? 'Người bệnh' : 'Người nhà',
+        'Giới tính': s.gender === 'nam' ? 'Nam' : s.gender === 'nu' ? 'Nữ' : '',
+        'Tuổi': s.age ?? '',
         'Số ngày nằm viện': s.hospital_days || 0,
-        'Tỷ lệ hài lòng (%)': s.satisfaction_percent || 0,
-        'Dự định quay lại': s.return_intent === 'yes' ? 'Chắc chắn' : s.return_intent === 'maybe' ? 'Có thể' : 'Chắc chắn không',
-        'Góp ý': s.feedback || '',
-        ...Array.from({ length: 12 }, (_, i) => ({
-          [`Câu ${i + 1}`]: (s as any)[`q${i + 1}`] || 0
-        })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+        'BHYT': s.has_bhyt == null ? '' : s.has_bhyt ? 'Có' : 'Không',
+        ...Object.fromEntries(allQuestions(INPATIENT_SECTIONS).map(q => [q.code.toUpperCase(), (s as any)[q.code] ?? ''])),
+        'G1. Đáp ứng mong đợi (%)': s.satisfaction_percent ?? '',
+        'G2. Dự định quay lại': returnIntentLabel(s.return_intent, INPATIENT_RETURN_OPTIONS, s.return_intent_other),
+        'H. Ý kiến khác': s.feedback || '',
+        'Mẫu phiếu': isMauByt(s, INPATIENT_SECTIONS) ? 'Mẫu BYT' : 'Mẫu cũ',
       };
     });
 
