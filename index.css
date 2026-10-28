@@ -2446,6 +2446,14 @@ main form textarea:focus {
   }
 }
 
+/* Cột mức đánh giá của phiếu hài lòng ISO (Rất tốt ... Kém) */
+.kshl-paper table td.kshl-iso-lv {
+  width: 76px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  line-height: 1.2;
+}
+
 /* Vòng tròn chấm điểm: giữ viền đen như bản giấy (không theo kiểu thẻ/nút chung) */
 .kshl-paper .kshl-circle {
   border: 1px solid #000 !important;

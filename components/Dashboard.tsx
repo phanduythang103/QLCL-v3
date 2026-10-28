@@ -18,6 +18,7 @@ import DateRangeFilter, { DateFilterState } from './DateRangeFilter';
 import { inpatientSatisfactionService } from './Assessment/services/inpatientSatisfactionService';
 import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
 import { outpatientPercent } from './Assessment/types/patientSatisfactionMauByt';
+import { staffPercent } from './Assessment/types/staffSatisfactionMauByt';
 import { staffSatisfactionService } from './Assessment/services/staffSatisfactionService';
 import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
 
@@ -214,15 +215,7 @@ export const Dashboard: React.FC = () => {
           totalPercent = rows.reduce((s, row) => s + outpatientPercent(row), 0) / rows.length;
         }
         else if (type === 'NVYT') {
-          rows.forEach(row => {
-            let sum = 0, count = 0;
-            for (let j = 1; j <= 13; j++) {
-              const val = row[`q${j}`];
-              if (val != null) { sum += val; count++; }
-            }
-            totalPercent += count > 0 ? (sum / count) * 20 : 0;
-          });
-          totalPercent /= rows.length;
+          totalPercent = rows.reduce((s, row) => s + staffPercent(row), 0) / rows.length;
         }
         else if (type === 'Bà mẹ sinh con') {
           const valid = rows.filter(x => x.overall_satisfaction != null);

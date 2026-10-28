@@ -14,6 +14,7 @@ import * as XLSX from 'xlsx';
 import { inpatientSatisfactionService } from './Assessment/services/inpatientSatisfactionService';
 import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
 import { INPATIENT_SECTIONS, OUTPATIENT_SECTIONS, SurveySection } from './Assessment/types/patientSatisfactionMauByt';
+import { STAFF_SECTIONS } from './Assessment/types/staffSatisfactionMauByt';
 import { staffSatisfactionService } from './Assessment/services/staffSatisfactionService';
 import { ksNuoiConService } from './Assessment/services/ksNuoiConService';
 import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
@@ -461,7 +462,7 @@ export const ReportsModule: React.FC = () => {
     if (!data.length) return [];
     const firstRow = flattenRow(data[0]);
     const qLabels: Record<string, string> =
-      selectedCategory === 'SATISFACTION_STAFF' ? STAFF_Q_LABELS :
+      selectedCategory === 'SATISFACTION_STAFF' ? { ...STAFF_Q_LABELS, ...mauBytLabels(STAFF_SECTIONS) } :
         selectedCategory === 'SATISFACTION_OUTPATIENT' ? { ...OUTPATIENT_Q_LABELS, ...mauBytLabels(OUTPATIENT_SECTIONS) } :
           selectedCategory === 'SATISFACTION_INPATIENT' ? mauBytLabels(INPATIENT_SECTIONS) :
             selectedCategory === 'GS_ADMISSION' ? GS_ADMISSION_LABELS : {};

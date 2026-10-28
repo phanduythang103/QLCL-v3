@@ -10,12 +10,14 @@ import { KsMeSinhConForm } from './Assessment/sub-components/KsMeSinhConForm';
 import { staffSatisfactionService } from './Assessment/services/staffSatisfactionService';
 import { inpatientSatisfactionService } from './Assessment/services/inpatientSatisfactionService';
 import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
+import { isoSatisfactionService } from './Assessment/services/isoSatisfactionService';
+import { IsoSatisfactionForm } from './Assessment/sub-components/IsoSatisfactionForm';
 import { ksNuoiConService } from './Assessment/services/ksNuoiConService';
 import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
 import { ZaloBrowserOverlay } from './ZaloBrowserOverlay';
 
 interface PublicConfig {
-  survey_type: 'staff' | 'inpatient' | 'outpatient' | 'ks_nuoi_con' | 'ks_me_sinh_con';
+  survey_type: 'staff' | 'inpatient' | 'outpatient' | 'ks_nuoi_con' | 'ks_me_sinh_con' | 'iso';
   is_public: boolean;
   survey_name: string;
 }
@@ -162,6 +164,8 @@ export const PublicSurveyPage: React.FC = () => {
         await ksNuoiConService.create(data);
       } else if (config.survey_type === 'ks_me_sinh_con') {
         await ksMeSinhConService.create(data);
+      } else if (config.survey_type === 'iso') {
+        await isoSatisfactionService.createSurvey(data);
       }
       setSubmitted(true);
     } catch (err) {
@@ -272,6 +276,16 @@ export const PublicSurveyPage: React.FC = () => {
       )}
       {config.survey_type === 'ks_nuoi_con' && (
         <KsNuoiConForm
+          onSave={handleSave}
+          onCancel={() => { }}
+          saving={saving}
+          isPublic={true}
+        />
+      )}
+      {config.survey_type === 'iso' && (
+        <IsoSatisfactionForm
+          // Link/QR riêng cho từng khoa: /khao-sat/<slug>?mau=vi_sinh
+          defaultMau={new URLSearchParams(window.location.search).get('mau') || undefined}
           onSave={handleSave}
           onCancel={() => { }}
           saving={saving}

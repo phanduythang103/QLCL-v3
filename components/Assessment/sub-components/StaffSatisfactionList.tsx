@@ -2,6 +2,10 @@ import React from 'react';
 import { Calendar, User, Eye, Edit2, Trash2, Plus, BarChart3, Briefcase, Download, Trophy, Users } from 'lucide-react';
 import { StaffSatisfactionSurvey } from '../types/staffSatisfaction';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
+import {
+  STAFF_BANG_CAP, STAFF_CHUYEN_MON, STAFF_CODES, STAFF_KIEM_NHIEM, STAFF_PHAM_VI, STAFF_VI_TRI,
+  choiceLabel, isStaffMauByt, staffPercent,
+} from '../types/staffSatisfactionMauByt';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -14,18 +18,18 @@ interface Props {
   onAddNew: () => void;
   dateFilter: DateFilterState;
   setDateFilter: (filter: DateFilterState) => void;
-  blockFilter: string;
-  setBlockFilter: (block: string) => void;
-  positionFilter: string;
-  setPositionFilter: (pos: string) => void;
+  chuyenMonFilter: string;
+  setChuyenMonFilter: (block: string) => void;
+  viTriFilter: string;
+  setViTriFilter: (pos: string) => void;
   totalSurveys: number;
   avgSatisfaction: number;
 }
 
 export const StaffSatisfactionList: React.FC<Props> = ({
   surveys, loading, onEdit, onView, onDelete, onAddNew,
-  dateFilter, setDateFilter, blockFilter, setBlockFilter,
-  positionFilter, setPositionFilter, totalSurveys, avgSatisfaction
+  dateFilter, setDateFilter, chuyenMonFilter, setChuyenMonFilter,
+  viTriFilter, setViTriFilter, totalSurveys, avgSatisfaction
 }) => {
   const { user } = useAuth();
   const isAdmin = !!user?.role && (
@@ -33,20 +37,7 @@ export const StaffSatisfactionList: React.FC<Props> = ({
     user.role.toLowerCase().includes('admin')
   );
 
-  const calculatePercentage = (s: StaffSatisfactionSurvey) => {
-    let totalScore = 0;
-    let validCount = 0;
-    // Iterate through q1 to q13
-    for (let i = 1; i <= 13; i++) {
-      const val = (s as any)[`q${i}`];
-      if (val && val > 0) {
-        totalScore += val;
-        validCount++;
-      }
-    }
-    if (validCount === 0) return 0;
-    return Math.round((totalScore / (validCount * 5)) * 100);
-  };
+  const calculatePercentage = staffPercent;
 
   const getScoreColor = (percent: number) => {
     if (percent >= 90) return 'text-emerald-600 bg-emerald-50';
@@ -60,37 +51,30 @@ export const StaffSatisfactionList: React.FC<Props> = ({
       return;
     }
 
-    const getBlockLabel = (b: string) => {
-      switch (b) {
-        case 'clinical': return 'Khối Lâm sàng';
-        case 'subclinical': return 'Khối Cận lâm sàng';
-        case 'admin': return 'Khối Hành chính';
-        default: return b;
-      }
-    };
-
-    const getPositionLabel = (p: string) => {
-      switch (p) {
-        case 'doctor': return 'Bác sĩ';
-        case 'nurse': return 'Điều dưỡng/Kỹ thuật viên';
-        case 'contract': return 'Hợp đồng lao động';
-        default: return p;
-      }
-    };
-
     const data = surveys.map((s, index) => {
-      const percent = calculatePercentage(s);
       const d = s.ngay_khao_sat ? new Date(s.ngay_khao_sat) : new Date();
+      const mauByt = isStaffMauByt(s);
       return {
         'STT': index + 1,
         'Ngày khảo sát': d.toLocaleDateString('vi-VN'),
-        'Khối': getBlockLabel(s.block),
-        'Vị trí': getPositionLabel(s.position),
-        'Số năm công tác': s.years || 0,
-        'Mức độ hài lòng (%)': percent,
-        ...Array.from({ length: 13 }, (_, i) => ({
-          [`Câu ${i + 1}`]: (s as any)[`q${i + 1}`] || 0
-        })).reduce((acc, curr) => ({ ...acc, ...curr }), {})
+        'Mẫu phiếu': mauByt ? 'Mẫu BYT' : 'Mẫu cũ',
+        'Giới tính': s.gender === 'nam' ? 'Nam' : s.gender === 'nu' ? 'Nữ' : '',
+        'Tuổi': s.age ?? '',
+        'Chuyên môn': choiceLabel(STAFF_CHUYEN_MON, s.chuyen_mon, s.chuyen_mon_other),
+        'Bằng cấp': choiceLabel(STAFF_BANG_CAP, s.bang_cap, s.bang_cap_other),
+        'Năm trong ngành Y': s.nam_nganh_y ?? (mauByt ? '' : s.years ?? ''),
+        'Năm tại BV': s.nam_tai_bv ?? '',
+        'Vị trí': choiceLabel(STAFF_VI_TRI, s.vi_tri, s.vi_tri_other),
+        'Phạm vi chuyên môn': choiceLabel(STAFF_PHAM_VI, s.pham_vi, s.pham_vi_other),
+        'Kiêm nhiệm': choiceLabel(STAFF_KIEM_NHIEM, s.kiem_nhiem),
+        'Số lần trực/tháng': s.so_lan_truc ?? '',
+        'Mức độ hài lòng (%)': calculatePercentage(s),
+        ...Object.fromEntries(
+          mauByt
+            ? STAFF_CODES.map(c => [c.toUpperCase(), (s as any)[c] ?? ''])
+            : Array.from({ length: 13 }, (_, i) => [`Câu ${i + 1} (mẫu cũ)`, (s as any)[`q${i + 1}`] ?? ''])
+        ),
+        'G. Ý kiến, đề xuất': s.suggestion || '',
       };
     });
 
@@ -149,25 +133,21 @@ export const StaffSatisfactionList: React.FC<Props> = ({
             <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
 
             <select
-              value={blockFilter}
-              onChange={(e) => setBlockFilter(e.target.value)}
+              value={chuyenMonFilter}
+              onChange={(e) => setChuyenMonFilter(e.target.value)}
               className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
             >
-              <option value="all">Tất cả Khối</option>
-              <option value="clinical">Khối Lâm sàng</option>
-              <option value="subclinical">Khối Cận lâm sàng</option>
-              <option value="admin">Khối Hành chính</option>
+              <option value="all">Tất cả Chuyên môn</option>
+              {STAFF_CHUYEN_MON.map(o => <option key={o.value} value={o.value}>{choiceLabel(STAFF_CHUYEN_MON, o.value)}</option>)}
             </select>
 
             <select
-              value={positionFilter}
-              onChange={(e) => setPositionFilter(e.target.value)}
+              value={viTriFilter}
+              onChange={(e) => setViTriFilter(e.target.value)}
               className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
             >
               <option value="all">Tất cả Vị trí</option>
-              <option value="doctor">Bác sĩ</option>
-              <option value="nurse">Điều dưỡng/KTV</option>
-              <option value="contract">Hợp đồng lao động</option>
+              {STAFF_VI_TRI.map(o => <option key={o.value} value={o.value}>{choiceLabel(STAFF_VI_TRI, o.value)}</option>)}
             </select>
           </div>
         </div>

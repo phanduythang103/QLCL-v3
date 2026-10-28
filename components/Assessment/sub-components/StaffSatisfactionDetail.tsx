@@ -1,6 +1,8 @@
 import React from 'react';
 import { ArrowLeft, CheckCircle2, Star } from 'lucide-react';
 import { StaffSatisfactionSurvey } from '../types/staffSatisfaction';
+import { isStaffMauByt } from '../types/staffSatisfactionMauByt';
+import { StaffSurveyPaperView } from './StaffSurveyPaper';
 
 interface Props {
   data: StaffSatisfactionSurvey | undefined;
@@ -61,6 +63,7 @@ const POSITION_LABELS: Record<string, string> = {
 
 export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
   if (!data) return null;
+  if (isStaffMauByt(data)) return <StaffSurveyPaperView data={data} onBack={onBack} />;
 
   const handlePrint = () => {
     window.print();
@@ -119,13 +122,13 @@ export const StaffSatisfactionDetail: React.FC<Props> = ({ data, onBack }) => {
               <div className="flex gap-2">
                 <span className="font-bold whitespace-nowrap">Khối công tác:</span>
                 <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold text-[#059669] uppercase tracking-wide">
-                  {BLOCK_LABELS[data.block] || data.block || '...........................................'}
+                  {BLOCK_LABELS[data.block || ''] || data.block || '...........................................'}
                 </span>
               </div>
               <div className="flex gap-2">
                 <span className="font-bold whitespace-nowrap">Vị trí:</span>
                 <span className="border-b border-dotted border-slate-400 flex-1 px-1 font-bold">
-                  {POSITION_LABELS[data.position] || data.position || '...........................................'}
+                  {POSITION_LABELS[data.position || ''] || data.position || '...........................................'}
                 </span>
               </div>
               <div className="flex gap-2">

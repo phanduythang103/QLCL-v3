@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Users, Stethoscope, UserCheck, Baby, Heart,
+  Users, Stethoscope, UserCheck, Baby, Heart, FlaskConical,
   ArrowLeft, Activity, ChevronRight, Calendar
 } from 'lucide-react';
 import { StaffSatisfactionSurvey } from './StaffSatisfactionSurvey';
@@ -8,6 +8,7 @@ import { InpatientSatisfactionSurvey } from './InpatientSatisfactionSurvey';
 import { OutpatientSatisfactionSurvey } from './OutpatientSatisfactionSurvey';
 import { KsNuoiConSurvey } from './KsNuoiConSurvey';
 import { KsMeSinhConSurvey } from './KsMeSinhConSurvey';
+import { IsoSatisfactionSurvey } from './IsoSatisfactionSurvey';
 import { supabase } from '../../../supabaseClient';
 
 // Import services
@@ -16,6 +17,8 @@ import { outpatientSatisfactionService } from '../services/outpatientSatisfactio
 import { staffSatisfactionService } from '../services/staffSatisfactionService';
 import { ksNuoiConService } from '../services/ksNuoiConService';
 import { ksMeSinhConService } from '../services/ksMeSinhConService';
+import { isoSatisfactionService } from '../services/isoSatisfactionService';
+import { staffPercent } from '../types/staffSatisfactionMauByt';
 
 interface Props {
   setParentViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
@@ -29,12 +32,12 @@ interface SatisfactionStats {
   color: string;
   bgColor: string;
   icon: React.ReactNode;
-  tab: 'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER';
+  tab: 'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER' | 'ISO';
   surveyType: string;
 }
 
 export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER' | null>(null);
+  const [activeTab, setActiveTab] = useState<'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER' | 'ISO' | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Record<string, number>>({
     PATIENT: 0,
@@ -42,6 +45,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
     OUTPATIENT: 0,
     BABY: 0,
     MOTHER: 0,
+    ISO: 0,
   });
   const [publicConfigs, setPublicConfigs] = useState<Record<string, boolean>>({});
 
@@ -53,12 +57,13 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
         // Fetch all in parallel
-        const [inpatient, outpatient, staff, nuoiCon, meSinhCon] = await Promise.all([
+        const [inpatient, outpatient, staff, nuoiCon, meSinhCon, iso] = await Promise.all([
           inpatientSatisfactionService.fetchInpatientSurveys(),
           outpatientSatisfactionService.fetchOutpatientSurveys(),
           staffSatisfactionService.fetchSurveys(),
           ksNuoiConService.fetchAll(),
           ksMeSinhConService.fetchAll(),
+          isoSatisfactionService.fetchSurveys().catch(() => []),
         ]);
 
         const { data: configs, error: configError } = await supabase
@@ -74,7 +79,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
           }, {})
         );
 
-        const calcAvg = (data: any[], type: 'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER') => {
+        const calcAvg = (data: any[], type: 'PATIENT' | 'STAFF' | 'OUTPATIENT' | 'BABY' | 'MOTHER' | 'ISO') => {
           if (!data || data.length === 0) return 0;
 
           const currentMonthData = data.filter(r => {
@@ -85,6 +90,12 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
           });
 
           const targetData = currentMonthData.length > 0 ? currentMonthData : data;
+
+          if (type === 'ISO') {
+            // Phiếu không có câu chấm điểm hài lòng (VD Sinh hóa) không tính vào trung bình
+            const scored = targetData.filter(r => r.satisfaction_percent != null);
+            return scored.length ? Math.round(scored.reduce((a, r) => a + r.satisfaction_percent, 0) / scored.length) : 0;
+          }
 
           let totalPercent = 0;
           targetData.forEach(r => {
@@ -102,16 +113,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
               }
               totalPercent += count > 0 ? (sum / count) * 20 : 0;
             } else if (type === 'STAFF') {
-              let sum = 0;
-              let count = 0;
-              for (let i = 1; i <= 13; i++) {
-                const val = r[`q${i}`];
-                if (val !== undefined && val !== null) {
-                  sum += val;
-                  count++;
-                }
-              }
-              totalPercent += count > 0 ? (sum / count) * 20 : 0;
+              totalPercent += staffPercent(r);
             } else if (type === 'BABY') {
               // As BABY survey doesn't have a satisfaction score, use a default high value or calculate compliance
               // For now, let's treat it as 100% just to show some progress, or 0 if nothing.
@@ -130,6 +132,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
           STAFF: calcAvg(staff, 'STAFF'),
           BABY: calcAvg(nuoiCon, 'BABY'),
           MOTHER: calcAvg(meSinhCon, 'MOTHER'),
+          ISO: calcAvg(iso, 'ISO'),
         });
       } catch (err) {
         console.error("Error fetching satisfaction stats:", err);
@@ -205,6 +208,16 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
       tab: 'MOTHER',
       surveyType: 'ks_me_sinh_con'
     },
+    {
+      id: 'iso',
+      name: 'Xét nghiệm (ISO)',
+      percent: stats.ISO,
+      color: '#8b5cf6',
+      bgColor: '#f5f3ff',
+      icon: <FlaskConical size={24} />,
+      tab: 'ISO',
+      surveyType: 'iso'
+    },
   ];
 
   if (activeTab !== null) {
@@ -223,6 +236,7 @@ export const StandardMeasurementModule: React.FC<Props> = ({ setParentViewMode, 
           {activeTab === 'BABY' && <KsNuoiConSurvey setParentViewMode={setParentViewMode} />}
           {activeTab === 'MOTHER' && <KsMeSinhConSurvey setParentViewMode={setParentViewMode} />}
           {activeTab === 'OUTPATIENT' && <OutpatientSatisfactionSurvey setParentViewMode={setParentViewMode} />}
+          {activeTab === 'ISO' && <IsoSatisfactionSurvey setParentViewMode={setParentViewMode} />}
         </div>
       </div>
     );

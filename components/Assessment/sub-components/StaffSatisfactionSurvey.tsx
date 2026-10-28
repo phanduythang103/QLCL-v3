@@ -5,6 +5,7 @@ import { StaffSatisfactionList } from './StaffSatisfactionList';
 import { StaffSatisfactionForm } from './StaffSatisfactionForm';
 import { StaffSatisfactionDetail } from './StaffSatisfactionDetail';
 import DateRangeFilter, { DateFilterState } from '../../DateRangeFilter';
+import { staffPercent } from '../types/staffSatisfactionMauByt';
 
 interface Props {
   setParentViewMode: (mode: 'LIST' | 'FORM' | 'DETAIL') => void;
@@ -22,8 +23,8 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
     startDate: '',
     endDate: ''
   });
-  const [blockFilter, setBlockFilter] = useState<string>('all');
-  const [positionFilter, setPositionFilter] = useState<string>('all');
+  const [chuyenMonFilter, setChuyenMonFilter] = useState<string>('all');
+  const [viTriFilter, setViTriFilter] = useState<string>('all');
 
   const loadData = async () => {
     setLoading(true);
@@ -93,35 +94,21 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
         dateMatch = false;
       }
 
-      // 2. Filter by Block
-      const blockMatch = blockFilter === 'all' || s.block === blockFilter;
+      // 2. Lọc theo chuyên môn đào tạo (A3)
+      const chuyenMonMatch = chuyenMonFilter === 'all' || s.chuyen_mon === chuyenMonFilter;
 
-      // 3. Filter by Position
-      const positionMatch = positionFilter === 'all' || s.position === positionFilter;
+      // 3. Lọc theo vị trí công tác (A7)
+      const viTriMatch = viTriFilter === 'all' || s.vi_tri === viTriFilter;
 
-      return dateMatch && blockMatch && positionMatch;
+      return dateMatch && chuyenMonMatch && viTriMatch;
     });
-  }, [surveys, dateFilter, blockFilter, positionFilter]);
+  }, [surveys, dateFilter, chuyenMonFilter, viTriFilter]);
 
   const stats = useMemo(() => {
     const total = filteredSurveys.length;
     if (total === 0) return { total: 0, avgSatisfaction: 0 };
 
-    const calculatePercentage = (s: SurveyType) => {
-      let totalScore = 0;
-      let validCount = 0;
-      for (let i = 1; i <= 13; i++) {
-        const val = (s as any)[`q${i}`];
-        if (val && val > 0) {
-          totalScore += val;
-          validCount++;
-        }
-      }
-      if (validCount === 0) return 0;
-      return (totalScore / (validCount * 5)) * 100;
-    };
-
-    const sumPercentages = filteredSurveys.reduce((acc, s) => acc + calculatePercentage(s), 0);
+    const sumPercentages = filteredSurveys.reduce((acc, s) => acc + staffPercent(s), 0);
     return {
       total,
       avgSatisfaction: Math.round(sumPercentages / total)
@@ -182,7 +169,7 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
       case 'DETAIL':
         return (
           <StaffSatisfactionDetail
-            data={editingItem}
+            data={editingItem ?? undefined}
             onBack={handleCancel}
           />
         );
@@ -208,10 +195,10 @@ export const StaffSatisfactionSurvey: React.FC<Props> = ({ setParentViewMode }) 
             onDelete={handleDelete}
             dateFilter={dateFilter}
             setDateFilter={setDateFilter}
-            blockFilter={blockFilter}
-            setBlockFilter={setBlockFilter}
-            positionFilter={positionFilter}
-            setPositionFilter={setPositionFilter}
+            chuyenMonFilter={chuyenMonFilter}
+            setChuyenMonFilter={setChuyenMonFilter}
+            viTriFilter={viTriFilter}
+            setViTriFilter={setViTriFilter}
             totalSurveys={stats.total}
             avgSatisfaction={stats.avgSatisfaction}
           />

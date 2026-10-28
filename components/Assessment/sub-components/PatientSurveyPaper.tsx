@@ -1,9 +1,10 @@
 import React from 'react';
 import {
   GENDER_OPTIONS, HOSPITAL_NAME, INPATIENT_RETURN_OPTIONS, INPATIENT_RETURN_OTHER, INPATIENT_SECTIONS,
-  OUTPATIENT_RETURN_OPTIONS, OUTPATIENT_RETURN_OTHER, OUTPATIENT_SECTIONS, SCALE_OPTIONS, SURVEY_INTRO,
+  OUTPATIENT_RETURN_OPTIONS, OUTPATIENT_RETURN_OTHER, OUTPATIENT_SECTIONS, SURVEY_INTRO,
 } from '../types/patientSatisfactionMauByt';
 import { DepartmentSelect } from '../../DepartmentSelect';
+import { MauSoRow, Opt, PaperViewShell, RatedSections, ScaleLegend, lineInput, paperCell, paperRoot } from './SurveyPaperKit';
 
 /**
  * Phiếu khảo sát ý kiến người bệnh trình bày giống bản giấy mẫu Bộ Y tế
@@ -15,35 +16,9 @@ type SurveyKind = 'noi_tru' | 'ngoai_tru';
 
 /** Trang xem chi tiết phiếu (chỉ đọc) kèm nút quay lại và in phiếu */
 export const PatientSurveyPaperView: React.FC<{ kind: SurveyKind; data: Record<string, any>; onBack: () => void }> = ({ kind, data, onBack }) => (
-  <div className="w-full min-h-full bg-slate-100/50 p-2 md:p-8 animate-in fade-in duration-500 paper-view">
-    <div className="max-w-[860px] mx-auto no-print flex items-center justify-between mb-3">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-slate-500 hover:text-[#059669] font-black text-[10px] md:text-xs uppercase p-2 md:p-3 hover:bg-emerald-50 rounded-2xl transition-all"
-      >
-        ← Quay lại
-      </button>
-      <button
-        onClick={() => window.print()}
-        className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] md:text-xs uppercase shadow hover:bg-black transition-all"
-      >
-        In phiếu
-      </button>
-    </div>
-    <div className="max-w-[860px] mx-auto bg-white shadow-xl border border-slate-200 px-3 py-5 md:px-12 md:py-10 paper-sheet">
-      <PatientSurveyPaper kind={kind} data={data} readOnly />
-    </div>
-    <style dangerouslySetInnerHTML={{
-      __html: `
-      @media print {
-        .no-print { display: none !important; }
-        body { background: white !important; }
-        .paper-view { padding: 0 !important; background: white !important; }
-        .paper-sheet { box-shadow: none !important; border: none !important; padding: 0 !important; max-width: 100% !important; }
-        .paper-sheet button { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      }
-    `}} />
-  </div>
+  <PaperViewShell onBack={onBack}>
+    <PatientSurveyPaper kind={kind} data={data} readOnly />
+  </PaperViewShell>
 );
 
 interface Props {
@@ -55,36 +30,7 @@ interface Props {
   departments?: any[];
 }
 
-const cell = 'border border-black px-1.5 py-1 align-top';
-const lineInput = 'bg-transparent border-0 border-b border-dotted border-slate-500 outline-none px-1 font-semibold text-[#047857] focus:border-[#059669] disabled:text-[#047857] disabled:opacity-100';
-
-/** Số trong vòng tròn giống ①..⑤ trên phiếu giấy */
-const Circle: React.FC<{ n: number | string; selected?: boolean; size?: 'sm' | 'md' | 'lg'; onClick?: () => void; disabled?: boolean; title?: string }> = ({ n, selected, size = 'md', onClick, disabled, title }) => {
-  const dim = size === 'sm' ? 'w-[18px] h-[18px] text-[11px]'
-    : size === 'lg' ? 'w-11 h-11 text-[17px]'
-      : 'w-[25px] h-[25px] md:w-8 md:h-8 text-[12px] md:text-[15px]';
-  const cls = `kshl-circle ${selected ? 'kshl-circle-on' : ''} ${dim} inline-flex items-center justify-center rounded-full border border-black font-sans font-semibold shrink-0 transition-all ${selected ? 'bg-[#059669] border-[#059669] text-white shadow' : 'bg-white text-black'}`;
-  if (!onClick) return <span className={cls}>{n}</span>;
-  return (
-    <button type="button" title={title} disabled={disabled} onClick={onClick} className={`${cls} ${disabled ? '' : 'hover:border-[#059669] hover:text-[#059669] cursor-pointer'} ${selected && !disabled ? 'hover:text-white' : ''}`}>
-      {n}
-    </button>
-  );
-};
-
-/** Lựa chọn dạng chữ trên phiếu (VD "1. Nam"): khi chọn thì được khoanh tròn */
-const Opt: React.FC<{ label: string; selected: boolean; readOnly?: boolean; onClick: () => void }> = ({ label, selected, readOnly, onClick }) => (
-  <button
-    type="button"
-    disabled={readOnly}
-    onClick={onClick}
-    className={`inline-block px-1.5 rounded-full border transition-all ${selected
-      ? 'border-[#059669] bg-emerald-50 text-[#047857] font-bold'
-      : `border-transparent ${readOnly ? '' : 'hover:border-slate-400 cursor-pointer'}`}`}
-  >
-    {label}
-  </button>
-);
+const cell = paperCell;
 
 export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = false, onChange, departments = [] }) => {
   const isNoiTru = kind === 'noi_tru';
@@ -98,19 +44,12 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
   const maKhoa = (data.department || '').includes(' - ') ? data.department.split(' - ')[0] : '';
 
   return (
-    <div className="kshl-paper bg-white text-black font-['Times_New_Roman',Times,serif] text-[15px] md:text-[17px] leading-snug">
+    <div className={paperRoot}>
       {/* Tiêu đề */}
       <h1 className="text-center font-bold uppercase text-[16px] md:text-[19px]">
         Phiếu khảo sát ý kiến người bệnh {isNoiTru ? 'nội trú' : 'ngoại trú'}
       </h1>
-      <div className="flex items-center gap-2 md:gap-4 mt-1 mb-3 md:pl-16">
-        <span className="font-bold whitespace-nowrap">MẪU SỐ {isNoiTru ? 1 : 2}</span>
-        <div className="flex flex-1 max-w-[460px]">
-          {Array.from({ length: 11 }).map((_, i) => (
-            <span key={i} className="flex-1 h-5 md:h-6 border border-black -ml-px first:ml-0" />
-          ))}
-        </div>
-      </div>
+      <MauSoRow so={isNoiTru ? 1 : 2} />
 
       <p className="italic text-justify indent-10 mb-1">{SURVEY_INTRO}</p>
 
@@ -212,82 +151,8 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
 
       {/* Đánh giá */}
       <h2 className="font-bold uppercase mt-2">Đánh giá việc sử dụng dịch vụ y tế</h2>
-      <p>
-        Ông/Bà {readOnly ? 'đánh dấu' : 'bấm chọn'} vào một số <b>từ 1 đến 5</b>, tương ứng với <b>mức độ hài lòng hoặc nhận xét từ rất kém đến rất tốt</b> cho từng câu hỏi dưới đây:
-      </p>
-      <table className="w-full border-collapse text-center text-[13px] md:text-[16px] mb-4">
-        <tbody>
-          <tr>
-            {SCALE_OPTIONS.map(o => (
-              <td key={o.value} className="border border-black px-1 py-1 align-top">
-                <div className="flex items-center justify-center gap-1"><Circle n={o.value} size="sm" /> là:</div>
-                <div>{o.label}</div>
-                <div className="mt-1"><i>hoặc:</i> {o.alt}</div>
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-
-      {/* Điện thoại: mỗi câu một thẻ, "B1. Nội dung" trên một dòng, thang điểm chia đều 5 cột */}
-      <div className="md:hidden space-y-4 mb-4">
-        {sections.map(sec => (
-          <div key={sec.stt} className="space-y-2">
-            <div className="bg-[#059669] text-white font-bold rounded-lg px-3 py-2">{sec.stt}. {sec.name}</div>
-            {sec.questions.map(q => (
-              <div key={q.code} className="border border-slate-300 rounded-xl px-3 py-2.5">
-                <p><b>{q.code.toUpperCase()}.</b> {q.text}</p>
-                <div className="grid grid-cols-5 gap-1 mt-2 justify-items-center">
-                  {SCALE_OPTIONS.map(o => (
-                    <Circle
-                      key={o.value}
-                      n={o.value}
-                      size="lg"
-                      title={o.label}
-                      selected={data[q.code] === o.value}
-                      disabled={readOnly}
-                      onClick={readOnly ? undefined : () => set(q.code, o.value)}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Máy tính: bảng kẻ ô như bản giấy */}
-      <table className="kshl-q-desktop w-full border-collapse">
-        <tbody>
-          {sections.map(sec => (
-            <React.Fragment key={sec.stt}>
-              <tr>
-                <td className={`${cell} kshl-sec font-bold`} colSpan={3}>{sec.stt}. {sec.name}</td>
-              </tr>
-              {sec.questions.map(q => (
-                <tr key={q.code}>
-                  <td className={`${cell} kshl-code`}>{q.code.toUpperCase()}.</td>
-                  <td className={cell}>{q.text}</td>
-                  <td className={`${cell} kshl-rate`}>
-                    <div className="flex items-center justify-center gap-[3px] md:gap-1.5">
-                      {SCALE_OPTIONS.map(o => (
-                        <Circle
-                          key={o.value}
-                          n={o.value}
-                          title={o.label}
-                          selected={data[q.code] === o.value}
-                          disabled={readOnly}
-                          onClick={readOnly ? undefined : () => set(q.code, o.value)}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+      <ScaleLegend readOnly={readOnly} />
+      <RatedSections sections={sections} data={data} readOnly={readOnly} onSet={set} />
 
       <table className="kshl-after-q w-full border-collapse">
         <tbody>
