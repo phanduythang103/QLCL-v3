@@ -26,7 +26,7 @@ interface Props {
   data: Record<string, any>;
   readOnly?: boolean;
   onChange?: (field: string, value: any) => void;
-  /** Danh mục khoa cho ô chọn khoa (chỉ phiếu nội trú) */
+  /** Danh mục khoa cho ô chọn khoa / đơn vị khảo sát */
   departments?: any[];
 }
 
@@ -42,6 +42,22 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
 
   const surveyDate = data.ngay_khao_sat ? new Date(data.ngay_khao_sat) : new Date();
   const maKhoa = (data.department || '').includes(' - ') ? data.department.split(' - ')[0] : '';
+
+  const departmentField = (
+    <div className="flex-1 min-w-[220px] font-sans text-[14px]">
+      {readOnly ? (
+        <span className="font-['Times_New_Roman',Times,serif] font-semibold text-[#047857] text-[15px] md:text-[17px]">{data.department || '…………'}</span>
+      ) : (
+        <DepartmentSelect
+          value={data.department || ''}
+          onChange={v => set('department', v)}
+          departments={departments}
+          required
+          className="w-full bg-emerald-50/40 border border-dotted border-slate-500 rounded px-2 py-1 text-sm font-semibold text-[#047857] outline-none focus:border-[#059669]"
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className={paperRoot}>
@@ -59,6 +75,12 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
           <span>1. Tên bệnh viện: <span className="font-semibold text-[#047857]">{HOSPITAL_NAME}</span></span>
           <span>2. Ngày điền phiếu: <span className="font-semibold text-[#047857]">{surveyDate.toLocaleDateString('vi-VN')}</span></span>
         </div>
+        {!isNoiTru && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>3. Đơn vị khảo sát</span>
+            {departmentField}
+          </div>
+        )}
         {isNoiTru && (
           <>
             <div className="flex flex-wrap items-center gap-x-2">
@@ -68,19 +90,7 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
             </div>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span>4. Tên khoa nằm điều trị trước ra viện</span>
-              <div className="flex-1 min-w-[220px] font-sans text-[14px]">
-                {readOnly ? (
-                  <span className="font-['Times_New_Roman',Times,serif] font-semibold text-[#047857] text-[15px] md:text-[17px]">{data.department || '…………'}</span>
-                ) : (
-                  <DepartmentSelect
-                    value={data.department || ''}
-                    onChange={v => set('department', v)}
-                    departments={departments}
-                    required
-                    className="w-full bg-emerald-50/40 border border-dotted border-slate-500 rounded px-2 py-1 text-sm font-semibold text-[#047857] outline-none focus:border-[#059669]"
-                  />
-                )}
-              </div>
+              {departmentField}
               <span>5. Mã khoa (do BV ghi) <span className="font-semibold text-[#047857]">{maKhoa || '……'}</span></span>
             </div>
           </>

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { OutpatientSurveyResponse } from '../types/outpatientSatisfaction';
 import { OUTPATIENT_RETURN_OTHER, OUTPATIENT_SECTIONS } from '../types/patientSatisfactionMauByt';
 import { firstUnanswered } from './PatientSatisfactionMauByt';
 import { PatientSurveyPaper } from './PatientSurveyPaper';
+import { fetchDmDonVi, DmDonVi } from '../../../readDmDonVi';
 
 interface Props {
   initialData?: OutpatientSurveyResponse;
@@ -25,6 +26,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
 }) => {
   const [formData, setFormData] = useState<OutpatientSurveyResponse>(initialData || {
     phone: '',
+    department: '',
     gender: null,
     age: null,
     distance_km: null,
@@ -33,6 +35,11 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
     return_intent: '',
     return_intent_other: '',
   });
+  const [units, setUnits] = useState<DmDonVi[]>([]);
+
+  useEffect(() => {
+    fetchDmDonVi().then(setUnits).catch(err => console.error('Error loading departments:', err));
+  }, []);
 
   const handleChange = (field: string, value: any) => {
     if (readOnly) return;
@@ -43,6 +50,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
     e.preventDefault();
     if (readOnly) return;
 
+    if (!formData.department?.trim()) return alert('Chưa nhập thông tin: 3. Đơn vị khảo sát');
     if (!formData.gender) return alert('Chưa nhập thông tin: A1. Giới tính');
     if (!formData.age) return alert('Chưa nhập thông tin: A2. Tuổi');
     if (!formData.phone?.trim()) return alert('Chưa nhập thông tin: A3. Số di động');
@@ -79,7 +87,7 @@ export const OutpatientSatisfactionForm: React.FC<Props> = ({
       )}
 
       <div className="max-w-[860px] mx-auto mt-4 bg-white shadow-xl border border-slate-200 px-3 py-5 md:px-12 md:py-10">
-        <PatientSurveyPaper kind="ngoai_tru" data={formData} readOnly={readOnly} onChange={handleChange} />
+        <PatientSurveyPaper kind="ngoai_tru" data={formData} readOnly={readOnly} onChange={handleChange} departments={units} />
       </div>
 
       {!readOnly && (

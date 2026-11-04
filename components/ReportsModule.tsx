@@ -404,6 +404,7 @@ export const ReportsModule: React.FC = () => {
   };
 
   const OUTPATIENT_Q_LABELS: Record<string, string> = {
+    department: 'Đơn vị khảo sát',
     q1: 'A1. Sự thuận tiện khu vực gửi xe',
     q2: 'A2. Phân luồng Quân - Dân rõ ràng',
     q3: 'A3. Biển báo và hướng dẫn tại sảnh',

@@ -22,6 +22,7 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
   const [dateFilter, setDateFilter] = useState<DateFilterState>({
     type: 'all', startDate: '', endDate: ''
   });
+  const [deptFilter, setDeptFilter] = useState<string>('all');
   const [bhytFilter, setBhytFilter] = useState<string>('all');
 
   const loadSurveys = async () => {
@@ -39,6 +40,13 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
   useEffect(() => {
     loadSurveys();
   }, []);
+
+  // Get unique departments for filter
+  const departments = useMemo(() => {
+    const sets = new Set<string>();
+    surveys.forEach(s => { if (s.department) sets.add(s.department); });
+    return Array.from(sets).sort();
+  }, [surveys]);
 
   const filteredSurveys = useMemo(() => {
     return surveys.filter(s => {
@@ -89,12 +97,15 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
         }
       } else if (dateFilter.type !== 'all' && !s.ngay_khao_sat) dateMatch = false;
 
-      // 2. Filter by BHYT
+      // 2. Filter by department
+      const deptMatch = deptFilter === 'all' || s.department === deptFilter;
+
+      // 3. Filter by BHYT
       const bhytMatch = bhytFilter === 'all' || s.has_bhyt === (bhytFilter === 'yes');
 
-      return dateMatch && bhytMatch;
+      return dateMatch && deptMatch && bhytMatch;
     });
-  }, [surveys, dateFilter, bhytFilter]);
+  }, [surveys, dateFilter, deptFilter, bhytFilter]);
 
   const stats = useMemo(() => {
     const total = filteredSurveys.length;
@@ -167,6 +178,9 @@ export const OutpatientSatisfactionSurvey: React.FC<Props> = ({ setParentViewMod
             onAddNew={handleAddNew}
             dateFilter={dateFilter}
             setDateFilter={setDateFilter}
+            deptFilter={deptFilter}
+            setDeptFilter={setDeptFilter}
+            departments={departments}
             bhytFilter={bhytFilter}
             setBhytFilter={setBhytFilter}
             totalSurveys={stats.total}

@@ -2,6 +2,7 @@ export interface OutpatientSurveyResponse {
   id?: string;
   // General information
   full_name?: string;
+  department?: string;         // 3. Đơn vị khảo sát (`${ma_don_vi} - ${ten_don_vi}`)
   phone?: string;              // A3. Số di động
   gender?: 'nam' | 'nu' | null; // A1
   age?: number | null;          // A2

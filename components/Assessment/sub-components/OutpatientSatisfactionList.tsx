@@ -15,6 +15,9 @@ interface Props {
   onAddNew: () => void;
   dateFilter: DateFilterState;
   setDateFilter: (filter: DateFilterState) => void;
+  deptFilter: string;
+  setDeptFilter: (v: string) => void;
+  departments: string[];
   bhytFilter: string;
   setBhytFilter: (v: string) => void;
   totalSurveys: number;
@@ -23,7 +26,7 @@ interface Props {
 
 export const OutpatientSatisfactionList: React.FC<Props> = ({
   surveys, loading, onEdit, onView, onDelete, onAddNew,
-  dateFilter, setDateFilter, bhytFilter, setBhytFilter,
+  dateFilter, setDateFilter, deptFilter, setDeptFilter, departments, bhytFilter, setBhytFilter,
   totalSurveys, avgSatisfaction
 }) => {
   const { user } = useAuth();
@@ -51,6 +54,7 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
       return {
         'STT': index + 1,
         'Ngày khảo sát': d.toLocaleDateString('vi-VN'),
+        'Đơn vị khảo sát': s.department || '',
         'Giới tính': s.gender === 'nam' ? 'Nam' : s.gender === 'nu' ? 'Nữ' : '',
         'Tuổi': s.age ?? '',
         'Khoảng cách (km)': s.distance_km ?? '',
@@ -114,6 +118,16 @@ export const OutpatientSatisfactionList: React.FC<Props> = ({
           <h3 className="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight hidden md:block shrink-0">Bộ lọc:</h3>
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <DateRangeFilter filter={dateFilter} onChange={setDateFilter} />
+            <select
+              value={deptFilter}
+              onChange={(e) => setDeptFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-100 text-slate-700 text-[10px] md:text-xs font-black rounded-xl px-4 py-2.5 outline-none focus:border-[#059669] transition-all"
+            >
+              <option value="all">Tất cả Đơn vị</option>
+              {departments.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
             <select
               value={bhytFilter}
               onChange={(e) => setBhytFilter(e.target.value)}
