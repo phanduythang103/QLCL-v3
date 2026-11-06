@@ -18,6 +18,7 @@ import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { useRecordOwnership } from '../utils/recordOwnership';
 import { exportCriticalResultsReportExcel, CRITICAL_TIME_LIMIT } from '../utils/criticalResultsReportExcel';
+import { fromDateTimeLocalInput, localMonthOf, localYearOf, toDateTimeLocalInput } from '../utils/dateUtils';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { CRITICAL_RESULT_NAMES } from '../utils/criticalResultNames';
 import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
@@ -34,8 +35,8 @@ const emptyForm = (): Omit<JCICriticalResult, 'id' | 'created_at'> => ({
   dat_khung_tg: false, ghi_chu: ''
 });
 
-const yearOf = (iso: string) => (iso || '').slice(0, 4);
-const monthOf = (iso: string) => Number((iso || '').slice(5, 7));
+const yearOf = localYearOf;
+const monthOf = localMonthOf;
 const formatDateTime = (iso?: string) => (iso ? new Date(iso).toLocaleString('vi-VN') : '');
 const fmtPct = (rate: number) => `${rate.toFixed(1)}%`;
 
@@ -157,7 +158,7 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     // dat_khung_tg là cột suy ra - luôn tính lại từ 2 mốc thời gian
-    const payload = { ...formData, dat_khung_tg: criticalVerdict(formData as JCICriticalResult) === 'Đạt' };
+    const payload = { ...formData, thoi_gian_co_kq: fromDateTimeLocalInput(formData.thoi_gian_co_kq), thoi_gian_thong_bao: fromDateTimeLocalInput(formData.thoi_gian_thong_bao), dat_khung_tg: criticalVerdict(formData as JCICriticalResult) === 'Đạt' };
     try {
       if (editingId) {
         if (!canModifyId(editingId)) {
@@ -179,8 +180,8 @@ export const JCICriticalResultsModule: React.FC<{ onBack: () => void }> = ({ onB
 
   const handleEdit = (item: JCICriticalResult) => {
     setFormData({
-      thoi_gian_co_kq: item.thoi_gian_co_kq ? new Date(item.thoi_gian_co_kq).toISOString().slice(0, 16) : '',
-      thoi_gian_thong_bao: item.thoi_gian_thong_bao ? new Date(item.thoi_gian_thong_bao).toISOString().slice(0, 16) : '',
+      thoi_gian_co_kq: toDateTimeLocalInput(item.thoi_gian_co_kq),
+      thoi_gian_thong_bao: toDateTimeLocalInput(item.thoi_gian_thong_bao),
       khoa_thong_bao: item.khoa_thong_bao || '',
       ho_ten_nb: item.ho_ten_nb || '',
       nam_sinh: item.nam_sinh || '',

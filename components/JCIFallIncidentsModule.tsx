@@ -19,6 +19,7 @@ import { matchesDepartment } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { useRecordOwnership } from '../utils/recordOwnership';
 import { exportFallReportExcel, fallRate, benchmarkLabel, FALL_BENCHMARK } from '../utils/fallReportExcel';
+import { fromDateTimeLocalInput, localMonthOf, localYearOf, toDateTimeLocalInput } from '../utils/dateUtils';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
@@ -62,8 +63,8 @@ const emptyForm = (nguoiTongHop = ''): Omit<JCIFallIncident, 'id' | 'created_at'
   nguoi_tong_hop: nguoiTongHop, ghi_chu: ''
 });
 
-const yearOf = (iso: string) => (iso || '').slice(0, 4);
-const monthOf = (iso: string) => Number((iso || '').slice(5, 7));
+const yearOf = localYearOf;
+const monthOf = localMonthOf;
 const formatDateTime = (iso?: string) => (iso ? new Date(iso).toLocaleString('vi-VN') : '');
 const fmtRate = (rate: number) => rate.toFixed(2);
 const fmtPct = (rate: number) => `${rate.toFixed(1)}%`;
@@ -147,15 +148,16 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = { ...formData, thoi_gian_nga: fromDateTimeLocalInput(formData.thoi_gian_nga) };
     try {
       if (editingId) {
         if (!canModifyId(editingId)) {
           alert('Bạn chỉ được sửa phiếu do mình tạo.');
           return;
         }
-        await updateFallIncident(editingId, formData);
+        await updateFallIncident(editingId, payload);
       } else {
-        await addFallIncident({ ...formData, nguoi_tao: creator });
+        await addFallIncident({ ...payload, nguoi_tao: creator });
       }
       setViewMode('LIST');
       setEditingId(null);
@@ -169,7 +171,7 @@ export const JCIFallIncidentsModule: React.FC<{ onBack: () => void }> = ({ onBac
   const handleEdit = (item: JCIFallIncident) => {
     setFormData({
       ma_bao_cao: item.ma_bao_cao || '',
-      thoi_gian_nga: item.thoi_gian_nga ? new Date(item.thoi_gian_nga).toISOString().slice(0, 16) : '',
+      thoi_gian_nga: toDateTimeLocalInput(item.thoi_gian_nga),
       khoa_dieu_tri: item.khoa_dieu_tri || '',
       ho_ten_nb: item.ho_ten_nb || '',
       nam_sinh: item.nam_sinh || '',

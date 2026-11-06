@@ -19,6 +19,7 @@ import { matchesDepartment, isAllDepartments } from '../utils/departmentMatch';
 import { useAuth } from '../contexts/AuthContext';
 import { useRecordOwnership } from '../utils/recordOwnership';
 import { exportHandoverReportExcel, handoverRate } from '../utils/handoverReportExcel';
+import { fromDateTimeLocalInput, localMonthOf, localYearOf, toDateTimeLocalInput } from '../utils/dateUtils';
 import ProcessReportFilter, { ProcessReportFilterState, makeDefaultReportFilter, matchesReportPeriod, describeReportPeriod } from './ProcessReportFilter';
 import { usePagination, ListPagination, summarizeByDept, DeptSummaryTable } from './JciListSummary';
 
@@ -53,8 +54,8 @@ const emptyForm = (nguoiTongHop = ''): Omit<JCIHandoverIncident, 'id' | 'created
   nguoi_tong_hop: nguoiTongHop, ghi_chu: ''
 });
 
-const yearOf = (iso: string) => (iso || '').slice(0, 4);
-const monthOf = (iso: string) => Number((iso || '').slice(5, 7));
+const yearOf = localYearOf;
+const monthOf = localMonthOf;
 const formatDateTime = (iso?: string) => (iso ? new Date(iso).toLocaleString('vi-VN') : '');
 const fmtRate = (rate: number) => rate.toFixed(2);
 const fmtPct = (rate: number) => `${rate.toFixed(1)}%`;
@@ -148,6 +149,8 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
     // khoa_lien_quan là cột NOT NULL - luôn dựng lại từ 2 lựa chọn
     const payload = {
       ...formData,
+      thoi_gian_su_co: fromDateTimeLocalInput(formData.thoi_gian_su_co),
+      thoi_gian_bao_cao: fromDateTimeLocalInput(formData.thoi_gian_bao_cao),
       khoa_lien_quan: khoaLienQuan(formData.khoa_ban_giao, formData.khoa_tiep_nhan)
     };
     try {
@@ -172,8 +175,8 @@ export const JCIHandoverIncidentsModule: React.FC<{ onBack: () => void }> = ({ o
   const handleEdit = (item: JCIHandoverIncident) => {
     setFormData({
       ma_bao_cao: item.ma_bao_cao || '',
-      thoi_gian_su_co: item.thoi_gian_su_co ? new Date(item.thoi_gian_su_co).toISOString().slice(0, 16) : '',
-      thoi_gian_bao_cao: item.thoi_gian_bao_cao ? new Date(item.thoi_gian_bao_cao).toISOString().slice(0, 16) : '',
+      thoi_gian_su_co: toDateTimeLocalInput(item.thoi_gian_su_co),
+      thoi_gian_bao_cao: toDateTimeLocalInput(item.thoi_gian_bao_cao),
       khoa_lien_quan: item.khoa_lien_quan || '',
       // Bản ghi cũ chỉ có khoa_lien_quan dạng "A → B" - tách ngược lại để sửa
       khoa_ban_giao: item.khoa_ban_giao || (item.khoa_lien_quan || '').split('→')[0]?.trim() || '',

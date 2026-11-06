@@ -155,3 +155,35 @@ export const isDateInRange = (dateToCheck: string | Date, range: DateRange): boo
   
   return true;
 };
+
+/**
+ * Chuyển giá trị cột TIMESTAMPTZ sang chuỗi cho ô <input type="datetime-local"> theo giờ địa phương.
+ */
+export const toDateTimeLocalInput = (value?: string | null): string => {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
+
+/**
+ * Chuyển chuỗi từ ô <input type="datetime-local"> (giờ địa phương, không kèm múi giờ) sang ISO để lưu
+ * vào cột TIMESTAMPTZ. Nếu gửi nguyên chuỗi, Postgres sẽ hiểu là giờ UTC và giờ hiển thị bị lệch.
+ */
+export const fromDateTimeLocalInput = (value?: string | null): string => {
+  if (!value) return '';
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? '' : d.toISOString();
+};
+
+/** Năm của mốc thời gian theo giờ địa phương ('' nếu không hợp lệ). */
+export const localYearOf = (value?: string | null): string => {
+  const d = new Date(value || '');
+  return isNaN(d.getTime()) ? '' : String(d.getFullYear());
+};
+
+/** Tháng (1-12) của mốc thời gian theo giờ địa phương (0 nếu không hợp lệ). */
+export const localMonthOf = (value?: string | null): number => {
+  const d = new Date(value || '');
+  return isNaN(d.getTime()) ? 0 : d.getMonth() + 1;
+};
