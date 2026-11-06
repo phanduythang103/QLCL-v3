@@ -15,24 +15,13 @@ import { supabase } from '../supabaseClient';
 import DateRangeFilter, { DateFilterState } from './DateRangeFilter';
 
 // Survey services
-import { inpatientSatisfactionService } from './Assessment/services/inpatientSatisfactionService';
-import { outpatientSatisfactionService } from './Assessment/services/outpatientSatisfactionService';
 import { outpatientPercent } from './Assessment/types/patientSatisfactionMauByt';
 import { staffPercent } from './Assessment/types/staffSatisfactionMauByt';
 import { staffSatisfactionService } from './Assessment/services/staffSatisfactionService';
 import { ksMeSinhConService } from './Assessment/services/ksMeSinhConService';
 
 // GS services for compliance
-import { fetchGsVst } from '../readGsVst';
-import { fetchSurgerySafety } from '../readSurgerySafety';
-import { fetchGsDrug } from '../readGsDrug';
-import { fetchGs5s } from '../readGs5s';
-import { fetchGiamSatHsba } from '../readGiamSatHsba';
-import { fetchGiamSatNdnb } from '../readGiamSatNdnb';
-import { fetchGsCdTruc } from '../readGsCdTruc';
-import { fetchGsCapCuu } from '../readGsCapCuu';
-import { fetchGsRaVaoVien } from '../readGsRaVaoVien';
-import { fetchGsChung } from '../readGsChung';
+import { fetchAllRows } from '../utils/fetchAllRows';
 
 // Improvement plans
 import { fetchKhctcl } from '../readKhctcl';
@@ -103,6 +92,21 @@ const getRangeDates = (filter: DateFilterState) => {
 
   return { start, end };
 };
+
+// Dashboard chỉ cần cột tính tỷ lệ, không tải các cột nặng như checklist_data để tiết kiệm egress Supabase
+const OUTPATIENT_ANSWER_COLUMNS = Array.from({ length: 15 }, (_, i) => `q${i + 1}`).join(', ');
+const COMPLIANCE_SOURCES = [
+  { label: 'Vệ sinh tay', table: 'gs_vst', dateField: 'ngay_giam_sat', columns: '' },
+  { label: 'An toàn PT', table: 'giam_sat_atpt', dateField: 'ngay_giam_sat', columns: 'ty_le_tuan_thu' },
+  { label: 'Công khai thuốc', table: 'giam_sat_drug', dateField: 'ngay_giam_sat', columns: 'ty_le_tuan_thu' },
+  { label: 'GS 5S', table: 'giam_sat_5s', dateField: 'ngay_giam_sat', columns: '' },
+  { label: 'Hồ sơ BA', table: 'giam_sat_hsba', dateField: 'ngay_giam_sat', columns: 'ty_le_tuan_thu' },
+  { label: 'Nhận diện NB', table: 'gs_ndnb', dateField: 'ngay_giam_sat', columns: 'ty_le_tuan_thu' },
+  { label: 'Trực chuyên môn', table: 'giam_sat_cd_truc', dateField: 'ngay_kiem_tra', columns: 'ty_le_tuan_thu' },
+  { label: 'GS Cấp cứu', table: 'giam_sat_cap_cuu', dateField: 'ngay_kiem_tra', columns: 'ty_le_tuan_thu' },
+  { label: 'Vào/Ra viện', table: 'gs_ra_vao_vien', dateField: 'ngay_giam_sat', columns: 'ty_le_tuan_thu' },
+  { label: 'GS Chung', table: 'giam_sat_chung', dateField: 'ngay_giam_sat', columns: 'ty_le, tong_dat, tong_muc' },
+];
 
 const filterByDate = (rows: any[], dateField: string, filter: DateFilterState) => {
   const { start, end } = getRangeDates(filter);
@@ -188,8 +192,8 @@ export const Dashboard: React.FC = () => {
     setSatisfactionLoading(true);
     try {
       const results = await Promise.allSettled([
-        inpatientSatisfactionService.fetchInpatientSurveys(),
-        outpatientSatisfactionService.fetchOutpatientSurveys(),
+        fetchAllRows('ksnb_noi_tru', { orderBy: 'ngay_khao_sat', columns: 'id, ngay_khao_sat, created_at, satisfaction_percent' }),
+        fetchAllRows('ksnb_ngoai_tru', { orderBy: 'ngay_khao_sat', columns: `id, ngay_khao_sat, created_at, satisfaction_percent, ${OUTPATIENT_ANSWER_COLUMNS}` }),
         staffSatisfactionService.fetchSurveys(),
         ksMeSinhConService.fetchAll(),
       ]);
@@ -262,35 +266,17 @@ export const Dashboard: React.FC = () => {
     };
 
     try {
-      const results = await Promise.allSettled([
-        fetchGsVst(),
-        fetchSurgerySafety(),
-        fetchGsDrug(),
-        fetchGs5s(),
-        fetchGiamSatHsba(),
-        fetchGiamSatNdnb(),
-        fetchGsCdTruc(),
-        fetchGsCapCuu(),
-        fetchGsRaVaoVien(),
-        fetchGsChung(),
-      ]);
-
-      const labels = [
-        'Vệ sinh tay', 'An toàn PT', 'Công khai thuốc', 'GS 5S',
-        'Hồ sơ BA', 'Nhận diện NB', 'Trực chuyên môn', 'GS Cấp cứu',
-        'Vào/Ra viện', 'GS Chung'
-      ];
-      const dateFields = [
-        'ngay_giam_sat', 'ngay_giam_sat', 'ngay_giam_sat', 'ngay_giam_sat',
-        'ngay_giam_sat', 'ngay_giam_sat', 'ngay_kiem_tra', 'ngay_kiem_tra',
-        'ngay_giam_sat', 'ngay_giam_sat'
-      ];
+      const results = await Promise.allSettled(
+        COMPLIANCE_SOURCES.map(({ table, dateField, columns }) =>
+          fetchAllRows(table, { orderBy: dateField, columns: `id, ${dateField}, created_at${columns ? `, ${columns}` : ''}` })
+        )
+      );
 
       setComplianceData(results.map((r, i) => {
         let rows = r.status === 'fulfilled' ? (r.value as any[]) : [];
-        rows = filterByDate(rows, dateFields[i], compFilter);
+        rows = filterByDate(rows, COMPLIANCE_SOURCES[i].dateField, compFilter);
         return {
-          name: labels[i],
+          name: COMPLIANCE_SOURCES[i].label,
           score: calcTl(rows),
         };
       }));
