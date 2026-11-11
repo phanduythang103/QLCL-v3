@@ -139,14 +139,14 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.so_bc_ma_scyk || !formData.don_vi_bao_cao || !formData.ho_ten_nb) {
-      alert('Vui lòng điền đầy đủ: Số BC, Đơn vị báo cáo, Họ tên NB');
-      return;
-    }
-
+    // Cho phép lưu khi còn ô trống: cột ngày/giờ trong DB không nhận chuỗi rỗng nên đổi sang null.
     setIsSubmitting(true);
     try {
-      const payload = { ...formData, nhom_bao_cao: 'Sự cố y khoa', hinh_anh_minh_chung: uploadedImages };
+      const payload: any = { ...formData, nhom_bao_cao: 'Sự cố y khoa', hinh_anh_minh_chung: uploadedImages };
+      if (!payload.ngay_bao_cao) payload.ngay_bao_cao = new Date().toISOString().split('T')[0];
+      for (const k of ['ngay_sinh', 'ngay_xay_ra_sc', 'thoi_gian_vao_vien']) {
+        if (!payload[k]) payload[k] = null;
+      }
       if (editingItem?.id) {
         await updateBaoCaoScyk(editingItem.id, payload);
       } else {
@@ -275,7 +275,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
             <div className="form-grid">
               <div className="col-span-1 md:col-span-2">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Hình thức báo cáo *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Hình thức báo cáo</label>
                 <div className="flex flex-wrap gap-6">
                   {['Tự nguyện', 'Bắt buộc'].map(type => (
                     <label key={type} className="flex items-center cursor-pointer group">
@@ -306,19 +306,18 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ngày báo cáo *</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ngày báo cáo</label>
                 <input
                   type="date"
                   name="ngay_bao_cao"
                   value={formData.ngay_bao_cao}
                   onChange={handleChange}
-                  required
                   className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
                 />
               </div>
 
               <div className="col-span-1 md:col-span-2">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn vị báo cáo *</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn vị báo cáo</label>
                 <input
                   type="text"
                   name="don_vi_bao_cao"
@@ -329,7 +328,6 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
                     const u = dmDonVi.find(d => d.ten_don_vi === e.target.value);
                     if (u) generateNextCode(u.ma_don_vi);
                   }}
-                  required
                   className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
                   placeholder="Nhập hoặc chọn khoa/phòng báo cáo"
                 />
@@ -428,7 +426,7 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
             <div className="form-grid">
               <div className="col-span-1 md:col-span-2">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Đối tượng xảy ra sự cố *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Đối tượng xảy ra sự cố</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {['Người bệnh', 'Người nhà/khách', 'Nhân viên y tế', 'Trang thiết bị/CSHT'].map(obj => (
                     <label key={obj} className="flex items-start cursor-pointer group">
@@ -471,13 +469,12 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ngày xảy ra *</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Ngày xảy ra</label>
                 <input
                   type="date"
                   name="ngay_xay_ra_sc"
                   value={formData.ngay_xay_ra_sc}
                   onChange={handleChange}
-                  required
                   className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
                 />
               </div>
@@ -494,12 +491,11 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
               </div>
 
               <div className="col-span-1 md:col-span-2">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mô tả ngắn gọn về sự cố *</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mô tả ngắn gọn về sự cố</label>
                 <textarea
                   name="mo_ta_su_co"
                   value={formData.mo_ta_su_co}
                   onChange={handleChange}
-                  required
                   rows={4}
                   className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 italic font-medium"
                   placeholder="Mô tả diễn biến, hiện trạng..."
@@ -686,13 +682,12 @@ const ScykFormTT43: React.FC<ScykFormTT43Props> = ({ onCancel, onSaved, editingI
 
             <div className="form-grid">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Họ tên người báo cáo *</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Họ tên người báo cáo</label>
                 <input
                   type="text"
                   name="ho_ten_nguoi_bc"
                   value={formData.ho_ten_nguoi_bc}
                   onChange={handleChange}
-                  required
                   className="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 border px-4 py-3 font-bold"
                 />
               </div>

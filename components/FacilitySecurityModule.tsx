@@ -243,7 +243,10 @@ export const FacilitySecurityModule: React.FC = () => {
     try {
       const finalForm = {
         ...reportForm,
-        thoi_gian_xay_ra: parseThoiGianXayRa(reportForm.thoi_gian_xay_ra)
+        // Cho phép để trống: cột thoi_gian_xay_ra NOT NULL nên mặc định lấy thời điểm lưu.
+        thoi_gian_xay_ra: (reportForm.thoi_gian_xay_ra || '').trim()
+          ? parseThoiGianXayRa(reportForm.thoi_gian_xay_ra)
+          : new Date().toISOString()
       };
 
       if (editingReport) {
@@ -738,35 +741,35 @@ export const FacilitySecurityModule: React.FC = () => {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Người báo cáo</label>
-                       <input value={reportForm.nguoi_bao_cao} onChange={e => setReportForm({...reportForm, nguoi_bao_cao: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" required readOnly />
+                       <input value={reportForm.nguoi_bao_cao} onChange={e => setReportForm({...reportForm, nguoi_bao_cao: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" readOnly />
                     </div>
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Đơn vị</label>
-                       <input value={reportForm.don_vi} onChange={e => setReportForm({...reportForm, don_vi: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" required readOnly />
+                       <input value={reportForm.don_vi} onChange={e => setReportForm({...reportForm, don_vi: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" readOnly />
                     </div>
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Vị trí xảy ra</label>
-                       <input value={reportForm.vi_tri_xay_ra} onChange={e => setReportForm({...reportForm, vi_tri_xay_ra: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: Nhà B, khu vực bãi xe..." required />
+                       <input value={reportForm.vi_tri_xay_ra} onChange={e => setReportForm({...reportForm, vi_tri_xay_ra: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: Nhà B, khu vực bãi xe..." />
                     </div>
                      <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Thời gian xảy ra (hh:mm dd/mm/yyyy)</label>
-                        <input type="text" value={reportForm.thoi_gian_xay_ra} onChange={e => setReportForm({...reportForm, thoi_gian_xay_ra: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: 14:30 25/03/2026" required />
+                        <input type="text" value={reportForm.thoi_gian_xay_ra} onChange={e => setReportForm({...reportForm, thoi_gian_xay_ra: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: 14:30 25/03/2026" />
                      </div>
                  </div>
 
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Mô tả diễn biến</label>
-                    <textarea rows={4} value={reportForm.mo_ta_dien_bien} onChange={e => setReportForm({...reportForm, mo_ta_dien_bien: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10 leading-relaxed" placeholder="Mô tả chi tiết sự việc..." required />
+                    <textarea rows={4} value={reportForm.mo_ta_dien_bien} onChange={e => setReportForm({...reportForm, mo_ta_dien_bien: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10 leading-relaxed" placeholder="Mô tả chi tiết sự việc..." />
                  </div>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Hậu quả (Người & Tài sản)</label>
-                       <input value={reportForm.hau_qua} onChange={e => setReportForm({...reportForm, hau_qua: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: 1 người bị thương nhẹ, hỏng 1 cửa kính..." required />
+                       <input value={reportForm.hau_qua} onChange={e => setReportForm({...reportForm, hau_qua: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: 1 người bị thương nhẹ, hỏng 1 cửa kính..." />
                     </div>
                     <div className="space-y-1.5">
                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Nguyên nhân sơ bộ</label>
-                       <select value={reportForm.nguyen_nhan_so_bo} onChange={e => setReportForm({...reportForm, nguyen_nhan_so_bo: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" required>
+                       <select value={reportForm.nguyen_nhan_so_bo} onChange={e => setReportForm({...reportForm, nguyen_nhan_so_bo: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10">
                           <option value="">-- Chọn nguyên nhân --</option>
                           <option value="Do kỹ thuật">Do kỹ thuật</option>
                           <option value="Do con người">Do con người</option>
@@ -778,7 +781,7 @@ export const FacilitySecurityModule: React.FC = () => {
 
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Biện pháp xử lý tức thời</label>
-                    <textarea rows={2} value={reportForm.bien_phap_xu_ly} onChange={e => setReportForm({...reportForm, bien_phap_xu_ly: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: Đã gọi cứu hỏa, đã sơ cứu..." required />
+                    <textarea rows={2} value={reportForm.bien_phap_xu_ly} onChange={e => setReportForm({...reportForm, bien_phap_xu_ly: e.target.value})} className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-red-500/10" placeholder="VD: Đã gọi cứu hỏa, đã sơ cứu..." />
                  </div>
 
                  {/* Image Upload Area */}
