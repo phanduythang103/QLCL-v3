@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS public.survey_public_configs (
     survey_name TEXT NOT NULL,
     is_public BOOLEAN DEFAULT false,
     slug TEXT UNIQUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('ict'::text, now()),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('ict'::text, now())
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 -- Ensure slug column exists (for existing tables)

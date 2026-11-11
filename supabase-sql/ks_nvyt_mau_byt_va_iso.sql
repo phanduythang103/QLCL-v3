@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS public.ks_hai_long_iso (
     mau TEXT NOT NULL,                  -- huyet_hoc | sinh_hoa | vi_sinh | giai_phau_benh | sinh_hoc_phan_tu
     answers JSONB NOT NULL DEFAULT '{}'::jsonb, -- câu trả lời theo mã câu
     satisfaction_percent INTEGER,       -- % hài lòng = điểm đạt / điểm tối đa các câu chấm điểm (null nếu phiếu không chấm điểm)
-    ngay_khao_sat TIMESTAMP WITH TIME ZONE DEFAULT timezone('ict'::text, now()),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('ict'::text, now())
+    ngay_khao_sat TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS ks_hai_long_iso_mau_idx ON public.ks_hai_long_iso (mau, ngay_khao_sat DESC);

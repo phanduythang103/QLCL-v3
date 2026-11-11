@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS public.ksnb_ngoai_tru (
     -- Additional free‑text feedback
     feedback TEXT,
     -- Metadata timestamps
-    ngay_khao_sat TIMESTAMP WITH TIME ZONE DEFAULT timezone('ict'::text, now()),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('ict'::text, now())
+    ngay_khao_sat TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 -- Row Level Security
