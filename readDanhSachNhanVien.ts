@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { fetchAllRows } from './utils/fetchAllRows';
 
 export type DoiTuongNhanVien = 'Điều dưỡng' | 'Bác sỹ' | 'Kỹ thuật viên' | 'Khác';
 
@@ -18,12 +19,14 @@ export interface DanhSachNhanVien {
 }
 
 export async function fetchDanhSachNhanVien(): Promise<DanhSachNhanVien[]> {
-  const { data, error } = await supabase
-    .from('danh_sach_nhan_vien')
-    .select('id, khoa_don_vi, ho_ten, doi_tuong, created_at');
-  if (error) throw error;
+  // Đọc theo trang: Supabase chỉ trả tối đa 1000 dòng/lần, bảng đã vượt mốc này
+  const data = await fetchAllRows<DanhSachNhanVien>('danh_sach_nhan_vien', {
+    orderBy: 'created_at',
+    ascending: true,
+    columns: 'id, khoa_don_vi, ho_ten, doi_tuong, created_at',
+  });
 
-  return (data || []).sort((a: any, b: any) =>
+  return data.sort((a: any, b: any) =>
     (a.ho_ten || '').localeCompare(b.ho_ten || '', 'vi', { sensitivity: 'base' })
   );
 }

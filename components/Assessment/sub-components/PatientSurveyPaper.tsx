@@ -174,10 +174,10 @@ export const PatientSurveyPaper: React.FC<Props> = ({ kind, data, readOnly = fal
                 ? <>Đánh giá chung, bệnh viện <b>đã đáp ứng được bao nhiêu % so với mong đợi</b> của Ông/Bà trước khi nằm viện?</>
                 : <>Đánh giá chung bệnh viện <b>đã đáp ứng được bao nhiêu % so với mong đợi</b> trước khi tới khám bệnh?</>}
               <br />
-              <i>(điền số từ 0% đến 100% hoặc có thể điền trên 100% nếu bệnh viện điều trị tốt, vượt quá mong đợi của Ông/Bà)</i>
+              <i>(điền số từ 0% đến 100%)</i>
             </td>
             <td className={`${cell} kshl-rate kshl-center whitespace-nowrap`}>
-              <input type="number" min={0} max={200} disabled={readOnly} value={data.satisfaction_percent ?? ''} onChange={e => set('satisfaction_percent', num(e.target.value))} className={`${lineInput} w-16 text-center text-lg`} />%
+              <input type="number" min={0} max={100} disabled={readOnly} value={data.satisfaction_percent ?? ''} onChange={e => { const v = num(e.target.value); set('satisfaction_percent', v == null || isNaN(v) ? null : Math.min(100, Math.max(0, v))); }} className={`${lineInput} w-16 text-center text-lg`} />%
             </td>
           </tr>
 
