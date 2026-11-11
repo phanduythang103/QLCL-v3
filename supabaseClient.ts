@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabaseConfig';
+import { cachedFetch } from './utils/cachedFetch';
 
 // Custom storage to handle cases where localStorage is blocked (e.g., Zalo Android in-app)
 const isStorageAvailable = () => {
@@ -58,6 +59,7 @@ export const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY)
             storage: safeStorage,
             persistSession: true,
             autoRefreshToken: true
-        }
+        },
+        global: { fetch: cachedFetch }
     })
     : null as any;

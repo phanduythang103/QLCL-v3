@@ -368,7 +368,7 @@ const IndicatorOverviewModule: React.FC = () => {
       ] = await Promise.all([
         fetchCongSuatGiuong(), fetchHieuSuatPhongMo(), fetchBcScnyknt(), fetchScykNghiemTrong(),
         fetchGsKhamBenh(), fetchThoiGianNamVien(), fetchDsnKvm(), fetchPtLoai2(),
-        fetchKtcmTheoTuyen(), fetchGsVst(), fetchVpbv(), fetchTyLeDD()
+        fetchKtcmTheoTuyen(), fetchGsVst('ngay_giam_sat, khoa_duoc_giam_sat, tong_co_hoi, so_lan_tuan_thu'), fetchVpbv(), fetchTyLeDD()
       ]);
 
       const live: Record<string, number> = {};

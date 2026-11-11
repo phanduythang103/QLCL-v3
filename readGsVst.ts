@@ -3,9 +3,9 @@ import { insertWithCreator, withoutCreator } from './utils/recordOwnership';
 import { GsVst } from './types';
 import { fetchAllRows } from './utils/fetchAllRows';
 
-export const fetchGsVst = async () => {
+export const fetchGsVst = async (columns?: string) => {
   // Phân trang: bảng sắp chạm mốc 1.000 phiếu, gọi 1 lượt sẽ bị cắt bớt âm thầm
-  return await fetchAllRows<GsVst>('gs_vst', { orderBy: 'ngay_giam_sat' });
+  return await fetchAllRows<GsVst>('gs_vst', { orderBy: 'ngay_giam_sat', columns });
 };
 
 export const addGsVst = async (item: GsVst) => {
